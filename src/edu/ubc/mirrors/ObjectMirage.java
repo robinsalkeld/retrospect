@@ -27,6 +27,7 @@ public class ObjectMirage<T> {
         return mirror;
     }
     
+    @SuppressWarnings("unchecked")
     public static <T> T make(ObjectMirror<T> mirror) {
         final Class<?> mirageClass = getMirageClass(mirror.getClassMirror());
         if (mirageClass == null) {
