@@ -8,6 +8,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.LocalVariablesSorter;
+import org.objectweb.asm.util.CheckClassAdapter;
 
 public class MirageClassGenerator extends ClassVisitor {
 
@@ -70,10 +71,12 @@ public class MirageClassGenerator extends ClassVisitor {
         String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirrorType);
         MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
                          "<init>", constructorDesc, null, null);
+        methodVisitor.visitCode();
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
         methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", constructorDesc);
         methodVisitor.visitInsn(Opcodes.RETURN);
+        methodVisitor.visitMaxs(2, 2);
         methodVisitor.visitEnd();
         
         super.visitEnd();
@@ -81,7 +84,9 @@ public class MirageClassGenerator extends ClassVisitor {
     
     public static byte[] generate(ClassReader reader) {
         ClassWriter mirageWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
-        reader.accept(new MirageClassGenerator(mirageWriter), ClassReader.SKIP_FRAMES);
+        ClassVisitor checker = new CheckClassAdapter(mirageWriter);
+        ClassVisitor generator = new MirageClassGenerator(checker);
+        reader.accept(generator, ClassReader.SKIP_FRAMES);
         return mirageWriter.toByteArray();
     }
 }

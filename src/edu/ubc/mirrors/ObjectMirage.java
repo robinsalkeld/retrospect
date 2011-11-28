@@ -93,7 +93,7 @@ public class ObjectMirage<T> {
         }
     }
     
-    private static Class<?> getMirageClass(Class<?> original) {
+    public static Class<?> getMirageClass(Class<?> original) {
         Class<?> mirageClass = mirageClasses.get(new ClassKey(original));
         if (mirageClass != null) {
             return mirageClass;
@@ -114,7 +114,7 @@ public class ObjectMirage<T> {
         }
     }
     
-    public static Class<?> defineMirageClass(String className, ClassLoader originalLoader, ClassReader originalReader) {
+    private static Class<?> defineMirageClass(String className, ClassLoader originalLoader, ClassReader originalReader) {
         byte[] mirageClassBytes = MirageClassGenerator.generate(originalReader);
         
         MirageClassLoader mirageLoader = mirageClassLoaders.get(originalLoader);

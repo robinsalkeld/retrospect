@@ -76,7 +76,7 @@ public class MirageMethodGenerator extends MethodVisitor {
         // Get the field mirror onto the stack
         super.visitLdcInsn(name);
         super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
-                              owner, 
+                              MirageClassGenerator.objectMirageType.getInternalName(), 
                               isStatic ? "getStaticField" : "getMemberField", 
                               Type.getMethodDescriptor(MirageClassGenerator.fieldMirrorType, Type.getType(String.class)));
         
@@ -89,7 +89,7 @@ public class MirageMethodGenerator extends MethodVisitor {
             methodDesc = Type.getMethodDescriptor(fieldType);
         }
         super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
-                              MirageClassGenerator.fieldMirrorType.getDescriptor(), 
+                              MirageClassGenerator.fieldMirrorType.getInternalName(), 
                               (isSet ? "set" : "get") + suffix, 
                               methodDesc);
     }
