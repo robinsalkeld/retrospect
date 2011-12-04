@@ -23,7 +23,7 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
     }
     
     private FieldMirror getField(String name, boolean isStatic) throws NoSuchFieldException {
-        Field field = object.getClass().getField(name);
+        Field field = object.getClass().getDeclaredField(name);
         if (Modifier.isStatic(field.getModifiers()) == isStatic) {
             // Crap, fall back to manual search
             field = findField(name, isStatic);
@@ -32,7 +32,7 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
     }
     
     private Field findField(String name, boolean isStatic) throws NoSuchFieldException {
-        for (Field f : object.getClass().getFields()) {
+        for (Field f : object.getClass().getDeclaredFields()) {
             if (f.getName().equals(name) && Modifier.isStatic(f.getModifiers()) == isStatic) {
                 return f;
             }
@@ -52,6 +52,7 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
         
         public NativeFieldMirror(Field field) {
             this.field = field;
+            field.setAccessible(true);
         }
 
         @Override

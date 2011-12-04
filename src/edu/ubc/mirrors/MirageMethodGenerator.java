@@ -76,7 +76,7 @@ public class MirageMethodGenerator extends MethodVisitor {
         // Get the field mirror onto the stack
         super.visitLdcInsn(name);
         super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
-                              MirageClassGenerator.objectMirageType.getInternalName(), 
+                              MirageClassGenerator.objectMirrorType.getInternalName(), 
                               isStatic ? "getStaticField" : "getMemberField", 
                               Type.getMethodDescriptor(MirageClassGenerator.fieldMirrorType, Type.getType(String.class)));
         
@@ -92,5 +92,11 @@ public class MirageMethodGenerator extends MethodVisitor {
                               MirageClassGenerator.fieldMirrorType.getInternalName(), 
                               (isSet ? "set" : "get") + suffix, 
                               methodDesc);
+    }
+    
+    @Override
+    public void visitMaxs(int maxStack, int maxLocals) {
+        // Need an extra stack value for the function calls
+        super.visitMaxs(maxStack + 1, maxLocals);
     }
 }

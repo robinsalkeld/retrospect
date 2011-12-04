@@ -18,7 +18,7 @@ public class ObjectMirage<T> {
 
     protected final ObjectMirror<T> mirror;
     
-    private ObjectMirage(ObjectMirror<T> mirror) {
+    public ObjectMirage(ObjectMirror<T> mirror) {
         this.mirror = mirror;
         
     }

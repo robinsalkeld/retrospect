@@ -1,5 +1,7 @@
 package edu.ubc.mirrors;
 
+import java.io.PrintWriter;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -9,6 +11,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.objectweb.asm.util.CheckClassAdapter;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 public class MirageClassGenerator extends ClassVisitor {
 
@@ -30,8 +33,11 @@ public class MirageClassGenerator extends ClassVisitor {
     public void visit(int version, int access, String name, String signature,
             String superName, String[] interfaces) {
         this.superName = superName;
+        if (superName.equals(Type.getInternalName(Object.class))) {
+            this.superName = Type.getInternalName(ObjectMirage.class);
+        }
         
-        super.visit(version, access, name, signature, superName, interfaces);
+        super.visit(version, access, name, signature, this.superName, interfaces);
     }
     
     @Override
@@ -83,10 +89,12 @@ public class MirageClassGenerator extends ClassVisitor {
     }
     
     public static byte[] generate(ClassReader reader) {
-        ClassWriter mirageWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
-        ClassVisitor checker = new CheckClassAdapter(mirageWriter);
-        ClassVisitor generator = new MirageClassGenerator(checker);
-        reader.accept(generator, ClassReader.SKIP_FRAMES);
-        return mirageWriter.toByteArray();
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
+        ClassVisitor visitor = classWriter;
+//        visitor = new TraceClassVisitor(visitor, new PrintWriter(System.out));
+        visitor = new CheckClassAdapter(visitor);
+        visitor = new MirageClassGenerator(visitor);
+        reader.accept(visitor, ClassReader.SKIP_FRAMES);
+        return classWriter.toByteArray();
     }
 }
