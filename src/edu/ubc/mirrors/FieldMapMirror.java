@@ -140,4 +140,9 @@ public class FieldMapMirror<T> implements ObjectMirror<T> {
             set(Double.valueOf(d));
         }
     }
+
+    @Override
+    public FieldMirror getArrayElement(int index) throws ArrayIndexOutOfBoundsException {
+        return null;
+    }
 }

@@ -1,5 +1,9 @@
 package edu.ubc.mirrors;
 
+import static edu.ubc.mirrors.MirageClassGenerator.getMirageInternalClassName;
+import static edu.ubc.mirrors.MirageClassGenerator.getMirageMethodDescriptor;
+
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -15,6 +19,11 @@ public class MirageMethodGenerator extends MethodVisitor {
 
     public void setLocalVariablesSorter(LocalVariablesSorter lvs) {
         this.lvs = lvs;
+    }
+    
+    @Override
+    public void visitTypeInsn(int opcode, String type) {
+        super.visitTypeInsn(opcode, MirageClassGenerator.getMirageInternalClassName(type));
     }
     
     @Override
@@ -61,37 +70,57 @@ public class MirageMethodGenerator extends MethodVisitor {
                 throw new IllegalArgumentException("Bad opcode: " + opcode);
         }
         
-        // Pop the original argument
-        int setValueLocal = lvs.newLocal(fieldType);
-        if (isSet) {
-            super.visitVarInsn(fieldType.getOpcode(Opcodes.ISTORE), setValueLocal);
-        }
-        
-        // Push the mirror instance onto the stack
-        super.visitFieldInsn(Opcodes.GETFIELD, 
-                             Type.getInternalName(ObjectMirage.class), 
-                             "mirror", 
-                             MirageClassGenerator.objectMirrorType.getDescriptor());
-        
-        // Get the field mirror onto the stack
-        super.visitLdcInsn(name);
-        super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
-                              MirageClassGenerator.objectMirrorType.getInternalName(), 
-                              isStatic ? "getStaticField" : "getMemberField", 
-                              Type.getMethodDescriptor(MirageClassGenerator.fieldMirrorType, Type.getType(String.class)));
-        
-        // Call the appropriate getter/setter method on the mirror
-        String methodDesc;
-        if (isSet) {
-            super.visitVarInsn(fieldType.getOpcode(Opcodes.ILOAD), setValueLocal);
-            methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldType);
+        if (isStatic) {
+            super.visitFieldInsn(opcode, 
+                                 MirageClassGenerator.getMirageInternalClassName(owner), 
+                                 name, 
+                                 MirageClassGenerator.getMirageType(Type.getType(desc)).getDescriptor());
         } else {
-            methodDesc = Type.getMethodDescriptor(fieldType);
+            // Pop the original argument
+            int setValueLocal = lvs.newLocal(fieldType);
+            if (isSet) {
+                super.visitVarInsn(fieldType.getOpcode(Opcodes.ISTORE), setValueLocal);
+            }
+            
+            // Push the mirror instance onto the stack
+            super.visitFieldInsn(Opcodes.GETFIELD, 
+                                 Type.getInternalName(ObjectMirage.class), 
+                                 "mirror", 
+                                 MirageClassGenerator.objectMirrorType.getDescriptor());
+            
+            // Get the field mirror onto the stack
+            super.visitLdcInsn(name);
+            super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
+                                  MirageClassGenerator.objectMirrorType.getInternalName(), 
+                                  isStatic ? "getStaticField" : "getMemberField", 
+                                  Type.getMethodDescriptor(MirageClassGenerator.fieldMirrorType, Type.getType(String.class)));
+            
+            // Call the appropriate getter/setter method on the mirror
+            String methodDesc;
+            if (isSet) {
+                super.visitVarInsn(fieldType.getOpcode(Opcodes.ILOAD), setValueLocal);
+                methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldType);
+            } else {
+                methodDesc = Type.getMethodDescriptor(fieldType);
+            }
+            super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
+                    MirageClassGenerator.fieldMirrorType.getInternalName(), 
+                    (isSet ? "set" : "get") + suffix, 
+                    methodDesc);
         }
-        super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
-                              MirageClassGenerator.fieldMirrorType.getInternalName(), 
-                              (isSet ? "set" : "get") + suffix, 
-                              methodDesc);
+    }
+    
+    @Override
+    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+        super.visitMethodInsn(opcode, 
+                              getMirageInternalClassName(owner), 
+                              name, 
+                              getMirageMethodDescriptor(desc));
+    }
+    
+    @Override
+    public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+        super.visitTryCatchBlock(start, end, handler, getMirageInternalClassName(type));
     }
     
     @Override

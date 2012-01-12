@@ -1,5 +1,6 @@
 package edu.ubc.mirrors;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -38,6 +39,13 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
             }
         }
         throw new NoSuchFieldException(name);
+    }
+    
+    @Override
+    public FieldMirror getArrayElement(int index)
+            throws ArrayIndexOutOfBoundsException {
+        // TODO Auto-generated method stub
+        return null;
     }
     
     @Override
@@ -149,5 +157,110 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
         public void setDouble(double d) throws IllegalAccessException {
             field.set(object, d);
         }
+    }
+    
+    private class NativeArrayElementFieldMirror implements FieldMirror {
+        
+        private final int index;
+        
+        public NativeArrayElementFieldMirror(int index) {
+            this.index = index;
+        }
+
+        @Override
+        public Class<?> getType() {
+            return object.getClass().getComponentType();
+        }
+
+        @Override
+        public Object get() throws IllegalAccessException {
+            return Array.get(object, index);
+        }
+
+        @Override
+        public boolean getBoolean() throws IllegalAccessException {
+            return Array.getBoolean(object, index);
+        }
+
+        @Override
+        public byte getByte() throws IllegalAccessException {
+            return Array.getByte(object, index);
+        }
+
+        @Override
+        public char getChar() throws IllegalAccessException {
+            return Array.getChar(object, index);
+        }
+
+        @Override
+        public short getShort() throws IllegalAccessException {
+            return Array.getShort(object, index);
+        }
+
+        @Override
+        public int getInt() throws IllegalAccessException {
+            return Array.getInt(object, index);
+        }
+
+        @Override
+        public long getLong() throws IllegalAccessException {
+            return Array.getLong(object, index);
+        }
+
+        @Override
+        public float getFloat() throws IllegalAccessException {
+            return Array.getFloat(object, index);
+        }
+
+        @Override
+        public double getDouble() throws IllegalAccessException {
+            return Array.getDouble(object, index);
+        }
+
+        @Override
+        public void set(Object o) throws IllegalAccessException {
+            Array.set(object, index, o);
+        }
+
+        @Override
+        public void setBoolean(boolean b) throws IllegalAccessException {
+            Array.setBoolean(object, index, b);
+        }
+
+        @Override
+        public void setByte(byte b) throws IllegalAccessException {
+            Array.setByte(object, index, b);
+        }
+
+        @Override
+        public void setChar(char c) throws IllegalAccessException {
+            Array.setChar(object, index, c);
+        }
+
+        @Override
+        public void setShort(short s) throws IllegalAccessException {
+            Array.setShort(object, index, s);
+        }
+
+        @Override
+        public void setInt(int i) throws IllegalAccessException {
+            Array.setInt(object, index, i);
+        }
+
+        @Override
+        public void setLong(long l) throws IllegalAccessException {
+            Array.setLong(object, index, l);
+        }
+
+        @Override
+        public void setFloat(float f) throws IllegalAccessException {
+            Array.setFloat(object, index, f);
+        }
+
+        @Override
+        public void setDouble(double d) throws IllegalAccessException {
+            Array.setDouble(object, index, d);
+        }
+        
     }
 }
