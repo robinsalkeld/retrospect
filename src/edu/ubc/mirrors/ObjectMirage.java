@@ -59,7 +59,7 @@ public class ObjectMirage<T> {
     public static MirageClassLoader getMirageClassLoader(ClassLoader originalLoader) {
         MirageClassLoader mirageLoader = mirageClassLoaders.get(originalLoader);
         if (mirageLoader == null) {
-            mirageLoader = new MirageClassLoader(originalLoader, null);
+            mirageLoader = new MirageClassLoader(originalLoader, "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/output/");
             mirageClassLoaders.put(originalLoader, mirageLoader);
         }
         return mirageLoader;
@@ -67,7 +67,7 @@ public class ObjectMirage<T> {
     
     public static Class<?> getMirageClass(Class<?> original) throws ClassNotFoundException {
         MirageClassLoader mirageLoader = getMirageClassLoader(original.getClassLoader());
-        return mirageLoader.loadClass(original.getName());
+        return mirageLoader.loadClass(MirageClassGenerator.getMirageBinaryClassName(original.getName()));
     }
     
     public static Class<?> defineMirageClass(String className, ClassLoader originalLoader, ClassReader originalReader) {
@@ -75,31 +75,51 @@ public class ObjectMirage<T> {
         return mirageLoader.defineMirageClass(className, originalReader);
     }
     
-    public static int invokeMirageMainMethod(Class<?> originalClass, String[] args) {
+    public static Class<?> getOriginalClass(Class<?> mirageClass) throws ClassNotFoundException {
+        ClassLoader originalLoader = ((MirageClassLoader)mirageClass.getClassLoader()).getOriginalLoader();
+        String originalClassName = MirageClassGenerator.getOriginalClassName(mirageClass.getName());
+        return originalLoader.loadClass(originalClassName);
+    }
+    
+    private static void throwInternalError(Throwable t) {
+        InternalError ie = new InternalError();
+        ie.initCause(t);
+        throw ie;
+    }
+    
+    public static void invokeMirageMainMethod(Class<?> originalClass, String[] args) {
         try {
             final Class<?> mirageClass = getMirageClass(originalClass);
-            mirageClass.getMethods();
-            return ((Integer)mirageClass.getDeclaredMethod("main", String[].class).invoke(null, (Object)args)).intValue();
+            final Class<?> mirageStringArray = Class.forName("[Ljava.lang.String;", true, mirageClass.getClassLoader());
+            mirageClass.getDeclaredMethod("main", mirageStringArray).invoke(null, (Object)args);
         } catch (ClassNotFoundException e) {
-            InternalError error = new InternalError("No mirage class registered for class: " + originalClass);
-            error.initCause(e);
-            throw error;
+            throwInternalError(e);
         } catch (SecurityException e) {
-            InternalError ie = new InternalError();
-            ie.initCause(e);
-            throw ie;
+            throwInternalError(e);
         } catch (IllegalAccessException e) {
-            InternalError ie = new InternalError();
-            ie.initCause(e);
-            throw ie;
+            throwInternalError(e);
         } catch (InvocationTargetException e) {
-            InternalError ie = new InternalError();
-            ie.initCause(e);
-            throw ie;
+            throwInternalError(e);
         } catch (NoSuchMethodException e) {
-            InternalError ie = new InternalError();
-            ie.initCause(e);
-            throw ie;
+            throwInternalError(e);
         }
+    }
+    
+    public static String getRealStringForMirage(ObjectMirage<?> mirage) {
+        try {
+            ObjectMirror<?> mirror = mirage.getMirror();
+            char[] value = (char[])mirror.getMemberField("value").get();
+            int offset = mirror.getMemberField("offset").getInt();
+            int count = mirror.getMemberField("count").getInt();
+            return new String(value, offset, count);
+        } catch (IllegalAccessException e) {
+            throwInternalError(e);
+            return null;
+        } catch (NoSuchFieldException e) {
+            throwInternalError(e);
+        }
+        
+        // Never reached
+        return null;
     }
 }

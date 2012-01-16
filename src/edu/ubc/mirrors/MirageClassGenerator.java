@@ -1,70 +1,75 @@
 package edu.ubc.mirrors;
 
-import java.io.FileNotFoundException;
+import static org.objectweb.asm.Opcodes.DUP;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.NEW;
+import static org.objectweb.asm.Opcodes.POP2;
+import static org.objectweb.asm.Opcodes.RETURN;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.LocalVariablesSorter;
+import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.signature.SignatureReader;
-import org.objectweb.asm.signature.SignatureVisitor;
 import org.objectweb.asm.signature.SignatureWriter;
+import org.objectweb.asm.util.ASMifier;
 import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceClassVisitor;
-import org.objectweb.asm.util.TraceMethodVisitor;
 
-public class MirageClassGenerator extends ClassVisitor {
+public class MirageClassGenerator extends RemappingClassAdapter {
 
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type objectMirageType = Type.getType(ObjectMirage.class);
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
+    public static Type nativeObjectMirrorType = Type.getType(NativeObjectMirror.class);
+    
+    public static Remapper REMAPPER = new Remapper() {
+        public String map(String typeName) {
+            return getMirageInternalClassName(typeName);
+        };
+    };
     
     public MirageClassGenerator(ClassVisitor output) {
-        super(Opcodes.ASM4, output);
+        super(output, REMAPPER);
     }
     
     private String superName = null;
     private boolean isInterface;
     
     @Override
-    public void visit(int version, int access, String name, String signature,
-            String superName, String[] interfaces) {
-        this.superName = getMirageInternalClassName(superName);
+    public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         this.isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
+        this.superName = superName;
         
-        if (!isInterface && superName != null && superName.equals(Type.getInternalName(Object.class))) {
+        if (!isInterface && Type.getInternalName(Object.class).equals(superName)) {
             this.superName = Type.getInternalName(ObjectMirage.class);
+        } else {
+            this.superName = getMirageInternalClassName(this.superName);
         }
         
-        String[] mirageInterfaceNames = new String[interfaces.length];
-        for (int i = 0; i < interfaces.length; i++) {
-            mirageInterfaceNames[i] = getMirageInternalClassName(interfaces[i]);
-        }
-        
-        super.visit(version, access, getMirageInternalClassName(name), signature, this.superName, mirageInterfaceNames);
+        super.visit(version, access, name, signature, this.superName, interfaces);
     }
 
     public static String getMirageBinaryClassName(String className) {
-        if (MirageClassLoader.COMMON_CLASSES.containsKey(className)) {
-            return className;
+        if (className == null) {
+            return null;
         }
         
-        if (className.startsWith("[")) {
-            return "[" + getMirageBinaryClassName(className.substring(1));
-        }
-        
-        if (className.startsWith("java") && !className.equals(Object.class.getName())) {
-            return "mirage." + className;
-        } else {
-            return className;
-        }
+        return getMirageInternalClassName(className.replace('.', '/')).replace('/', '.');
     }
     public static String getMirageInternalClassName(String className) {
         if (className == null) {
@@ -80,23 +85,11 @@ public class MirageClassGenerator extends ClassVisitor {
             return "[" + getMirageType(type.getElementType()).getDescriptor();
         }
         
-        if (className.startsWith("java") && !className.equals(Type.getInternalName(Object.class))) {
+        if (!className.startsWith("mirage") || className.startsWith("java")) {
             return "mirage/" + className;
         } else {
             return className;
         }
-    }
-    
-    public static String getMirageMethodDescriptor(String desc) {
-        Type methodType = Type.getType(desc);
-        
-        Type mirageReturnType = getMirageType(methodType.getReturnType());
-        Type[] argTypes = methodType.getArgumentTypes();
-        Type[] mirageArgTypes = new Type[argTypes.length];
-        for (int i = 0; i < argTypes.length; i++) {
-            mirageArgTypes[i] = getMirageType(argTypes[i]);
-        }
-        return Type.getMethodDescriptor(mirageReturnType, mirageArgTypes);
     }
     
     public static String getOriginalClassName(String mirageClassName) {
@@ -112,7 +105,7 @@ public class MirageClassGenerator extends ClassVisitor {
     }
     
     public static Type getMirageType(Type type) {
-        if (type.getSort() == Type.OBJECT || type.getSort() == type.ARRAY) {
+        if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
             return Type.getObjectType(getMirageInternalClassName(type.getInternalName()));
         } else {
             return type;
@@ -120,46 +113,45 @@ public class MirageClassGenerator extends ClassVisitor {
         
     }
     
-    public static String getMirageSignature(String signature) {
-        SignatureWriter writer = new MirageSignatureWriter();
-        new SignatureReader(signature).accept(writer);
-        return writer.toString();
-    }
-    
-    public static String getMirageTypeSignature(String signature) {
-        SignatureWriter writer = new MirageSignatureWriter();
-        new SignatureReader(signature).acceptType(writer);
-        return writer.toString();
-    }
-    
-    private static class MirageSignatureWriter extends SignatureWriter {
-
-        @Override
-        public void visitClassType(String name) {
-            super.visitClassType(getMirageInternalClassName(name));
-        }
-    }
-    
-    @Override
-    public void visitInnerClass(String name, String outerName, String innerName, int access) {
-        super.visitInnerClass(name, getMirageInternalClassName(outerName), innerName, access);
-    }
-    
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
 
-        // Handle class renaming
-        String mirageDesc = getMirageMethodDescriptor(desc);
-        String mirageSig = signature != null ? getMirageSignature(signature) : null;
-        String[] mirageExceptions = null;
-        if (exceptions != null) {
-            mirageExceptions = new String[exceptions.length];
-            for (int i = 0; i < exceptions.length; i++) {
-                mirageExceptions[i] = getMirageInternalClassName(exceptions[i]);
-            }
-        }        
-        MirageMethodGenerator generator = new MirageMethodGenerator(super.visitMethod(access, name, mirageDesc, mirageSig, mirageExceptions));
+//        if (false && name.equals("main")) {
+//            MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
+//            mv.visitCode();
+//            Label l0 = new Label();
+//            mv.visitLabel(l0);
+//            mv.visitLineNumber(17, l0);
+//            mv.visitTypeInsn(NEW, "examples/MirageTest");
+////            mv.visitInsn(DUP);
+////            mv.visitTypeInsn(NEW, "edu/ubc/mirrors/NativeObjectMirror");
+////            mv.visitInsn(DUP);
+//            mv.visitTypeInsn(NEW, "mirage/examples/MirageTest");
+////            mv.visitMethodInsn(INVOKESPECIAL, "edu/ubc/mirrors/NativeObjectMirror", "<init>", "(Ljava/lang/Object;)V");
+////            mv.visitInsn(POP2);
+//            mv.visitInsn(DUP);
+//            mv.visitInsn(DUP);
+//            mv.visitInsn(DUP);
+//            mv.visitLdcInsn(Type.getType("Lmirage/examples/Bar;"));
+//            mv.visitMethodInsn(INVOKESPECIAL, "examples/MirageTest", "<init>", "(Ljava/lang/Class;)V");
+//            Label l1 = new Label();
+//            mv.visitLabel(l1);
+//            mv.visitLineNumber(22, l1);
+//            mv.visitInsn(RETURN);
+//            Label l2 = new Label();
+//            mv.visitLabel(l2);
+//            mv.visitLocalVariable("args", "[Ljava/lang/String;", null, l0, l2, 0);
+//            mv.visitMaxs(12, 1);
+//            mv.visitEnd();
+//            return null;
+//        }
+        
+        // toString() is a special case - it's defined in java.lang.Object, which this class must ultimately
+        // extend, so we have to return a real String rather than a mirage.
+        boolean isToString = (name.equals("toString") && desc.equals(Type.getMethodType(Type.getType(String.class))));
+        
+        MirageMethodGenerator generator = new MirageMethodGenerator(super.visitMethod(access, name, desc, signature, exceptions), isToString);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         return lvs;
@@ -195,17 +187,21 @@ public class MirageClassGenerator extends ClassVisitor {
     public static byte[] generate(String className, ClassReader reader, String traceDir) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
-        if (traceDir != null) {
-            try {
-                PrintWriter pw = new PrintWriter(traceDir + className + ".txt");
-                visitor = new TraceClassVisitor(visitor, pw);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
         visitor = new CheckClassAdapter(visitor);
         visitor = new MirageClassGenerator(visitor);
         reader.accept(visitor, ClassReader.SKIP_FRAMES);
+        
+        if (traceDir != null) {
+            try {
+                String fileName = traceDir + className + ".class";
+                OutputStream classFile = new FileOutputStream(fileName);
+                classFile.write(classWriter.toByteArray());
+                classFile.close();
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+        
         return classWriter.toByteArray();
     }
     

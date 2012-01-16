@@ -1,0 +1,10 @@
+<project name="MyProject" default="jar" basedir=".">
+
+  <target name="jar" >
+    <jar jarfile="retrospect_agent.jar" manifest="${basedir}/META-INF/MANIFEST.MF">
+    	<zipfileset src="${basedir}/lib/asm-debug-all-4.0.jar"/>
+      <fileset dir="bin" includes="edu/ubc/mirrors/**"/>
+    </jar>
+  	
+  </target>
+</project>

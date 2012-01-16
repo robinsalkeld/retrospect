@@ -1,9 +1,5 @@
 package edu.ubc.mirrors;
 
-import static edu.ubc.mirrors.MirageClassGenerator.getMirageInternalClassName;
-import static edu.ubc.mirrors.MirageClassGenerator.getMirageMethodDescriptor;
-
-import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -12,9 +8,11 @@ import org.objectweb.asm.commons.LocalVariablesSorter;
 public class MirageMethodGenerator extends MethodVisitor {
 
     private LocalVariablesSorter lvs;
+    private boolean isToString;
     
-    public MirageMethodGenerator(MethodVisitor mv) {
+    public MirageMethodGenerator(MethodVisitor mv, boolean isToString) {
         super(Opcodes.ASM4, mv);
+        this.isToString = isToString;
     }
 
     public void setLocalVariablesSorter(LocalVariablesSorter lvs) {
@@ -23,7 +21,25 @@ public class MirageMethodGenerator extends MethodVisitor {
     
     @Override
     public void visitTypeInsn(int opcode, String type) {
-        super.visitTypeInsn(opcode, MirageClassGenerator.getMirageInternalClassName(type));
+        String mirageType = MirageClassGenerator.getMirageInternalClassName(type);
+        if (opcode == Opcodes.NEW) {
+            super.visitTypeInsn(Opcodes.NEW, mirageType);
+            super.visitInsn(Opcodes.DUP);
+            super.visitTypeInsn(Opcodes.NEW, MirageClassGenerator.nativeObjectMirrorType.getInternalName());
+            super.visitInsn(Opcodes.DUP);
+            super.visitInsn(Opcodes.ACONST_NULL);
+            super.visitMethodInsn(Opcodes.INVOKESPECIAL, 
+                                  MirageClassGenerator.nativeObjectMirrorType.getInternalName(), 
+                                  "<init>", 
+                                  Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class)));
+//            super.visitMethodInsn(Opcodes.INVOKESPECIAL, 
+//                                  MirageClassGenerator.objectMirageType.getInternalName(), 
+//                                  "<init>", 
+//                                  Type.getMethodDescriptor(Type.VOID_TYPE, MirageClassGenerator.objectMirrorType));
+            super.visitInsn(Opcodes.POP2);
+        } else {
+            super.visitTypeInsn(opcode, mirageType);
+        }
     }
     
     @Override
@@ -93,15 +109,16 @@ public class MirageMethodGenerator extends MethodVisitor {
             super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
                                   MirageClassGenerator.objectMirrorType.getInternalName(), 
                                   isStatic ? "getStaticField" : "getMemberField", 
-                                  Type.getMethodDescriptor(MirageClassGenerator.fieldMirrorType, Type.getType(String.class)));
+                                  Type.getMethodDescriptor(MirageClassGenerator.fieldMirrorType, MirageClassGenerator.getMirageType(Type.getType(String.class))));
             
             // Call the appropriate getter/setter method on the mirror
             String methodDesc;
+            Type fieldMirageType = MirageClassGenerator.getMirageType(fieldType);
             if (isSet) {
                 super.visitVarInsn(fieldType.getOpcode(Opcodes.ILOAD), setValueLocal);
-                methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldType);
+                methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldMirageType);
             } else {
-                methodDesc = Type.getMethodDescriptor(fieldType);
+                methodDesc = Type.getMethodDescriptor(fieldMirageType);
             }
             super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
                     MirageClassGenerator.fieldMirrorType.getInternalName(), 
@@ -111,21 +128,20 @@ public class MirageMethodGenerator extends MethodVisitor {
     }
     
     @Override
-    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-        super.visitMethodInsn(opcode, 
-                              getMirageInternalClassName(owner), 
-                              name, 
-                              getMirageMethodDescriptor(desc));
-    }
-    
-    @Override
-    public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-        super.visitTryCatchBlock(start, end, handler, getMirageInternalClassName(type));
+    public void visitInsn(int opcode) {
+        if (isToString && opcode == Opcodes.ARETURN) {
+            super.visitMethodInsn(Opcodes.INVOKESTATIC, 
+                                  MirageClassGenerator.objectMirageType.getInternalName(),
+                                  "getRealStringForMirage",
+                                  Type.getMethodDescriptor(Type.getType(String.class), Type.getType(ObjectMirage.class)));
+        }
+        
+        super.visitInsn(opcode);
     }
     
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
-        // Need an extra stack value for the function calls
-        super.visitMaxs(maxStack + 1, maxLocals);
+        // TODO calculate this more precisely (or get ASM to do it for me)
+        super.visitMaxs(maxStack + 10, maxLocals);
     }
 }
