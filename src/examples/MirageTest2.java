@@ -7,9 +7,10 @@ import edu.ubc.mirrors.MirageClassLoader;
 public class MirageTest2 {
     public static void main(String[] args) throws ClassNotFoundException, IOException {
         String className = args[0];
-        String traceDir = args[1];
+        String mirageTraceDir = args[1];
+        String nativeTraceDir = args[2];
         
-        new MirageClassLoader(null, traceDir).loadClass(className).getMethods();
+        new MirageClassLoader(MirageTest2.class.getClassLoader(), mirageTraceDir, nativeTraceDir).loadClass(className).getMethods();
     }
     
     

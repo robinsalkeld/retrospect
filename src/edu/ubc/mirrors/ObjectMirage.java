@@ -59,7 +59,9 @@ public class ObjectMirage<T> {
     public static MirageClassLoader getMirageClassLoader(ClassLoader originalLoader) {
         MirageClassLoader mirageLoader = mirageClassLoaders.get(originalLoader);
         if (mirageLoader == null) {
-            mirageLoader = new MirageClassLoader(originalLoader, "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/output/");
+            mirageLoader = new MirageClassLoader(originalLoader, 
+                        "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/mirage_classes/",
+                        "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/native_classes/");
             mirageClassLoaders.put(originalLoader, mirageLoader);
         }
         return mirageLoader;

@@ -3,14 +3,14 @@ package examples;
 
 public class MirageTest {
 
-    Class<?> c;
+    String c;
     
-    public MirageTest(Class<?> c) {
+    public MirageTest(String c) {
         this.c = c;
     }
     
     public static void main(String[] args) throws Exception {
-        new MirageTest(Bar.class);
+        new MirageTest("Bar");
 //        new FieldMapMirror<Bar>(Bar.class);
 //        System.out.println(Bar.class.getClassLoader());
 //        Bar barMirage = ObjectMirage.make(fooMirror);

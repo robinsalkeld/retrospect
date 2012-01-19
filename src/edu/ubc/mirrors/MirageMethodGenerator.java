@@ -1,5 +1,11 @@
 package edu.ubc.mirrors;
 
+import static edu.ubc.mirrors.MirageClassGenerator.fieldMapMirrorType;
+import static edu.ubc.mirrors.MirageClassGenerator.getMirageInternalClassName;
+import static edu.ubc.mirrors.MirageClassGenerator.nativeObjectMirrorType;
+import static edu.ubc.mirrors.MirageClassGenerator.objectMirageType;
+import static edu.ubc.mirrors.NativeClassGenerator.getNativeInternalClassName;
+
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -8,10 +14,14 @@ import org.objectweb.asm.commons.LocalVariablesSorter;
 public class MirageMethodGenerator extends MethodVisitor {
 
     private LocalVariablesSorter lvs;
-    private boolean isToString;
+    private final String superName;
+    private final Type methodType;
+    private final boolean isToString;
     
-    public MirageMethodGenerator(MethodVisitor mv, boolean isToString) {
+    public MirageMethodGenerator(MethodVisitor mv, String superName, Type methodType, boolean isToString) {
         super(Opcodes.ASM4, mv);
+        this.superName = superName;
+        this.methodType = methodType;
         this.isToString = isToString;
     }
 
@@ -20,26 +30,32 @@ public class MirageMethodGenerator extends MethodVisitor {
     }
     
     @Override
-    public void visitTypeInsn(int opcode, String type) {
-        String mirageType = MirageClassGenerator.getMirageInternalClassName(type);
-        if (opcode == Opcodes.NEW) {
-            super.visitTypeInsn(Opcodes.NEW, mirageType);
-            super.visitInsn(Opcodes.DUP);
-            super.visitTypeInsn(Opcodes.NEW, MirageClassGenerator.nativeObjectMirrorType.getInternalName());
-            super.visitInsn(Opcodes.DUP);
-            super.visitInsn(Opcodes.ACONST_NULL);
-            super.visitMethodInsn(Opcodes.INVOKESPECIAL, 
-                                  MirageClassGenerator.nativeObjectMirrorType.getInternalName(), 
-                                  "<init>", 
-                                  Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class)));
-//            super.visitMethodInsn(Opcodes.INVOKESPECIAL, 
-//                                  MirageClassGenerator.objectMirageType.getInternalName(), 
-//                                  "<init>", 
-//                                  Type.getMethodDescriptor(Type.VOID_TYPE, MirageClassGenerator.objectMirrorType));
-            super.visitInsn(Opcodes.POP2);
-        } else {
-            super.visitTypeInsn(opcode, mirageType);
+    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+        if (name.equals("<init>")) {
+            if (owner.equals(Type.getInternalName(Object.class))) {
+                owner = objectMirageType.getInternalName();
+            }
+            String originalType = MirageClassGenerator.getOriginalClassName(owner);
+            String nativeType = NativeClassGenerator.getNativeInternalClassName(originalType);
+            desc = MirageClassGenerator.addMirrorArgToDesc(desc);
+            
+            if (owner.equals(superName)) {
+                // If we're calling super(...), just push the extra mirror argument on the stack
+                // TODO-RS: What if a subclass constructs a superclass instance in its constructor???
+                super.visitVarInsn(Opcodes.ALOAD, methodType.getArgumentTypes().length);
+            } else {
+                // Otherwise construct it
+                super.visitTypeInsn(Opcodes.NEW, fieldMapMirrorType.getInternalName());
+                super.visitInsn(Opcodes.DUP);
+                super.visitLdcInsn(Type.getObjectType(nativeType));
+                super.visitMethodInsn(Opcodes.INVOKESPECIAL, 
+                        fieldMapMirrorType.getInternalName(), 
+                        "<init>", 
+                        Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class)));
+            }
         }
+            
+        super.visitMethodInsn(opcode, owner, name, desc);
     }
     
     @Override
@@ -58,6 +74,7 @@ public class MirageMethodGenerator extends MethodVisitor {
             case Type.DOUBLE: suffix = "Double"; break;
             case Type.ARRAY: 
             case Type.OBJECT: 
+                fieldType = Type.getType(Object.class);
                 break;
             default:
                 throw new IllegalStateException("Bad sort: " + fieldSort);
