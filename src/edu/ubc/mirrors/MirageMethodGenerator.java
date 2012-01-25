@@ -2,16 +2,19 @@ package edu.ubc.mirrors;
 
 import static edu.ubc.mirrors.MirageClassGenerator.fieldMapMirrorType;
 import static edu.ubc.mirrors.MirageClassGenerator.getMirageInternalClassName;
+import static edu.ubc.mirrors.MirageClassGenerator.mirageClassLoaderType;
 import static edu.ubc.mirrors.MirageClassGenerator.nativeObjectMirrorType;
 import static edu.ubc.mirrors.MirageClassGenerator.objectMirageType;
+import static edu.ubc.mirrors.MirageClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.NativeClassGenerator.getNativeInternalClassName;
 
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.InstructionAdapter;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 
-public class MirageMethodGenerator extends MethodVisitor {
+public class MirageMethodGenerator extends InstructionAdapter {
 
     private LocalVariablesSorter lvs;
     private final String superName;
@@ -35,23 +38,26 @@ public class MirageMethodGenerator extends MethodVisitor {
             if (owner.equals(Type.getInternalName(Object.class))) {
                 owner = objectMirageType.getInternalName();
             }
-            String originalType = MirageClassGenerator.getOriginalClassName(owner);
-            String nativeType = NativeClassGenerator.getNativeInternalClassName(originalType);
-            desc = MirageClassGenerator.addMirrorArgToDesc(desc);
             
-            if (owner.equals(superName)) {
-                // If we're calling super(...), just push the extra mirror argument on the stack
-                // TODO-RS: What if a subclass constructs a superclass instance in its constructor???
-                super.visitVarInsn(Opcodes.ALOAD, methodType.getArgumentTypes().length);
-            } else {
-                // Otherwise construct it
-                super.visitTypeInsn(Opcodes.NEW, fieldMapMirrorType.getInternalName());
-                super.visitInsn(Opcodes.DUP);
-                super.visitLdcInsn(Type.getObjectType(nativeType));
-                super.visitMethodInsn(Opcodes.INVOKESPECIAL, 
-                        fieldMapMirrorType.getInternalName(), 
-                        "<init>", 
-                        Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class)));
+            if (owner.equals(objectMirageType.getInternalName()) || !MirageClassLoader.COMMON_CLASSES.containsKey(owner.replace('/', '.'))) {
+                desc = MirageClassGenerator.addMirrorArgToDesc(desc);
+                
+                if (owner.equals(superName)) {
+                    // If we're calling super(...), just push the extra mirror argument on the stack
+                    // TODO-RS: What if a subclass constructs a superclass instance in its constructor???
+                    load(methodType.getArgumentTypes().length, objectMirrorType);
+                } else {
+                    // Otherwise construct it
+                    anew(fieldMapMirrorType);
+                    dup();
+                    aconst(Type.getObjectType(owner));
+                    invokestatic(objectMirageType.getInternalName(),
+                                 "getNativeClass",
+                                 Type.getMethodDescriptor(Type.getType(Class.class), Type.getType(Class.class)));
+                    invokespecial(fieldMapMirrorType.getInternalName(), 
+                                  "<init>", 
+                                  Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class)));
+                }
             }
         }
             
@@ -61,6 +67,7 @@ public class MirageMethodGenerator extends MethodVisitor {
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
         Type fieldType = Type.getType(desc);
+        Type fieldTypeForMirrorCall = fieldType;
         int fieldSort = fieldType.getSort();
         String suffix = "";
         switch (fieldSort) {
@@ -74,7 +81,7 @@ public class MirageMethodGenerator extends MethodVisitor {
             case Type.DOUBLE: suffix = "Double"; break;
             case Type.ARRAY: 
             case Type.OBJECT: 
-                fieldType = Type.getType(Object.class);
+                fieldTypeForMirrorCall = OBJECT_TYPE;
                 break;
             default:
                 throw new IllegalStateException("Bad sort: " + fieldSort);
@@ -104,53 +111,48 @@ public class MirageMethodGenerator extends MethodVisitor {
         }
         
         if (isStatic) {
-            super.visitFieldInsn(opcode, 
-                                 MirageClassGenerator.getMirageInternalClassName(owner), 
-                                 name, 
-                                 MirageClassGenerator.getMirageType(Type.getType(desc)).getDescriptor());
+            super.visitFieldInsn(opcode, owner, name, desc);
         } else {
             // Pop the original argument
             int setValueLocal = lvs.newLocal(fieldType);
             if (isSet) {
-                super.visitVarInsn(fieldType.getOpcode(Opcodes.ISTORE), setValueLocal);
+                store(setValueLocal, fieldType);
             }
             
             // Push the mirror instance onto the stack
-            super.visitFieldInsn(Opcodes.GETFIELD, 
-                                 Type.getInternalName(ObjectMirage.class), 
-                                 "mirror", 
-                                 MirageClassGenerator.objectMirrorType.getDescriptor());
+            getfield(Type.getInternalName(ObjectMirage.class), 
+                     "mirror", 
+                     MirageClassGenerator.objectMirrorType.getDescriptor());
             
             // Get the field mirror onto the stack
-            super.visitLdcInsn(name);
-            super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
-                                  MirageClassGenerator.objectMirrorType.getInternalName(), 
-                                  isStatic ? "getStaticField" : "getMemberField", 
-                                  Type.getMethodDescriptor(MirageClassGenerator.fieldMirrorType, MirageClassGenerator.getMirageType(Type.getType(String.class))));
+            aconst(name);
+            invokeinterface(MirageClassGenerator.objectMirrorType.getInternalName(), 
+                            isStatic ? "getStaticField" : "getMemberField", 
+                            Type.getMethodDescriptor(MirageClassGenerator.fieldMirrorType, MirageClassGenerator.getMirageType(Type.getType(String.class))));
             
             // Call the appropriate getter/setter method on the mirror
             String methodDesc;
-            Type fieldMirageType = MirageClassGenerator.getMirageType(fieldType);
             if (isSet) {
-                super.visitVarInsn(fieldType.getOpcode(Opcodes.ILOAD), setValueLocal);
-                methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldMirageType);
+                load(setValueLocal, fieldType);
+                methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldTypeForMirrorCall);
             } else {
-                methodDesc = Type.getMethodDescriptor(fieldMirageType);
+                methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall);
             }
-            super.visitMethodInsn(Opcodes.INVOKEINTERFACE, 
-                    MirageClassGenerator.fieldMirrorType.getInternalName(), 
-                    (isSet ? "set" : "get") + suffix, 
-                    methodDesc);
+            invokeinterface(MirageClassGenerator.fieldMirrorType.getInternalName(), 
+                            (isSet ? "set" : "get") + suffix, 
+                            methodDesc);
+            if (!isSet && fieldTypeForMirrorCall.equals(OBJECT_TYPE)) {
+                checkcast(fieldType);
+            }
         }
     }
     
     @Override
     public void visitInsn(int opcode) {
         if (isToString && opcode == Opcodes.ARETURN) {
-            super.visitMethodInsn(Opcodes.INVOKESTATIC, 
-                                  MirageClassGenerator.objectMirageType.getInternalName(),
-                                  "getRealStringForMirage",
-                                  Type.getMethodDescriptor(Type.getType(String.class), Type.getType(ObjectMirage.class)));
+            invokestatic(MirageClassGenerator.objectMirageType.getInternalName(),
+                         "getRealStringForMirage",
+                         Type.getMethodDescriptor(Type.getType(String.class), Type.getType(ObjectMirage.class)));
         }
         
         super.visitInsn(opcode);
@@ -159,6 +161,6 @@ public class MirageMethodGenerator extends MethodVisitor {
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
         // TODO calculate this more precisely (or get ASM to do it for me)
-        super.visitMaxs(maxStack + 10, maxLocals);
+        super.visitMaxs(maxStack + 20, maxLocals + 20);
     }
 }

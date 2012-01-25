@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.objectweb.asm.ClassReader;
 
-public class ObjectMirage<T> {
+public abstract class ObjectMirage<T> {
 
     protected final ObjectMirror<T> mirror;
     
@@ -23,14 +23,9 @@ public class ObjectMirage<T> {
     @SuppressWarnings("unchecked")
     public static <T> T make(ObjectMirror<T> mirror) {
         try {
-            final Class<?> mirageClass = getMirageClass(mirror.getClassMirror());
-            System.out.println("mirageClass loader: " + mirageClass.getClassLoader());
+            final Class<?> mirageClass = mirror.getClassMirror();
             final Constructor<?> c = mirageClass.getConstructor(ObjectMirror.class);
             return (T)c.newInstance(mirror);
-        } catch (ClassNotFoundException e) {
-            InternalError error = new InternalError("No mirage class registered for class: " + mirror.getClassMirror());
-            error.initCause(e);
-            throw error;
         } catch (NoSuchMethodException e) {
             InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
             error.initCause(e);
@@ -70,6 +65,21 @@ public class ObjectMirage<T> {
     public static Class<?> getMirageClass(Class<?> original) throws ClassNotFoundException {
         MirageClassLoader mirageLoader = getMirageClassLoader(original.getClassLoader());
         return mirageLoader.loadClass(MirageClassGenerator.getMirageBinaryClassName(original.getName()));
+    }
+    
+    public static Class<?> getNativeClass(Class<?> mirageClass) {
+        if (MirageClassLoader.COMMON_CLASSES.containsKey(mirageClass.getName())) {
+            
+        }
+        
+        
+        final String originalClassName = MirageClassGenerator.getOriginalClassName(mirageClass.getName());
+        final String nativeClassName = NativeClassGenerator.getNativeBinaryClassName(originalClassName);
+        try {
+            return mirageClass.getClassLoader().loadClass(nativeClassName);
+        } catch (ClassNotFoundException e) {
+            throw new InternalError();
+        }
     }
     
     public static Class<?> defineMirageClass(String className, ClassLoader originalLoader, ClassReader originalReader) {

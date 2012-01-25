@@ -26,6 +26,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeObjectMirror.class);
     public static Type fieldMapMirrorType = Type.getType(FieldMapMirror.class);
+    public static Type mirageClassLoaderType = Type.getType(MirageClassLoader.class);
     
     public static Remapper REMAPPER = new Remapper() {
         public String map(String typeName) {
@@ -135,8 +136,12 @@ public class MirageClassGenerator extends ClassVisitor {
     public FieldVisitor visitField(int access, String name, String desc,
             String signature, Object value) {
         
-        // Remove all field definitions
-        return null;
+        // Remove all non-static field definitions
+        if ((Opcodes.ACC_STATIC & access) != 0) {
+            return super.visitField(access, name, desc, signature, value);
+        } else {
+            return null;
+        }
     }
 
     public static byte[] generate(String className, ClassReader reader, String traceDir) {
@@ -152,8 +157,10 @@ public class MirageClassGenerator extends ClassVisitor {
                 String fileName = traceDir + className + ".class";
                 OutputStream classFile = new FileOutputStream(fileName);
                 classFile.write(classWriter.toByteArray());
+                classFile.flush();
                 classFile.close();
             } catch (IOException e) {
+                e.printStackTrace();
                 // ignore
             }
         }

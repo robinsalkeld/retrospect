@@ -1,7 +1,11 @@
 package examples;
 
+import edu.ubc.mirrors.FieldMapMirror;
+import edu.ubc.mirrors.ObjectMirage;
+import edu.ubc.mirrors.ObjectMirror;
 
-public class MirageTest {
+
+public class MirageTest extends MirageTestSuper {
 
     String c;
     
@@ -10,11 +14,14 @@ public class MirageTest {
     }
     
     public static void main(String[] args) throws Exception {
-        new MirageTest("Bar");
-//        new FieldMapMirror<Bar>(Bar.class);
-//        System.out.println(Bar.class.getClassLoader());
-//        Bar barMirage = ObjectMirage.make(fooMirror);
-//        barMirage.bar();
+        Bar bar = new Bar();
+        bar.bar(42);
+        
+        FieldMapMirror<Bar> mirror = new FieldMapMirror<Bar>(Bar.class);
+        Bar b = ObjectMirage.make(mirror);
+        b.bar(9);
+        
+        
     }
     
 }

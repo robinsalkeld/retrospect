@@ -1,19 +1,25 @@
 package edu.ubc.mirrors;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.bcel.Repository;
+import org.apache.bcel.classfile.ClassFormatException;
+import org.apache.bcel.classfile.ClassParser;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.verifier.Verifier;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 public class MirageClassLoader extends ClassLoader {
         
+    public static String traceClass = null;
+    
         public MirageClassLoader(ClassLoader originalLoader, String mirageTraceDir, String nativeTraceDir) {
             super(originalLoader);
             this.mirageTraceDir = mirageTraceDir;
@@ -46,9 +52,16 @@ public class MirageClassLoader extends ClassLoader {
         }
         
         static {
-            registerCommonClasses(Object.class, ObjectMirage.class, ObjectMirror.class, FieldMirror.class, 
-                    NativeObjectMirror.class, FieldMapMirror.class,
-                    Class.class, Throwable.class, String.class);
+            registerCommonClasses(Object.class, ObjectMirage.class, ObjectMirror.class, FieldMirror.class,
+                    FieldMapMirror.class,
+                    Class.class, 
+                    // Necessary because only subclasses of this can be thrown.
+                    // Probably need to introduce a new root subclass as with ObjectMirage.
+                    Throwable.class, 
+                    // Not sure about this one...
+                    String.class,
+                    // Definitely wrong - only temporary.
+                    System.class);
         }
         
         @Override
@@ -94,18 +107,30 @@ public class MirageClassLoader extends ClassLoader {
         public Class<?> defineMirageClass(String name, ClassReader originalReader) {
             String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(name);
             byte[] b = MirageClassGenerator.generate(mirageClassName, originalReader, mirageTraceDir);
-            if (mirageTraceDir != null) {
+            ByteArrayInputStream is = new ByteArrayInputStream(b);
+            try {
+                JavaClass javaClass = new ClassParser(is, "").parse();
+                Repository.addClass(javaClass);
+            } catch (ClassFormatException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            if (mirageTraceDir != null && name.equals(traceClass)) {
                 String fileName = mirageTraceDir + mirageClassName + ".class";
                 try {
                     CheckClassAdapter.verify(new ClassReader(new FileInputStream(fileName)), this, false, new PrintWriter(System.out));
-                } catch (FileNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+//                Verifier.main(new String[] {name});
+                
             }
+            
+            
             return defineClass(mirageClassName, b, 0, b.length);
         }
         
