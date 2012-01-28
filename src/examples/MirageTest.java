@@ -14,7 +14,7 @@ public class MirageTest extends MirageTestSuper {
     }
     
     public static void main(String[] args) throws Exception {
-        Bar bar = new Bar();
+        Bar bar = new Bar(12);
         bar.bar(42);
         
         FieldMapMirror<Bar> mirror = new FieldMapMirror<Bar>(Bar.class);

@@ -2,7 +2,6 @@ package edu.ubc.mirrors;
 
 import static edu.ubc.mirrors.MirageClassGenerator.fieldMapMirrorType;
 import static edu.ubc.mirrors.MirageClassGenerator.getMirageInternalClassName;
-import static edu.ubc.mirrors.MirageClassGenerator.mirageClassLoaderType;
 import static edu.ubc.mirrors.MirageClassGenerator.nativeObjectMirrorType;
 import static edu.ubc.mirrors.MirageClassGenerator.objectMirageType;
 import static edu.ubc.mirrors.MirageClassGenerator.objectMirrorType;
@@ -39,26 +38,26 @@ public class MirageMethodGenerator extends InstructionAdapter {
                 owner = objectMirageType.getInternalName();
             }
             
-            if (owner.equals(objectMirageType.getInternalName()) || !MirageClassLoader.COMMON_CLASSES.containsKey(owner.replace('/', '.'))) {
-                desc = MirageClassGenerator.addMirrorArgToDesc(desc);
-                
-                if (owner.equals(superName)) {
-                    // If we're calling super(...), just push the extra mirror argument on the stack
-                    // TODO-RS: What if a subclass constructs a superclass instance in its constructor???
-                    load(methodType.getArgumentTypes().length, objectMirrorType);
-                } else {
-                    // Otherwise construct it
-                    anew(fieldMapMirrorType);
-                    dup();
-                    aconst(Type.getObjectType(owner));
-                    invokestatic(objectMirageType.getInternalName(),
-                                 "getNativeClass",
-                                 Type.getMethodDescriptor(Type.getType(Class.class), Type.getType(Class.class)));
-                    invokespecial(fieldMapMirrorType.getInternalName(), 
-                                  "<init>", 
-                                  Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class)));
-                }
-            }
+//            if (owner.equals(objectMirageType.getInternalName()) || !MirageClassLoader.COMMON_CLASSES.containsKey(owner.replace('/', '.'))) {
+//                desc = MirageClassGenerator.addMirrorArgToDesc(desc);
+//                
+//                if (owner.equals(superName)) {
+//                    // If we're calling super(...), just push the extra mirror argument on the stack
+//                    // TODO-RS: What if a subclass constructs a superclass instance in its constructor???
+//                    load(methodType.getArgumentTypes().length, objectMirrorType);
+//                } else {
+//                    // Otherwise construct it
+//                    anew(fieldMapMirrorType);
+//                    dup();
+//                    aconst(Type.getObjectType(owner));
+//                    invokestatic(objectMirageType.getInternalName(),
+//                                 "getNativeClass",
+//                                 Type.getMethodDescriptor(Type.getType(Class.class), Type.getType(Class.class)));
+//                    invokespecial(fieldMapMirrorType.getInternalName(), 
+//                                  "<init>", 
+//                                  Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class)));
+//                }
+//            }
         }
             
         super.visitMethodInsn(opcode, owner, name, desc);

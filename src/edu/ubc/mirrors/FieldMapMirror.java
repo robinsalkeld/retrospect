@@ -38,8 +38,15 @@ public class FieldMapMirror<T> implements ObjectMirror<T> {
     }
 
     
-    public Class<? extends T> getClassMirror() {
-        return klass;
+    public ClassMirror<? extends T> getClassMirror() {
+        return new ClassMirror<T>() {
+            public Class<?> getMirroredClass() {
+                return klass;
+            }
+            public FieldMirror getStaticField(String name) throws NoSuchFieldException {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
     
     private class MapEntryFieldMirror implements FieldMirror {

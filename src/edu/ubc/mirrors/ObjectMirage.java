@@ -9,28 +9,35 @@ import org.objectweb.asm.ClassReader;
 
 public abstract class ObjectMirage<T> {
 
-    protected final ObjectMirror<T> mirror;
+    protected final ObjectMirror<?> mirror;
     
+    /**
+     * Constructor for translated new statements - instantiates a new native mirror.
+     */
+    protected ObjectMirage() {
+        Class<?> nativeClass = getNativeClass(getClass());
+        this.mirror = new FieldMapMirror(nativeClass);
+    }
+    
+    /**
+     * Constructor for calls to make() - the mirror instance is passed up the constructor chain.
+     */
     public ObjectMirage(ObjectMirror<T> mirror) {
         this.mirror = mirror;
         
     }
     
-    public ObjectMirror<T> getMirror() {
+    public ObjectMirror<?> getMirror() {
         return mirror;
     }
     
     @SuppressWarnings("unchecked")
     public static <T> T make(ObjectMirror<T> mirror) {
         try {
-            final Class<?> mirageClass = mirror.getClassMirror();
+            final Class<?> mirageClass = mirror.getClassMirror().getMirroredClass();
             final Constructor<?> c = mirageClass.getConstructor(ObjectMirror.class);
             return (T)c.newInstance(mirror);
         } catch (NoSuchMethodException e) {
-            InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
-            error.initCause(e);
-            throw error;
-        } catch (SecurityException e) {
             InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
             error.initCause(e);
             throw error;
@@ -54,9 +61,7 @@ public abstract class ObjectMirage<T> {
     public static MirageClassLoader getMirageClassLoader(ClassLoader originalLoader) {
         MirageClassLoader mirageLoader = mirageClassLoaders.get(originalLoader);
         if (mirageLoader == null) {
-            mirageLoader = new MirageClassLoader(originalLoader, 
-                        "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/mirage_classes/",
-                        "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/native_classes/");
+            mirageLoader = new MirageClassLoader(originalLoader);
             mirageClassLoaders.put(originalLoader, mirageLoader);
         }
         return mirageLoader;
@@ -68,11 +73,6 @@ public abstract class ObjectMirage<T> {
     }
     
     public static Class<?> getNativeClass(Class<?> mirageClass) {
-        if (MirageClassLoader.COMMON_CLASSES.containsKey(mirageClass.getName())) {
-            
-        }
-        
-        
         final String originalClassName = MirageClassGenerator.getOriginalClassName(mirageClass.getName());
         final String nativeClassName = NativeClassGenerator.getNativeBinaryClassName(originalClassName);
         try {

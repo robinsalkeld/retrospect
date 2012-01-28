@@ -13,14 +13,24 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
         this.object = object;
     }
     
+    public static <T> NativeObjectMirror<T> make(Class<T> nativeClass) {
+        try {
+            return new NativeObjectMirror<T>(nativeClass.newInstance());
+        } catch (IllegalAccessException e) {
+            InternalError error = new InternalError();
+            error.initCause(e);
+            throw error;
+        } catch (InstantiationException e) {
+            InternalError error = new InternalError();
+            error.initCause(e);
+            throw error;
+        }
+    }
+    
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
         return getField(name, false);
     }
     
-    
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        return getField(name, true);
-    }
     
     private FieldMirror getField(String name, boolean isStatic) throws NoSuchFieldException {
         Field field = object.getClass().getDeclaredField(name);
@@ -48,9 +58,15 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
     }
     
     
-    @SuppressWarnings("unchecked")
-    public Class<? extends T> getClassMirror() {
-        return (Class<? extends T>) object.getClass();
+    public ClassMirror<?> getClassMirror() {
+        return new ClassMirror<T>() {
+            public Class<?> getMirroredClass() {
+                return object.getClass();
+            }
+            public FieldMirror getStaticField(String name) throws NoSuchFieldException {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
     
     private class NativeFieldMirror implements FieldMirror {

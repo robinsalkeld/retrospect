@@ -107,24 +107,12 @@ public class NativeClassGenerator extends RemappingClassAdapter {
         }
     }
     
-    public static byte[] generate(String className, ClassReader reader, String traceDir) {
+    public static byte[] generate(String className, ClassReader reader) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         visitor = new CheckClassAdapter(visitor);
         visitor = new NativeClassGenerator(visitor);
         reader.accept(visitor, ClassReader.SKIP_FRAMES);
-        
-        if (traceDir != null) {
-            try {
-                String fileName = traceDir + className + ".class";
-                OutputStream classFile = new FileOutputStream(fileName);
-                classFile.write(classWriter.toByteArray());
-                classFile.close();
-            } catch (IOException e) {
-                // ignore
-            }
-        }
-        
         return classWriter.toByteArray();
     }
 }

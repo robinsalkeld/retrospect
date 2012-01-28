@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="/JRuby/lib/jruby.jar"/>
 	<classpathentry kind="lib" path="lib/asm-debug-all-4.0.jar" sourcepath="src.zip"/>
 	<classpathentry kind="lib" path="/Users/robinsalkeld/Documents/UBC/Code/bcel-5.2/bcel-5.2.jar" sourcepath="/Users/robinsalkeld/Documents/UBC/Code/bcel-5.2-src/src"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
