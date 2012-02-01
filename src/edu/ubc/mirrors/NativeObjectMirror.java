@@ -38,7 +38,7 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
             // Crap, fall back to manual search
             field = findField(name, isStatic);
         }
-        return new NativeFieldMirror(field);
+        return new NativeFieldMirror(field, object);
     }
     
     private Field findField(String name, boolean isStatic) throws NoSuchFieldException {
@@ -69,13 +69,15 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
         };
     }
     
-    private class NativeFieldMirror implements FieldMirror {
+    static class NativeFieldMirror implements FieldMirror {
         
         private final Field field;
+        private final Object object;
         
-        public NativeFieldMirror(Field field) {
+        public NativeFieldMirror(Field field, Object object) {
             this.field = field;
             field.setAccessible(true);
+            this.object = object;
         }
 
         public Class<?> getType() {

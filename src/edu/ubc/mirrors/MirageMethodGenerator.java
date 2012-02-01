@@ -1,10 +1,14 @@
 package edu.ubc.mirrors;
 
+import static edu.ubc.mirrors.MirageClassGenerator.classType;
 import static edu.ubc.mirrors.MirageClassGenerator.fieldMapMirrorType;
+import static edu.ubc.mirrors.MirageClassGenerator.fieldMirrorType;
 import static edu.ubc.mirrors.MirageClassGenerator.getMirageInternalClassName;
+import static edu.ubc.mirrors.MirageClassGenerator.getMirageType;
 import static edu.ubc.mirrors.MirageClassGenerator.nativeObjectMirrorType;
 import static edu.ubc.mirrors.MirageClassGenerator.objectMirageType;
 import static edu.ubc.mirrors.MirageClassGenerator.objectMirrorType;
+import static edu.ubc.mirrors.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
 import static edu.ubc.mirrors.NativeClassGenerator.getNativeInternalClassName;
 
 import org.objectweb.asm.MethodVisitor;
@@ -37,27 +41,6 @@ public class MirageMethodGenerator extends InstructionAdapter {
             if (owner.equals(Type.getInternalName(Object.class))) {
                 owner = objectMirageType.getInternalName();
             }
-            
-//            if (owner.equals(objectMirageType.getInternalName()) || !MirageClassLoader.COMMON_CLASSES.containsKey(owner.replace('/', '.'))) {
-//                desc = MirageClassGenerator.addMirrorArgToDesc(desc);
-//                
-//                if (owner.equals(superName)) {
-//                    // If we're calling super(...), just push the extra mirror argument on the stack
-//                    // TODO-RS: What if a subclass constructs a superclass instance in its constructor???
-//                    load(methodType.getArgumentTypes().length, objectMirrorType);
-//                } else {
-//                    // Otherwise construct it
-//                    anew(fieldMapMirrorType);
-//                    dup();
-//                    aconst(Type.getObjectType(owner));
-//                    invokestatic(objectMirageType.getInternalName(),
-//                                 "getNativeClass",
-//                                 Type.getMethodDescriptor(Type.getType(Class.class), Type.getType(Class.class)));
-//                    invokespecial(fieldMapMirrorType.getInternalName(), 
-//                                  "<init>", 
-//                                  Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class)));
-//                }
-//            }
         }
             
         super.visitMethodInsn(opcode, owner, name, desc);
@@ -109,40 +92,47 @@ public class MirageMethodGenerator extends InstructionAdapter {
                 throw new IllegalArgumentException("Bad opcode: " + opcode);
         }
         
+        // Pop the original argument
+        int setValueLocal = lvs.newLocal(fieldType);
+        if (isSet) {
+            store(setValueLocal, fieldType);
+        }
+        
         if (isStatic) {
-            super.visitFieldInsn(opcode, owner, name, desc);
+            // Get the class mirror onto the stack
+            aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
+            aconst(Type.getObjectType(MirageClassGenerator.getOriginalClassName(owner)));
+            aconst(name);
+            invokestatic(objectMirageType.getInternalName(), 
+                         "getStaticField", 
+                         Type.getMethodDescriptor(fieldMirrorType, classType, classType, Type.getType(String.class)));
         } else {
-            // Pop the original argument
-            int setValueLocal = lvs.newLocal(fieldType);
-            if (isSet) {
-                store(setValueLocal, fieldType);
-            }
-            
             // Push the mirror instance onto the stack
             getfield(Type.getInternalName(ObjectMirage.class), 
                      "mirror", 
-                     MirageClassGenerator.objectMirrorType.getDescriptor());
+                     objectMirrorType.getDescriptor());
             
             // Get the field mirror onto the stack
             aconst(name);
-            invokeinterface(MirageClassGenerator.objectMirrorType.getInternalName(), 
-                            isStatic ? "getStaticField" : "getMemberField", 
-                            Type.getMethodDescriptor(MirageClassGenerator.fieldMirrorType, MirageClassGenerator.getMirageType(Type.getType(String.class))));
+            invokeinterface(objectMirrorType.getInternalName(), 
+                            "getMemberField", 
+                            Type.getMethodDescriptor(fieldMirrorType, getMirageType(Type.getType(String.class))));
             
-            // Call the appropriate getter/setter method on the mirror
-            String methodDesc;
-            if (isSet) {
-                load(setValueLocal, fieldType);
-                methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldTypeForMirrorCall);
-            } else {
-                methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall);
-            }
-            invokeinterface(MirageClassGenerator.fieldMirrorType.getInternalName(), 
-                            (isSet ? "set" : "get") + suffix, 
-                            methodDesc);
-            if (!isSet && fieldTypeForMirrorCall.equals(OBJECT_TYPE)) {
-                checkcast(fieldType);
-            }
+        }
+        
+        // Call the appropriate getter/setter method on the mirror
+        String methodDesc;
+        if (isSet) {
+            load(setValueLocal, fieldType);
+            methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldTypeForMirrorCall);
+        } else {
+            methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall);
+        }
+        invokeinterface(MirageClassGenerator.fieldMirrorType.getInternalName(), 
+                        (isSet ? "set" : "get") + suffix, 
+                        methodDesc);
+        if (!isSet && fieldTypeForMirrorCall.equals(OBJECT_TYPE)) {
+            checkcast(fieldType);
         }
     }
     

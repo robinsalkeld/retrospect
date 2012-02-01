@@ -16,16 +16,24 @@ import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.verifier.Verifier;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 public class MirageClassLoader extends ClassLoader {
         
     public static String traceClass = null;
     public static String traceDir = null;
-    public final File myTraceDir;
+    private final File myTraceDir;
     
-    public MirageClassLoader(ClassLoader originalLoader) {
+    final ClassMirrorLoader classMirrorLoader;
+    
+    public static final String CLASS_LOADER_LITERAL_NAME = "edu/ubc/mirrors/ClassLoaderLiteral";
+    
+    public MirageClassLoader(ClassLoader originalLoader, ClassMirrorLoader classMirrorLoader) {
         super(originalLoader);
+        this.classMirrorLoader = classMirrorLoader;
+        
         if (traceDir != null) {
             myTraceDir = new File(traceDir, hashCode() + "/");
             myTraceDir.mkdir();
@@ -84,13 +92,18 @@ public class MirageClassLoader extends ClassLoader {
     
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        // If the class was loaded before the instrumentation agent was set up,
-        // try accessing the .class file as a resource from the system class loader
-        // (which is exactly what the ClassReader(String) constructor does).
-        if (name.startsWith("mirage")) {
+        if (name.equals(CLASS_LOADER_LITERAL_NAME.replace('/', '.'))) {
+            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
+            writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, CLASS_LOADER_LITERAL_NAME, null, "java/lang/Object", null);
+            byte[] b = writer.toByteArray();
+            return defineClass(name, b, 0, b.length);
+        } else if (name.startsWith("mirage")) {
             ClassReader readerFromClassFile;
             String originalName = MirageClassGenerator.getOriginalClassName(name);
             try {
+                // If the class was loaded before the instrumentation agent was set up,
+                // try accessing the .class file as a resource from the system class loader
+                // (which is exactly what the ClassReader(String) constructor does).
                 readerFromClassFile = new ClassReader(originalName);
             } catch (IOException e) {
                 throw new ClassNotFoundException("Class not trapped by agent and .class file not accessible: " + originalName, e);

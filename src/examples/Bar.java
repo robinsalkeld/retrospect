@@ -4,6 +4,8 @@ public class Bar {
 
     int f;
     
+    static int staticF = 5;
+    
     public Bar(int f) {
         this.f = f;
     }
@@ -14,6 +16,6 @@ public class Bar {
         f = x;
 //        System.out.println("f is now...");
 //        System.out.println(f);
-        int g = f;
+        int g = f + staticF;
     }
 }

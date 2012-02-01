@@ -24,6 +24,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeObjectMirror.class);
     public static Type fieldMapMirrorType = Type.getType(FieldMapMirror.class);
+    public static Type classType = Type.getType(Class.class);
     
     public static Remapper REMAPPER = new Remapper() {
         public String map(String typeName) {
@@ -109,9 +110,6 @@ public class MirageClassGenerator extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
 
-//        if (name.equals("<init>")) {
-//            desc = addMirrorArgToDesc(desc);
-//        }
         MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         
         
@@ -121,9 +119,6 @@ public class MirageClassGenerator extends ClassVisitor {
         
         MirageMethodGenerator generator = new MirageMethodGenerator(superVisitor, superName, Type.getMethodType(desc), isToString);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
-//        if (name.equals("<init>")) {
-//            lvs.newLocal(objectMirrorType);
-//        }
         generator.setLocalVariablesSorter(lvs);
         
         if ((Opcodes.ACC_NATIVE & access) != 0) {
@@ -220,15 +215,6 @@ public class MirageClassGenerator extends ClassVisitor {
         visitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(klass), methodName, Type.getMethodDescriptor(returnType, parameterTypes));
         visitor.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
         visitor.visitMaxs(parameterTypes.length, parameterTypes.length);
-    }
-    
-    public static String addMirrorArgToDesc(String desc) {
-        Type methodType = Type.getMethodType(desc);
-        Type[] argTypes = methodType.getArgumentTypes();
-        Type[] argTypesWithMirrorParam = new Type[argTypes.length + 1];
-        System.arraycopy(argTypes, 0, argTypesWithMirrorParam, 0, argTypes.length);
-        argTypesWithMirrorParam[argTypes.length] = objectMirrorType;
-        return Type.getMethodDescriptor(methodType.getReturnType(), argTypesWithMirrorParam);
     }
     
     @Override

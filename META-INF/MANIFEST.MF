@@ -206,3 +206,6 @@ Export-Package: .,
  org.yecht,
  org.yecht.debug,
  org.yecht.ruby
+Import-Package: org.eclipse.mat,
+ org.eclipse.mat.snapshot,
+ org.eclipse.mat.snapshot.model
