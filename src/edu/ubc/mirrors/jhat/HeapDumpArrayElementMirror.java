@@ -7,14 +7,17 @@ import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.MirageClassLoader;
 import edu.ubc.mirrors.ObjectMirage;
 
 public class HeapDumpArrayElementMirror implements FieldMirror {
     
+    private final MirageClassLoader loader;
     private final IArray array;
     private final int index;
     
-    public HeapDumpArrayElementMirror(IArray array, int index) {
+    public HeapDumpArrayElementMirror(MirageClassLoader loader, IArray array, int index) {
+        this.loader = loader;
         this.array = array;
         this.index = index;
     }
@@ -31,7 +34,7 @@ public class HeapDumpArrayElementMirror implements FieldMirror {
         } catch (SnapshotException e) {
             throw new InternalError();
         }
-        return ObjectMirage.<Object>make(new HeapDumpObjectMirror(object));
+        return loader.makeMirage(new HeapDumpObjectMirror(loader, object));
     }
     public boolean getBoolean() throws IllegalAccessException {
         return (Boolean)((IPrimitiveArray)array).getValueAt(index);

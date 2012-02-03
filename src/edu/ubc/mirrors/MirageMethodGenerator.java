@@ -92,20 +92,27 @@ public class MirageMethodGenerator extends InstructionAdapter {
                 throw new IllegalArgumentException("Bad opcode: " + opcode);
         }
         
+        if (isStatic) {
+            // TODO-RS: See comment in MirageClassGenerator#visitMethod()
+            super.visitFieldInsn(opcode, owner, name, desc);
+            return;
+        }
+        
         // Pop the original argument
         int setValueLocal = lvs.newLocal(fieldType);
         if (isSet) {
             store(setValueLocal, fieldType);
         }
         
+        // Get the field mirror onto the statck
         if (isStatic) {
             // Get the class mirror onto the stack
             aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
-            aconst(Type.getObjectType(MirageClassGenerator.getOriginalClassName(owner)));
+            aconst(MirageClassGenerator.getOriginalClassName(owner));
             aconst(name);
             invokestatic(objectMirageType.getInternalName(), 
                          "getStaticField", 
-                         Type.getMethodDescriptor(fieldMirrorType, classType, classType, Type.getType(String.class)));
+                         Type.getMethodDescriptor(fieldMirrorType, classType, Type.getType(String.class), Type.getType(String.class)));
         } else {
             // Push the mirror instance onto the stack
             getfield(Type.getInternalName(ObjectMirage.class), 

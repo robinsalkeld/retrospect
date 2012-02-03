@@ -9,9 +9,11 @@ import org.eclipse.mat.snapshot.model.IClassLoader;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.MirageClassLoader;
 
 public class HeapDumpClassMirrorLoader extends ClassMirrorLoader {
 
+    MirageClassLoader loader;
     IClassLoader classLoader;
     
     @Override
@@ -29,7 +31,7 @@ public class HeapDumpClassMirrorLoader extends ClassMirrorLoader {
         }
         for (IClass klass : classes) {
             if (klass.getName().equals(name)) {
-                return new HeapDumpClassMirror(klass);
+                return new HeapDumpClassMirror(loader, klass);
             }
         }
         

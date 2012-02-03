@@ -1,6 +1,7 @@
 package examples;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.FieldMapMirror;
 import edu.ubc.mirrors.MirageClassLoader;
 import edu.ubc.mirrors.NativeClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirage;
@@ -16,11 +17,15 @@ public class MirageTest2 {
         ClassMirrorLoader mirrorLoader = new NativeClassMirrorLoader(originalLoader);
         
         MirageClassLoader mirageClassLoader = new MirageClassLoader(originalLoader, mirrorLoader);
-        try {
-            mirageClassLoader.loadClass(className).getMethod("main", String[].class).invoke(null, (Object)new String[0]);
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+//        try {
+//            mirageClassLoader.loadClass(className).getMethod("main", String[].class).invoke(null, (Object)new String[0]);
+//        } catch (Throwable t) {
+//            t.printStackTrace();
+//        }
+        
+        FieldMapMirror<Bar> mirror = new FieldMapMirror<Bar>(Bar.class);
+        Object b = mirageClassLoader.makeMirage(mirror);
+        b.toString();
     }
     
     

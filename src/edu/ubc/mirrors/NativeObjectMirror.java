@@ -60,8 +60,8 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
     
     public ClassMirror<?> getClassMirror() {
         return new ClassMirror<T>() {
-            public Class<?> getMirroredClass() {
-                return object.getClass();
+            public String getClassName() {
+                return object.getClass().getName();
             }
             public FieldMirror getStaticField(String name) throws NoSuchFieldException {
                 throw new UnsupportedOperationException();

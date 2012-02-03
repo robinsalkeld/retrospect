@@ -12,13 +12,16 @@ import hat.model.JavaObject;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.MirageClassLoader;
 import edu.ubc.mirrors.ObjectMirror;
 
 public class HeapDumpObjectMirror implements ObjectMirror<Object> {
 
+    private final MirageClassLoader loader;
     private final IObject heapDumpObject;
     
-    public HeapDumpObjectMirror(IObject heapDumpObject) {
+    public HeapDumpObjectMirror(MirageClassLoader loader, IObject heapDumpObject) {
+        this.loader = loader;
         this.heapDumpObject = heapDumpObject;
     }
     
@@ -26,14 +29,14 @@ public class HeapDumpObjectMirror implements ObjectMirror<Object> {
         List<Field> fields = ((IInstance)heapDumpObject).getFields();
         for (Field field : fields) {
             if (field.getName().equals(name)) {
-                return new HeapDumpFieldMirror(field);
+                return new HeapDumpFieldMirror(loader, field);
             }
         }
         throw new NoSuchFieldException(name);
     }
 
     public FieldMirror getArrayElement(int index) throws ArrayIndexOutOfBoundsException {
-        return new HeapDumpArrayElementMirror((IArray)heapDumpObject, index);
+        return new HeapDumpArrayElementMirror(loader, (IArray)heapDumpObject, index);
     }
 
     public ClassMirror<?> getClassMirror() {

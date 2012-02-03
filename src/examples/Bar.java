@@ -18,4 +18,9 @@ public class Bar {
 //        System.out.println(f);
         int g = f + staticF;
     }
+    
+    public String toString() {
+        f++;
+        return "" + f;
+    }
 }

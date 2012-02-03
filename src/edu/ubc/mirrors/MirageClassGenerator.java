@@ -110,8 +110,16 @@ public class MirageClassGenerator extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
 
-        MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
+        // Remove all static initializers - these will have already been executed when
+        // loading the original class and state will be proxied by ClassMirrors instead
+        // ...actually we can't do that because there seems to be no way to access private
+        // classes at all. :( Instead for now we'll recreate static state in the mirage classes
+        // and not yet use ClassMirror#getStaticField()
+//        if (name.equals("<clinit>")) {
+//            return null;
+//        }
         
+        MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         
         // toString() is a special case - it's defined in java.lang.Object, which this class must ultimately
         // extend, so we have to return a real String rather than a mirage.
@@ -124,7 +132,13 @@ public class MirageClassGenerator extends ClassVisitor {
         if ((Opcodes.ACC_NATIVE & access) != 0) {
             String systemName = Type.getInternalName(System.class);
             String mirageSystemName = getMirageInternalClassName(systemName);
-            if (this.name.equals(mirageSystemName) && name.equals("registerNatives")) {
+            if (this.name.equals(getMirageInternalClassName(Type.getInternalName(Class.class))) && name.equals("registerNatives")) {
+                generator.visitCode();
+                generator.visitInsn(Opcodes.RETURN);
+                generator.visitMaxs(0, 0);
+                
+                return null;
+            } else if (this.name.equals(mirageSystemName) && name.equals("registerNatives")) {
                 generator.visitCode();
                 generator.visitInsn(Opcodes.RETURN);
                 generator.visitMaxs(0, 0);
@@ -191,7 +205,15 @@ public class MirageClassGenerator extends ClassVisitor {
                 
                 return null;
             } else {
-                throw new UnsupportedOperationException("Unsupported native method: " + this.name + "#" + name);
+                // Generate a method body that throws an exception
+                generator.visitCode();
+                String message = "Unsupported native method: " + this.name + "#" + name;
+                generator.aconst(message);
+                generator.anew(Type.getType(UnsupportedOperationException.class));
+                generator.athrow();
+                generator.visitMaxs(1, 0);
+
+                return null;
             }
         }
         
@@ -232,16 +254,18 @@ public class MirageClassGenerator extends ClassVisitor {
     @Override
     public void visitEnd() {
         // Generate the constructor that takes a mirror instance
-        String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirrorType);
-        MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
-                         "<init>", constructorDesc, null, null);
-        methodVisitor.visitCode();
-        methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-        methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-        methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", constructorDesc);
-        methodVisitor.visitInsn(Opcodes.RETURN);
-        methodVisitor.visitMaxs(2, 2);
-        methodVisitor.visitEnd();
+        if (!isInterface) {
+            String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirrorType);
+            MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
+                             "<init>", constructorDesc, null, null);
+            methodVisitor.visitCode();
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", constructorDesc);
+            methodVisitor.visitInsn(Opcodes.RETURN);
+            methodVisitor.visitMaxs(2, 2);
+            methodVisitor.visitEnd();
+        }
         
         super.visitEnd();
     }

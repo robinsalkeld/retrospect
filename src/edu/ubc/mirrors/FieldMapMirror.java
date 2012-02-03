@@ -40,8 +40,8 @@ public class FieldMapMirror<T> implements ObjectMirror<T> {
     
     public ClassMirror<? extends T> getClassMirror() {
         return new ClassMirror<T>() {
-            public Class<?> getMirroredClass() {
-                return klass;
+            public String getClassName() {
+                return klass.getName();
             }
             public FieldMirror getStaticField(String name) throws NoSuchFieldException {
                 throw new UnsupportedOperationException();
@@ -53,25 +53,18 @@ public class FieldMapMirror<T> implements ObjectMirror<T> {
         private final Field field;
         private final String name;
 
-        
-        
-        
-        
         public MapEntryFieldMirror(Field field, String name) {
             this.field = field;
             this.name = name;
         }
         
-        
         public Class<?> getType() {
             return null;
         }
 
-        
         public Object get() throws IllegalAccessException {
             return fields.get(name);
         }
-
         
         public boolean getBoolean() throws IllegalAccessException {
             Object value = get();
@@ -120,7 +113,6 @@ public class FieldMapMirror<T> implements ObjectMirror<T> {
             return value == null ? 0 : ((Double)value).doubleValue();
         }
 
-        
         public void set(Object o) throws IllegalAccessException {
             System.out.println("putting " + name + " => " + o);
             fields.put(name, o);

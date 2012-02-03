@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,7 +72,6 @@ public class MirageClassLoader extends ClassLoader {
     static {
         registerCommonClasses(Object.class, ObjectMirage.class, ObjectMirror.class, FieldMirror.class,
                 FieldMapMirror.class,
-                Class.class, 
                 // Necessary because only subclasses of this can be thrown.
                 // Probably need to introduce a new root subclass as with ObjectMirage.
                 Throwable.class, 
@@ -82,6 +83,7 @@ public class MirageClassLoader extends ClassLoader {
     
     @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        System.out.println("loadClass: " + name);
         Class<?> c = COMMON_CLASSES.get(name);
         if (c != null) {
             return c;
@@ -178,5 +180,36 @@ public class MirageClassLoader extends ClassLoader {
         }
         
         return defineClass(name, b, 0, b.length);
+    }
+    
+    @SuppressWarnings("unchecked")
+    public <T> T makeMirage(ObjectMirror<T> mirror) {
+        try {
+            final String internalClassName = mirror.getClassMirror().getClassName().replace('.', '/');
+            final String mirageClassName = MirageClassGenerator.getMirageInternalClassName(internalClassName);
+            final Class<?> mirageClass = loadClass(mirageClassName);
+            final Constructor<?> c = mirageClass.getConstructor(ObjectMirror.class);
+            return (T)c.newInstance(mirror);
+        } catch (NoSuchMethodException e) {
+            InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
+            error.initCause(e);
+            throw error;
+        } catch (IllegalAccessException e) {
+            InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
+            error.initCause(e);
+            throw error;
+        } catch (InstantiationException e) {
+            InternalError error = new InternalError("Result of ObjectMirage#getMirrorClass() is abstract: " + mirror.getClassMirror());
+            error.initCause(e);
+            throw error;
+        } catch (InvocationTargetException e) {
+            InternalError error = new InternalError("Error on instantiating Mirage class: " + mirror.getClassMirror());
+            error.initCause(e);
+            throw error;
+        } catch (ClassNotFoundException e) {
+            InternalError error = new InternalError("Error on loading Mirage class: " + mirror.getClassMirror());
+            error.initCause(e);
+            throw error;
+        }
     }
 }

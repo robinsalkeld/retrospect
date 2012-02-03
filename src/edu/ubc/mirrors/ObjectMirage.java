@@ -27,30 +27,7 @@ public abstract class ObjectMirage<T> {
         
     }
     
-    @SuppressWarnings("unchecked")
-    public static <T> T make(ObjectMirror<T> mirror) {
-        try {
-            final Class<?> mirageClass = mirror.getClassMirror().getMirroredClass();
-            final Constructor<?> c = mirageClass.getConstructor(ObjectMirror.class);
-            return (T)c.newInstance(mirror);
-        } catch (NoSuchMethodException e) {
-            InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
-            error.initCause(e);
-            throw error;
-        } catch (IllegalAccessException e) {
-            InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
-            error.initCause(e);
-            throw error;
-        } catch (InstantiationException e) {
-            InternalError error = new InternalError("Result of ObjectMirage#getMirrorClass() is abstract: " + mirror.getClassMirror());
-            error.initCause(e);
-            throw error;
-        } catch (InvocationTargetException e) {
-            InternalError error = new InternalError("Error on instantiating Mirage class: " + mirror.getClassMirror());
-            error.initCause(e);
-            throw error;
-        }
-    }
+    
     
     // TODO: Can't do this until we sort out how to automatically specify ClassMirrorLoaders
 
@@ -137,8 +114,12 @@ public abstract class ObjectMirage<T> {
         return null;
     }
     
-    public static FieldMirror getStaticField(Class<?> classLoaderLiteral, Class<?> klass, String name) throws NoSuchFieldException, ClassNotFoundException {
+    public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        return loader.classMirrorLoader.loadClassMirror(klass.getName()).getStaticField(name);
+        return loader.classMirrorLoader.loadClassMirror(className).getStaticField(fieldName);
+    }
+    
+    public static <T> T make(ObjectMirror<T> mirror) {
+        return ((MirageClassLoader)mirror.getClass().getClassLoader()).makeMirage(mirror);
     }
 }

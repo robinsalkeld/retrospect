@@ -13,13 +13,13 @@ public class NativeClassMirror<T> implements ClassMirror<T> {
         this.klass = klass;
     }
     
-    public Class<?> getMirroredClass() {
-        return klass;
+    public String getClassName() {
+        return klass.getName();
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
         Field field = klass.getDeclaredField(name);
-        if (Modifier.isStatic(field.getModifiers())) {
+        if (!Modifier.isStatic(field.getModifiers())) {
             // Crap, fall back to manual search
             field = findField(name);
         }

@@ -6,13 +6,16 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.ObjectReference;
 
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.MirageClassLoader;
 import edu.ubc.mirrors.ObjectMirage;
 
 public class HeapDumpFieldMirror implements FieldMirror {
 
+    private final MirageClassLoader loader;
     private final Field field;
     
-    public HeapDumpFieldMirror(Field field) {
+    public HeapDumpFieldMirror(MirageClassLoader loader, Field field) {
+        this.loader = loader;
         this.field = field;
     }
     
@@ -29,7 +32,7 @@ public class HeapDumpFieldMirror implements FieldMirror {
         } catch (SnapshotException e) {
             throw new InternalError();
         }
-        return ObjectMirage.<Object>make(new HeapDumpObjectMirror(object));
+        return loader.makeMirage(new HeapDumpObjectMirror(loader, object));
     }
 
     public boolean getBoolean() throws IllegalAccessException {
