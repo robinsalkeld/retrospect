@@ -35,6 +35,10 @@ public class HeapDumpObjectMirror implements ObjectMirror<Object> {
         throw new NoSuchFieldException(name);
     }
 
+    public int getArrayLength() {
+        return ((IArray)heapDumpObject).getLength();
+    }
+    
     public FieldMirror getArrayElement(int index) throws ArrayIndexOutOfBoundsException {
         return new HeapDumpArrayElementMirror(loader, (IArray)heapDumpObject, index);
     }

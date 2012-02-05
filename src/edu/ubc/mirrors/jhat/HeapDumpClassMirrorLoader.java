@@ -13,8 +13,17 @@ import edu.ubc.mirrors.MirageClassLoader;
 
 public class HeapDumpClassMirrorLoader extends ClassMirrorLoader {
 
-    MirageClassLoader loader;
-    IClassLoader classLoader;
+    private final MirageClassLoader loader;
+    private final IClassLoader classLoader;
+    
+    public HeapDumpClassMirrorLoader(MirageClassLoader loader, IClassLoader classLoader) {
+        this.loader = loader;
+        this.classLoader = classLoader;
+    }
+    
+    public MirageClassLoader getMirageClassLoader() {
+        return loader;
+    }
     
     @Override
     public ClassMirror<?> loadClassMirror(String name) throws ClassNotFoundException {
@@ -31,7 +40,7 @@ public class HeapDumpClassMirrorLoader extends ClassMirrorLoader {
         }
         for (IClass klass : classes) {
             if (klass.getName().equals(name)) {
-                return new HeapDumpClassMirror(loader, klass);
+                return new HeapDumpClassMirror(this, klass);
             }
         }
         

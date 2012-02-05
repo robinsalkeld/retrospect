@@ -21,6 +21,10 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.util.CheckClassAdapter;
+import org.objectweb.asm.util.Textifier;
+import org.objectweb.asm.util.TraceClassVisitor;
+
+import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
 public class MirageClassLoader extends ClassLoader {
         
@@ -75,8 +79,6 @@ public class MirageClassLoader extends ClassLoader {
                 // Necessary because only subclasses of this can be thrown.
                 // Probably need to introduce a new root subclass as with ObjectMirage.
                 Throwable.class, 
-                // Not sure about this one...
-                String.class,
                 // Definitely wrong, but see if this gets us going on real examples for now
                 System.class);
     }
@@ -97,6 +99,11 @@ public class MirageClassLoader extends ClassLoader {
         if (name.equals(CLASS_LOADER_LITERAL_NAME.replace('/', '.'))) {
             ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
             writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, CLASS_LOADER_LITERAL_NAME, null, "java/lang/Object", null);
+            byte[] b = writer.toByteArray();
+            return defineClass(name, b, 0, b.length);
+        } else if (name.startsWith("miragearray")) {
+            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
+            writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, name, null, Type.getInternalName(ObjectMirage.class), null);
             byte[] b = writer.toByteArray();
             return defineClass(name, b, 0, b.length);
         } else if (name.startsWith("mirage")) {
@@ -148,6 +155,13 @@ public class MirageClassLoader extends ClassLoader {
                 classFile.write(b);
                 classFile.flush();
                 classFile.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            File txtFile = new File(myTraceDir, mirageClassName + ".txt");
+            try {
+                PrintWriter textFileWriter = new PrintWriter(txtFile);
+                new ClassReader(b).accept(new TraceClassVisitor(null, textFileWriter), 0);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

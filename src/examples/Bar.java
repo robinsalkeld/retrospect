@@ -23,4 +23,12 @@ public class Bar {
         f++;
         return "" + f;
     }
+    
+    public void foo(boolean[] s) {
+        
+    }
+    
+    public void foo(byte[] s) {
+        
+    }
 }

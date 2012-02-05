@@ -7,14 +7,23 @@ import edu.ubc.mirrors.NativeObjectMirror.NativeFieldMirror;
 
 public class NativeClassMirror<T> implements ClassMirror<T> {
 
-    private final Class<T> klass;
+    private final Class<? extends T> klass;
     
-    public NativeClassMirror(Class<T> klass) {
+    public NativeClassMirror(Class<? extends T> klass) {
         this.klass = klass;
     }
     
     public String getClassName() {
         return klass.getName();
+    }
+    
+    public boolean isArray() {
+        return klass.isArray();
+    }
+    
+    public ClassMirror<?> getComponentClassMirror() {
+        Class<?> componentType = klass.getComponentType();
+        return componentType != null ? new NativeClassMirror<Object>(componentType) : null;
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {

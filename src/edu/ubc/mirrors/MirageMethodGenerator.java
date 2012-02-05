@@ -46,51 +46,36 @@ public class MirageMethodGenerator extends InstructionAdapter {
         super.visitMethodInsn(opcode, owner, name, desc);
     }
     
-    @Override
-    public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-        Type fieldType = Type.getType(desc);
+    
+    private void fieldMirrorInsn(boolean isSet, Type fieldType) {
         Type fieldTypeForMirrorCall = fieldType;
         int fieldSort = fieldType.getSort();
         String suffix = "";
-        switch (fieldSort) {
-            case Type.BOOLEAN: suffix = "Boolean"; break;
-            case Type.BYTE: suffix = "Byte"; break;
-            case Type.CHAR: suffix = "Char"; break;
-            case Type.SHORT: suffix = "Short"; break;
-            case Type.INT: suffix = "Int"; break;
-            case Type.LONG: suffix = "Long"; break;
-            case Type.FLOAT: suffix = "Float"; break;
-            case Type.DOUBLE: suffix = "Double"; break;
-            case Type.ARRAY: 
-            case Type.OBJECT: 
-                fieldTypeForMirrorCall = OBJECT_TYPE;
-                break;
-            default:
-                throw new IllegalStateException("Bad sort: " + fieldSort);
+        if (fieldSort == Type.ARRAY || fieldSort == Type.OBJECT) {
+            fieldTypeForMirrorCall = OBJECT_TYPE;
+        } else {
+            suffix = MirageClassGenerator.getSortName(fieldSort);
         }
         
-        boolean isSet;
-        boolean isStatic;
-        switch (opcode) {
-            case Opcodes.GETFIELD: 
-                isSet = false;
-                isStatic = false;
-                break;
-            case Opcodes.GETSTATIC:
-                isSet = false;
-                isStatic = true;
-                break;
-            case Opcodes.PUTFIELD:
-                isSet = true;
-                isStatic = false;
-                break;
-            case Opcodes.PUTSTATIC:
-                isSet = true;
-                isStatic = true;
-                break;
-            default:
-                throw new IllegalArgumentException("Bad opcode: " + opcode);
+        // Call the appropriate getter/setter method on the mirror
+        String methodDesc;
+        if (isSet) {
+            methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldTypeForMirrorCall);
+        } else {
+            methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall);
         }
+        invokeinterface(MirageClassGenerator.fieldMirrorType.getInternalName(), 
+                        (isSet ? "set" : "get") + suffix, 
+                        methodDesc);
+        if (!isSet && fieldTypeForMirrorCall.equals(OBJECT_TYPE)) {
+            checkcast(fieldType);
+        }
+    }
+    
+    @Override
+    public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+        boolean isSet = (opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC);
+        boolean isStatic = (opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC);
         
         if (isStatic) {
             // TODO-RS: See comment in MirageClassGenerator#visitMethod()
@@ -99,12 +84,13 @@ public class MirageMethodGenerator extends InstructionAdapter {
         }
         
         // Pop the original argument
+        Type fieldType = Type.getType(desc);
         int setValueLocal = lvs.newLocal(fieldType);
         if (isSet) {
             store(setValueLocal, fieldType);
         }
         
-        // Get the field mirror onto the statck
+        // Get the field mirror onto the stack
         if (isStatic) {
             // Get the class mirror onto the stack
             aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
@@ -123,28 +109,69 @@ public class MirageMethodGenerator extends InstructionAdapter {
             aconst(name);
             invokeinterface(objectMirrorType.getInternalName(), 
                             "getMemberField", 
-                            Type.getMethodDescriptor(fieldMirrorType, getMirageType(Type.getType(String.class))));
-            
+                            Type.getMethodDescriptor(fieldMirrorType, Type.getType(String.class)));
         }
         
-        // Call the appropriate getter/setter method on the mirror
-        String methodDesc;
         if (isSet) {
             load(setValueLocal, fieldType);
-            methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldTypeForMirrorCall);
-        } else {
-            methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall);
         }
-        invokeinterface(MirageClassGenerator.fieldMirrorType.getInternalName(), 
-                        (isSet ? "set" : "get") + suffix, 
-                        methodDesc);
-        if (!isSet && fieldTypeForMirrorCall.equals(OBJECT_TYPE)) {
-            checkcast(fieldType);
-        }
+        
+        fieldMirrorInsn(isSet, fieldType);
     }
     
     @Override
     public void visitInsn(int opcode) {
+        Type arrayElementType = null;
+        boolean isArrayLoad = (Opcodes.IALOAD <= opcode && opcode < Opcodes.IALOAD + 8);
+        boolean isArrayStore = (Opcodes.IASTORE <= opcode && opcode < Opcodes.IASTORE + 8);
+        if (isArrayLoad || isArrayStore) {
+            switch (opcode) {
+            case Opcodes.IALOAD: arrayElementType = Type.INT_TYPE; break;
+            case Opcodes.LALOAD: arrayElementType = Type.LONG_TYPE; break;
+            case Opcodes.FALOAD: arrayElementType = Type.FLOAT_TYPE; break;
+            case Opcodes.DALOAD: arrayElementType = Type.DOUBLE_TYPE; break;
+            case Opcodes.AALOAD: arrayElementType = OBJECT_TYPE; break;
+            case Opcodes.BALOAD: arrayElementType = Type.BYTE_TYPE; break;
+            case Opcodes.CALOAD: arrayElementType = Type.CHAR_TYPE; break;
+            case Opcodes.SALOAD: arrayElementType = Type.SHORT_TYPE; break;
+            case Opcodes.IASTORE: arrayElementType = Type.INT_TYPE; break;
+            case Opcodes.LASTORE: arrayElementType = Type.LONG_TYPE; break;
+            case Opcodes.FASTORE: arrayElementType = Type.FLOAT_TYPE; break;
+            case Opcodes.DASTORE: arrayElementType = Type.DOUBLE_TYPE; break;
+            case Opcodes.AASTORE: arrayElementType = OBJECT_TYPE; break;
+            case Opcodes.BASTORE: arrayElementType = Type.BYTE_TYPE; break;
+            case Opcodes.CASTORE: arrayElementType = Type.CHAR_TYPE; break;
+            case Opcodes.SASTORE: arrayElementType = Type.SHORT_TYPE; break;
+            }
+            
+            int setValueLocal = lvs.newLocal(arrayElementType);
+            if (isArrayStore) {
+                store(setValueLocal, arrayElementType);
+            }
+            int indexLocal = lvs.newLocal(Type.INT_TYPE);
+            store(indexLocal, Type.INT_TYPE);
+            
+            // Push the mirror instance onto the stack
+            getfield(Type.getInternalName(ObjectMirage.class), 
+                     "mirror", 
+                     objectMirrorType.getDescriptor());
+            
+            // Get the array element mirror onto the stack
+            load(indexLocal, Type.INT_TYPE);
+            invokeinterface(objectMirrorType.getInternalName(), 
+                            "getArrayElement", 
+                            Type.getMethodDescriptor(fieldMirrorType, Type.INT_TYPE));
+            
+            if (isArrayStore) {
+                load(setValueLocal, arrayElementType);
+            }
+            
+            // Invoke the appropriate FieldMirror method
+            fieldMirrorInsn(isArrayStore, arrayElementType);
+            
+            return;
+        }
+        
         if (isToString && opcode == Opcodes.ARETURN) {
             invokestatic(MirageClassGenerator.objectMirageType.getInternalName(),
                          "getRealStringForMirage",
@@ -152,6 +179,30 @@ public class MirageMethodGenerator extends InstructionAdapter {
         }
         
         super.visitInsn(opcode);
+    }
+    
+    @Override
+    public void visitTypeInsn(int opcode, String type) {
+        if (opcode == Opcodes.ANEWARRAY) {
+            // Store the array size
+            int arraySizeVar = lvs.newLocal(Type.INT_TYPE);
+            store(arraySizeVar, Type.INT_TYPE);
+            
+            // Wrap with a NativeArrayMirror
+            anew(Type.getType(NativeArrayMirror.class));
+            dup();
+
+            load(arraySizeVar, Type.INT_TYPE);
+            super.visitTypeInsn(opcode, type);
+            
+            invokespecial(Type.getInternalName(NativeArrayMirror.class), 
+                          "<init>", 
+                          Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object[].class)));
+            return;
+        }
+        
+        super.visitTypeInsn(opcode, type);
+        
     }
     
     @Override

@@ -51,10 +51,12 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
     }
     
     
-    public FieldMirror getArrayElement(int index)
-            throws ArrayIndexOutOfBoundsException {
-        // TODO Auto-generated method stub
-        return null;
+    public FieldMirror getArrayElement(int index) throws IllegalStateException, ArrayIndexOutOfBoundsException {
+        return new NativeArrayElementFieldMirror(index);
+    }
+    
+    public int getArrayLength() throws IllegalStateException {
+        return Array.getLength(object);
     }
     
     
@@ -62,6 +64,12 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
         return new ClassMirror<T>() {
             public String getClassName() {
                 return object.getClass().getName();
+            }
+            public boolean isArray() {
+                return false;
+            }
+            public ClassMirror<?> getComponentClassMirror() {
+                return null;
             }
             public FieldMirror getStaticField(String name) throws NoSuchFieldException {
                 throw new UnsupportedOperationException();
@@ -80,10 +88,6 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
             this.object = object;
         }
 
-        public Class<?> getType() {
-            return field.getType();
-        }
-        
         public Object get() throws IllegalAccessException {
             return field.get(object);
         }
@@ -165,12 +169,6 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
             this.index = index;
         }
 
-        
-        public Class<?> getType() {
-            return object.getClass().getComponentType();
-        }
-
-        
         public Object get() throws IllegalAccessException {
             return Array.get(object, index);
         }

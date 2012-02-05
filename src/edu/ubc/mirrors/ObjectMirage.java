@@ -1,13 +1,17 @@
 package edu.ubc.mirrors;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.objectweb.asm.ClassReader;
-
-public abstract class ObjectMirage<T> {
+/**
+ * Note that this class is only instantiated directly to represent arrays. Otherwise
+ * it is subclassed with a mirage version of the original class in order to support
+ * dynamic method dispatch (which arrays don't).
+ * 
+ * @author Robin Salkeld
+ *
+ * @param <T>
+ */
+public class ObjectMirage<T> {
 
     protected final ObjectMirror<?> mirror;
     

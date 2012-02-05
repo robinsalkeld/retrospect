@@ -7,7 +7,7 @@ import edu.ubc.mirrors.NativeClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirage;
 
 public class MirageTest2 {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         String className = args[0];
         String traceDir = args[1];
         MirageClassLoader.traceClass = className;
@@ -22,6 +22,8 @@ public class MirageTest2 {
 //        } catch (Throwable t) {
 //            t.printStackTrace();
 //        }
+        
+        mirageClassLoader.loadClass("mirage.java.lang.ClassLoader");
         
         FieldMapMirror<Bar> mirror = new FieldMapMirror<Bar>(Bar.class);
         Object b = mirageClassLoader.makeMirage(mirror);

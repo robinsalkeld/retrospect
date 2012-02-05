@@ -22,10 +22,6 @@ public class HeapDumpArrayElementMirror implements FieldMirror {
         this.index = index;
     }
     
-    public Class<?> getType() {
-        // TODO Auto-generated method stub
-        return null;
-    }
     public Object get() throws IllegalAccessException {
         long address = ((IObjectArray)array).getReferenceArray()[index];
         IObject object;
