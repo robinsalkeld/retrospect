@@ -1,7 +1,7 @@
 package examples;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.FieldMapMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;

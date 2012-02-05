@@ -27,9 +27,9 @@ import org.objectweb.asm.util.TraceClassVisitor;
 import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.FieldMapMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 
 public class MirageClassLoader extends ClassLoader {

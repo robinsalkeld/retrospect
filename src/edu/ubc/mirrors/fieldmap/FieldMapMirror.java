@@ -1,8 +1,13 @@
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.fieldmap;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+
+import edu.ubc.mirrors.BoxingFieldMirror;
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.ObjectMirror;
 
 public class FieldMapMirror<T> implements ObjectMirror<T> {
 
