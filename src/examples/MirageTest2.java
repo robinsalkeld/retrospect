@@ -3,8 +3,8 @@ package examples;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMapMirror;
 import edu.ubc.mirrors.MirageClassLoader;
-import edu.ubc.mirrors.NativeClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirage;
+import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 
 public class MirageTest2 {
     public static void main(String[] args) throws ClassNotFoundException {

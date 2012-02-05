@@ -1,4 +1,4 @@
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.raw;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,6 +15,8 @@ import org.objectweb.asm.commons.InstructionAdapter;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
+
+import edu.ubc.mirrors.MirageClassLoader;
 
 public class NativeClassGenerator extends RemappingClassAdapter {
 

@@ -1,9 +1,11 @@
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.raw;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import edu.ubc.mirrors.NativeObjectMirror.NativeFieldMirror;
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.raw.NativeObjectMirror.NativeFieldMirror;
 
 public class NativeClassMirror<T> implements ClassMirror<T> {
 

@@ -26,6 +26,8 @@ import org.objectweb.asm.util.TraceClassVisitor;
 
 import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.raw.NativeClassGenerator;
+
 public class MirageClassLoader extends ClassLoader {
         
     public static String traceClass = null;

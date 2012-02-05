@@ -17,6 +17,8 @@ import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
 
+import edu.ubc.mirrors.raw.NativeObjectMirror;
+
 public class MirageClassGenerator extends ClassVisitor {
 
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);

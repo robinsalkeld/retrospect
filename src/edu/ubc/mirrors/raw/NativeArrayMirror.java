@@ -1,4 +1,9 @@
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.raw;
+
+import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.BoxingFieldMirror;
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.FieldMirror;
 
 public class NativeArrayMirror implements ArrayMirror {
     

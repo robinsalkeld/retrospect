@@ -9,13 +9,15 @@ import static edu.ubc.mirrors.MirageClassGenerator.nativeObjectMirrorType;
 import static edu.ubc.mirrors.MirageClassGenerator.objectMirageType;
 import static edu.ubc.mirrors.MirageClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
-import static edu.ubc.mirrors.NativeClassGenerator.getNativeInternalClassName;
+import static edu.ubc.mirrors.raw.NativeClassGenerator.getNativeInternalClassName;
 
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.InstructionAdapter;
 import org.objectweb.asm.commons.LocalVariablesSorter;
+
+import edu.ubc.mirrors.raw.NativeArrayMirror;
 
 public class MirageMethodGenerator extends InstructionAdapter {
 

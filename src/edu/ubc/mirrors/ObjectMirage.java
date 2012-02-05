@@ -2,6 +2,9 @@ package edu.ubc.mirrors;
 
 import java.lang.reflect.InvocationTargetException;
 
+import edu.ubc.mirrors.raw.NativeClassGenerator;
+import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
+
 /**
  * Note that this class is only instantiated directly to represent arrays. Otherwise
  * it is subclassed with a mirage version of the original class in order to support
