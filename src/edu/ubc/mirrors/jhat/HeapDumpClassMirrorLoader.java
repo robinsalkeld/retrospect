@@ -9,7 +9,7 @@ import org.eclipse.mat.snapshot.model.IClassLoader;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.MirageClassLoader;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class HeapDumpClassMirrorLoader extends ClassMirrorLoader {
 

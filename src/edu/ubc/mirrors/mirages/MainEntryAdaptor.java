@@ -1,4 +1,4 @@
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.mirages;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;

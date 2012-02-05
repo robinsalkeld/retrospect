@@ -1,22 +1,16 @@
 package edu.ubc.mirrors.raw;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.jruby.org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.InstructionAdapter;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
 
-import edu.ubc.mirrors.MirageClassLoader;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class NativeClassGenerator extends RemappingClassAdapter {
 

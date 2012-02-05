@@ -1,8 +1,8 @@
 package examples;
 
 import edu.ubc.mirrors.FieldMapMirror;
-import edu.ubc.mirrors.ObjectMirage;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.mirages.ObjectMirage;
 
 
 public class MirageTest extends MirageTestSuper {

@@ -1,4 +1,4 @@
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.mirages;
 
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -17,6 +17,9 @@ import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
 
+import edu.ubc.mirrors.FieldMapMirror;
+import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 public class MirageClassGenerator extends ClassVisitor {

@@ -1,4 +1,4 @@
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.mirages;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;

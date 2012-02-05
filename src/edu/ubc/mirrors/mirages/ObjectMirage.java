@@ -1,7 +1,11 @@
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.mirages;
 
 import java.lang.reflect.InvocationTargetException;
 
+import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.FieldMapMirror;
+import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 

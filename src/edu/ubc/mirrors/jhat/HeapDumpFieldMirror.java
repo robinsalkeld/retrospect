@@ -6,7 +6,7 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.ObjectReference;
 
 import edu.ubc.mirrors.BoxingFieldMirror;
-import edu.ubc.mirrors.MirageClassLoader;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class HeapDumpFieldMirror extends BoxingFieldMirror {
 

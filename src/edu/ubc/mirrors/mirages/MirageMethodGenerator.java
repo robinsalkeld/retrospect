@@ -1,14 +1,14 @@
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.mirages;
 
-import static edu.ubc.mirrors.MirageClassGenerator.classType;
-import static edu.ubc.mirrors.MirageClassGenerator.fieldMapMirrorType;
-import static edu.ubc.mirrors.MirageClassGenerator.fieldMirrorType;
-import static edu.ubc.mirrors.MirageClassGenerator.getMirageInternalClassName;
-import static edu.ubc.mirrors.MirageClassGenerator.getMirageType;
-import static edu.ubc.mirrors.MirageClassGenerator.nativeObjectMirrorType;
-import static edu.ubc.mirrors.MirageClassGenerator.objectMirageType;
-import static edu.ubc.mirrors.MirageClassGenerator.objectMirrorType;
-import static edu.ubc.mirrors.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMapMirrorType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMirrorType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageInternalClassName;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.nativeObjectMirrorType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirageType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
+import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
 import static edu.ubc.mirrors.raw.NativeClassGenerator.getNativeInternalClassName;
 
 import org.objectweb.asm.MethodVisitor;

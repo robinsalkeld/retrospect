@@ -7,8 +7,8 @@ import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.MirageClassLoader;
-import edu.ubc.mirrors.ObjectMirage;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mirages.ObjectMirage;
 
 public class HeapDumpArrayElementMirror implements FieldMirror {
     

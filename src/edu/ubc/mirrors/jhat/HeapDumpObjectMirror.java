@@ -12,8 +12,8 @@ import hat.model.JavaObject;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.MirageClassLoader;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class HeapDumpObjectMirror implements ObjectMirror<Object> {
 
