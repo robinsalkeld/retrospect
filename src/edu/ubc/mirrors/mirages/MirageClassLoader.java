@@ -40,6 +40,10 @@ public class MirageClassLoader extends ClassLoader {
     
     final ClassMirrorLoader classMirrorLoader;
     
+    public ClassMirrorLoader getClassMirrorLoader() {
+        return classMirrorLoader;
+    }
+    
     public static final String CLASS_LOADER_LITERAL_NAME = "edu/ubc/mirrors/ClassLoaderLiteral";
     
     public MirageClassLoader(ClassLoader originalLoader, ClassMirrorLoader classMirrorLoader) {

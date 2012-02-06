@@ -17,7 +17,9 @@ import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
 
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
@@ -25,6 +27,8 @@ import edu.ubc.mirrors.raw.NativeObjectMirror;
 public class MirageClassGenerator extends ClassVisitor {
 
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
+    public static Type instanceMirrorType = Type.getType(InstanceMirror.class);
+    public static Type arrayMirrorType = Type.getType(ArrayMirror.class);
     public static Type objectMirageType = Type.getType(ObjectMirage.class);
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeObjectMirror.class);
@@ -120,6 +124,10 @@ public class MirageClassGenerator extends ClassVisitor {
         }
     }
     
+    public static String getPrimitiveArrayMirrorInternalName(Type elementType) {
+        return "edu/ubc/mirrors/" + getSortName(elementType.getSort()) + "ArrayMirror";
+    }
+    
     public static String getMirageInternalClassName(String className) {
         if (className == null) {
             return null;
@@ -135,7 +143,7 @@ public class MirageClassGenerator extends ClassVisitor {
             int dims = type.getDimensions();
             // Primitive array
             if (dims == 1 && elementType.getSort() != Type.OBJECT) {
-                return "edu/ubc/mirrors/" + getSortName(elementType.getSort()) + "Array";
+                return getPrimitiveArrayMirrorInternalName(elementType);
             } else {
                 return "miragearray" + dims + "/" + elementType.getInternalName(); 
             }
@@ -188,7 +196,7 @@ public class MirageClassGenerator extends ClassVisitor {
         // extend, so we have to return a real String rather than a mirage.
         boolean isToString = (name.equals("toString") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(String.class)))));
         if (isToString) {
-            desc = Type.getMethodDescriptor(getMirageType(Type.getType(String.class)));
+            desc = Type.getMethodDescriptor(Type.getType(String.class));
         }
         
         // Take off the native keyword if it's there - we're going to fill in an actual

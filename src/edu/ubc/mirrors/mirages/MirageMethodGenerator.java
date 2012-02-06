@@ -1,10 +1,14 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.arrayMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMapMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageInternalClassName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.getPrimitiveArrayMirrorInternalName;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.getSortName;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.nativeObjectMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
@@ -106,10 +110,11 @@ public class MirageMethodGenerator extends InstructionAdapter {
             getfield(Type.getInternalName(ObjectMirage.class), 
                      "mirror", 
                      objectMirrorType.getDescriptor());
+            checkcast(instanceMirrorType);
             
             // Get the field mirror onto the stack
             aconst(name);
-            invokeinterface(objectMirrorType.getInternalName(), 
+            invokeinterface(instanceMirrorType.getInternalName(), 
                             "getMemberField", 
                             Type.getMethodDescriptor(fieldMirrorType, Type.getType(String.class)));
         }
@@ -146,31 +151,57 @@ public class MirageMethodGenerator extends InstructionAdapter {
             case Opcodes.SASTORE: arrayElementType = Type.SHORT_TYPE; break;
             }
             
-            int setValueLocal = lvs.newLocal(arrayElementType);
+            int setValueLocal = -1; 
             if (isArrayStore) {
+                setValueLocal = lvs.newLocal(arrayElementType);
                 store(setValueLocal, arrayElementType);
             }
             int indexLocal = lvs.newLocal(Type.INT_TYPE);
             store(indexLocal, Type.INT_TYPE);
             
             // Push the mirror instance onto the stack
-            getfield(Type.getInternalName(ObjectMirage.class), 
-                     "mirror", 
-                     objectMirrorType.getDescriptor());
+            // TODO-RS: Primitive mirrors don't need to be wrapped?
+            Type mirrorType = MirageClassGenerator.arrayMirrorType;
+            Type arrayElementTypeForMirrorCall = arrayElementType;
+            String suffix = "";
+            if (arrayElementType.getSort() == Type.OBJECT || arrayElementType.getSort() == Type.ARRAY) {
+                arrayElementTypeForMirrorCall = OBJECT_TYPE;
+            } else {
+                mirrorType = Type.getObjectType(getPrimitiveArrayMirrorInternalName(arrayElementType));
+                suffix = getSortName(arrayElementType.getSort());
+            }
+            getfield(Type.getInternalName(ArrayMirage.class), 
+                    "mirror", 
+                    arrayMirrorType.getDescriptor());
+            checkcast(mirrorType);
             
-            // Get the array element mirror onto the stack
             load(indexLocal, Type.INT_TYPE);
-            invokeinterface(objectMirrorType.getInternalName(), 
-                            "getArrayElement", 
-                            Type.getMethodDescriptor(fieldMirrorType, Type.INT_TYPE));
-            
             if (isArrayStore) {
                 load(setValueLocal, arrayElementType);
             }
             
-            // Invoke the appropriate FieldMirror method
-            fieldMirrorInsn(isArrayStore, arrayElementType);
+            // Call the appropriate getter/setter method on the mirror
+            String methodDesc;
+            if (isArrayStore) {
+                methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.INT_TYPE, arrayElementTypeForMirrorCall);
+            } else {
+                methodDesc = Type.getMethodDescriptor(arrayElementTypeForMirrorCall, Type.INT_TYPE);
+            }
+            invokeinterface(mirrorType.getInternalName(), 
+                            (isArrayStore ? "set" : "get") + suffix, 
+                            methodDesc);
+            if (!isArrayStore && arrayElementTypeForMirrorCall.equals(OBJECT_TYPE)) {
+                checkcast(arrayElementType);
+            }
             
+            return;
+        }
+        
+        if (opcode == Opcodes.ARRAYLENGTH) {
+            getfield(Type.getInternalName(ArrayMirage.class), 
+                    "mirror", 
+                    arrayMirrorType.getDescriptor());
+            invokeinterface(arrayMirrorType.getInternalName(), "length", Type.getMethodDescriptor(Type.INT_TYPE));
             return;
         }
         

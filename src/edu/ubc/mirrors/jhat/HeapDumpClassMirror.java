@@ -7,13 +7,14 @@ import org.eclipse.mat.snapshot.model.IClass;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class HeapDumpClassMirror implements ClassMirror<Object> {
 
-    private final HeapDumpClassMirrorLoader loader;
+    private final MirageClassLoader loader;
     private final IClass klass;
     
-    public HeapDumpClassMirror(HeapDumpClassMirrorLoader loader, IClass klass) {
+    public HeapDumpClassMirror(MirageClassLoader loader, IClass klass) {
         this.loader = loader;
         this.klass = klass;
     }
@@ -34,7 +35,7 @@ public class HeapDumpClassMirror implements ClassMirror<Object> {
         }
         String componentName = klass.getName().substring(1);
         try {
-            return loader.loadClassMirror(componentName);
+            return loader.getClassMirrorLoader().loadClassMirror(componentName);
         } catch (ClassNotFoundException e) {
             // Should never happen
             throw new InternalError();
@@ -45,7 +46,7 @@ public class HeapDumpClassMirror implements ClassMirror<Object> {
         List<Field> fields = klass.getStaticFields();
         for (Field field : fields) {
             if (field.getName().equals(name)) {
-                return new HeapDumpFieldMirror(loader.getMirageClassLoader(), field);
+                return new HeapDumpFieldMirror(loader, field);
             }
         }
         throw new NoSuchFieldException(name);

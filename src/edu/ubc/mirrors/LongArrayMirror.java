@@ -2,7 +2,7 @@ package edu.ubc.mirrors;
 
 public interface LongArrayMirror extends ArrayMirror {
 
-    public long get(int index) throws ArrayIndexOutOfBoundsException;
+    public long getLong(int index) throws ArrayIndexOutOfBoundsException;
     
-    public void set(int index, long b) throws ArrayIndexOutOfBoundsException;
+    public void setLong(int index, long b) throws ArrayIndexOutOfBoundsException;
 }

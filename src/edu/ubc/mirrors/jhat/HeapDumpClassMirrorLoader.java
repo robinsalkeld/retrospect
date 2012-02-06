@@ -40,7 +40,7 @@ public class HeapDumpClassMirrorLoader extends ClassMirrorLoader {
         }
         for (IClass klass : classes) {
             if (klass.getName().equals(name)) {
-                return new HeapDumpClassMirror(this, klass);
+                return new HeapDumpClassMirror(loader, klass);
             }
         }
         

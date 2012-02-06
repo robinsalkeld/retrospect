@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
@@ -109,7 +110,7 @@ public class ObjectMirage<T> {
     
     public static String getRealStringForMirage(ObjectMirage<?> mirage) {
         try {
-            ObjectMirror<?> mirror = mirage.mirror;
+            InstanceMirror<?> mirror = (InstanceMirror<?>)mirage.mirror;
             char[] value = (char[])mirror.getMemberField("value").get();
             int offset = mirror.getMemberField("offset").getInt();
             int count = mirror.getMemberField("count").getInt();

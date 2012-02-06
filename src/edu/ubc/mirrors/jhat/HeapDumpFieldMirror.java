@@ -6,6 +6,7 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.ObjectReference;
 
 import edu.ubc.mirrors.BoxingFieldMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class HeapDumpFieldMirror extends BoxingFieldMirror {
@@ -28,7 +29,8 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
             } catch (SnapshotException e) {
                 throw new InternalError();
             }
-            return loader.makeMirage(new HeapDumpObjectMirror(loader, object));
+            ObjectMirror<?> mirror = HeapDumpObjectMirror.makeMirror(loader, object);
+            return loader.makeMirage(mirror);
         } else {
             return value;
         }

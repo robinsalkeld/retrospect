@@ -7,9 +7,11 @@ import java.util.Map;
 import edu.ubc.mirrors.BoxingFieldMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 
-public class FieldMapMirror<T> implements ObjectMirror<T> {
+public class FieldMapMirror<T> implements InstanceMirror<T> {
 
     private final Map<String, Object> fields;
     private final Class<? extends T> klass;
@@ -44,20 +46,7 @@ public class FieldMapMirror<T> implements ObjectMirror<T> {
 
     
     public ClassMirror<? extends T> getClassMirror() {
-        return new ClassMirror<T>() {
-            public String getClassName() {
-                return klass.getName();
-            }
-            public boolean isArray() {
-                return false;
-            }
-            public ClassMirror<?> getComponentClassMirror() {
-                return null;
-            }
-            public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return new NativeClassMirror<T>(klass);
     }
     
     private class MapEntryFieldMirror extends BoxingFieldMirror {
