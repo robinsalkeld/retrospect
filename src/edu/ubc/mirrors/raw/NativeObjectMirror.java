@@ -1,15 +1,25 @@
 package edu.ubc.mirrors.raw;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
+import org.eclipse.mat.snapshot.model.IInstance;
+import org.eclipse.mat.snapshot.model.IObject;
+import org.eclipse.mat.snapshot.model.IObjectArray;
+import org.eclipse.mat.snapshot.model.IPrimitiveArray;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.jhat.HeapDumpObjectArrayMirror;
+import edu.ubc.mirrors.jhat.HeapDumpObjectMirror;
+import edu.ubc.mirrors.jhat.HeapDumpPrimitiveArrayMirror;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mirages.ObjectMirage;
 
 
-public class NativeObjectMirror<T> implements ObjectMirror<T> {
+public class NativeObjectMirror<T> implements InstanceMirror<T> {
 
     private final T object;
     
@@ -54,16 +64,6 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
         throw new NoSuchFieldException(name);
     }
     
-    
-    public FieldMirror getArrayElement(int index) throws IllegalStateException, ArrayIndexOutOfBoundsException {
-        return new NativeArrayElementFieldMirror(index);
-    }
-    
-    public int getArrayLength() throws IllegalStateException {
-        return Array.getLength(object);
-    }
-    
-    
     public ClassMirror<?> getClassMirror() {
         return new ClassMirror<T>() {
             public String getClassName() {
@@ -93,7 +93,9 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
         }
 
         public Object get() throws IllegalAccessException {
-            return field.get(object);
+            Object nativeValue = field.get(object);
+            ObjectMirror<?> mirror = makeMirror(nativeValue);
+            return ObjectMirage.make(mirror);
         }
 
         public boolean getBoolean() throws IllegalAccessException {
@@ -165,102 +167,27 @@ public class NativeObjectMirror<T> implements ObjectMirror<T> {
         }
     }
     
-    private class NativeArrayElementFieldMirror implements FieldMirror {
-        
-        private final int index;
-        
-        public NativeArrayElementFieldMirror(int index) {
-            this.index = index;
+    public static ObjectMirror<?> makeMirror(Object object) {
+        if (object instanceof Object[]) {
+            return new NativeObjectArrayMirror((Object[])object);
+        } else if (object instanceof boolean[]) {
+            return new NativeBooleanArrayMirror((boolean[])object);
+        } else if (object instanceof byte[]) {
+            return new NativeByteArrayMirror((byte[])object);
+        } else if (object instanceof char[]) {
+            return new NativeCharArrayMirror((char[])object);
+        } else if (object instanceof short[]) {
+            return new NativeShortArrayMirror((short[])object);
+        } else if (object instanceof int[]) {
+            return new NativeIntArrayMirror((int[])object);
+        } else if (object instanceof long[]) {
+            return new NativeLongArrayMirror((long[])object);
+        } else if (object instanceof float[]) {
+            return new NativeFloatArrayMirror((float[])object);
+        } else if (object instanceof double[]) {
+            return new NativeDoubleArrayMirror((double[])object);
+        } else {
+            return new NativeObjectMirror<Object>(object);
         }
-
-        public Object get() throws IllegalAccessException {
-            return Array.get(object, index);
-        }
-
-        
-        public boolean getBoolean() throws IllegalAccessException {
-            return Array.getBoolean(object, index);
-        }
-
-        
-        public byte getByte() throws IllegalAccessException {
-            return Array.getByte(object, index);
-        }
-
-        
-        public char getChar() throws IllegalAccessException {
-            return Array.getChar(object, index);
-        }
-
-        
-        public short getShort() throws IllegalAccessException {
-            return Array.getShort(object, index);
-        }
-
-        
-        public int getInt() throws IllegalAccessException {
-            return Array.getInt(object, index);
-        }
-
-        
-        public long getLong() throws IllegalAccessException {
-            return Array.getLong(object, index);
-        }
-
-        
-        public float getFloat() throws IllegalAccessException {
-            return Array.getFloat(object, index);
-        }
-
-        
-        public double getDouble() throws IllegalAccessException {
-            return Array.getDouble(object, index);
-        }
-
-        
-        public void set(Object o) throws IllegalAccessException {
-            Array.set(object, index, o);
-        }
-
-        
-        public void setBoolean(boolean b) throws IllegalAccessException {
-            Array.setBoolean(object, index, b);
-        }
-
-        
-        public void setByte(byte b) throws IllegalAccessException {
-            Array.setByte(object, index, b);
-        }
-
-        
-        public void setChar(char c) throws IllegalAccessException {
-            Array.setChar(object, index, c);
-        }
-
-        
-        public void setShort(short s) throws IllegalAccessException {
-            Array.setShort(object, index, s);
-        }
-
-        
-        public void setInt(int i) throws IllegalAccessException {
-            Array.setInt(object, index, i);
-        }
-
-        
-        public void setLong(long l) throws IllegalAccessException {
-            Array.setLong(object, index, l);
-        }
-
-        
-        public void setFloat(float f) throws IllegalAccessException {
-            Array.setFloat(object, index, f);
-        }
-
-        
-        public void setDouble(double d) throws IllegalAccessException {
-            Array.setDouble(object, index, d);
-        }
-        
     }
 }

@@ -23,7 +23,11 @@ public class MirageTest2 {
 //            t.printStackTrace();
 //        }
         
-        mirageClassLoader.loadClass("mirage.java.lang.ClassLoader");
+        System.out.println("Loading class...");
+        Class<?> klass = mirageClassLoader.loadClass("mirage.java.lang.String");
+        System.out.println("Resolving class...");
+        klass.getMethods();
+        System.out.println("Resolved class!");
         
         FieldMapMirror<Bar> mirror = new FieldMapMirror<Bar>(Bar.class);
         Object b = mirageClassLoader.makeMirage(mirror);

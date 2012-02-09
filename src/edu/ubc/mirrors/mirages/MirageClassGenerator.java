@@ -4,6 +4,8 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -12,6 +14,7 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.AnalyzerAdapter;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
@@ -124,6 +127,28 @@ public class MirageClassGenerator extends ClassVisitor {
         }
     }
     
+    public static Type getTypeForSortName(String name) {
+        if (name.equals("Boolean")) {
+            return Type.BOOLEAN_TYPE;
+        } else if (name.equals("Byte")) {
+            return Type.BYTE_TYPE;
+        } else if (name.equals("Char")) {
+            return Type.CHAR_TYPE;
+        } else if (name.equals("Short")) {
+            return Type.SHORT_TYPE;
+        } else if (name.equals("Int")) {
+            return Type.INT_TYPE;
+        } else if (name.equals("Long")) {
+            return Type.LONG_TYPE;
+        } else if (name.equals("Float")) {
+            return Type.FLOAT_TYPE;
+        } else if (name.equals("Double")) {
+            return Type.DOUBLE_TYPE;
+        } else {
+            throw new IllegalArgumentException("Bad sort name: " + name);
+        }
+    }
+    
     public static String getPrimitiveArrayMirrorInternalName(Type elementType) {
         return "edu/ubc/mirrors/" + getSortName(elementType.getSort()) + "ArrayMirror";
     }
@@ -137,15 +162,20 @@ public class MirageClassGenerator extends ClassVisitor {
             return className;
         }
         
+//        System.out.println("className: " + className);
         Type type = Type.getObjectType(className);
+//        System.out.println("type.getSort(): " + type.getSort());
         if (type.getSort() == Type.ARRAY) {
             Type elementType = type.getElementType();
+            int elementSort = elementType.getSort();
             int dims = type.getDimensions();
             // Primitive array
-            if (dims == 1 && elementType.getSort() != Type.OBJECT) {
+            if (dims == 1 && elementSort != Type.OBJECT) {
                 return getPrimitiveArrayMirrorInternalName(elementType);
             } else {
-                return "miragearray" + dims + "/" + elementType.getInternalName(); 
+                String elementName = (elementSort == Type.OBJECT ?
+                        elementType.getInternalName() : getSortName(elementSort));
+                return "miragearray" + dims + "/" + elementName; 
             }
         } else if (!className.startsWith("mirage")) {
             return "mirage/" + className;
@@ -155,8 +185,20 @@ public class MirageClassGenerator extends ClassVisitor {
     }
     
     public static String getOriginalClassName(String mirageClassName) {
-        if (mirageClassName.startsWith("[")) {
-            return "[" + getOriginalClassName(mirageClassName.substring(1));
+        Matcher m = Pattern.compile("miragearray(\\d+)[./](.*)").matcher(mirageClassName);
+        if (m.matches()) {
+            int dims = Integer.parseInt(m.group(1));
+            String result = "L" + m.group(2) + ";";
+            while (dims-- > 0) {
+                result = "[" + result;
+            }
+            return result;
+        }
+        
+        m = Pattern.compile("edu[/.]ubc[/.]mirrors[/.](.*)ArrayMirror").matcher(mirageClassName);
+        if (m.matches()) {
+            String sortName = m.group(1);
+            return "[" + getTypeForSortName(sortName).getDescriptor();
         }
         
         if (mirageClassName.startsWith("mirage")) {
@@ -201,9 +243,11 @@ public class MirageClassGenerator extends ClassVisitor {
         
         // Take off the native keyword if it's there - we're going to fill in an actual
         // method (even if it's a stub that throws an exception).
-        MethodVisitor superVisitor = super.visitMethod(~Opcodes.ACC_NATIVE & access, name, desc, signature, exceptions);
+        int noNativeAccess = ~Opcodes.ACC_NATIVE & access;
+        MethodVisitor superVisitor = super.visitMethod(noNativeAccess, name, desc, signature, exceptions);
         
-        MirageMethodGenerator generator = new MirageMethodGenerator(superVisitor, superName, Type.getMethodType(desc), isToString);
+        AnalyzerAdapter analyzer = new AnalyzerAdapter(this.name, noNativeAccess, name, desc, superVisitor);
+        MirageMethodGenerator generator = new MirageMethodGenerator(analyzer, superName, Type.getMethodType(desc), isToString);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
@@ -291,8 +335,23 @@ public class MirageClassGenerator extends ClassVisitor {
                 generator.visitEnd();
                 
                 return null;
+            } else if (this.name.equals("mirage/java/lang/ClassLoader") && (name.equals("retrieveDirectives"))) {
+                generator.visitCode();
+                generator.aconst(null);
+                generator.areturn(Type.getObjectType("mirage/java/lang/AssertionStatusDirectives"));
+                generator.visitMaxs(1, 1);
+                generator.visitEnd();
+                
+                return null;
             } else if (this.name.equals(mirageSystemName) && (name.equals("mapLibraryName"))) {
                 generateStaticThunk(generator, System.class, name, String.class);
+                
+                return null;
+            } else if (this.name.equals(classType.getInternalName()) && (name.equals("getPrimitiveClass"))) {
+                generator.visitCode();
+                generator.aconst(null);
+                generator.areturn(classType);
+                generator.visitEnd();
                 
                 return null;
             } else {
@@ -352,7 +411,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public void visitEnd() {
         // Generate the constructor that takes a mirror instance
         if (!isInterface) {
-            String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirrorType);
+            String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, instanceMirrorType);
             MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
                              "<init>", constructorDesc, null, null);
             methodVisitor.visitCode();

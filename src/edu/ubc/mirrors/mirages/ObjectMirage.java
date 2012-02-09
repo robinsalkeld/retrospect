@@ -9,6 +9,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
+import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 /**
  * Note that this class is only instantiated directly to represent arrays. Otherwise
@@ -21,7 +22,7 @@ import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
  */
 public class ObjectMirage<T> {
 
-    protected final ObjectMirror<?> mirror;
+    protected final InstanceMirror<?> mirror;
     
     /**
      * Constructor for translated new statements - instantiates a new native mirror.
@@ -34,7 +35,7 @@ public class ObjectMirage<T> {
     /**
      * Constructor for calls to make() - the mirror instance is passed up the constructor chain.
      */
-    public ObjectMirage(ObjectMirror<T> mirror) {
+    public ObjectMirage(InstanceMirror<T> mirror) {
         this.mirror = mirror;
         
     }
@@ -124,6 +125,11 @@ public class ObjectMirage<T> {
         
         // Never reached
         return null;
+    }
+    
+    public static Object getMirageStringForReal(String string, Class<?> classLoaderLiteral) {
+        ObjectMirror<String> mirror = new NativeObjectMirror<String>(string);
+        return ((MirageClassLoader)classLoaderLiteral.getClassLoader()).makeMirage(mirror);
     }
     
     public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {

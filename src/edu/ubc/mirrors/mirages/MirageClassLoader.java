@@ -19,15 +19,17 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.verifier.Verifier;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceClassVisitor;
 
-import com.sun.xml.internal.ws.org.objectweb.asm.Type;
-
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
@@ -96,12 +98,9 @@ public class MirageClassLoader extends ClassLoader {
     @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         System.out.println("loadClass: " + name);
-        Class<?> c = COMMON_CLASSES.get(name);
-        if (c != null) {
-            return c;
-        } else {
-            return super.loadClass(name, resolve);
-        }
+        Class<?> c = super.loadClass(name, resolve);
+        System.out.println("Done loading class: " + name);
+        return c;
     }
     
     @Override
@@ -113,7 +112,19 @@ public class MirageClassLoader extends ClassLoader {
             return defineClass(name, b, 0, b.length);
         } else if (name.startsWith("miragearray")) {
             ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
-            writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, name, null, Type.getInternalName(ObjectMirage.class), null);
+            writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, name.replace('.', '/'), null, Type.getInternalName(ObjectArrayMirage.class), null);
+
+            // Generate thunk constructor
+            String initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getObjectType("[Ljava/lang/Object;"));
+            MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
+            mv.visitCode();
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+            mv.visitVarInsn(Opcodes.ALOAD, 1);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(ObjectArrayMirage.class), "<init>", initDesc);
+            mv.visitInsn(Opcodes.RETURN);
+            mv.visitMaxs(2, 2);
+            mv.visitEnd();
+            
             byte[] b = writer.toByteArray();
             return defineClass(name, b, 0, b.length);
         } else if (name.startsWith("mirage")) {
@@ -209,11 +220,15 @@ public class MirageClassLoader extends ClassLoader {
     @SuppressWarnings("unchecked")
     public <T> T makeMirage(ObjectMirror<T> mirror) {
         try {
-            final String internalClassName = mirror.getClassMirror().getClassName().replace('.', '/');
-            final String mirageClassName = MirageClassGenerator.getMirageInternalClassName(internalClassName);
-            final Class<?> mirageClass = loadClass(mirageClassName);
-            final Constructor<?> c = mirageClass.getConstructor(ObjectMirror.class);
-            return (T)c.newInstance(mirror);
+            if (mirror instanceof InstanceMirror || mirror instanceof ObjectArrayMirror) {
+                final String internalClassName = mirror.getClassMirror().getClassName();
+                final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName);
+                final Class<?> mirageClass = loadClass(mirageClassName);
+                final Constructor<?> c = mirageClass.getConstructor(InstanceMirror.class);
+                return (T)c.newInstance(mirror);
+            } else {
+                return (T)mirror;
+            }
         } catch (NoSuchMethodException e) {
             InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
             error.initCause(e);
