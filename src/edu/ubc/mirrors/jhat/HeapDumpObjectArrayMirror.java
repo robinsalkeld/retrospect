@@ -27,7 +27,7 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror {
         return array.getLength();
     }
 
-    public Object get(int index) throws ArrayIndexOutOfBoundsException {
+    public ObjectMirror<?> get(int index) throws ArrayIndexOutOfBoundsException {
         long address = ((IObjectArray)array).getReferenceArray()[index];
         IObject object;
         try {
@@ -35,11 +35,10 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror {
         } catch (SnapshotException e) {
             throw new InternalError();
         }
-        ObjectMirror<?> mirror = HeapDumpObjectMirror.makeMirror(loader, object);
-        return loader.makeMirage(mirror);
+        return HeapDumpObjectMirror.makeMirror(loader, object);
     }
 
-    public void set(int index, Object o) throws ArrayIndexOutOfBoundsException {
+    public void set(int index, ObjectMirror<?> o) throws ArrayIndexOutOfBoundsException {
         throw new UnsupportedOperationException();
     }
 

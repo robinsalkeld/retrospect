@@ -55,8 +55,19 @@ public class MirageMethodGenerator extends InstructionAdapter {
             if (owner.equals(Type.getInternalName(Object.class))) {
                 owner = objectMirageType.getInternalName();
             }
-        }
+        } 
             
+        if (name.equals("toString") && desc.equals(Type.getMethodDescriptor(getMirageType(String.class)))) {
+            super.visitMethodInsn(opcode, owner, name, Type.getMethodDescriptor(Type.getType(String.class)));
+            
+            aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
+            invokestatic(objectMirageType.getInternalName(),
+                         "getMirageStringForReal",
+                         Type.getMethodDescriptor(OBJECT_TYPE, Type.getType(String.class), classType));
+            checkcast(getMirageType(String.class));
+            return;
+        }
+        
         super.visitMethodInsn(opcode, owner, name, desc);
     }
     
@@ -66,7 +77,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         int fieldSort = fieldType.getSort();
         String suffix = "";
         if (fieldSort == Type.ARRAY || fieldSort == Type.OBJECT) {
-            fieldTypeForMirrorCall = OBJECT_TYPE;
+            fieldTypeForMirrorCall = objectMirrorType;
         } else {
             suffix = MirageClassGenerator.getSortName(fieldSort);
         }
@@ -78,10 +89,20 @@ public class MirageMethodGenerator extends InstructionAdapter {
         } else {
             methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall);
         }
+        if (isSet && fieldTypeForMirrorCall.equals(objectMirrorType)) {
+            invokestatic(objectMirageType.getInternalName(), 
+                         "getMirror", 
+                         Type.getMethodDescriptor(objectMirrorType, OBJECT_TYPE));
+        }
         invokeinterface(MirageClassGenerator.fieldMirrorType.getInternalName(), 
                         (isSet ? "set" : "get") + suffix, 
                         methodDesc);
-        if (!isSet && fieldTypeForMirrorCall.equals(OBJECT_TYPE)) {
+        
+        if (!isSet && fieldTypeForMirrorCall.equals(objectMirrorType)) {
+            aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
+            invokestatic(objectMirageType.getInternalName(),
+                         "make",
+                         Type.getMethodDescriptor(OBJECT_TYPE, objectMirrorType, classType));
             checkcast(fieldType);
         }
     }
@@ -153,7 +174,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             case Opcodes.LALOAD: arrayElementType = Type.LONG_TYPE; break;
             case Opcodes.FALOAD: arrayElementType = Type.FLOAT_TYPE; break;
             case Opcodes.DALOAD: arrayElementType = Type.DOUBLE_TYPE; break;
-            case Opcodes.AALOAD: arrayElementType = OBJECT_TYPE; break;
+            case Opcodes.AALOAD: arrayElementType = objectMirrorType; break;
             case Opcodes.BALOAD: arrayElementType = Type.BYTE_TYPE; break;
             case Opcodes.CALOAD: arrayElementType = Type.CHAR_TYPE; break;
             case Opcodes.SALOAD: arrayElementType = Type.SHORT_TYPE; break;
@@ -161,7 +182,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             case Opcodes.LASTORE: arrayElementType = Type.LONG_TYPE; break;
             case Opcodes.FASTORE: arrayElementType = Type.FLOAT_TYPE; break;
             case Opcodes.DASTORE: arrayElementType = Type.DOUBLE_TYPE; break;
-            case Opcodes.AASTORE: arrayElementType = OBJECT_TYPE; break;
+            case Opcodes.AASTORE: arrayElementType = objectMirrorType; break;
             case Opcodes.BASTORE: arrayElementType = Type.BYTE_TYPE; break;
             case Opcodes.CASTORE: arrayElementType = Type.CHAR_TYPE; break;
             case Opcodes.SASTORE: arrayElementType = Type.SHORT_TYPE; break;
@@ -169,10 +190,14 @@ public class MirageMethodGenerator extends InstructionAdapter {
             
             // Use the analyzer to figure out the expected array element type
             Type arrayElementTypeForMirrorCall = arrayElementType;
-            if (arrayElementType.equals(OBJECT_TYPE)) {
+            if (arrayElementType.equals(objectMirrorType)) {
                 Type mirageType = stackType(isArrayStore ? 2 : 1);
+//                System.out.println("mirageType: " + mirageType);
                 Type originalType = Type.getObjectType(getOriginalClassName(mirageType.getInternalName()));
+//                System.out.println("originalType: " + originalType);
                 arrayElementType = getMirageType(originalType.getElementType());
+//                System.out.println("arrayElementType: " + arrayElementType);
+                
             }
             
             int setValueLocal = -1; 
@@ -185,7 +210,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             
             // Push the mirror instance onto the stack
             // TODO-RS: Primitive mirrors don't need to be wrapped?
-            Type mirrorType = MirageClassGenerator.arrayMirrorType;
+            Type mirrorType = MirageClassGenerator.objectArrayMirrorType;
             String suffix = "";
             if (arrayElementType.getSort() != Type.OBJECT && arrayElementType.getSort() != Type.ARRAY) {
                 mirrorType = Type.getObjectType(getPrimitiveArrayMirrorInternalName(arrayElementType));
@@ -204,10 +229,19 @@ public class MirageMethodGenerator extends InstructionAdapter {
             } else {
                 methodDesc = Type.getMethodDescriptor(arrayElementTypeForMirrorCall, Type.INT_TYPE);
             }
+            if (isArrayStore && arrayElementTypeForMirrorCall.equals(objectMirrorType)) {
+                invokestatic(objectMirageType.getInternalName(), 
+                             "getMirror", 
+                             Type.getMethodDescriptor(objectMirrorType, OBJECT_TYPE));
+            }
             invokeinterface(mirrorType.getInternalName(), 
                             (isArrayStore ? "set" : "get") + suffix, 
                             methodDesc);
-            if (!isArrayStore && arrayElementTypeForMirrorCall.equals(OBJECT_TYPE)) {
+            if (!isArrayStore && arrayElementTypeForMirrorCall.equals(objectMirrorType)) {
+                aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
+                invokestatic(objectMirageType.getInternalName(),
+                             "make",
+                             Type.getMethodDescriptor(OBJECT_TYPE, objectMirrorType, classType));
                 checkcast(arrayElementType);
             }
             
@@ -237,16 +271,15 @@ public class MirageMethodGenerator extends InstructionAdapter {
             
             // Wrap with a mirage class
             String originalTypeName = getOriginalClassName(type);
+            System.out.println("originalTypeName: " + originalTypeName);
             String mirageArrayType = getMirageInternalClassName("[L" + originalTypeName + ";");
             anew(Type.getType(mirageArrayType));
             dup();
 
             load(arraySizeVar, Type.INT_TYPE);
-            super.visitTypeInsn(opcode, type);
-            
             invokespecial(mirageArrayType, 
                           "<init>", 
-                          Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object[].class)));
+                          Type.getMethodDescriptor(Type.VOID_TYPE, Type.INT_TYPE));
             return;
         }
         

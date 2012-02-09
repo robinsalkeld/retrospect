@@ -20,13 +20,12 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror {
         return new HeapDumpClassMirror(loader, array.getClazz());
     }
     public int length() {
-        // TODO Auto-generated method stub
-        return 0;
+        return array.getLength();
     }
-    public Object get(int index) {
+    public Object getBoxedValue(int index) {
         return ((IPrimitiveArray)array).getValueAt(index);
     }
-    public void set(int index, Object o) {
+    public void setBoxedValue(int index, Object o) {
         throw new UnsupportedOperationException();
     }
 }

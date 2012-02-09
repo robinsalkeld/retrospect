@@ -19,24 +19,30 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         this.field = field;
     }
     
-    public Object get() throws IllegalAccessException {
+    @Override
+    public Object getBoxedValue() throws IllegalAccessException {
+        return field.getValue();
+    }
+    
+    public ObjectMirror<?> get() throws IllegalAccessException {
         Object value = field.getValue();
-        if (value instanceof ObjectReference) {
-            ObjectReference ref = (ObjectReference)value;
-            IObject object;
-            try {
-                object = ref.getObject();
-            } catch (SnapshotException e) {
-                throw new InternalError();
-            }
-            ObjectMirror<?> mirror = HeapDumpObjectMirror.makeMirror(loader, object);
-            return loader.makeMirage(mirror);
-        } else {
-            return value;
+        ObjectReference ref = (ObjectReference)value;
+        IObject object;
+        try {
+            object = ref.getObject();
+        } catch (SnapshotException e) {
+            throw new InternalError();
         }
+        return HeapDumpObjectMirror.makeMirror(loader, object);
     }
 
-    public void set(Object o) throws IllegalAccessException {
+    public void set(ObjectMirror<?> o) throws IllegalAccessException {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public void setBoxedValue(Object o) throws IllegalAccessException {
+        throw new UnsupportedOperationException();
+    }
+    
 }

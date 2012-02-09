@@ -2,7 +2,7 @@ package edu.ubc.mirrors;
 
 public interface FieldMirror {
 
-    public Object get() throws IllegalAccessException;
+    public ObjectMirror<?> get() throws IllegalAccessException;
     public boolean getBoolean() throws IllegalAccessException;
     public byte getByte() throws IllegalAccessException;
     public char getChar() throws IllegalAccessException;
@@ -12,7 +12,7 @@ public interface FieldMirror {
     public float getFloat() throws IllegalAccessException;
     public double getDouble() throws IllegalAccessException;
     
-    public void set(Object o) throws IllegalAccessException;
+    public void set(ObjectMirror<?> o) throws IllegalAccessException;
     public void setBoolean(boolean b) throws IllegalAccessException;
     public void setByte(byte b) throws IllegalAccessException;
     public void setChar(char c) throws IllegalAccessException;

@@ -58,11 +58,19 @@ public class FieldMapMirror<T> implements InstanceMirror<T> {
             this.name = name;
         }
         
-        public Object get() throws IllegalAccessException {
+        public ObjectMirror<?> get() throws IllegalAccessException {
+            return (ObjectMirror<?>)getBoxedValue();
+        }
+        
+        public void set(ObjectMirror<?> o) throws IllegalAccessException {
+            setBoxedValue(o);
+        }
+        
+        public Object getBoxedValue() throws IllegalAccessException {
             return fields.get(name);
         }
 
-        public void set(Object o) throws IllegalAccessException {
+        public void setBoxedValue(Object o) throws IllegalAccessException {
             System.out.println("putting " + name + " => " + o);
             fields.put(name, o);
         }

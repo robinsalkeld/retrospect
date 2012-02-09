@@ -92,10 +92,9 @@ public class NativeObjectMirror<T> implements InstanceMirror<T> {
             this.object = object;
         }
 
-        public Object get() throws IllegalAccessException {
+        public ObjectMirror<?> get() throws IllegalAccessException {
             Object nativeValue = field.get(object);
-            ObjectMirror<?> mirror = makeMirror(nativeValue);
-            return ObjectMirage.make(mirror);
+            return makeMirror(nativeValue);
         }
 
         public boolean getBoolean() throws IllegalAccessException {
@@ -130,40 +129,40 @@ public class NativeObjectMirror<T> implements InstanceMirror<T> {
             return field.getDouble(object);
         }
 
-        public void set(Object o) throws IllegalAccessException {
-            field.set(object, o);
+        public void set(ObjectMirror<?> o) throws IllegalAccessException {
+            throw new UnsupportedOperationException();
         }
 
         public void setBoolean(boolean b) throws IllegalAccessException {
-            field.set(object, b);
+            field.setBoolean(object, b);
         }
 
         public void setByte(byte b) throws IllegalAccessException {
-            field.set(object, b);
+            field.setByte(object, b);
         }
 
         public void setChar(char c) throws IllegalAccessException {
-            field.set(object, c);
+            field.setChar(object, c);
         }
 
         public void setShort(short s) throws IllegalAccessException {
-            field.set(object, s);
+            field.setShort(object, s);
         }
 
         public void setInt(int i) throws IllegalAccessException {
-            field.set(object, i);
+            field.setInt(object, i);
         }
 
         public void setLong(long l) throws IllegalAccessException {
-            field.set(object, l);
+            field.setLong(object, l);
         }
 
         public void setFloat(float f) throws IllegalAccessException {
-            field.set(object, f);
+            field.setFloat(object, f);
         }
 
         public void setDouble(double d) throws IllegalAccessException {
-            field.set(object, d);
+            field.setDouble(object, d);
         }
     }
     

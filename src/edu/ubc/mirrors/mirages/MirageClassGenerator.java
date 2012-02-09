@@ -23,6 +23,7 @@ import org.objectweb.asm.util.CheckClassAdapter;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
@@ -32,6 +33,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type instanceMirrorType = Type.getType(InstanceMirror.class);
     public static Type arrayMirrorType = Type.getType(ArrayMirror.class);
+    public static Type objectArrayMirrorType = Type.getType(ObjectArrayMirror.class);
     public static Type objectMirageType = Type.getType(ObjectMirage.class);
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeObjectMirror.class);

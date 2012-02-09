@@ -1,4 +1,4 @@
-package examples;
+package edu.ubc.mirrors.test;
 
 public class Bar {
 

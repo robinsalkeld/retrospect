@@ -2,6 +2,8 @@ package edu.ubc.mirrors.mirages;
 
 import java.lang.reflect.InvocationTargetException;
 
+import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -76,10 +78,14 @@ public class ObjectMirage<T> {
 //        return mirageLoader.defineMirageClass(className, originalReader);
 //    }
     
-    public static Class<?> getOriginalClass(Class<?> mirageClass) throws ClassNotFoundException {
+    public static Class<?> getOriginalClass(Class<?> mirageClass) {
         ClassLoader originalLoader = ((MirageClassLoader)mirageClass.getClassLoader()).getOriginalLoader();
         String originalClassName = MirageClassGenerator.getOriginalClassName(mirageClass.getName());
-        return originalLoader.loadClass(originalClassName);
+        try {
+            return originalLoader.loadClass(originalClassName);
+        } catch (ClassNotFoundException e) {
+            throw new InternalError();
+        }
     }
     
     private static void throwInternalError(Throwable t) {
@@ -111,8 +117,12 @@ public class ObjectMirage<T> {
     
     public static String getRealStringForMirage(ObjectMirage<?> mirage) {
         try {
-            InstanceMirror<?> mirror = (InstanceMirror<?>)mirage.mirror;
-            char[] value = (char[])mirror.getMemberField("value").get();
+            InstanceMirror<?> mirror = mirage.mirror;
+            CharArrayMirror valueMirror = (CharArrayMirror)mirror.getMemberField("value").get();
+            char[] value = new char[valueMirror.length()];
+            for (int i = 0; i < value.length; i++) {
+                value[i] = valueMirror.getChar(i);
+            }
             int offset = mirror.getMemberField("offset").getInt();
             int count = mirror.getMemberField("count").getInt();
             return new String(value, offset, count);
@@ -139,5 +149,24 @@ public class ObjectMirage<T> {
     
     public static <T> T make(ObjectMirror<T> mirror) {
         return ((MirageClassLoader)mirror.getClass().getClassLoader()).makeMirage(mirror);
+    }
+    
+    public static <T> T make(ObjectMirror<T> mirror, Class<?> classLoaderLiteral) {
+        MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        return loader.makeMirage(mirror);
+    }
+    
+    public static ObjectMirror<?> getMirror(Object o) {
+        if (o == null) {
+            return null;
+        }
+        System.out.println(o.toString());
+        if (o instanceof ObjectArrayMirage) {
+            return ((ObjectArrayMirage)o).mirror;
+        } else if (o instanceof ArrayMirror) {
+            return (ArrayMirror)o;
+        } else {
+            return ((ObjectMirage<?>)o).mirror;
+        }
     }
 }

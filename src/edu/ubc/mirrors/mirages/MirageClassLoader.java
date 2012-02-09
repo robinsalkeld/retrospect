@@ -53,7 +53,7 @@ public class MirageClassLoader extends ClassLoader {
         this.classMirrorLoader = classMirrorLoader;
         
         if (traceDir != null) {
-            myTraceDir = new File(traceDir, hashCode() + "/");
+            myTraceDir = new File(traceDir/*, hashCode() + "/"*/);
             myTraceDir.mkdir();
             for (File f : myTraceDir.listFiles()) {
                 f.delete();
@@ -66,9 +66,9 @@ public class MirageClassLoader extends ClassLoader {
     public static void setTraceDir(String newTraceDir) {
         traceDir = newTraceDir;
         for (File dir : new File(traceDir + "/").listFiles()) {
-            for (File f : dir.listFiles()) {
-                f.delete();
-            }
+//            for (File f : dir.listFiles()) {
+//                f.delete();
+//            }
             dir.delete();
         }
         
@@ -97,9 +97,9 @@ public class MirageClassLoader extends ClassLoader {
     
     @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        System.out.println("loadClass: " + name);
+//        System.out.println("loadClass: " + name);
         Class<?> c = super.loadClass(name, resolve);
-        System.out.println("Done loading class: " + name);
+//        System.out.println("Done loading class: " + name);
         return c;
     }
     
@@ -114,9 +114,19 @@ public class MirageClassLoader extends ClassLoader {
             ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
             writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, name.replace('.', '/'), null, Type.getInternalName(ObjectArrayMirage.class), null);
 
-            // Generate thunk constructor
-            String initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getObjectType("[Ljava/lang/Object;"));
+            // Generate thunk constructors
+            String initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class));
             MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
+            mv.visitCode();
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+            mv.visitVarInsn(Opcodes.ALOAD, 1);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(ObjectArrayMirage.class), "<init>", initDesc);
+            mv.visitInsn(Opcodes.RETURN);
+            mv.visitMaxs(2, 2);
+            mv.visitEnd();
+            
+            initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.INT_TYPE);
+            mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
             mv.visitCode();
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             mv.visitVarInsn(Opcodes.ALOAD, 1);
@@ -219,34 +229,40 @@ public class MirageClassLoader extends ClassLoader {
     
     @SuppressWarnings("unchecked")
     public <T> T makeMirage(ObjectMirror<T> mirror) {
+        if (mirror == null) {
+            return null;
+        }
+        final String internalClassName = mirror.getClassMirror().getClassName();
         try {
             if (mirror instanceof InstanceMirror || mirror instanceof ObjectArrayMirror) {
-                final String internalClassName = mirror.getClassMirror().getClassName();
+                System.out.println("mirror: " + mirror);
+                System.out.println("internalClassName: " + internalClassName);
                 final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName);
                 final Class<?> mirageClass = loadClass(mirageClassName);
-                final Constructor<?> c = mirageClass.getConstructor(InstanceMirror.class);
+                System.out.println("mirageclass: " + mirageClass);
+                final Constructor<?> c = mirageClass.getConstructor(mirror instanceof InstanceMirror ? InstanceMirror.class : ObjectArrayMirror.class);
                 return (T)c.newInstance(mirror);
             } else {
                 return (T)mirror;
             }
         } catch (NoSuchMethodException e) {
-            InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
+            InternalError error = new InternalError("Mirage class constructor not accessible: " + internalClassName);
             error.initCause(e);
             throw error;
         } catch (IllegalAccessException e) {
-            InternalError error = new InternalError("Mirage class constructor not accessible: " + mirror.getClassMirror());
+            InternalError error = new InternalError("Mirage class constructor not accessible: " + internalClassName);
             error.initCause(e);
             throw error;
         } catch (InstantiationException e) {
-            InternalError error = new InternalError("Result of ObjectMirage#getMirrorClass() is abstract: " + mirror.getClassMirror());
+            InternalError error = new InternalError("Result of ObjectMirage#getMirrorClass() is abstract: " + internalClassName);
             error.initCause(e);
             throw error;
         } catch (InvocationTargetException e) {
-            InternalError error = new InternalError("Error on instantiating Mirage class: " + mirror.getClassMirror());
+            InternalError error = new InternalError("Error on instantiating Mirage class: " + internalClassName);
             error.initCause(e);
             throw error;
         } catch (ClassNotFoundException e) {
-            InternalError error = new InternalError("Error on loading Mirage class: " + mirror.getClassMirror());
+            InternalError error = new InternalError("Error on loading Mirage class: " + internalClassName);
             error.initCause(e);
             throw error;
         }
