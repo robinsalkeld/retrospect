@@ -26,6 +26,7 @@ import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceClassVisitor;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -90,9 +91,7 @@ public class MirageClassLoader extends ClassLoader {
                 FieldMapMirror.class,
                 // Necessary because only subclasses of this can be thrown.
                 // Probably need to introduce a new root subclass as with ObjectMirage.
-                Throwable.class, 
-                // Definitely wrong, but see if this gets us going on real examples for now
-                System.class);
+                Throwable.class);
     }
     
     @Override
@@ -129,14 +128,14 @@ public class MirageClassLoader extends ClassLoader {
             mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
             mv.visitCode();
             mv.visitVarInsn(Opcodes.ALOAD, 0);
-            mv.visitVarInsn(Opcodes.ALOAD, 1);
+            mv.visitVarInsn(Opcodes.ILOAD, 1);
             mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(ObjectArrayMirage.class), "<init>", initDesc);
             mv.visitInsn(Opcodes.RETURN);
             mv.visitMaxs(2, 2);
             mv.visitEnd();
             
             byte[] b = writer.toByteArray();
-            return defineClass(name, b, 0, b.length);
+            return defineClass(name, b);
         } else if (name.startsWith("mirage")) {
             ClassReader readerFromClassFile;
             String originalName = MirageClassGenerator.getOriginalClassName(name);
@@ -149,7 +148,10 @@ public class MirageClassLoader extends ClassLoader {
                 throw new ClassNotFoundException("Class not trapped by agent and .class file not accessible: " + originalName, e);
             }
             
-            return defineMirageClass(name, readerFromClassFile);
+            String originalClassName = MirageClassGenerator.getOriginalClassName(name);
+            ClassMirror<?> classMirror = classMirrorLoader.loadClassMirror(originalClassName);
+            byte[] b = MirageClassGenerator.generate(classMirror, readerFromClassFile);
+            return defineClass(name, b);
         } else if (name.startsWith("native")) {
             ClassReader readerFromClassFile;
             String originalName = NativeClassGenerator.getOriginalClassName(name);
@@ -159,16 +161,14 @@ public class MirageClassLoader extends ClassLoader {
                 throw new ClassNotFoundException("Class not trapped by agent and .class file not accessible: " + originalName, e);
             }
             
-            return defineNativeClass(name, readerFromClassFile);
+            byte[] b = NativeClassGenerator.generate(originalName, readerFromClassFile);
+            return defineClass(name, b);
         } else {
             throw new ClassNotFoundException();
         }
     }
     
-    public Class<?> defineMirageClass(String name, ClassReader originalReader) {
-        String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(name);
-        byte[] b = MirageClassGenerator.generate(mirageClassName, originalReader);
-        
+    protected Class<?> defineClass(String name, byte[] b) {
         ByteArrayInputStream is = new ByteArrayInputStream(b);
         try {
             JavaClass javaClass = new ClassParser(is, "").parse();
@@ -180,7 +180,7 @@ public class MirageClassLoader extends ClassLoader {
         }
         
         if (myTraceDir != null) {
-            File file = new File(myTraceDir, mirageClassName + ".class");
+            File file = new File(myTraceDir, name + ".class");
             try {
                 OutputStream classFile = new FileOutputStream(file);
                 classFile.write(b);
@@ -189,7 +189,7 @@ public class MirageClassLoader extends ClassLoader {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            File txtFile = new File(myTraceDir, mirageClassName + ".txt");
+            File txtFile = new File(myTraceDir, name + ".txt");
             try {
                 PrintWriter textFileWriter = new PrintWriter(txtFile);
                 new ClassReader(b).accept(new TraceClassVisitor(null, textFileWriter), 0);
@@ -206,25 +206,8 @@ public class MirageClassLoader extends ClassLoader {
 //                Verifier.main(new String[] {name});
             }
         }
-        
-        return defineClass(mirageClassName, b, 0, b.length);
-    }
-    
-    public Class<?> defineNativeClass(String name, ClassReader originalReader) {
-        byte[] b = NativeClassGenerator.generate(name, originalReader);
-        
-        if (myTraceDir != null) {
-            try {
-                File file = new File(myTraceDir, name + ".class");
-                OutputStream classFile = new FileOutputStream(file);
-                classFile.write(b);
-                classFile.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        
-        return defineClass(name, b, 0, b.length);
+//        System.out.println("defining class: " + name);
+        return super.defineClass(name, b, 0, b.length);
     }
     
     @SuppressWarnings("unchecked")
@@ -235,11 +218,8 @@ public class MirageClassLoader extends ClassLoader {
         final String internalClassName = mirror.getClassMirror().getClassName();
         try {
             if (mirror instanceof InstanceMirror || mirror instanceof ObjectArrayMirror) {
-                System.out.println("mirror: " + mirror);
-                System.out.println("internalClassName: " + internalClassName);
                 final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName);
                 final Class<?> mirageClass = loadClass(mirageClassName);
-                System.out.println("mirageclass: " + mirageClass);
                 final Constructor<?> c = mirageClass.getConstructor(mirror instanceof InstanceMirror ? InstanceMirror.class : ObjectArrayMirror.class);
                 return (T)c.newInstance(mirror);
             } else {

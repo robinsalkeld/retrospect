@@ -6,7 +6,7 @@ import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 
 public class MirageTest2 {
-    public static void main(String[] args) throws ClassNotFoundException {
+    public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, NoSuchFieldException {
         String className = args[0];
         String traceDir = args[1];
         MirageClassLoader.traceClass = className;
@@ -22,15 +22,18 @@ public class MirageTest2 {
 //            t.printStackTrace();
 //        }
         
-        System.out.println("Loading class...");
-        Class<?> klass = mirageClassLoader.loadClass("mirage.java.lang.String");
-        System.out.println("Resolving class...");
-        klass.getMethods();
-        System.out.println("Resolved class!");
+//        System.out.println("Loading class...");
+//        Class<?> klass = mirageClassLoader.loadClass("mirage.java.lang.ClassLoader");
+//        System.out.println("Resolving class...");
+//        klass.getMethods();
+//        System.out.println("Resolved class!");
         
         FieldMapMirror<Bar> mirror = new FieldMapMirror<Bar>(Bar.class);
+        mirror.getMemberField("f").setInt(47);
         Object b = mirageClassLoader.makeMirage(mirror);
-        b.toString();
+        System.out.println("s! " + b.toString());
+        System.out.println("s! " + b.toString());
+        System.out.println("s! " + b.toString());
     }
     
     

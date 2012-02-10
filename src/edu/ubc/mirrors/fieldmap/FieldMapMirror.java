@@ -40,11 +40,6 @@ public class FieldMapMirror<T> implements InstanceMirror<T> {
     }
 
     
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        throw new UnsupportedOperationException();
-    }
-
-    
     public ClassMirror<? extends T> getClassMirror() {
         return new NativeClassMirror<T>(klass);
     }
@@ -67,20 +62,14 @@ public class FieldMapMirror<T> implements InstanceMirror<T> {
         }
         
         public Object getBoxedValue() throws IllegalAccessException {
-            return fields.get(name);
+            Object result = fields.get(name);
+//            System.out.println("getting " + FieldMapMirror.this.klass.getName() + "." + name + " => " + result);
+            return result;
         }
 
         public void setBoxedValue(Object o) throws IllegalAccessException {
-            System.out.println("putting " + name + " => " + o);
+//            System.out.println("putting " + FieldMapMirror.this.klass.getName() + "." + name + " => " + o);
             fields.put(name, o);
         }
-    }
-
-    
-    public FieldMirror getArrayElement(int index) throws ArrayIndexOutOfBoundsException {
-        throw new IllegalStateException();
-    }
-    public int getArrayLength() throws IllegalStateException {
-        throw new IllegalStateException();
     }
 }

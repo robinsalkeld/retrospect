@@ -1,8 +1,13 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
+
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,6 +26,7 @@ import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
@@ -73,8 +79,15 @@ public class MirageClassGenerator extends ClassVisitor {
         };
     };
     
-    public MirageClassGenerator(ClassVisitor output) {
+    private final ClassMirror<?> classMirror;
+    private final Map<String, Method> mirrorMethods = new HashMap<String, Method>();
+    
+    public MirageClassGenerator(ClassMirror<?> classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
+        this.classMirror = classMirror;
+        for (Method m : classMirror.getClass().getDeclaredMethods()) {
+            mirrorMethods.put(m.getName(), m);
+        }
     }
     
     private String name = null;
@@ -127,6 +140,10 @@ public class MirageClassGenerator extends ClassVisitor {
         default:
             throw new IllegalStateException("Bad sort: " + sort);
         }
+    }
+    
+    public static boolean isRefType(Type t) {
+        return t.getSort() == Type.OBJECT || t.getSort() == Type.ARRAY;
     }
     
     public static Type getTypeForSortName(String name) {
@@ -232,9 +249,9 @@ public class MirageClassGenerator extends ClassVisitor {
         // TODO: ...actually we can't do that because there seems to be no way to access private
         // classes at all. :( Instead for now we'll recreate static state in the mirage classes
         // and not yet use ClassMirror#getStaticField()
-//        if (name.equals("<clinit>")) {
-//            return null;
-//        }
+        if (name.equals("<clinit>")) {
+            return null;
+        }
         
         // toString() is a special case - it's defined in java.lang.Object, which this class must ultimately
         // extend, so we have to return a real String rather than a mirage.
@@ -248,153 +265,62 @@ public class MirageClassGenerator extends ClassVisitor {
         int noNativeAccess = ~Opcodes.ACC_NATIVE & access;
         MethodVisitor superVisitor = super.visitMethod(noNativeAccess, name, desc, signature, exceptions);
         
-        AnalyzerAdapter analyzer = new AnalyzerAdapter(this.name, noNativeAccess, name, desc, superVisitor);
-        MirageMethodGenerator generator = new MirageMethodGenerator(analyzer, superName, Type.getMethodType(desc), isToString);
+        MirageMethodGenerator generator = new MirageMethodGenerator(this.name, noNativeAccess, name, desc, superVisitor, superName, isToString);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
-        if ((Opcodes.ACC_NATIVE & access) != 0) {
-            String systemName = Type.getInternalName(System.class);
-            String mirageSystemName = getMirageInternalClassName(systemName);
-            if (name.equals("retrieveDirectives")) {
-                int bp = 4;
-                bp++;
-            }
-            if (this.name.equals(getMirageInternalClassName(Type.getInternalName(Class.class))) && name.equals("registerNatives")) {
-                generator.visitCode();
-                generator.visitInsn(Opcodes.RETURN);
-                generator.visitMaxs(0, 0);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals(mirageSystemName) && name.equals("registerNatives")) {
-                generator.visitCode();
-                generator.visitInsn(Opcodes.RETURN);
-                generator.visitMaxs(0, 0);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals(mirageSystemName) && name.equals("setIn0")) {
-                generator.visitCode();
-                generator.visitVarInsn(Opcodes.ALOAD, 0);
-                generator.visitFieldInsn(Opcodes.PUTSTATIC, mirageSystemName, "in", Type.getDescriptor(InputStream.class));
-                generator.visitMaxs(1, 1);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals(mirageSystemName) && name.equals("setOut0")) {
-                generator.visitCode();
-                generator.visitVarInsn(Opcodes.ALOAD, 0);
-                generator.visitFieldInsn(Opcodes.PUTSTATIC, mirageSystemName, "out", Type.getDescriptor(PrintStream.class));
-                generator.visitMaxs(1, 1);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals(mirageSystemName) && name.equals("setErr0")) {
-                generator.visitCode();
-                generator.visitVarInsn(Opcodes.ALOAD, 0);
-                generator.visitFieldInsn(Opcodes.PUTSTATIC, mirageSystemName, "err", Type.getDescriptor(PrintStream.class));
-                generator.visitMaxs(1, 1);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals(mirageSystemName) && (name.equals("currentTimeMillis") || name.equals("nanoTime"))) {
-                generator.visitCode();
-                generator.visitMethodInsn(Opcodes.INVOKESTATIC, systemName, name, Type.getMethodDescriptor(Type.LONG_TYPE));
-                generator.visitMaxs(1, 1);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals(mirageSystemName) && (name.equals("identityHashCode"))) {
-                // TODO-RS: Not correct for mirages!
-                generator.visitCode();
-                generator.load(0, Type.getType(Object.class));
-                generator.visitMethodInsn(Opcodes.INVOKESTATIC, systemName, name, Type.getMethodDescriptor(Type.INT_TYPE));
-                generator.visitMaxs(1, 1);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals(mirageSystemName) && (name.equals("arraycopy"))) {
-                // TODO-RS: Not correct for mirages!
-                generator.visitCode();
-                generator.visitVarInsn(Opcodes.ALOAD, 0);
-                generator.visitVarInsn(Opcodes.ILOAD, 1);
-                generator.visitVarInsn(Opcodes.ALOAD, 2);
-                generator.visitVarInsn(Opcodes.ILOAD, 3);
-                generator.visitVarInsn(Opcodes.ILOAD, 4);
-                generator.visitMethodInsn(Opcodes.INVOKESTATIC, systemName, name, 
-                        Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class), Type.INT_TYPE, Type.getType(Object.class), Type.INT_TYPE, Type.INT_TYPE));
-                generator.visitInsn(Opcodes.RETURN);
-                generator.visitMaxs(5, 5);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals(mirageSystemName) && (name.equals("initProperties"))) {
-                generator.visitCode();
-                generator.putstatic(mirageSystemName, "props", getMirageType(Properties.class).getDescriptor());
-                generator.areturn(Type.VOID_TYPE);
-                generator.visitMaxs(1, 1);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals("mirage/java/lang/ClassLoader") && (name.equals("retrieveDirectives"))) {
-                generator.visitCode();
-                generator.aconst(null);
-                generator.areturn(Type.getObjectType("mirage/java/lang/AssertionStatusDirectives"));
-                generator.visitMaxs(1, 1);
-                generator.visitEnd();
-                
-                return null;
-            } else if (this.name.equals(mirageSystemName) && (name.equals("mapLibraryName"))) {
-                generateStaticThunk(generator, System.class, name, String.class);
-                
-                return null;
-            } else if (this.name.equals(classType.getInternalName()) && (name.equals("getPrimitiveClass"))) {
-                generator.visitCode();
-                generator.aconst(null);
-                generator.areturn(classType);
-                generator.visitEnd();
-                
-                return null;
-            } else {
-                // Generate a method body that throws an exception
-                generator.visitCode();
-                Type exceptionType = Type.getType(UnsupportedOperationException.class); 
-                generator.anew(exceptionType);
-                generator.dup();
-                String message = "Unsupported native method: " + this.name + "#" + name;
-                generator.aconst(message);
-                generator.invokespecial(exceptionType.getInternalName(), 
-                                        "<init>", 
-                                        Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(String.class)));
-                generator.athrow();
-                generator.visitMaxs(1, 0);
-                generator.visitEnd();
+        Method mirrorMethod = mirrorMethods.get(name);
+        if (mirrorMethod != null) {
+            generateStaticThunk(generator, mirrorMethod);
+            
+            return null;
+        } else if ((Opcodes.ACC_NATIVE & access) != 0) {
+            // Generate a method body that throws an exception
+            generator.visitCode();
+            Type exceptionType = Type.getType(UnsupportedOperationException.class); 
+            generator.anew(exceptionType);
+            generator.dup();
+            String message = "Unsupported native method: " + this.name + "#" + name;
+            generator.aconst(message);
+            generator.invokespecial(exceptionType.getInternalName(), 
+                                    "<init>", 
+                                    Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(String.class)));
+            generator.athrow();
+            generator.visitMaxs(1, 0);
+            generator.visitEnd();
 
-                return null;
-            }
+            return null;
         }
         
         return lvs;
     }
     
-    public static void generateStaticThunk(MethodVisitor visitor, Class<?> klass, String methodName, Class<?> ... parameterClasses) {
-        Method method;
-        try {
-            method = klass.getMethod(methodName, parameterClasses);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+    public static void generateStaticThunk(MethodVisitor visitor, Method method) {
+        Class<?>[] parameterClasses = method.getParameterTypes();
         visitor.visitCode();
         Type[] parameterTypes = new Type[parameterClasses.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             parameterTypes[i] = Type.getType(parameterClasses[i]);
             visitor.visitVarInsn(parameterTypes[i].getOpcode(Opcodes.ILOAD), i);
+            if (isRefType(parameterTypes[i])) {
+                visitor.visitMethodInsn(Opcodes.INVOKESTATIC, 
+                            objectMirageType.getInternalName(), 
+                            "getMirror", 
+                            Type.getMethodDescriptor(objectMirrorType, Type.getType(Object.class)));
+            }
         }
         Type returnType = Type.getType(method.getReturnType());
-        visitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(klass), methodName, Type.getMethodDescriptor(returnType, parameterTypes));
+        visitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(method.getDeclaringClass()), method.getName(), Type.getMethodDescriptor(method));
+        if (isRefType(returnType)) {
+            visitor.visitLdcInsn(Type.getObjectType(MirageClassLoader.CLASS_LOADER_LITERAL_NAME));
+            visitor.visitMethodInsn(Opcodes.INVOKESTATIC, 
+                    objectMirageType.getInternalName(), 
+                    "make", 
+                    Type.getMethodDescriptor(objectMirrorType, Type.getType(Object.class), Type.getType(Class.class)));
+        }
         visitor.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
         visitor.visitMaxs(parameterTypes.length, parameterTypes.length);
+        visitor.visitEnd();
     }
     
     @Override
@@ -428,11 +354,11 @@ public class MirageClassGenerator extends ClassVisitor {
         super.visitEnd();
     }
 
-    public static byte[] generate(String className, ClassReader reader) {
+    public static byte[] generate(ClassMirror classMirror, ClassReader reader) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         visitor = new CheckClassAdapter(visitor);
-        visitor = new MirageClassGenerator(visitor);
+        visitor = new MirageClassGenerator(classMirror, visitor);
         visitor = new RemappingClassAdapter(visitor, REMAPPER);
         reader.accept(visitor, ClassReader.SKIP_FRAMES);
         return classWriter.toByteArray();

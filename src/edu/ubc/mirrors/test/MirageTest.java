@@ -1,9 +1,7 @@
 package edu.ubc.mirrors.test;
 
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.mirages.ObjectMirage;
-import examples.MirageTestSuper;
 
 
 public class MirageTest {

@@ -13,7 +13,13 @@ public class NativeClassMirrorLoader extends ClassMirrorLoader {
     
     @Override
     public ClassMirror<?> loadClassMirror(String name) throws ClassNotFoundException {
-        return new NativeClassMirror(classLoader.loadClass(name));
+        if (name.equals("java.lang.System") || name.equals("java.lang.VMSystem")) {
+            return new SystemClassMirror(classLoader.loadClass(name));
+        } else if (name.equals("java.lang.Class")) {
+            return new ClassClassMirror(classLoader.loadClass(name));
+        } else {
+            return new NativeClassMirror(classLoader.loadClass(name));
+        }
     }
     
 }

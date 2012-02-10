@@ -16,6 +16,7 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
 import static edu.ubc.mirrors.raw.NativeClassGenerator.getNativeInternalClassName;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -28,16 +29,17 @@ import edu.ubc.mirrors.raw.NativeObjectArrayMirror;
 public class MirageMethodGenerator extends InstructionAdapter {
 
     private AnalyzerAdapter analyzer;
+    private MethodVisitor superVisitor;
     private LocalVariablesSorter lvs;
     private final String superName;
-    private final Type methodType;
     private final boolean isToString;
     
-    public MirageMethodGenerator(AnalyzerAdapter analyzer, String superName, Type methodType, boolean isToString) {
-        super(Opcodes.ASM4, analyzer);
-        this.analyzer = analyzer;
+    public MirageMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, String superName, boolean isToString) {
+        super(Opcodes.ASM4, null);
+        this.superVisitor = superVisitor;
+        this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
+        this.mv = analyzer;
         this.superName = superName;
-        this.methodType = methodType;
         this.isToString = isToString;
     }
 
@@ -112,11 +114,11 @@ public class MirageMethodGenerator extends InstructionAdapter {
         boolean isSet = (opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC);
         boolean isStatic = (opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC);
         
-        if (isStatic) {
-            // TODO-RS: See comment in MirageClassGenerator#visitMethod()
-            super.visitFieldInsn(opcode, owner, name, desc);
-            return;
-        }
+//        if (isStatic) {
+//            // TODO-RS: See comment in MirageClassGenerator#visitMethod()
+//            super.visitFieldInsn(opcode, owner, name, desc);
+//            return;
+//        }
         
         // Pop the original argument
         Type fieldType = Type.getType(desc);
@@ -263,6 +265,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
     }
     
     @Override
+    public void visitJumpInsn(int opcode, Label label) {
+        if (opcode == Opcodes.JSR || opcode == Opcodes.RET) {
+            // Don't tell the analyzer - it doesn't support them!
+            superVisitor.visitJumpInsn(opcode, label);
+        } else {
+            super.visitJumpInsn(opcode, label);
+        }
+    }
+    
+    @Override
     public void visitTypeInsn(int opcode, String type) {
         if (opcode == Opcodes.ANEWARRAY) {
             // Store the array size
@@ -271,7 +283,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             
             // Wrap with a mirage class
             String originalTypeName = getOriginalClassName(type);
-            System.out.println("originalTypeName: " + originalTypeName);
+//            System.out.println("originalTypeName: " + originalTypeName);
             String mirageArrayType = getMirageInternalClassName("[L" + originalTypeName + ";");
             anew(Type.getType(mirageArrayType));
             dup();
@@ -302,7 +314,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             case Opcodes.T_CHAR:    elementType = Type.CHAR_TYPE;    break;
             case Opcodes.T_SHORT:   elementType = Type.SHORT_TYPE;   break;
             case Opcodes.T_INT:     elementType = Type.INT_TYPE;     break;
-            case Opcodes.T_LONG:    elementType = Type.SHORT_TYPE;   break;
+            case Opcodes.T_LONG:    elementType = Type.LONG_TYPE;   break;
             case Opcodes.T_FLOAT:   elementType = Type.FLOAT_TYPE;   break;
             case Opcodes.T_DOUBLE:  elementType = Type.DOUBLE_TYPE;  break;
             default: throw new IllegalArgumentException("Unknown type number: " + operand);

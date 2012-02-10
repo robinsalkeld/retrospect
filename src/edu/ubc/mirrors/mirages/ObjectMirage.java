@@ -30,8 +30,8 @@ public class ObjectMirage<T> {
      * Constructor for translated new statements - instantiates a new native mirror.
      */
     protected ObjectMirage() {
-        Class<?> nativeClass = getNativeClass(getClass());
-        this.mirror = new FieldMapMirror(nativeClass);
+        Class<?> originalClass = getOriginalClass(getClass());
+        this.mirror = new FieldMapMirror(originalClass);
     }
     
     /**
@@ -82,7 +82,7 @@ public class ObjectMirage<T> {
         ClassLoader originalLoader = ((MirageClassLoader)mirageClass.getClassLoader()).getOriginalLoader();
         String originalClassName = MirageClassGenerator.getOriginalClassName(mirageClass.getName());
         try {
-            return originalLoader.loadClass(originalClassName);
+            return Class.forName(originalClassName, true, originalLoader);
         } catch (ClassNotFoundException e) {
             throw new InternalError();
         }
@@ -144,7 +144,8 @@ public class ObjectMirage<T> {
     
     public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        return loader.classMirrorLoader.loadClassMirror(className).getStaticField(fieldName);
+        String binaryName = className.replace('/', '.');
+        return loader.classMirrorLoader.loadClassMirror(binaryName).getStaticField(fieldName);
     }
     
     public static <T> T make(ObjectMirror<T> mirror) {
@@ -160,7 +161,6 @@ public class ObjectMirage<T> {
         if (o == null) {
             return null;
         }
-        System.out.println(o.toString());
         if (o instanceof ObjectArrayMirage) {
             return ((ObjectArrayMirage)o).mirror;
         } else if (o instanceof ArrayMirror) {
