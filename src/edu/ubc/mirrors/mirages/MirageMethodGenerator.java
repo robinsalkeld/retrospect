@@ -283,7 +283,6 @@ public class MirageMethodGenerator extends InstructionAdapter {
             
             // Wrap with a mirage class
             String originalTypeName = getOriginalClassName(type);
-//            System.out.println("originalTypeName: " + originalTypeName);
             String mirageArrayType = getMirageInternalClassName("[L" + originalTypeName + ";");
             anew(Type.getType(mirageArrayType));
             dup();

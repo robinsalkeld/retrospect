@@ -19,6 +19,11 @@ public class NativeClassMirror<T> implements ClassMirror<T> {
         return klass.getName();
     }
     
+    public ClassMirror<?> getSuperClassMirror() {
+        Class<?> superclass = klass.getSuperclass();
+        return superclass != null ? new NativeClassMirror<Object>(superclass) : null;
+    }
+    
     public boolean isArray() {
         return klass.isArray();
     }
@@ -29,20 +34,46 @@ public class NativeClassMirror<T> implements ClassMirror<T> {
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        Field field = klass.getDeclaredField(name);
-        if (!Modifier.isStatic(field.getModifiers())) {
-            // Crap, fall back to manual search
-            field = findField(name);
+        try {
+            Field field = klass.getDeclaredField(name);
+            if (Modifier.isStatic(field.getModifiers())) {
+                return new NativeFieldMirror(field, null);
+            }
+        } catch (NoSuchFieldException e) {
+            // ignore
         }
-        return new NativeFieldMirror(field, null);
+        
+        // Crap, fall back to manual search
+        for (Field f : klass.getDeclaredFields()) {
+            if (f.getName().equals(name) && Modifier.isStatic(f.getModifiers())) {
+                return new NativeFieldMirror(f, null);
+            }
+        }
+        
+        // Damn! Search the superclass and interfaces
+        // TODO-RS: Check the spec on the ordering here
+        Class<?> superclass = klass.getSuperclass();
+        if (superclass != null) {
+            try {
+                return new NativeClassMirror<Object>(superclass).getStaticField(name);
+            } catch (NoSuchFieldException e) {
+                // Ignore
+            }
+        }
+        
+        for (Class<?> i : klass.getInterfaces()) {
+            try {
+                return new NativeClassMirror<Object>(i).getStaticField(name);
+            } catch (NoSuchFieldException e) {
+                // Ignore
+            }
+        }
+        
+        throw new NoSuchFieldException();
     }
     
     private Field findField(String name) throws NoSuchFieldException {
-        for (Field f : klass.getDeclaredFields()) {
-            if (f.getName().equals(name) && Modifier.isStatic(f.getModifiers())) {
-                return f;
-            }
-        }
+        
         throw new NoSuchFieldException(name);
     }
 }

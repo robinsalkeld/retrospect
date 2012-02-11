@@ -21,7 +21,7 @@ public class Bar {
     
     public String toString() {
         f++;
-        return "" + f;
+        return "" + f + " <> "+ staticF;
     }
     
     public void foo(boolean[] s) {

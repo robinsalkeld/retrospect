@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.jhat;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.mat.snapshot.model.Field;

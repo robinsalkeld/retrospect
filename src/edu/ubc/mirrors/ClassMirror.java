@@ -1,5 +1,6 @@
 package edu.ubc.mirrors;
 
+
 public interface ClassMirror<T> {
 
     public String getClassName();

@@ -65,20 +65,7 @@ public class NativeObjectMirror<T> implements InstanceMirror<T> {
     }
     
     public ClassMirror<?> getClassMirror() {
-        return new ClassMirror<T>() {
-            public String getClassName() {
-                return object.getClass().getName();
-            }
-            public boolean isArray() {
-                return false;
-            }
-            public ClassMirror<?> getComponentClassMirror() {
-                return null;
-            }
-            public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return new NativeClassMirror<Object>(object.getClass());
     }
     
     static class NativeFieldMirror implements FieldMirror {

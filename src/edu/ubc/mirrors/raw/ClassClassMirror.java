@@ -6,7 +6,7 @@ public class ClassClassMirror extends NativeClassMirror<Object> {
         super(klass);
     }
     
-    public static void registerNatives() {
-        // No nothing
-    }
+//    public static void registerNatives() {
+//        // No nothing
+//    }
 }
