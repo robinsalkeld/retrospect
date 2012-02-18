@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.raw;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
@@ -17,6 +18,21 @@ public class NativeClassMirror<T> implements ClassMirror<T> {
     
     public String getClassName() {
         return klass.getName();
+    }
+    
+    @Override
+    public InputStream getBytecodeStream() {
+        return getNativeBytecodeStream(klass.getClassLoader(), klass.getName());
+    }
+    
+    public static InputStream getNativeBytecodeStream(ClassLoader classLoader, String name) {
+     // TODO-RS: Need instrumentation for fully general solution...
+        String resourceName = name.replace('.', '/') + ".class";
+        if (classLoader == null) {
+            return ClassLoader.getSystemResourceAsStream(resourceName);
+        } else {
+            return classLoader.getResourceAsStream(resourceName);
+        }
     }
     
     public ClassMirror<?> getSuperClassMirror() {

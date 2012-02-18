@@ -6,15 +6,16 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.ObjectReference;
 
 import edu.ubc.mirrors.BoxingFieldMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class HeapDumpFieldMirror extends BoxingFieldMirror {
 
-    private final MirageClassLoader loader;
+    private final HeapDumpClassMirrorLoader loader;
     private final Field field;
     
-    public HeapDumpFieldMirror(MirageClassLoader loader, Field field) {
+    public HeapDumpFieldMirror(HeapDumpClassMirrorLoader loader, Field field) {
         this.loader = loader;
         this.field = field;
     }

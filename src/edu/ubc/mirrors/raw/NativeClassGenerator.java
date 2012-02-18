@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.raw;
 
+import java.io.IOException;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -10,6 +12,7 @@ import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class NativeClassGenerator extends RemappingClassAdapter {
@@ -103,11 +106,12 @@ public class NativeClassGenerator extends RemappingClassAdapter {
         }
     }
     
-    public static byte[] generate(String className, ClassReader reader) {
+    public static byte[] generate(ClassMirror<?> classMirror) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         visitor = new CheckClassAdapter(visitor);
         visitor = new NativeClassGenerator(visitor);
+        ClassReader reader = new ClassReader(classMirror.getBytecodeStream());
         reader.accept(visitor, ClassReader.SKIP_FRAMES);
         return classWriter.toByteArray();
     }

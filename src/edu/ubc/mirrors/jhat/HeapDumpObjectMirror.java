@@ -3,26 +3,23 @@ package edu.ubc.mirrors.jhat;
 import java.util.List;
 
 import org.eclipse.mat.snapshot.model.Field;
-import org.eclipse.mat.snapshot.model.IArray;
 import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
-import hat.model.JavaField;
-import hat.model.JavaObject;
-
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 
-public class HeapDumpObjectMirror implements ObjectMirror<Object> {
+public class HeapDumpObjectMirror implements InstanceMirror {
 
-    private final MirageClassLoader loader;
+    private final HeapDumpClassMirrorLoader loader;
     private final IInstance heapDumpObject;
     
-    public HeapDumpObjectMirror(MirageClassLoader loader, IInstance heapDumpObject) {
+    public HeapDumpObjectMirror(HeapDumpClassMirrorLoader loader, IInstance heapDumpObject) {
         this.loader = loader;
         this.heapDumpObject = heapDumpObject;
     }
@@ -41,7 +38,7 @@ public class HeapDumpObjectMirror implements ObjectMirror<Object> {
         return new HeapDumpClassMirror(loader, heapDumpObject.getClazz());
     }
 
-    public static ObjectMirror<?> makeMirror(MirageClassLoader loader, IObject object) {
+    public static ObjectMirror<?> makeMirror(HeapDumpClassMirrorLoader loader, IObject object) {
         if (object instanceof IInstance) {
             return new HeapDumpObjectMirror(loader, (IInstance)object);
         } else if (object instanceof IPrimitiveArray) {

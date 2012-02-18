@@ -13,38 +13,44 @@ import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class HeapDumpClassMirrorLoader extends ClassMirrorLoader {
 
-    private final MirageClassLoader loader;
-    private final IClassLoader classLoader;
+    private final ClassLoader classLoader;
+    private final IClassLoader heapDumpClassLoader;
     
-    public HeapDumpClassMirrorLoader(MirageClassLoader loader, IClassLoader classLoader) {
-        this.loader = loader;
+    public HeapDumpClassMirrorLoader(ClassLoader classLoader, IClassLoader heapDumpClassLoader) {
         this.classLoader = classLoader;
+        this.heapDumpClassLoader = heapDumpClassLoader;
     }
     
-    public MirageClassLoader getMirageClassLoader() {
-        return loader;
+    public HeapDumpClassMirrorLoader(ClassMirrorLoader parent, ClassLoader classLoader, IClassLoader heapDumpClassLoader) {
+        super(parent);
+        this.classLoader = classLoader;
+        this.heapDumpClassLoader = heapDumpClassLoader;
     }
     
     @Override
     public ClassMirror<?> loadClassMirror(String name) throws ClassNotFoundException {
-        ClassMirror<?> mirror =  super.loadClassMirror(name);
-        if (mirror != null) {
-            return mirror;
+        try {
+           return super.loadClassMirror(name);
+        } catch (ClassNotFoundException e) {
+           // ignore
         }
         
         List<IClass> classes;
         try {
-            classes = classLoader.getDefinedClasses();
+            classes = heapDumpClassLoader.getDefinedClasses();
         } catch (SnapshotException e) {
             throw new InternalError();
         }
         for (IClass klass : classes) {
             if (klass.getName().equals(name)) {
-                return new HeapDumpClassMirror(loader, klass);
+                return new HeapDumpClassMirror(this, klass);
             }
         }
         
         throw new ClassNotFoundException(name);
     }
     
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
 }

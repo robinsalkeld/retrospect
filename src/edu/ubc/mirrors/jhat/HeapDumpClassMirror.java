@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.jhat;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,21 +8,28 @@ import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IClass;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class HeapDumpClassMirror implements ClassMirror<Object> {
 
-    private final MirageClassLoader loader;
+    private final HeapDumpClassMirrorLoader loader;
     private final IClass klass;
     
-    public HeapDumpClassMirror(MirageClassLoader loader, IClass klass) {
+    public HeapDumpClassMirror(HeapDumpClassMirrorLoader loader, IClass klass) {
         this.loader = loader;
         this.klass = klass;
     }
     
     public String getClassName() {
         return klass.getName();
+    }
+    
+    @Override
+    public InputStream getBytecodeStream() {
+        return NativeClassMirror.getNativeBytecodeStream(loader.getClassLoader(), getClassName());
     }
 
     public boolean isArray() {
@@ -36,11 +44,16 @@ public class HeapDumpClassMirror implements ClassMirror<Object> {
         }
         String componentName = klass.getName().substring(1);
         try {
-            return loader.getClassMirrorLoader().loadClassMirror(componentName);
+            return loader.loadClassMirror(componentName);
         } catch (ClassNotFoundException e) {
             // Should never happen
             throw new InternalError();
         }
+    }
+    
+    public ClassMirror<?> getSuperClassMirror() {
+        IClass superclass = klass.getSuperClass();
+        return superclass != null ? new HeapDumpClassMirror(loader, superclass) : null;
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {

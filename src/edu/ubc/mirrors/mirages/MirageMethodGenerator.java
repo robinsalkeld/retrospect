@@ -16,6 +16,11 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
 import static edu.ubc.mirrors.raw.NativeClassGenerator.getNativeInternalClassName;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -31,15 +36,14 @@ public class MirageMethodGenerator extends InstructionAdapter {
     private AnalyzerAdapter analyzer;
     private MethodVisitor superVisitor;
     private LocalVariablesSorter lvs;
-    private final String superName;
+    
     private final boolean isToString;
     
-    public MirageMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, String superName, boolean isToString) {
+    public MirageMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString) {
         super(Opcodes.ASM4, null);
         this.superVisitor = superVisitor;
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
         this.mv = analyzer;
-        this.superName = superName;
         this.isToString = isToString;
     }
 
@@ -58,22 +62,48 @@ public class MirageMethodGenerator extends InstructionAdapter {
                 owner = objectMirageType.getInternalName();
             }
         } 
-            
+         
         if (name.equals("toString") && desc.equals(Type.getMethodDescriptor(getMirageType(String.class)))) {
             super.visitMethodInsn(opcode, owner, name, Type.getMethodDescriptor(Type.getType(String.class)));
             
             aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
             invokestatic(objectMirageType.getInternalName(),
-                         "getMirageStringForReal",
-                         Type.getMethodDescriptor(OBJECT_TYPE, Type.getType(String.class), classType));
+                         "lift",
+                         Type.getMethodDescriptor(OBJECT_TYPE, OBJECT_TYPE, classType));
             checkcast(getMirageType(String.class));
             return;
+        }
+        
+        if (analyzer.locals == null) {
+            insertDowncastsForMethodCall(opcode, owner, name, desc);
         }
         
         super.visitMethodInsn(opcode, owner, name, desc);
     }
     
     
+    private void insertDowncastsForMethodCall(int opcode, String owner, String name, String desc) {
+        Type[] argTypes = Type.getMethodType(desc).getArgumentTypes();
+        int[] argLocals = new int[argTypes.length];
+        for (int argIndex = argTypes.length - 1; argIndex >= 0; argIndex--) {
+            Type argType = argTypes[argIndex];
+            if (MirageClassGenerator.isRefType(argType)) {
+                checkcast(argType);
+            }
+            
+            int argLocal = lvs.newLocal(argType);
+            argLocals[argIndex] = argLocal;
+            store(argLocal, argType);
+        }
+        if (opcode == Opcodes.INVOKEVIRTUAL || opcode == Opcodes.INVOKEDYNAMIC) {
+            Type ownerType = Type.getObjectType(owner);
+            checkcast(ownerType);
+        }
+        for (int argIndex = 0; argIndex < argTypes.length; argIndex++) {
+            load(argLocals[argIndex], argTypes[argIndex]);
+        }
+    }
+
     private void fieldMirrorInsn(boolean isSet, Type fieldType) {
         Type fieldTypeForMirrorCall = fieldType;
         int fieldSort = fieldType.getSort();
@@ -158,8 +188,10 @@ public class MirageMethodGenerator extends InstructionAdapter {
     
     private Type stackType(int indexFromTop) {
         if (analyzer.stack == null) {
-            // TODO-RS: Sometimes the analyzer doesn't know the stack types :(
-            return Type.getType("[Ljava/lang/Object;");
+            // If we're analyzing < 1.6 bytecode and we've hit a branching instruction,
+            // we don't know the stack and local types. Instead we'll make no assumptions
+            // about the value and insert downcasts as needed later on to ensure valid code.
+            return null;
         } else {
             return Type.getObjectType((String)analyzer.stack.get(analyzer.stack.size() - 1 - indexFromTop));
         }
@@ -194,6 +226,9 @@ public class MirageMethodGenerator extends InstructionAdapter {
             Type arrayElementTypeForMirrorCall = arrayElementType;
             if (arrayElementType.equals(objectMirrorType)) {
                 Type mirageType = stackType(isArrayStore ? 2 : 1);
+                if (mirageType == null) {
+                    mirageType = Type.getType("[Ljava/lang/Object;");
+                }
 //                System.out.println("mirageType: " + mirageType);
                 Type originalType = Type.getObjectType(getOriginalClassName(mirageType.getInternalName()));
 //                System.out.println("originalType: " + originalType);
@@ -342,9 +377,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
             aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
             Type mirageStringType = getMirageType(Type.getType(String.class));
             invokestatic(objectMirageType.getInternalName(), 
-                         "getMirageStringForReal", 
-                         Type.getMethodDescriptor(OBJECT_TYPE, Type.getType(String.class), Type.getType(Class.class)));
+                         "lift", 
+                         Type.getMethodDescriptor(OBJECT_TYPE, OBJECT_TYPE, Type.getType(Class.class)));
             checkcast(mirageStringType);
+        } else if (cst instanceof Type) {
+            aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
+            Type mirageClassType = getMirageType(Type.getType(Class.class));
+            invokestatic(objectMirageType.getInternalName(), 
+                         "lift", 
+                         Type.getMethodDescriptor(OBJECT_TYPE, OBJECT_TYPE, Type.getType(Class.class)));
+            checkcast(mirageClassType);
         }
     }
     
@@ -352,5 +394,15 @@ public class MirageMethodGenerator extends InstructionAdapter {
     public void visitMaxs(int maxStack, int maxLocals) {
         // TODO calculate this more precisely (or get ASM to do it for me)
         super.visitMaxs(maxStack + 20, maxLocals + 20);
+    }
+    
+    @Override
+    public void visitAttribute(Attribute attr) {
+        // Do nothing?
+    }
+    
+    @Override
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+        return null;
     }
 }

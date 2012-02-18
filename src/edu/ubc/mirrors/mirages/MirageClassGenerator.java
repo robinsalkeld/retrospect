@@ -2,6 +2,7 @@ package edu.ubc.mirrors.mirages;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
@@ -246,9 +247,6 @@ public class MirageClassGenerator extends ClassVisitor {
 
         // Remove all static initializers - these will have already been executed when
         // loading the original class and state will be proxied by ClassMirrors instead.
-        // TODO: ...actually we can't do that because there seems to be no way to access private
-        // classes at all. :( Instead for now we'll recreate static state in the mirage classes
-        // and not yet use ClassMirror#getStaticField()
         if (name.equals("<clinit>")) {
             return null;
         }
@@ -265,7 +263,7 @@ public class MirageClassGenerator extends ClassVisitor {
         int noNativeAccess = ~Opcodes.ACC_NATIVE & access;
         MethodVisitor superVisitor = super.visitMethod(noNativeAccess, name, desc, signature, exceptions);
         
-        MirageMethodGenerator generator = new MirageMethodGenerator(this.name, noNativeAccess, name, desc, superVisitor, superName, isToString);
+        MirageMethodGenerator generator = new MirageMethodGenerator(this.name, noNativeAccess, name, desc, superVisitor, isToString);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
@@ -327,12 +325,8 @@ public class MirageClassGenerator extends ClassVisitor {
     public FieldVisitor visitField(int access, String name, String desc,
             String signature, Object value) {
         
-        // Remove all non-static field definitions
-        if ((Opcodes.ACC_STATIC & access) != 0) {
-            return super.visitField(access, name, desc, signature, value);
-        } else {
-            return null;
-        }
+        // Remove all field definitions
+        return null;
     }
     
     @Override
@@ -354,13 +348,14 @@ public class MirageClassGenerator extends ClassVisitor {
         super.visitEnd();
     }
 
-    public static byte[] generate(ClassMirror classMirror, ClassReader reader) {
+    public static byte[] generate(ClassMirror classMirror) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         visitor = new CheckClassAdapter(visitor);
         visitor = new MirageClassGenerator(classMirror, visitor);
         visitor = new RemappingClassAdapter(visitor, REMAPPER);
-        reader.accept(visitor, ClassReader.SKIP_FRAMES);
+        ClassReader reader = new ClassReader(classMirror.getBytecodeStream());
+        reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();
     }
 }

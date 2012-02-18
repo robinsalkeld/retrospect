@@ -5,16 +5,16 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class HeapDumpObjectArrayMirror implements ObjectArrayMirror {
 
-    private final MirageClassLoader loader;
+    private final HeapDumpClassMirrorLoader loader;
     private final IObjectArray array;
     
-    public HeapDumpObjectArrayMirror(MirageClassLoader loader, IObjectArray array) {
+    public HeapDumpObjectArrayMirror(HeapDumpClassMirrorLoader loader, IObjectArray array) {
         this.loader = loader;
         this.array = array;
     }

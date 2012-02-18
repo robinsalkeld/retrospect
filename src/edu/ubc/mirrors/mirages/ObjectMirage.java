@@ -137,8 +137,8 @@ public class ObjectMirage<T> {
         return null;
     }
     
-    public static Object getMirageStringForReal(String string, Class<?> classLoaderLiteral) {
-        ObjectMirror<String> mirror = new NativeObjectMirror<String>(string);
+    public static Object lift(Object object, Class<?> classLoaderLiteral) {
+        ObjectMirror<Object> mirror = new NativeObjectMirror<Object>(object);
         return ((MirageClassLoader)classLoaderLiteral.getClassLoader()).makeMirage(mirror);
     }
     

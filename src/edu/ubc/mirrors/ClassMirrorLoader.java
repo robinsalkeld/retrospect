@@ -1,10 +1,25 @@
 package edu.ubc.mirrors;
 
-// TODO: Probably need to add delegation like ClassLoaders
+import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
+
 public class ClassMirrorLoader {
 
+    private final ClassMirrorLoader parent;
+    
+    public ClassMirrorLoader() {
+        this(new NativeClassMirrorLoader(ClassLoader.getSystemClassLoader()));
+    }
+    
+    public ClassMirrorLoader(ClassMirrorLoader parent) {
+        this.parent = parent;
+    }
+    
     public ClassMirror<?> loadClassMirror(String name) throws ClassNotFoundException {
-        throw new ClassNotFoundException(name);
+        if (parent != null) {
+            return parent.loadClassMirror(name);
+        } else {
+            throw new ClassNotFoundException();
+        }
     }
     
 }

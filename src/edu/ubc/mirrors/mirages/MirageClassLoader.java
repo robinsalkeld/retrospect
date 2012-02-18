@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -102,6 +103,10 @@ public class MirageClassLoader extends ClassLoader {
         return c;
     }
     
+    public Class<?> loadMirageClass(Class<?> original) throws ClassNotFoundException {
+        return loadClass(MirageClassGenerator.getMirageBinaryClassName(original.getName()));
+    }
+    
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         if (name.equals(CLASS_LOADER_LITERAL_NAME.replace('/', '.'))) {
@@ -110,8 +115,16 @@ public class MirageClassLoader extends ClassLoader {
             byte[] b = writer.toByteArray();
             return defineClass(name, b, 0, b.length);
         } else if (name.startsWith("miragearray")) {
+            String originalName = MirageClassGenerator.getOriginalClassName(name);
+            String originalElement = Type.getObjectType(originalName).getElementType().getInternalName();
+            ClassMirror<?> originalClassMirror = classMirrorLoader.loadClassMirror(originalElement);
+            ClassMirror<?> superClassMirror = originalClassMirror.getSuperClassMirror();
+            String superName = superClassMirror != null ? 
+                    MirageClassGenerator.getMirageInternalClassName("[L" + superClassMirror.getClassName().replace('.', '/') + ";") : 
+                    Type.getInternalName(ObjectArrayMirage.class);
+            
             ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
-            writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, name.replace('.', '/'), null, Type.getInternalName(ObjectArrayMirage.class), null);
+            writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, name.replace('.', '/'), null, superName, null);
 
             // Generate thunk constructors
             String initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class));
@@ -119,7 +132,7 @@ public class MirageClassLoader extends ClassLoader {
             mv.visitCode();
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             mv.visitVarInsn(Opcodes.ALOAD, 1);
-            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(ObjectArrayMirage.class), "<init>", initDesc);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", initDesc);
             mv.visitInsn(Opcodes.RETURN);
             mv.visitMaxs(2, 2);
             mv.visitEnd();
@@ -129,7 +142,7 @@ public class MirageClassLoader extends ClassLoader {
             mv.visitCode();
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             mv.visitVarInsn(Opcodes.ILOAD, 1);
-            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(ObjectArrayMirage.class), "<init>", initDesc);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", initDesc);
             mv.visitInsn(Opcodes.RETURN);
             mv.visitMaxs(2, 2);
             mv.visitEnd();
@@ -137,31 +150,24 @@ public class MirageClassLoader extends ClassLoader {
             byte[] b = writer.toByteArray();
             return defineClass(name, b);
         } else if (name.startsWith("mirage")) {
-            ClassReader readerFromClassFile;
-            String originalName = MirageClassGenerator.getOriginalClassName(name);
-            try {
-                // If the class was loaded before the instrumentation agent was set up,
-                // try accessing the .class file as a resource from the system class loader
-                // (which is exactly what the ClassReader(String) constructor does).
-                readerFromClassFile = new ClassReader(originalName);
-            } catch (IOException e) {
-                throw new ClassNotFoundException("Class not trapped by agent and .class file not accessible: " + originalName, e);
-            }
-            
             String originalClassName = MirageClassGenerator.getOriginalClassName(name);
             ClassMirror<?> classMirror = classMirrorLoader.loadClassMirror(originalClassName);
-            byte[] b = MirageClassGenerator.generate(classMirror, readerFromClassFile);
+            byte[] b;
+            try {
+                b = MirageClassGenerator.generate(classMirror);
+            } catch (IOException e) {
+                throw new ClassNotFoundException("Error reading bytecode from class mirror: " + originalClassName, e);
+            }
             return defineClass(name, b);
         } else if (name.startsWith("native")) {
-            ClassReader readerFromClassFile;
-            String originalName = NativeClassGenerator.getOriginalClassName(name);
+            String originalClassName = MirageClassGenerator.getOriginalClassName(name);
+            ClassMirror<?> classMirror = classMirrorLoader.loadClassMirror(originalClassName);
+            byte[] b;
             try {
-                readerFromClassFile = new ClassReader(originalName);
+                b = NativeClassGenerator.generate(classMirror);
             } catch (IOException e) {
-                throw new ClassNotFoundException("Class not trapped by agent and .class file not accessible: " + originalName, e);
+                throw new ClassNotFoundException("Error reading bytecode from class mirror: " + originalClassName, e);
             }
-            
-            byte[] b = NativeClassGenerator.generate(originalName, readerFromClassFile);
             return defineClass(name, b);
         } else {
             throw new ClassNotFoundException();
