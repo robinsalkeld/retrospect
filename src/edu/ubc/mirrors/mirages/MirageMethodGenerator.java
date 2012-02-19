@@ -7,6 +7,7 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageInternalClas
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalClassName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getPrimitiveArrayMirageInternalName;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.getPrimitiveArrayMirrorInternalName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getSortName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirageType;
@@ -226,7 +227,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             Type mirrorType = MirageClassGenerator.objectArrayMirrorType;
             String suffix = "";
             if (arrayElementType.getSort() != Type.OBJECT && arrayElementType.getSort() != Type.ARRAY) {
-                mirrorType = Type.getObjectType(getPrimitiveArrayMirageInternalName(arrayElementType));
+                mirrorType = Type.getObjectType(getPrimitiveArrayMirrorInternalName(arrayElementType));
                 suffix = getSortName(arrayElementType.getSort());
             }
             
@@ -247,9 +248,9 @@ public class MirageMethodGenerator extends InstructionAdapter {
                              "getMirror", 
                              Type.getMethodDescriptor(objectMirrorType, OBJECT_TYPE));
             }
-            invokevirtual(mirrorType.getInternalName(), 
-                          (isArrayStore ? "set" : "get") + suffix, 
-                          methodDesc);
+            invokeinterface(mirrorType.getInternalName(), 
+                            (isArrayStore ? "set" : "get") + suffix, 
+                            methodDesc);
             if (!isArrayStore && arrayElementTypeForMirrorCall.equals(objectMirrorType)) {
                 aconst(Type.getObjectType(CLASS_LOADER_LITERAL_NAME));
                 invokestatic(objectMirageType.getInternalName(),

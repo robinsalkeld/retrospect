@@ -173,6 +173,10 @@ public class MirageClassGenerator extends ClassVisitor {
         return "edu/ubc/mirrors/mirages/" + getSortName(elementType.getSort()) + "ArrayMirage";
     }
     
+    public static String getPrimitiveArrayMirrorInternalName(Type elementType) {
+        return "edu/ubc/mirrors/" + getSortName(elementType.getSort()) + "ArrayMirror";
+    }
+    
     public static String getMirageInternalClassName(String className) {
         if (className == null) {
             return null;

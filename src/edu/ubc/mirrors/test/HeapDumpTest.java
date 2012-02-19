@@ -29,7 +29,6 @@ public class HeapDumpTest implements IApplication {
     public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException {
         String snapshotPath = args[0];
         String traceDir = args[1];
-        String jarPath = args[2];
         
         MirageClassLoader.setTraceDir(traceDir);
         
@@ -42,7 +41,6 @@ public class HeapDumpTest implements IApplication {
         HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(nativeParent, runtimeClassLoader, classLoader);
         
         MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, nativeParent);
-        JarVerifier.verifyJar(mirageLoader, new JarFile(jarPath));
         
         mirageLoader.loadMirageClass(String.class).getMethods();
         mirageLoader.loadMirageClass(BacktraceElement.class).getMethods();
