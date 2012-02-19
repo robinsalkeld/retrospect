@@ -15,8 +15,8 @@ public class NativeByteArrayMirror implements ByteArrayMirror {
         return array.length;
     }
 
-    public ClassMirror<?> getClassMirror() {
-        return new NativeClassMirror<Object>(array.getClass());
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(array.getClass());
     }
 
     public byte getByte(int index) throws ArrayIndexOutOfBoundsException {

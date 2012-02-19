@@ -19,17 +19,17 @@ import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 
 
-public class NativeObjectMirror<T> implements InstanceMirror<T> {
+public class NativeObjectMirror implements InstanceMirror {
 
-    private final T object;
+    private final Object object;
     
-    public NativeObjectMirror(T object) {
+    public NativeObjectMirror(Object object) {
         this.object = object;
     }
     
-    public static <T> NativeObjectMirror<T> make(Class<T> nativeClass) {
+    public static NativeObjectMirror make(Class<?> nativeClass) {
         try {
-            return new NativeObjectMirror<T>(nativeClass.newInstance());
+            return new NativeObjectMirror(nativeClass.newInstance());
         } catch (IllegalAccessException e) {
             InternalError error = new InternalError();
             error.initCause(e);
@@ -64,8 +64,8 @@ public class NativeObjectMirror<T> implements InstanceMirror<T> {
         throw new NoSuchFieldException(name);
     }
     
-    public ClassMirror<?> getClassMirror() {
-        return new NativeClassMirror<Object>(object.getClass());
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(object.getClass());
     }
     
     static class NativeFieldMirror implements FieldMirror {
@@ -79,7 +79,7 @@ public class NativeObjectMirror<T> implements InstanceMirror<T> {
             this.object = object;
         }
 
-        public ObjectMirror<?> get() throws IllegalAccessException {
+        public ObjectMirror get() throws IllegalAccessException {
             Object nativeValue = field.get(object);
             return makeMirror(nativeValue);
         }
@@ -116,7 +116,7 @@ public class NativeObjectMirror<T> implements InstanceMirror<T> {
             return field.getDouble(object);
         }
 
-        public void set(ObjectMirror<?> o) throws IllegalAccessException {
+        public void set(ObjectMirror o) throws IllegalAccessException {
             throw new UnsupportedOperationException();
         }
 
@@ -153,7 +153,7 @@ public class NativeObjectMirror<T> implements InstanceMirror<T> {
         }
     }
     
-    public static ObjectMirror<?> makeMirror(Object object) {
+    public static ObjectMirror makeMirror(Object object) {
         if (object instanceof Object[]) {
             return new NativeObjectArrayMirror((Object[])object);
         } else if (object instanceof boolean[]) {
@@ -173,7 +173,7 @@ public class NativeObjectMirror<T> implements InstanceMirror<T> {
         } else if (object instanceof double[]) {
             return new NativeDoubleArrayMirror((double[])object);
         } else {
-            return new NativeObjectMirror<Object>(object);
+            return new NativeObjectMirror(object);
         }
     }
 }

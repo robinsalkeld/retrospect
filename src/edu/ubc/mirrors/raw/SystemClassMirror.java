@@ -1,6 +1,5 @@
 package edu.ubc.mirrors.raw;
 
-import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
@@ -12,19 +11,19 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 
-public class SystemClassMirror extends NativeClassMirror<Object> {
+public class SystemClassMirror extends NativeClassMirror {
 
     public SystemClassMirror(Class<?> klass) {
         super(klass);
     }
     
-    public static void arraycopy(ObjectMirror<?> src, int srcPos, ObjectMirror<?> dest, int destPos, int length) {
+    public static void arraycopy(ObjectMirror src, int srcPos, ObjectMirror dest, int destPos, int length) {
         for (int off = 0; off < length; off++) {
             setArrayElement(dest, destPos + off, getArrayElement(src, srcPos + off));
         }
     }
     
-    private static Object getArrayElement(ObjectMirror<?> am, int index) {
+    private static Object getArrayElement(ObjectMirror am, int index) {
         if (am instanceof ObjectArrayMirror) {
             return ((ObjectArrayMirror)am).get(index);
         } else if (am instanceof BooleanArrayMirror) {
@@ -48,9 +47,9 @@ public class SystemClassMirror extends NativeClassMirror<Object> {
         }
     }
     
-    private static void setArrayElement(ObjectMirror<?> am, int index, Object o) {
+    private static void setArrayElement(ObjectMirror am, int index, Object o) {
         if (am instanceof ObjectArrayMirror) {
-            ((ObjectArrayMirror)am).set(index, (ObjectMirror<?>)o);
+            ((ObjectArrayMirror)am).set(index, (ObjectMirror)o);
         } else if (am instanceof BooleanArrayMirror) {
             ((BooleanArrayMirror)am).setBoolean(index, (Boolean)o);
         } else if (am instanceof ByteArrayMirror) {

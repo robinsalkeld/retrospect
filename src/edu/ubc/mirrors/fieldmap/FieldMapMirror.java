@@ -11,12 +11,12 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
-public class FieldMapMirror<T> implements InstanceMirror<T> {
+public class FieldMapMirror implements InstanceMirror {
 
     private final Map<String, Object> fields;
-    private final Class<? extends T> klass;
+    private final Class<?> klass;
     
-    public FieldMapMirror(Class<? extends T> klass) {
+    public FieldMapMirror(Class<?> klass) {
         this.klass = klass;
         this.fields = new HashMap<String, Object>();
     }
@@ -40,8 +40,8 @@ public class FieldMapMirror<T> implements InstanceMirror<T> {
     }
 
     
-    public ClassMirror<? extends T> getClassMirror() {
-        return new NativeClassMirror<T>(klass);
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(klass);
     }
     
     private class MapEntryFieldMirror extends BoxingFieldMirror {
@@ -53,11 +53,11 @@ public class FieldMapMirror<T> implements InstanceMirror<T> {
             this.name = name;
         }
         
-        public ObjectMirror<?> get() throws IllegalAccessException {
-            return (ObjectMirror<?>)getBoxedValue();
+        public ObjectMirror get() throws IllegalAccessException {
+            return (ObjectMirror)getBoxedValue();
         }
         
-        public void set(ObjectMirror<?> o) throws IllegalAccessException {
+        public void set(ObjectMirror o) throws IllegalAccessException {
             setBoxedValue(o);
         }
         

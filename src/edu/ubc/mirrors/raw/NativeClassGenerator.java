@@ -106,7 +106,7 @@ public class NativeClassGenerator extends RemappingClassAdapter {
         }
     }
     
-    public static byte[] generate(ClassMirror<?> classMirror) throws IOException {
+    public static byte[] generate(ClassMirror classMirror) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         visitor = new CheckClassAdapter(visitor);

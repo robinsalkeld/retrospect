@@ -13,7 +13,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
-public class HeapDumpClassMirror implements ClassMirror<Object> {
+public class HeapDumpClassMirror implements ClassMirror {
 
     private final HeapDumpClassMirrorLoader loader;
     private final IClass klass;
@@ -36,7 +36,7 @@ public class HeapDumpClassMirror implements ClassMirror<Object> {
         return klass.isArrayType();
     }
     
-    public ClassMirror<?> getComponentClassMirror() {
+    public ClassMirror getComponentClassMirror() {
         // Takes some work - not directly exposed by IClass, but
         // can be inferred by manually looking up the name.
         if (!isArray()) {
@@ -51,7 +51,7 @@ public class HeapDumpClassMirror implements ClassMirror<Object> {
         }
     }
     
-    public ClassMirror<?> getSuperClassMirror() {
+    public ClassMirror getSuperClassMirror() {
         IClass superclass = klass.getSuperClass();
         return superclass != null ? new HeapDumpClassMirror(loader, superclass) : null;
     }

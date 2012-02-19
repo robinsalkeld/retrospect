@@ -6,21 +6,20 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
-public class ObjectArrayMirage implements ObjectArrayMirror {
+public class ObjectArrayMirage extends ObjectMirage implements ObjectArrayMirror {
 
     public final ObjectArrayMirror mirror;
     
     public ObjectArrayMirage(int length) {
-        System.out.println("Constructing new " + getClass());
         Class<?> originalClass = ObjectMirage.getOriginalClass(getClass());
-        this.mirror = new DirectArrayMirror(new NativeClassMirror<Object>(originalClass), length);
+        this.mirror = new DirectArrayMirror(new NativeClassMirror(originalClass), length);
     }
     
     public ObjectArrayMirage(ObjectArrayMirror mirror) {
         this.mirror = mirror;
     }
 
-    public ClassMirror<?> getClassMirror() {
+    public ClassMirror getClassMirror() {
         return mirror.getClassMirror();
     }
 
@@ -28,11 +27,11 @@ public class ObjectArrayMirage implements ObjectArrayMirror {
         return mirror.length();
     }
 
-    public ObjectMirror<?> get(int index) throws ArrayIndexOutOfBoundsException {
+    public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
         return mirror.get(index);
     }
 
-    public void set(int index, ObjectMirror<?> o) throws ArrayIndexOutOfBoundsException {
+    public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
         mirror.set(index, o);
     }
 }

@@ -8,10 +8,10 @@ import edu.ubc.mirrors.BoxingArrayMirror;
 
 public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayMirror {
 
-    private final ClassMirror<?> classMirror;
+    private final ClassMirror classMirror;
     private final Object[] array;
     
-    public DirectArrayMirror(ClassMirror<?> classMirror, int length) {
+    public DirectArrayMirror(ClassMirror classMirror, int length) {
         this.classMirror = classMirror;
         this.array = new Object[length];
     }
@@ -20,15 +20,15 @@ public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayM
         return array.length;
     }
 
-    public ClassMirror<?> getClassMirror() {
+    public ClassMirror getClassMirror() {
         return classMirror;
     }
 
-    public ObjectMirror<?> get(int index) throws ArrayIndexOutOfBoundsException {
-        return (ObjectMirror<?>)array[index];
+    public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
+        return (ObjectMirror)array[index];
     }
 
-    public void set(int index, ObjectMirror<?> o) throws ArrayIndexOutOfBoundsException {
+    public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
         array[index] = o;
     }
 

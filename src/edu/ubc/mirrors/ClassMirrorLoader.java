@@ -14,7 +14,7 @@ public class ClassMirrorLoader {
         this.parent = parent;
     }
     
-    public ClassMirror<?> loadClassMirror(String name) throws ClassNotFoundException {
+    public ClassMirror loadClassMirror(String name) throws ClassNotFoundException {
         if (parent != null) {
             return parent.loadClassMirror(name);
         } else {

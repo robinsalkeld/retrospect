@@ -15,8 +15,8 @@ public class NativeDoubleArrayMirror implements DoubleArrayMirror {
         return array.length;
     }
 
-    public ClassMirror<?> getClassMirror() {
-        return new NativeClassMirror<Object>(array.getClass());
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(array.getClass());
     }
 
     public double getDouble(int index) throws ArrayIndexOutOfBoundsException {

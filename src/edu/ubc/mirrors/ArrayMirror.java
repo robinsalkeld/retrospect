@@ -1,5 +1,5 @@
 package edu.ubc.mirrors;
 
-public interface ArrayMirror extends ObjectMirror<Object[]> {
+public interface ArrayMirror extends ObjectMirror {
     public int length();
 }

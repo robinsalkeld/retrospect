@@ -15,8 +15,8 @@ public class NativeCharArrayMirror implements CharArrayMirror {
         return array.length;
     }
 
-    public ClassMirror<?> getClassMirror() {
-        return new NativeClassMirror<Object>(array.getClass());
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(array.getClass());
     }
 
     public char getChar(int index) throws ArrayIndexOutOfBoundsException {

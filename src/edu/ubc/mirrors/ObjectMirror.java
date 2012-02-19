@@ -1,6 +1,6 @@
 package edu.ubc.mirrors;
 
-public interface ObjectMirror<T> {
+public interface ObjectMirror {
     
-    public ClassMirror<?> getClassMirror();
+    public ClassMirror getClassMirror();
 }

@@ -28,7 +28,7 @@ public class HeapDumpClassMirrorLoader extends ClassMirrorLoader {
     }
     
     @Override
-    public ClassMirror<?> loadClassMirror(String name) throws ClassNotFoundException {
+    public ClassMirror loadClassMirror(String name) throws ClassNotFoundException {
         try {
            return super.loadClassMirror(name);
         } catch (ClassNotFoundException e) {

@@ -8,11 +8,11 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror.NativeFieldMirror;
 
-public class NativeClassMirror<T> implements ClassMirror<T> {
+public class NativeClassMirror implements ClassMirror {
 
-    private final Class<? extends T> klass;
+    private final Class<?> klass;
     
-    public NativeClassMirror(Class<? extends T> klass) {
+    public NativeClassMirror(Class<?> klass) {
         this.klass = klass;
     }
     
@@ -35,18 +35,18 @@ public class NativeClassMirror<T> implements ClassMirror<T> {
         }
     }
     
-    public ClassMirror<?> getSuperClassMirror() {
+    public ClassMirror getSuperClassMirror() {
         Class<?> superclass = klass.getSuperclass();
-        return superclass != null ? new NativeClassMirror<Object>(superclass) : null;
+        return superclass != null ? new NativeClassMirror(superclass) : null;
     }
     
     public boolean isArray() {
         return klass.isArray();
     }
     
-    public ClassMirror<?> getComponentClassMirror() {
+    public ClassMirror getComponentClassMirror() {
         Class<?> componentType = klass.getComponentType();
-        return componentType != null ? new NativeClassMirror<Object>(componentType) : null;
+        return componentType != null ? new NativeClassMirror(componentType) : null;
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
@@ -71,7 +71,7 @@ public class NativeClassMirror<T> implements ClassMirror<T> {
         Class<?> superclass = klass.getSuperclass();
         if (superclass != null) {
             try {
-                return new NativeClassMirror<Object>(superclass).getStaticField(name);
+                return new NativeClassMirror(superclass).getStaticField(name);
             } catch (NoSuchFieldException e) {
                 // Ignore
             }
@@ -79,7 +79,7 @@ public class NativeClassMirror<T> implements ClassMirror<T> {
         
         for (Class<?> i : klass.getInterfaces()) {
             try {
-                return new NativeClassMirror<Object>(i).getStaticField(name);
+                return new NativeClassMirror(i).getStaticField(name);
             } catch (NoSuchFieldException e) {
                 // Ignore
             }

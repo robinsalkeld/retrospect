@@ -16,8 +16,8 @@ public class MirageTest {
         Bar bar = new Bar(12);
         bar.bar(42);
         
-        FieldMapMirror<Bar> mirror = new FieldMapMirror<Bar>(Bar.class);
-        Bar b = ObjectMirage.make(mirror);
+        FieldMapMirror mirror = new FieldMapMirror(Bar.class);
+        Bar b = (Bar)ObjectMirage.make(mirror);
         b.bar(9);
         
         

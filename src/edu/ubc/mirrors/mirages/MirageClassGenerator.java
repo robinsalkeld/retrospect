@@ -80,10 +80,10 @@ public class MirageClassGenerator extends ClassVisitor {
         };
     };
     
-    private final ClassMirror<?> classMirror;
+    private final ClassMirror classMirror;
     private final Map<String, Method> mirrorMethods = new HashMap<String, Method>();
     
-    public MirageClassGenerator(ClassMirror<?> classMirror, ClassVisitor output) {
+    public MirageClassGenerator(ClassMirror classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
         this.classMirror = classMirror;
         for (Method m : classMirror.getClass().getDeclaredMethods()) {
@@ -101,8 +101,8 @@ public class MirageClassGenerator extends ClassVisitor {
         this.isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
         this.superName = superName;
         
-        if (!isInterface && Type.getInternalName(Object.class).equals(superName)) {
-            this.superName = Type.getInternalName(ObjectMirage.class);
+        if (isInterface && Type.getInternalName(ObjectMirage.class).equals(superName)) {
+            this.superName = Type.getInternalName(Object.class);
         }
         
         super.visit(version, access, name, signature, this.superName, interfaces);
@@ -169,8 +169,8 @@ public class MirageClassGenerator extends ClassVisitor {
         }
     }
     
-    public static String getPrimitiveArrayMirrorInternalName(Type elementType) {
-        return "edu/ubc/mirrors/" + getSortName(elementType.getSort()) + "ArrayMirror";
+    public static String getPrimitiveArrayMirageInternalName(Type elementType) {
+        return "edu/ubc/mirrors/mirages/" + getSortName(elementType.getSort()) + "ArrayMirage";
     }
     
     public static String getMirageInternalClassName(String className) {
@@ -178,20 +178,22 @@ public class MirageClassGenerator extends ClassVisitor {
             return null;
         }
         
+        if (className.equals(Type.getInternalName(Object.class))) {
+            return Type.getInternalName(ObjectMirage.class);
+        }
+        
         if (MirageClassLoader.COMMON_CLASSES.containsKey(className.replace('/', '.'))) {
             return className;
         }
         
-//        System.out.println("className: " + className);
         Type type = Type.getObjectType(className);
-//        System.out.println("type.getSort(): " + type.getSort());
         if (type.getSort() == Type.ARRAY) {
             Type elementType = type.getElementType();
             int elementSort = elementType.getSort();
             int dims = type.getDimensions();
             // Primitive array
             if (dims == 1 && elementSort != Type.OBJECT) {
-                return getPrimitiveArrayMirrorInternalName(elementType);
+                return getPrimitiveArrayMirageInternalName(elementType);
             } else {
                 String elementName = (elementSort == Type.OBJECT ?
                         elementType.getInternalName() : getSortName(elementSort));
@@ -333,7 +335,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public void visitEnd() {
         // Generate the constructor that takes a mirror instance
         if (!isInterface) {
-            String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, instanceMirrorType);
+            String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirrorType);
             MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
                              "<init>", constructorDesc, null, null);
             methodVisitor.visitCode();

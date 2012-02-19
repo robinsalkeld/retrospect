@@ -28,7 +28,7 @@ public class MirageTest2 {
 //        klass.getMethods();
 //        System.out.println("Resolved class!");
         
-        FieldMapMirror<Bar> mirror = new FieldMapMirror<Bar>(Bar.class);
+        FieldMapMirror mirror = new FieldMapMirror(Bar.class);
         mirror.getMemberField("f").setInt(47);
         Object b = mirageClassLoader.makeMirage(mirror);
         System.out.println("s! " + b.toString());

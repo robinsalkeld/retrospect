@@ -17,7 +17,7 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror {
         this.array = array;
     }
     
-    public ClassMirror<?> getClassMirror() {
+    public ClassMirror getClassMirror() {
         return new HeapDumpClassMirror(loader, array.getClazz());
     }
     public int length() {

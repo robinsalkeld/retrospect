@@ -15,8 +15,8 @@ public class NativeShortArrayMirror implements ShortArrayMirror {
         return array.length;
     }
 
-    public ClassMirror<?> getClassMirror() {
-        return new NativeClassMirror<Object>(array.getClass());
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(array.getClass());
     }
 
     public short getShort(int index) throws ArrayIndexOutOfBoundsException {

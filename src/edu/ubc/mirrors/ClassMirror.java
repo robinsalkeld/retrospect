@@ -3,7 +3,7 @@ package edu.ubc.mirrors;
 import java.io.InputStream;
 
 
-public interface ClassMirror<T> {
+public interface ClassMirror {
 
     public String getClassName();
     
@@ -11,9 +11,9 @@ public interface ClassMirror<T> {
     
     public boolean isArray();
     
-    public ClassMirror<?> getComponentClassMirror();
+    public ClassMirror getComponentClassMirror();
     
-    public ClassMirror<?> getSuperClassMirror();
+    public ClassMirror getSuperClassMirror();
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException;
     

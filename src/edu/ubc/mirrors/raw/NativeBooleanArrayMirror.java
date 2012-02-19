@@ -15,8 +15,8 @@ public class NativeBooleanArrayMirror implements BooleanArrayMirror {
         return array.length;
     }
 
-    public ClassMirror<?> getClassMirror() {
-        return new NativeClassMirror<Object>(array.getClass());
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(array.getClass());
     }
 
     public boolean getBoolean(int index) throws ArrayIndexOutOfBoundsException {

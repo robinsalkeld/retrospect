@@ -16,15 +16,15 @@ public class NativeObjectArrayMirror implements ObjectArrayMirror {
         return array.length;
     }
 
-    public ClassMirror<?> getClassMirror() {
-        return new NativeClassMirror<Object[]>(array.getClass());
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(array.getClass());
     }
 
-    public ObjectMirror<?> get(int index) throws ArrayIndexOutOfBoundsException {
+    public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
         return NativeObjectMirror.makeMirror(array[index]);
     }
 
-    public void set(int index, ObjectMirror<?> o) throws ArrayIndexOutOfBoundsException {
+    public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
         throw new UnsupportedOperationException();
     }
 }

@@ -15,8 +15,8 @@ public class NativeIntArrayMirror implements IntArrayMirror {
         return array.length;
     }
 
-    public ClassMirror<?> getClassMirror() {
-        return new NativeClassMirror<Object>(array.getClass());
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(array.getClass());
     }
 
     public int getInt(int index) throws ArrayIndexOutOfBoundsException {

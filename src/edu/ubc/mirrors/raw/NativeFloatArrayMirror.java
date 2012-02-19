@@ -15,8 +15,8 @@ public class NativeFloatArrayMirror implements FloatArrayMirror {
         return array.length;
     }
 
-    public ClassMirror<?> getClassMirror() {
-        return new NativeClassMirror<Object>(array.getClass());
+    public ClassMirror getClassMirror() {
+        return new NativeClassMirror(array.getClass());
     }
 
     public float getFloat(int index) throws ArrayIndexOutOfBoundsException {

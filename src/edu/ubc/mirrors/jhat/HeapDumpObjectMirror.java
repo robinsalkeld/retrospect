@@ -34,11 +34,11 @@ public class HeapDumpObjectMirror implements InstanceMirror {
         throw new NoSuchFieldException(name);
     }
 
-    public ClassMirror<?> getClassMirror() {
+    public ClassMirror getClassMirror() {
         return new HeapDumpClassMirror(loader, heapDumpObject.getClazz());
     }
 
-    public static ObjectMirror<?> makeMirror(HeapDumpClassMirrorLoader loader, IObject object) {
+    public static ObjectMirror makeMirror(HeapDumpClassMirrorLoader loader, IObject object) {
         if (object instanceof IInstance) {
             return new HeapDumpObjectMirror(loader, (IInstance)object);
         } else if (object instanceof IPrimitiveArray) {

@@ -4,45 +4,46 @@ import java.lang.reflect.InvocationTargetException;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
+import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.raw.SystemClassMirror;
 
 /**
- * Note that this class is only instantiated directly to represent arrays. Otherwise
+ * Note that this class is only instantiated directly to represent primitive arrays. Otherwise
  * it is subclassed with a mirage version of the original class in order to support
- * dynamic method dispatch (which arrays don't).
+ * dynamic method dispatch and method overloading.
  * 
  * @author Robin Salkeld
- *
- * @param <T>
  */
-public class ObjectMirage<T> {
-
-    protected final InstanceMirror<?> mirror;
+public class ObjectMirage {
+    public final ObjectMirror mirror;
     
     /**
      * Constructor for translated new statements - instantiates a new native mirror.
      */
     protected ObjectMirage() {
-        Class<?> originalClass = getOriginalClass(getClass());
+        Class<?> originalClass = ObjectMirage.getOriginalClass(getClass());
         this.mirror = new FieldMapMirror(originalClass);
     }
     
     /**
      * Constructor for calls to make() - the mirror instance is passed up the constructor chain.
      */
-    public ObjectMirage(InstanceMirror<T> mirror) {
+    public ObjectMirage(ObjectMirror mirror) {
         this.mirror = mirror;
-        
     }
     
-    
+    public ClassMirror getClassMirror() {
+        return mirror.getClassMirror();
+    }
     
     // TODO: Can't do this until we sort out how to automatically specify ClassMirrorLoaders
 
@@ -115,14 +116,13 @@ public class ObjectMirage<T> {
         }
     }
     
-    public static String getRealStringForMirage(ObjectMirage<?> mirage) {
+    public static String getRealStringForMirage(ObjectMirage mirage) {
         try {
-            InstanceMirror<?> mirror = mirage.mirror;
+            InstanceMirror mirror = (InstanceMirror)mirage.mirror;
             CharArrayMirror valueMirror = (CharArrayMirror)mirror.getMemberField("value").get();
             char[] value = new char[valueMirror.length()];
-            for (int i = 0; i < value.length; i++) {
-                value[i] = valueMirror.getChar(i);
-            }
+            NativeCharArrayMirror nativeValueMirror = new NativeCharArrayMirror(value);
+            SystemClassMirror.arraycopy(valueMirror, 0, nativeValueMirror, 0, value.length);
             int offset = mirror.getMemberField("offset").getInt();
             int count = mirror.getMemberField("count").getInt();
             return new String(value, offset, count);
@@ -138,7 +138,7 @@ public class ObjectMirage<T> {
     }
     
     public static Object lift(Object object, Class<?> classLoaderLiteral) {
-        ObjectMirror<Object> mirror = new NativeObjectMirror<Object>(object);
+        ObjectMirror mirror = new NativeObjectMirror(object);
         return ((MirageClassLoader)classLoaderLiteral.getClassLoader()).makeMirage(mirror);
     }
     
@@ -148,25 +148,19 @@ public class ObjectMirage<T> {
         return loader.classMirrorLoader.loadClassMirror(binaryName).getStaticField(fieldName);
     }
     
-    public static <T> T make(ObjectMirror<T> mirror) {
+    public static Object make(ObjectMirror mirror) {
         return ((MirageClassLoader)mirror.getClass().getClassLoader()).makeMirage(mirror);
     }
     
-    public static <T> T make(ObjectMirror<T> mirror, Class<?> classLoaderLiteral) {
+    public static Object make(ObjectMirror mirror, Class<?> classLoaderLiteral) {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         return loader.makeMirage(mirror);
     }
     
-    public static ObjectMirror<?> getMirror(Object o) {
+    public static ObjectMirror getMirror(Object o) {
         if (o == null) {
             return null;
         }
-        if (o instanceof ObjectArrayMirage) {
-            return ((ObjectArrayMirage)o).mirror;
-        } else if (o instanceof ArrayMirror) {
-            return (ArrayMirror)o;
-        } else {
-            return ((ObjectMirage<?>)o).mirror;
-        }
+        return ((ObjectMirage)o).mirror;
     }
 }

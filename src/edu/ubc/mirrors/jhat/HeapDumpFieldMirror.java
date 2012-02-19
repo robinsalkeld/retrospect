@@ -25,7 +25,7 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         return field.getValue();
     }
     
-    public ObjectMirror<?> get() throws IllegalAccessException {
+    public ObjectMirror get() throws IllegalAccessException {
         Object value = field.getValue();
         ObjectReference ref = (ObjectReference)value;
         IObject object;
@@ -37,7 +37,7 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         return HeapDumpObjectMirror.makeMirror(loader, object);
     }
 
-    public void set(ObjectMirror<?> o) throws IllegalAccessException {
+    public void set(ObjectMirror o) throws IllegalAccessException {
         throw new UnsupportedOperationException();
     }
     
