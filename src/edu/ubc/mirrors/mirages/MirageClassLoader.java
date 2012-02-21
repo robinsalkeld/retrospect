@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMirrorType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalInternalClassName;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -117,22 +120,88 @@ public class MirageClassLoader extends ClassLoader {
     
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if (name.equals(CLASS_LOADER_LITERAL_NAME.replace('/', '.'))) {
+        String internalName = name.replace('.', '/');
+        if (internalName.equals(CLASS_LOADER_LITERAL_NAME)) {
             ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
             writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, CLASS_LOADER_LITERAL_NAME, null, "java/lang/Object", null);
+            
+            String desc = Type.getMethodDescriptor(Type.getObjectType("java/lang/Object"), Type.getType(ObjectMirror.class));
+            MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PUBLIC & Opcodes.ACC_STATIC, "makeMirage", desc, null, null);
+            mv.visitCode();
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+            mv.visitTypeInsn(Opcodes.NEW, CLASS_LOADER_LITERAL_NAME);
+            mv.visitInsn(Opcodes.DUP);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, CLASS_LOADER_LITERAL_NAME, "<init>", "()V");
+            
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
+                    "java/lang/Object", 
+                    "getClass()", 
+                    Type.getMethodDescriptor(Type.getType(Class.class), Type.getType(Object.class)));
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
+                    Type.getInternalName(ObjectMirage.class), 
+                    "makeMirage", 
+                    Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(ObjectMirror.class), Type.getType(Class.class)));
+            mv.visitInsn(Opcodes.ARETURN);
+            mv.visitMaxs(3, 1);
+            mv.visitEnd();
+            
+            desc = Type.getMethodDescriptor(Type.getObjectType("java/lang/Object"), Type.getType("java/lang/Object"));
+            mv = writer.visitMethod(Opcodes.ACC_PUBLIC & Opcodes.ACC_STATIC, "lift", desc, null, null);
+            mv.visitCode();
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+            mv.visitTypeInsn(Opcodes.NEW, CLASS_LOADER_LITERAL_NAME);
+            mv.visitInsn(Opcodes.DUP);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, CLASS_LOADER_LITERAL_NAME, "<init>", "()V");
+            
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
+                    "java/lang/Object", 
+                    "getClass()", 
+                    Type.getMethodDescriptor(Type.getType(Class.class), Type.getType(Object.class)));
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
+                    Type.getInternalName(ObjectMirage.class), 
+                    "lift", 
+                    Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Object.class), Type.getType(Class.class)));
+            mv.visitInsn(Opcodes.ARETURN);
+            mv.visitMaxs(3, 1);
+            mv.visitEnd();
+            
+            desc = Type.getMethodDescriptor(Type.getType(FieldMirror.class), Type.getType(String.class), Type.getType(String.class));
+            mv = writer.visitMethod(Opcodes.ACC_PUBLIC & Opcodes.ACC_STATIC, "getStaticField", desc, null, null);
+            mv.visitCode();
+            mv.visitTypeInsn(Opcodes.NEW, CLASS_LOADER_LITERAL_NAME);
+            mv.visitInsn(Opcodes.DUP);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, CLASS_LOADER_LITERAL_NAME, "<init>", "()V");
+            
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
+                    "java/lang/Object", 
+                    "getClass()", 
+                    Type.getMethodDescriptor(Type.getType(Class.class), Type.getType(Object.class)));
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+            mv.visitVarInsn(Opcodes.ALOAD, 1);
+            mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
+                    Type.getInternalName(ObjectMirage.class), 
+                    "getStaticField", 
+                    Type.getMethodDescriptor(fieldMirrorType, Type.getType(Class.class), Type.getType(String.class), Type.getType(String.class)));
+            mv.visitInsn(Opcodes.ARETURN);
+            mv.visitMaxs(3, 2);
+            mv.visitEnd();
+            
             byte[] b = writer.toByteArray();
             return defineClass(name, b, 0, b.length);
         } else if (name.startsWith("miragearray")) {
-            String originalName = MirageClassGenerator.getOriginalClassName(name);
-            String originalElement = Type.getObjectType(originalName).getElementType().getInternalName();
-            ClassMirror originalClassMirror = classMirrorLoader.loadClassMirror(originalElement);
+            Type originalType = Type.getObjectType(getOriginalInternalClassName(internalName));
+            String originalElement = originalType.getElementType().getInternalName();
+            int dims = originalType.getDimensions();
+            ClassMirror originalClassMirror = classMirrorLoader.loadClassMirror(originalElement.replace('/', '.'));
             ClassMirror superClassMirror = originalClassMirror.getSuperClassMirror();
-            String superName = superClassMirror != null ? 
-                    MirageClassGenerator.getMirageInternalClassName("[L" + superClassMirror.getClassName().replace('.', '/') + ";") : 
-                    Type.getInternalName(ObjectArrayMirage.class);
+            String superName = Type.getInternalName(ObjectArrayMirage.class);
+            if (superClassMirror != null) { 
+                Type superType = MirageClassGenerator.makeArrayType(dims, Type.getObjectType(superClassMirror.getClassName().replace('.', '/'))); 
+                superName = MirageClassGenerator.getMirageType(superType).getInternalName(); 
+            }
             
             ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
-            writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, name.replace('.', '/'), null, superName, null);
+            writer.visit(Opcodes.V1_1, Opcodes.ACC_PUBLIC, internalName, null, superName, null);
 
             // Generate thunk constructors
             String initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class));
@@ -158,7 +227,7 @@ public class MirageClassLoader extends ClassLoader {
             byte[] b = writer.toByteArray();
             return defineClass(name, b);
         } else if (name.startsWith("mirage")) {
-            String originalClassName = MirageClassGenerator.getOriginalClassName(name);
+            String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
             ClassMirror classMirror = classMirrorLoader.loadClassMirror(originalClassName);
             byte[] b;
             try {
@@ -168,7 +237,7 @@ public class MirageClassLoader extends ClassLoader {
             }
             return defineClass(name, b);
         } else if (name.startsWith("native")) {
-            String originalClassName = MirageClassGenerator.getOriginalClassName(name);
+            String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
             ClassMirror classMirror = classMirrorLoader.loadClassMirror(originalClassName);
             byte[] b;
             try {

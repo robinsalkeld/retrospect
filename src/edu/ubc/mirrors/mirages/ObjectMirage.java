@@ -2,7 +2,6 @@ package edu.ubc.mirrors.mirages;
 
 import java.lang.reflect.InvocationTargetException;
 
-import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -17,13 +16,9 @@ import edu.ubc.mirrors.raw.NativeObjectMirror;
 import edu.ubc.mirrors.raw.SystemClassMirror;
 
 /**
- * Note that this class is only instantiated directly to represent primitive arrays. Otherwise
- * it is subclassed with a mirage version of the original class in order to support
- * dynamic method dispatch and method overloading.
- * 
  * @author Robin Salkeld
  */
-public class ObjectMirage {
+public abstract class ObjectMirage implements Mirage {
     public final ObjectMirror mirror;
     
     /**
@@ -39,6 +34,11 @@ public class ObjectMirage {
      */
     public ObjectMirage(ObjectMirror mirror) {
         this.mirror = mirror;
+    }
+    
+    @Override
+    public ObjectMirror getMirror() {
+        return mirror;
     }
     
     public ClassMirror getClassMirror() {
@@ -64,7 +64,7 @@ public class ObjectMirage {
 //    }
     
     public static Class<?> getNativeClass(Class<?> mirageClass) {
-        final String originalClassName = MirageClassGenerator.getOriginalClassName(mirageClass.getName());
+        final String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClass.getName());
         final String nativeClassName = NativeClassGenerator.getNativeBinaryClassName(originalClassName);
         try {
             return mirageClass.getClassLoader().loadClass(nativeClassName);
@@ -81,7 +81,7 @@ public class ObjectMirage {
     
     public static Class<?> getOriginalClass(Class<?> mirageClass) {
         ClassLoader originalLoader = ((MirageClassLoader)mirageClass.getClassLoader()).getOriginalLoader();
-        String originalClassName = MirageClassGenerator.getOriginalClassName(mirageClass.getName());
+        String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClass.getName());
         try {
             return Class.forName(originalClassName, true, originalLoader);
         } catch (ClassNotFoundException e) {

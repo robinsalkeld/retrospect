@@ -101,8 +101,17 @@ public class MirageClassGenerator extends ClassVisitor {
         this.isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
         this.superName = superName;
         
-        if (isInterface && Type.getInternalName(ObjectMirage.class).equals(superName)) {
-            this.superName = Type.getInternalName(Object.class);
+        if (Type.getInternalName(Mirage.class).equals(superName)) {
+            if (isInterface) {
+                this.superName = Type.getInternalName(Object.class);
+            } else {
+                this.superName = Type.getInternalName(ObjectMirage.class);
+            }
+        }
+        if (isInterface) {
+            String[] newInterfaces = new String[interfaces.length + 1];
+            System.arraycopy(interfaces, 0, newInterfaces, 0, interfaces.length);
+            newInterfaces[interfaces.length] = Type.getInternalName(Mirage.class);
         }
         
         super.visit(version, access, name, signature, this.superName, interfaces);
@@ -165,7 +174,7 @@ public class MirageClassGenerator extends ClassVisitor {
         } else if (name.equals("Double")) {
             return Type.DOUBLE_TYPE;
         } else {
-            throw new IllegalArgumentException("Bad sort name: " + name);
+            return null;
         }
     }
     
@@ -183,11 +192,14 @@ public class MirageClassGenerator extends ClassVisitor {
         }
         
         if (className.equals(Type.getInternalName(Object.class))) {
-            return Type.getInternalName(ObjectMirage.class);
+            return Type.getInternalName(Mirage.class);
+        }
+        if (className.equals("[L" + Type.getInternalName(Object.class) + ";")) {
+            return Type.getInternalName(ObjectArrayMirage.class);
         }
         
-        if (MirageClassLoader.COMMON_CLASSES.containsKey(className.replace('/', '.'))) {
-            return className;
+        if (className.equals(Type.getInternalName(Throwable.class))) {
+            return Type.getInternalName(ThrowableMirage.class);
         }
         
         Type type = Type.getObjectType(className);
@@ -210,18 +222,28 @@ public class MirageClassGenerator extends ClassVisitor {
         }
     }
     
-    public static String getOriginalClassName(String mirageClassName) {
+    public static String getOriginalInternalClassName(String mirageClassName) {
+        if (mirageClassName == null) {
+            return null;
+        }
+        
         Matcher m = Pattern.compile("miragearray(\\d+)[./](.*)").matcher(mirageClassName);
         if (m.matches()) {
             int dims = Integer.parseInt(m.group(1));
-            String result = "L" + m.group(2) + ";";
-            while (dims-- > 0) {
-                result = "[" + result;
+            String mirageElementName = m.group(2);
+            Type originalElementType = getTypeForSortName(mirageElementName);
+            if (originalElementType == null) {
+                originalElementType = Type.getObjectType(getOriginalInternalClassName(mirageElementName));
             }
-            return result;
+            
+            return makeArrayType(dims, originalElementType).getInternalName();
         }
         
-        m = Pattern.compile("edu[/.]ubc[/.]mirrors[/.](.*)ArrayMirror").matcher(mirageClassName);
+        if (Type.getInternalName(ObjectArrayMirage.class).equals(mirageClassName)) {
+            return "[Ljava/lang/Object;";
+        }
+        
+        m = Pattern.compile("edu/ubc/mirrors/mirages/(.*)ArrayMirage").matcher(mirageClassName);
         if (m.matches()) {
             String sortName = m.group(1);
             return "[" + getTypeForSortName(sortName).getDescriptor();
@@ -232,6 +254,22 @@ public class MirageClassGenerator extends ClassVisitor {
         } else {
             return mirageClassName;
         }
+    }
+    
+    public static String getOriginalBinaryClassName(String mirageBinaryName) {
+        return getOriginalInternalClassName(mirageBinaryName.replace('.', '/')).replace('/', '.');
+    }
+    
+    public static Type makeArrayType(int dims, Type elementType) {
+        if (dims == 0) {
+            return elementType;
+        }
+        StringBuilder builder = new StringBuilder();
+        while (dims-- > 0) {
+            builder.append('[');
+        }
+        builder.append(elementType.getDescriptor());
+        return Type.getObjectType(builder.toString());
     }
     
     public static Type getMirageType(Type type) {
@@ -316,11 +354,10 @@ public class MirageClassGenerator extends ClassVisitor {
         Type returnType = Type.getType(method.getReturnType());
         visitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(method.getDeclaringClass()), method.getName(), Type.getMethodDescriptor(method));
         if (isRefType(returnType)) {
-            visitor.visitLdcInsn(Type.getObjectType(MirageClassLoader.CLASS_LOADER_LITERAL_NAME));
             visitor.visitMethodInsn(Opcodes.INVOKESTATIC, 
-                    objectMirageType.getInternalName(), 
-                    "make", 
-                    Type.getMethodDescriptor(objectMirrorType, Type.getType(Object.class), Type.getType(Class.class)));
+                    MirageClassLoader.CLASS_LOADER_LITERAL_NAME, 
+                    "makeMirage", 
+                    Type.getMethodDescriptor(Type.getType(Object.class), objectMirrorType));
         }
         visitor.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
         visitor.visitMaxs(parameterTypes.length, parameterTypes.length);

@@ -2,6 +2,7 @@ package edu.ubc.mirrors.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractCollection;
 import java.util.HashMap;
 import java.util.jar.JarFile;
 
@@ -16,6 +17,9 @@ import org.eclipse.mat.snapshot.model.IInstance;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.backtrace.BacktraceElement;
+import org.jruby.util.Join;
+
+import com.kenai.constantine.ConstantSet;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirror;
@@ -29,6 +33,7 @@ public class HeapDumpTest implements IApplication {
     public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException {
         String snapshotPath = args[0];
         String traceDir = args[1];
+        String testClass = args[2];
         
         MirageClassLoader.setTraceDir(traceDir);
         
@@ -42,10 +47,7 @@ public class HeapDumpTest implements IApplication {
         
         MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, nativeParent);
         
-        mirageLoader.loadMirageClass(String.class).getMethods();
-        mirageLoader.loadMirageClass(BacktraceElement.class).getMethods();
-        mirageLoader.loadMirageClass(ISourcePosition.class).getMethods();
-        mirageLoader.loadMirageClass(ThreadContext.class).getMethods();
+        mirageLoader.loadClass("mirage." + testClass).getMethods();
         
 //        for (int id : rubyObjectClass.getObjectIds()) {
 //            IInstance object = (IInstance)snapshot.getObject(id);

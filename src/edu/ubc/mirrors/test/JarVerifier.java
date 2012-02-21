@@ -18,9 +18,11 @@ import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 public class JarVerifier implements IApplication {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         String jarPath = args[0];
+        String tracePath = args[1];
         JarFile jar = new JarFile(jarPath);
         ClassLoader thisLoader = JarVerifier.class.getClassLoader();
         MirageClassLoader mirageLoader = new MirageClassLoader(thisLoader, new NativeClassMirrorLoader(thisLoader));
+        MirageClassLoader.setTraceDir(tracePath);
         verifyJar(mirageLoader, jar);
     }
     
@@ -33,9 +35,7 @@ public class JarVerifier implements IApplication {
                     loader.loadClass("mirage." + className).getMethods();
                 } catch (Throwable t) {
                     System.out.println(className + " - " + t.getClass().getName() + ": " + t.getMessage());
-                    continue;
                 }
-                System.out.println(className + " - :)");
             }
         }
     }
