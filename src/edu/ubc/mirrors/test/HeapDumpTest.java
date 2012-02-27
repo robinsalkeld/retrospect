@@ -37,6 +37,9 @@ public class HeapDumpTest implements IApplication {
         
         MirageClassLoader.setTraceDir(traceDir);
         
+        String mirageClass = "mirage." + testClass;
+        MirageClassLoader.traceClass = mirageClass;
+        
         ISnapshot snapshot = SnapshotFactory.openSnapshot(new File(snapshotPath), new HashMap<String, String>(), new org.eclipse.mat.util.VoidProgressListener());
         IClass rubyObjectClass = snapshot.getClassesByName("org.jruby.RubyObject", false).iterator().next();
         IClassLoader classLoader = (IClassLoader)snapshot.getObject(rubyObjectClass.getClassLoaderId());
@@ -47,7 +50,7 @@ public class HeapDumpTest implements IApplication {
         
         MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, nativeParent);
         
-        mirageLoader.loadClass("mirage." + testClass).getMethods();
+        mirageLoader.loadClass(mirageClass).getMethods();
         
 //        for (int id : rubyObjectClass.getObjectIds()) {
 //            IInstance object = (IInstance)snapshot.getObject(id);

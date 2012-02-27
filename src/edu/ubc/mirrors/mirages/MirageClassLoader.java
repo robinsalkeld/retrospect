@@ -231,7 +231,7 @@ public class MirageClassLoader extends ClassLoader {
             ClassMirror classMirror = classMirrorLoader.loadClassMirror(originalClassName);
             byte[] b;
             try {
-                b = MirageClassGenerator.generate(classMirror);
+                b = MirageClassGenerator.generate(this, classMirror);
             } catch (IOException e) {
                 throw new ClassNotFoundException("Error reading bytecode from class mirror: " + originalClassName, e);
             }
@@ -280,17 +280,12 @@ public class MirageClassLoader extends ClassLoader {
                 throw new RuntimeException(e);
             }
             
-            if (name.equals(traceClass)) {
-                try {
-                    CheckClassAdapter.verify(new ClassReader(new FileInputStream(file)), this, false, new PrintWriter(System.out));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+//            if (name.equals(traceClass)) {
 //                Verifier.main(new String[] {name});
-            }
+//            }
         }
-//        System.out.println("defining class: " + name);
-        return super.defineClass(name, b, 0, b.length);
+        Class<?> c = super.defineClass(name, b, 0, b.length);
+        return c;
     }
     
     public Object makeMirage(ObjectMirror mirror) {

@@ -26,6 +26,7 @@ import org.objectweb.asm.commons.InstructionAdapter;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeObjectArrayMirror;
 
 public class MirageMethodGenerator extends InstructionAdapter {
@@ -34,6 +35,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
     private MethodVisitor superVisitor;
     private LocalVariablesSorter lvs;
     private Type methodType;
+    private String name;
     
     private final boolean isToString;
     
@@ -42,6 +44,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         this.superVisitor = superVisitor;
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
         this.mv = analyzer;
+        this.name = name;
         this.methodType = Type.getMethodType(desc);
         this.isToString = isToString;
     }
@@ -160,9 +163,9 @@ public class MirageMethodGenerator extends InstructionAdapter {
                          Type.getMethodDescriptor(fieldMirrorType, Type.getType(String.class), Type.getType(String.class)));
         } else {
             // Push the mirror instance onto the stack
-            invokeinterface(Type.getInternalName(Mirage.class), 
-                            "getMirror", 
-                            Type.getMethodDescriptor(objectMirrorType));
+            getfield(Type.getInternalName(ObjectMirage.class), 
+                            "mirror", 
+                            objectMirrorType.getDescriptor());
             checkcast(instanceMirrorType);
             
             // Get the field mirror onto the stack
@@ -332,7 +335,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             int arraySizeVar = lvs.newLocal(Type.INT_TYPE);
             store(arraySizeVar, Type.INT_TYPE);
             
-            // Wrap with a mirage class
+            // Instantiate the mirage class
             String originalTypeName = getOriginalInternalClassName(type);
             Type arrayType = makeArrayType(1, Type.getObjectType(originalTypeName));
             Type mirageArrayType = getMirageType(arrayType);
@@ -352,6 +355,12 @@ public class MirageMethodGenerator extends InstructionAdapter {
         
         super.visitTypeInsn(opcode, type);
         
+        if (opcode == Opcodes.NEW) {
+            dup();
+            aconst(null);
+            pop2();
+//            putfield(objectMirageType.getInternalName(), "mirror", objectMirrorType.getDescriptor());
+        }
     }
     
     @Override
@@ -430,5 +439,29 @@ public class MirageMethodGenerator extends InstructionAdapter {
     @Override
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
         return null;
+    }
+    
+    @Override
+    public void visitCode() {
+        super.visitCode();
+        
+        if (name.equals("<init>")) {
+            // Generate code that will initialize the mirror if it hasn't been already
+            Label after = new Label();
+            
+//            load(0, Type.getObjectType(owner));
+//            getfield(objectMirageType.getInternalName(), "mirror", objectMirrorType.getDescriptor());
+//            ifnonnull(after);
+            
+//            load(0, Type.getObjectType(owner));
+//            anew(Type.getType(FieldMapMirror.class));
+//            dup();
+//            load(0, Type.getObjectType(owner));
+//            invokevirtual("java/lang/Object", "getClass", Type.getMethodDescriptor(Type.getType(Class.class)));
+//            invokestatic(objectMirageType.getInternalName(), "getOriginalClass", Type.getMethodDescriptor(Type.getType(Class.class), Type.getType(Class.class)));
+//            invokespecial(Type.getInternalName(FieldMapMirror.class), "<init>", Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class)));
+//            putfield(objectMirageType.getInternalName(), "mirror", objectMirrorType.getDescriptor());
+//            visitLabel(after);
+        }
     }
 }

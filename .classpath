@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="lib/jruby-complete-1.6.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/bcel-5.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/bcel-5.2.jar" sourcepath="/Users/robinsalkeld/Documents/UBC/Code/bcel-5.2-src/src"/>
 	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>

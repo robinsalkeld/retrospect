@@ -27,17 +27,22 @@ public class JarVerifier implements IApplication {
     }
     
     public static void verifyJar(MirageClassLoader loader, JarFile jar) {
+        int total = 0;
+        int good = 0;
         for (JarEntry entry : Collections.list(jar.entries())) {
             String name = entry.getName();
+            total++;
             if (name.endsWith(".class")) {
                 String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
                 try {
                     loader.loadClass("mirage." + className).getMethods();
+                    good++;
                 } catch (Throwable t) {
                     System.out.println(className + " - " + t.getClass().getName() + ": " + t.getMessage());
                 }
             }
         }
+        System.out.println("Hit rate: " + good + "/" + total);
     }
     
     public Object start(IApplicationContext context) throws Exception {

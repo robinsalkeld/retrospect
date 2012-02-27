@@ -1,15 +1,9 @@
 package edu.ubc.mirrors.mirages;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
-
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +14,6 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.AnalyzerAdapter;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
@@ -80,20 +73,18 @@ public class MirageClassGenerator extends ClassVisitor {
         };
     };
     
-    private final ClassMirror classMirror;
+    private boolean isInterface;
+    private String name;
+    private String superName;
+    
     private final Map<String, Method> mirrorMethods = new HashMap<String, Method>();
     
     public MirageClassGenerator(ClassMirror classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
-        this.classMirror = classMirror;
         for (Method m : classMirror.getClass().getDeclaredMethods()) {
             mirrorMethods.put(m.getName(), m);
         }
     }
-    
-    private String name = null;
-    private String superName = null;
-    private boolean isInterface;
     
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -391,12 +382,13 @@ public class MirageClassGenerator extends ClassVisitor {
         super.visitEnd();
     }
 
-    public static byte[] generate(ClassMirror classMirror) throws IOException {
+    public static byte[] generate(ClassLoader loader, ClassMirror classMirror) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         visitor = new CheckClassAdapter(visitor);
         visitor = new MirageClassGenerator(classMirror, visitor);
         visitor = new RemappingClassAdapter(visitor, REMAPPER);
+        visitor = new FrameAnalyzerAdaptor(loader, visitor);
         ClassReader reader = new ClassReader(classMirror.getBytecodeStream());
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();
