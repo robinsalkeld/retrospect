@@ -184,10 +184,11 @@ public class MirageMethodGenerator extends InstructionAdapter {
     
     private Type stackType(int indexFromTop) {
         if (analyzer.stack == null) {
-            // If we're analyzing < 1.6 bytecode and we've hit a branching instruction,
-            // we don't know the stack and local types. Instead we'll make no assumptions
-            // about the value and insert downcasts as needed later on to ensure valid code.
-            return null;
+            throw new RuntimeException("Crap!");
+//            // If we're analyzing < 1.6 bytecode and we've hit a branching instruction,
+//            // we don't know the stack and local types. Instead we'll make no assumptions
+//            // about the value and insert downcasts as needed later on to ensure valid code.
+//            return null;
         } else {
             return Type.getObjectType((String)analyzer.stack.get(analyzer.stack.size() - 1 - indexFromTop));
         }
@@ -319,13 +320,15 @@ public class MirageMethodGenerator extends InstructionAdapter {
     }
     
     @Override
-    public void visitJumpInsn(int opcode, Label label) {
-        if (opcode == Opcodes.JSR || opcode == Opcodes.RET) {
-            // Don't tell the analyzer - it doesn't support them!
-            superVisitor.visitJumpInsn(opcode, label);
-        } else {
-            super.visitJumpInsn(opcode, label);
-        }
+    public void jsr(Label label) {
+        // Don't tell the analyzer - it doesn't support them!
+        superVisitor.visitJumpInsn(Opcodes.JSR, label);
+    }
+    
+    @Override
+    public void ret(int var) {
+     // Don't tell the analyzer - it doesn't support them!
+        superVisitor.visitVarInsn(Opcodes.RET, var);
     }
     
     @Override

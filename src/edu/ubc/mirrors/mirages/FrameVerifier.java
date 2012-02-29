@@ -81,20 +81,20 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
         }
         
         protected boolean isAssignableFrom(Type t, Type u) {
-            // Copied from superclass - not convinced it's 100% right
+            // Copied from superclass
             if (t.equals(u)) {
                 return true;
             }
             SimplerVerifier tVerifier = activeVerifiers.get(t);
             if (tVerifier != null) {
-                if (getSuperClass(u) == null) {
-                    return false;
-                } else {
-                    if (tVerifier.isInterface) {
-                        return u.getSort() == Type.OBJECT || u.getSort() == Type.ARRAY;
-                    }
-                    return isAssignableFrom(t, getSuperClass(u));
+                if (tVerifier.isInterface) {
+                    return u.getSort() == Type.OBJECT || u.getSort() == Type.ARRAY;
                 }
+                Type uSuperClass = getSuperClass(u);
+                if (uSuperClass == null) {
+                    return false;
+                }
+                return isAssignableFrom(t, uSuperClass);
             }
             SimplerVerifier uVerifier = activeVerifiers.get(u);
             if (uVerifier != null) {
@@ -119,12 +119,7 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
         }
     }
     
-    private FrameAnalyzer analyzer;
-    
-        
-    
     private Frame<FrameValue> currentFrame;
-    private int currentInsnIndex;
     
     public FrameVerifier(
             final Type currentClass,
@@ -139,15 +134,11 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
         simplerVerifier.discard();
     }
     
-    public void setAnalyzer(FrameAnalyzer analyzer) {
-        this.analyzer = analyzer;
-    }
-    
     @Override
     public FrameValue newOperation(AbstractInsnNode insn) throws AnalyzerException {
         BasicValue result = simplerVerifier.newOperation(insn);
         if (insn.getOpcode() == Opcodes.NEW) {
-            return new FrameValue(result, currentInsnIndex);
+            return new FrameValue(result, insn);
         } else {
             return FrameValue.fromBasicValue(result);
         }
@@ -162,7 +153,7 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
                 Type targetType = target.getBasicValue().getType();
                 Type ownerType = Type.getObjectType(methodNode.owner);
                 BasicValue owner = new BasicValue(ownerType);
-                FrameValue expected = new FrameValue(owner, 0);
+                FrameValue expected = new FrameValue(owner, insn);
                 if (!target.isUninitialized()) {
                     throw new AnalyzerException(insn,
                             "Argument 0",
@@ -259,9 +250,15 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
     
     @Override
     public void returnOperation(AbstractInsnNode insn, FrameValue value, FrameValue expected) throws AnalyzerException {
-        simplerVerifier.returnOperation(insn, 
-                checkUninitialized(insn, "value", value), 
-                expected.getBasicValue());
+        try {
+            simplerVerifier.returnOperation(insn, 
+                    checkUninitialized(insn, "value", value), 
+                    expected.getBasicValue());
+        } catch (AnalyzerException e) {
+            simplerVerifier.returnOperation(insn, 
+                    checkUninitialized(insn, "value", value), 
+                    expected.getBasicValue());
+        }
     }
     
     @Override
@@ -281,9 +278,7 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
         simplerVerifier.setClassLoader(loader);
     }
 
-    public void setContext(int index, Frame<FrameValue> frame) {
-        this.currentInsnIndex = index;
-        System.out.println(index);
+    public void setContext(Frame<FrameValue> frame) {
         this.currentFrame = frame;
     }
 }

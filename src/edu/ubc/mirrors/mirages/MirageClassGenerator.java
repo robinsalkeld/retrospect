@@ -385,7 +385,8 @@ public class MirageClassGenerator extends ClassVisitor {
     public static byte[] generate(ClassLoader loader, ClassMirror classMirror) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
-        visitor = new CheckClassAdapter(visitor);
+//        visitor = new CheckClassAdapter(visitor);
+        visitor = new FrameAnalyzerAdaptor(loader, visitor);
         visitor = new MirageClassGenerator(classMirror, visitor);
         visitor = new RemappingClassAdapter(visitor, REMAPPER);
         visitor = new FrameAnalyzerAdaptor(loader, visitor);

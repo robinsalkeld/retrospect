@@ -3,6 +3,8 @@ package edu.ubc.mirrors.mirages;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.Value;
 
@@ -12,77 +14,40 @@ public class FrameValue implements Value {
     
     /**
      */
-    private final int offsetOfNew;
+    private final AbstractInsnNode newInsn;
     
-    private static final int UNINITIALIZED_THIS_OFFSET = -1;
-    private static final int INITIALIZED_OFFSET = -2;
+    private static final AbstractInsnNode UNINITIALIZED_THIS_INSN = new TypeInsnNode(Opcodes.NEW, null);
+    private static final AbstractInsnNode INITIALIZED = null;
     
-    public FrameValue(BasicValue value, int offsetOfNew) {
+    public FrameValue(BasicValue value, AbstractInsnNode newInsn) {
         this.value = value;
-        this.offsetOfNew = offsetOfNew;
+        this.newInsn = newInsn;
     }
     
     public BasicValue getBasicValue() {
         return value;
     }
     
+    public AbstractInsnNode getNewInsn() {
+        return newInsn;
+    }
+    
     public static FrameValue fromBasicValue(BasicValue value) {
-        return value == null ? null : new FrameValue(value, INITIALIZED_OFFSET);
+        return value == null ? null : new FrameValue(value, INITIALIZED);
     }
     
     public static FrameValue makeUninitializedThis(BasicValue value) {
-        return new FrameValue(value, UNINITIALIZED_THIS_OFFSET);
+        return new FrameValue(value, UNINITIALIZED_THIS_INSN);
     }
     
     public boolean isUninitialized() {
-        return offsetOfNew != INITIALIZED_OFFSET;
+        return newInsn != INITIALIZED;
     }
     
     public boolean isUninitializedThis() {
-        return offsetOfNew == UNINITIALIZED_THIS_OFFSET;
+        return newInsn == UNINITIALIZED_THIS_INSN;
     }
     
-    public void addToFrameObjects(Object[] objects, int index) {
-        if (isUninitializedThis()) {
-            objects[index] = Opcodes.UNINITIALIZED_THIS;
-        } else if (isUninitialized()) {
-            objects[index] = offsetOfNew;
-        } else {
-            Type type = value.getType();
-            if (type == null) {
-                objects[index] = Opcodes.TOP;
-            } else {
-                switch (type.getSort()) {
-                case Type.VOID:
-                    // TODO: Not sure what to do here. Used for BasicValue.RETURNADDRESS_VALUE,
-                    // but I can't figure out the correct verifier type for the return addresses
-                    // used by JSR/RET.
-                    objects[index] = Opcodes.TOP;
-                case Type.BOOLEAN:
-                case Type.BYTE:
-                case Type.CHAR:
-                case Type.SHORT:
-                case Type.INT:
-                    objects[index] = Opcodes.INTEGER;
-                case Type.LONG:
-                    objects[index] = Opcodes.LONG;
-                case Type.FLOAT:
-                    objects[index] = Opcodes.FLOAT;
-                    objects[index + 1] = Opcodes.TOP;
-                case Type.DOUBLE:
-                    objects[index] = Opcodes.DOUBLE;
-                    objects[index + 1] = Opcodes.TOP;
-                case Type.OBJECT:
-                case Type.ARRAY:
-                    objects[index] = type.getInternalName();
-                case Type.METHOD:
-                    // Shouldn't happen
-                default:
-                    throw new RuntimeException("Bad sort: " + type.getSort());
-                }
-            }
-        }
-    }
     
     @Override
     public int getSize() {
@@ -96,7 +61,7 @@ public class FrameValue implements Value {
         }
         
         FrameValue other = (FrameValue)obj;
-        return value.equals(other.value) && offsetOfNew == other.offsetOfNew; 
+        return value.equals(other.value) && newInsn == other.newInsn; 
     }
     
     @Override

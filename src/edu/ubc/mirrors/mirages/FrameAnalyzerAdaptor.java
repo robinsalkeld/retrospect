@@ -92,7 +92,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
         if (name.charAt(k - 1) == ';') {
             k--;
         }
-        return n == -1 ? name : name.substring(n + 1, k);
+        return (name.startsWith("(uninitialized)") ? "(U)" : "") + (n == -1 ? name : name.substring(n + 1, k));
     }
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
@@ -103,8 +103,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
         return new MethodNode(access, name, desc, null, null) {
             @Override
             public void visitEnd() {
-                System.out.println("Analyzing: " + name);
-                Analyzer<FrameValue> a = new FrameAnalyzer(verifier);
+                FrameAnalyzer a = new FrameAnalyzer(verifier);
                 try {
                     a.analyze(thisType.getInternalName(), this);
                 } catch (Exception e) {
@@ -123,6 +122,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
                 }
                 
                 if (superVisitor != null) {
+                    a.insertFrames();
                     accept(superVisitor);
                 }
             }
