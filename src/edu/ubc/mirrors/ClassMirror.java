@@ -1,6 +1,7 @@
 package edu.ubc.mirrors;
 
 import java.io.InputStream;
+import java.util.List;
 
 
 public interface ClassMirror {
@@ -14,6 +15,10 @@ public interface ClassMirror {
     public ClassMirror getComponentClassMirror();
     
     public ClassMirror getSuperClassMirror();
+    
+    public boolean isInterface();
+    
+    public List<ClassMirror> getInterfaceMirrors();
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException;
     

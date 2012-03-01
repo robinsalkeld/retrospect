@@ -2,8 +2,6 @@ package edu.ubc.mirrors.mirages;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -11,37 +9,23 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.analysis.Analyzer;
-import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.Frame;
-import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceMethodVisitor;
 
 public class FrameAnalyzerAdaptor extends ClassVisitor {
 
-    private final ClassLoader loader;
+    private final ClassHierarchy hierarchy;
     private Type thisType = null;
-    private Type superType = null;
-    private boolean isInterface;
-    private List<Type> interfaces;
     
-    public FrameAnalyzerAdaptor(ClassLoader loader, ClassVisitor cv) {
+    public FrameAnalyzerAdaptor(ClassHierarchy hierarchy, ClassVisitor cv) {
         super(Opcodes.ASM4, cv);
-        this.loader = loader;
+        this.hierarchy = hierarchy;
     }
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         this.thisType = Type.getObjectType(name);
-        this.isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
-        this.superType = superName == null
-                ? null
-                : Type.getObjectType(superName);
-        this.interfaces = new ArrayList<Type>();
-        for (String i : interfaces) {
-            this.interfaces.add(Type.getObjectType(i));
-        }
-        
         super.visit(version, access, name, signature, superName, interfaces);
     }
     
@@ -98,8 +82,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         final MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         
-        final FrameVerifier verifier = new FrameVerifier(thisType, superType, interfaces, isInterface);
-        verifier.setClassLoader(loader);
+        final FrameVerifier verifier = new FrameVerifier(hierarchy);
         return new MethodNode(access, name, desc, null, null) {
             @Override
             public void visitEnd() {

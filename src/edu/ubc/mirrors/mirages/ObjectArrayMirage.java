@@ -11,11 +11,13 @@ public class ObjectArrayMirage extends ObjectMirage implements ObjectArrayMirror
     public final ObjectArrayMirror mirror;
     
     public ObjectArrayMirage(int length) {
+        super(null);
         Class<?> originalClass = ObjectMirage.getOriginalClass(getClass());
         this.mirror = new DirectArrayMirror(new NativeClassMirror(originalClass), length);
     }
     
     public ObjectArrayMirage(ObjectArrayMirror mirror) {
+        super(mirror);
         this.mirror = mirror;
     }
 

@@ -35,6 +35,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
     private MethodVisitor superVisitor;
     private LocalVariablesSorter lvs;
     private Type methodType;
+    private String owner;
     private String name;
     
     private final boolean isToString;
@@ -45,6 +46,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
         this.mv = analyzer;
         this.name = name;
+        this.owner = owner;
         this.methodType = Type.getMethodType(desc);
         this.isToString = isToString;
     }
@@ -69,10 +71,6 @@ public class MirageMethodGenerator extends InstructionAdapter {
             return;
         }
         
-        if (analyzer.locals == null) {
-            insertDowncastsForMethodCall(opcode, owner, name, desc);
-        }
-        
         if (owner.equals(Type.getInternalName(Mirage.class))) {
             if (name.equals("<init>")) {
                 owner = objectMirageType.getInternalName();
@@ -81,32 +79,31 @@ public class MirageMethodGenerator extends InstructionAdapter {
             }
         }
         
+        if (name.equals("<init>")) {
+            int argsSize = Type.getArgumentsAndReturnSizes(desc) >> 2;
+            desc = MirageClassGenerator.addMirrorParam(desc);
+            
+            Object targetType = stackType(argsSize - 1);
+            if (targetType.equals(Opcodes.UNINITIALIZED_THIS)) {
+                // If the target is an uninitialized this (i.e. we're calling super(...)
+                // of this(...)), pass along the extra mirror argument
+                load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
+            } else if (targetType instanceof Label) {
+                // If the target is just uninitialized (i.e. we're calling <init> after
+                // a new), create the mirror
+                aconst(owner);
+                invokestatic(CLASS_LOADER_LITERAL_NAME,
+                        "newInstanceMirror",
+                        Type.getMethodDescriptor(instanceMirrorType, Type.getType(String.class)));
+            } else {
+                // Shouldn't happen
+                throw new InternalError();
+            }
+        }
+        
         super.visitMethodInsn(opcode, owner, name, desc);
     }
     
-    
-    private void insertDowncastsForMethodCall(int opcode, String owner, String name, String desc) {
-        Type[] argTypes = Type.getMethodType(desc).getArgumentTypes();
-        int[] argLocals = new int[argTypes.length];
-        for (int argIndex = argTypes.length - 1; argIndex >= 0; argIndex--) {
-            Type argType = argTypes[argIndex];
-            if (MirageClassGenerator.isRefType(argType)) {
-                checkcast(argType);
-            }
-            
-            int argLocal = lvs.newLocal(argType);
-            argLocals[argIndex] = argLocal;
-            store(argLocal, argType);
-        }
-        if (opcode == Opcodes.INVOKEVIRTUAL || opcode == Opcodes.INVOKEDYNAMIC) {
-            Type ownerType = Type.getObjectType(owner);
-            checkcast(ownerType);
-        }
-        for (int argIndex = 0; argIndex < argTypes.length; argIndex++) {
-            load(argLocals[argIndex], argTypes[argIndex]);
-        }
-    }
-
     private void fieldMirrorInsn(boolean isSet, Type fieldType) {
         Type fieldTypeForMirrorCall = fieldType;
         int fieldSort = fieldType.getSort();
@@ -163,10 +160,17 @@ public class MirageMethodGenerator extends InstructionAdapter {
                          Type.getMethodDescriptor(fieldMirrorType, Type.getType(String.class), Type.getType(String.class)));
         } else {
             // Push the mirror instance onto the stack
-            getfield(Type.getInternalName(ObjectMirage.class), 
-                            "mirror", 
-                            objectMirrorType.getDescriptor());
-            checkcast(instanceMirrorType);
+            // If this is an "uninitialized this", the mirror is the nth argument instead
+            // of the mirror field on ObjectMirage.
+            Object stackType = stackType(0);
+            if (stackType == Opcodes.UNINITIALIZED_THIS) {
+                load(methodType.getArgumentTypes().length, instanceMirrorType);
+            } else {
+                getfield(Type.getInternalName(ObjectMirage.class), 
+                                "mirror", 
+                                objectMirrorType.getDescriptor());
+                checkcast(instanceMirrorType);
+            }
             
             // Get the field mirror onto the stack
             aconst(name);
@@ -182,16 +186,8 @@ public class MirageMethodGenerator extends InstructionAdapter {
         fieldMirrorInsn(isSet, fieldType);
     }
     
-    private Type stackType(int indexFromTop) {
-        if (analyzer.stack == null) {
-            throw new RuntimeException("Crap!");
-//            // If we're analyzing < 1.6 bytecode and we've hit a branching instruction,
-//            // we don't know the stack and local types. Instead we'll make no assumptions
-//            // about the value and insert downcasts as needed later on to ensure valid code.
-//            return null;
-        } else {
-            return Type.getObjectType((String)analyzer.stack.get(analyzer.stack.size() - 1 - indexFromTop));
-        }
+    private Object stackType(int indexFromTop) {
+        return analyzer.stack.get(analyzer.stack.size() - 1 - indexFromTop);
     }
     
     @Override
@@ -247,7 +243,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             // Use the analyzer to figure out the expected array element type
             Type arrayElementTypeForMirrorCall = arrayElementType;
             if (arrayElementType.equals(objectMirrorType)) {
-                Type mirageType = stackType(isArrayStore ? 2 : 1);
+                Type mirageType = Type.getObjectType((String)stackType(isArrayStore ? 2 : 1));
                 if (mirageType == null) {
                     mirageType = Type.getType(ObjectArrayMirage.class);
                 }
@@ -357,13 +353,6 @@ public class MirageMethodGenerator extends InstructionAdapter {
         }
         
         super.visitTypeInsn(opcode, type);
-        
-        if (opcode == Opcodes.NEW) {
-            dup();
-            aconst(null);
-            pop2();
-//            putfield(objectMirageType.getInternalName(), "mirror", objectMirrorType.getDescriptor());
-        }
     }
     
     @Override
@@ -449,22 +438,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         super.visitCode();
         
         if (name.equals("<init>")) {
-            // Generate code that will initialize the mirror if it hasn't been already
-            Label after = new Label();
-            
-//            load(0, Type.getObjectType(owner));
-//            getfield(objectMirageType.getInternalName(), "mirror", objectMirrorType.getDescriptor());
-//            ifnonnull(after);
-            
-//            load(0, Type.getObjectType(owner));
-//            anew(Type.getType(FieldMapMirror.class));
-//            dup();
-//            load(0, Type.getObjectType(owner));
-//            invokevirtual("java/lang/Object", "getClass", Type.getMethodDescriptor(Type.getType(Class.class)));
-//            invokestatic(objectMirageType.getInternalName(), "getOriginalClass", Type.getMethodDescriptor(Type.getType(Class.class), Type.getType(Class.class)));
-//            invokespecial(Type.getInternalName(FieldMapMirror.class), "<init>", Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class)));
-//            putfield(objectMirageType.getInternalName(), "mirror", objectMirrorType.getDescriptor());
-//            visitLabel(after);
+            lvs.newLocal(instanceMirrorType);
         }
     }
 }

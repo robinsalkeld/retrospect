@@ -25,6 +25,7 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.jhat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.jhat.HeapDumpObjectMirror;
+import edu.ubc.mirrors.mirages.ClassHierarchy;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 
@@ -40,21 +41,22 @@ public class HeapDumpTest implements IApplication {
         String mirageClass = "mirage." + testClass;
         MirageClassLoader.traceClass = mirageClass;
         
-        ISnapshot snapshot = SnapshotFactory.openSnapshot(new File(snapshotPath), new HashMap<String, String>(), new org.eclipse.mat.util.VoidProgressListener());
-        IClass rubyObjectClass = snapshot.getClassesByName("org.jruby.RubyObject", false).iterator().next();
-        IClassLoader classLoader = (IClassLoader)snapshot.getObject(rubyObjectClass.getClassLoaderId());
-        
+//        ISnapshot snapshot = SnapshotFactory.openSnapshot(new File(snapshotPath), new HashMap<String, String>(), new org.eclipse.mat.util.VoidProgressListener());
+//        IClass rubyObjectClass = snapshot.getClassesByName("org.jruby.RubyObject", false).iterator().next();
+//        IClassLoader classLoader = (IClassLoader)snapshot.getObject(rubyObjectClass.getClassLoaderId());
+//        
         ClassLoader runtimeClassLoader = HeapDumpTest.class.getClassLoader();
         ClassMirrorLoader nativeParent = new NativeClassMirrorLoader(runtimeClassLoader);
-        HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(nativeParent, runtimeClassLoader, classLoader);
+//        HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(nativeParent, runtimeClassLoader, classLoader);
         
         MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, nativeParent);
+//        mirageLoader.getNode("[Ljava/lang/Object;").isAssignableFrom(mirageLoader.getNode("[Lorg/jruby/runtime/builtin/IRubyObject;"));
         
         mirageLoader.loadClass(mirageClass).getMethods();
         
 //        for (int id : rubyObjectClass.getObjectIds()) {
 //            IInstance object = (IInstance)snapshot.getObject(id);
-//            ObjectMirror<?> mirror = new HeapDumpObjectMirror(loader, object); 
+//            ObjectMirror mirror = new HeapDumpObjectMirror(loader, object); 
 //            Object o = mirageLoader.makeMirage(mirror);
 //            System.out.println(o);
 //        }

@@ -3,6 +3,8 @@ package edu.ubc.mirrors.raw;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
@@ -88,8 +90,17 @@ public class NativeClassMirror implements ClassMirror {
         throw new NoSuchFieldException();
     }
     
-    private Field findField(String name) throws NoSuchFieldException {
-        
-        throw new NoSuchFieldException(name);
+    @Override
+    public boolean isInterface() {
+        return klass.isInterface();
+    }
+    
+    @Override
+    public List<ClassMirror> getInterfaceMirrors() {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (Class<?> i : klass.getInterfaces()) {
+            result.add(new NativeClassMirror(i));
+        }
+        return result;
     }
 }

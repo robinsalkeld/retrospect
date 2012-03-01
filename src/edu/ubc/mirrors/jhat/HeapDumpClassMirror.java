@@ -65,5 +65,27 @@ public class HeapDumpClassMirror implements ClassMirror {
         }
         throw new NoSuchFieldException(name);
     }
+    
+    private Class<?> loadClass() {
+        try {
+            return loader.getClassLoader().loadClass(klass.getName());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
+    public boolean isInterface() {
+        return loadClass().isInterface();
+    }
+    
+    @Override
+    public List<ClassMirror> getInterfaceMirrors() {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (Class<?> i : loadClass().getInterfaces()) {
+            result.add(new NativeClassMirror(i));
+        }
+        return result;
+    }
 
 }

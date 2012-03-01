@@ -1,9 +1,7 @@
 package edu.ubc.mirrors.mirages;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import org.objectweb.asm.Label;
@@ -15,123 +13,19 @@ import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.Frame;
 import org.objectweb.asm.tree.analysis.Interpreter;
-import org.objectweb.asm.tree.analysis.SimpleVerifier;
 
 /**
  * @author robinsalkeld
  */
 public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
     
-    private final SimplerVerifier simplerVerifier;
-    
-    private static class SimplerVerifier extends SimpleVerifier {
-        
-        /**
-         * The super class of the class that is verified.
-         */
-        private final Type currentSuperClass;
-
-        /**
-         * The interfaces implemented by the class that is verified.
-         */
-        private final List<Type> currentClassInterfaces;
-
-        /**
-         * If the class that is verified is an interface.
-         */
-        private final boolean isInterface;
-        
-        // TODO-RS: This should be per-classloader
-        private static final Map<Type, SimplerVerifier> activeVerifiers = new HashMap<Type, SimplerVerifier>();
-        
-        public SimplerVerifier(
-                final Type currentClass,
-                final Type currentSuperClass,
-                final List<Type> currentClassInterfaces,
-                final boolean isInterface) {
-            this.currentSuperClass = currentSuperClass;
-            this.currentClassInterfaces = currentClassInterfaces;
-            this.isInterface = isInterface;
-            
-            activeVerifiers.put(currentClass, this);
-        }
-        
-        public void discard() {
-            activeVerifiers.remove(this);
-        }
-        
-        @Override
-        protected boolean isInterface(Type t) {
-            SimplerVerifier activeVerifier = activeVerifiers.get(t);
-            if (activeVerifier != null) {
-                return activeVerifier.isInterface;
-            }
-            
-            return getClass(t).isInterface();
-        }
-        
-        public Type getSuperClass(Type t) {
-            SimplerVerifier activeVerifier = activeVerifiers.get(t);
-            if (activeVerifier != null) {
-                return activeVerifier.currentSuperClass;
-            }
-            
-            Class<?> c = getClass(t).getSuperclass();
-            return c == null ? null : Type.getType(c);
-        }
-        
-        protected boolean isAssignableFrom(Type t, Type u) {
-            // Copied from superclass
-            if (t.equals(u)) {
-                return true;
-            }
-            SimplerVerifier tVerifier = activeVerifiers.get(t);
-            if (tVerifier != null) {
-                if (tVerifier.isInterface) {
-                    return u.getSort() == Type.OBJECT || u.getSort() == Type.ARRAY;
-                }
-                Type uSuperClass = getSuperClass(u);
-                if (uSuperClass == null) {
-                    return false;
-                }
-                return isAssignableFrom(t, uSuperClass);
-            }
-            SimplerVerifier uVerifier = activeVerifiers.get(u);
-            if (uVerifier != null) {
-                if (isAssignableFrom(t, uVerifier.currentSuperClass)) {
-                    return true;
-                }
-                if (uVerifier.currentClassInterfaces != null) {
-                    for (int i = 0; i < uVerifier.currentClassInterfaces.size(); ++i) {
-                        Type v = uVerifier.currentClassInterfaces.get(i);
-                        if (isAssignableFrom(t, v)) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-            Class<?> tc = getClass(t);
-            if (tc.isInterface()) {
-                tc = Object.class;
-            }
-            return tc.isAssignableFrom(getClass(u));
-        }
-    }
+    private final BetterVerifier simplerVerifier;
     
     private Frame<FrameValue> currentFrame;
     
-    public FrameVerifier(
-            final Type currentClass,
-            final Type currentSuperClass,
-            final List<Type> currentClassInterfaces,
-            final boolean isInterface) {
+    public FrameVerifier(ClassHierarchy hierarchy) {
         super(ASM4);
-        simplerVerifier = new SimplerVerifier(currentClass, currentSuperClass, currentClassInterfaces, isInterface);
-    }
-        
-    public void discard() {
-        simplerVerifier.discard();
+        simplerVerifier = new BetterVerifier(hierarchy);
     }
     
     @Override
@@ -269,13 +163,9 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
     
     private BasicValue checkUninitialized(AbstractInsnNode insn, String msg, FrameValue value) throws AnalyzerException {
         if (value.isUninitialized()) {
-            throw new AnalyzerException(insn, msg);
+            throw new AnalyzerException(insn, msg, "initialized value", value);
         }
         return value.getBasicValue();
-    }
-
-    public void setClassLoader(ClassLoader loader) {
-        simplerVerifier.setClassLoader(loader);
     }
 
     public void setContext(Frame<FrameValue> frame) {

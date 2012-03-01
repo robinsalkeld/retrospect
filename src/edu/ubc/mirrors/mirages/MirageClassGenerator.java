@@ -3,6 +3,7 @@ package edu.ubc.mirrors.mirages;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -90,24 +91,35 @@ public class MirageClassGenerator extends ClassVisitor {
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         this.name = name;
         this.isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
-        this.superName = superName;
-        
-        if (Type.getInternalName(Mirage.class).equals(superName)) {
-            if (isInterface) {
-                this.superName = Type.getInternalName(Object.class);
-            } else {
-                this.superName = Type.getInternalName(ObjectMirage.class);
-            }
-        }
-        if (isInterface) {
-            String[] newInterfaces = new String[interfaces.length + 1];
-            System.arraycopy(interfaces, 0, newInterfaces, 0, interfaces.length);
-            newInterfaces[interfaces.length] = Type.getInternalName(Mirage.class);
-        }
+        this.superName = getMirageSuperclassName(isInterface, superName);
+        interfaces = getMirageInterfaces(isInterface, interfaces);
         
         super.visit(version, access, name, signature, this.superName, interfaces);
     }
 
+    public static String getMirageSuperclassName(boolean isInterface, String mirageSuperName) {
+        if (Type.getInternalName(Mirage.class).equals(mirageSuperName)) {
+            if (isInterface) {
+                return Type.getInternalName(Object.class);
+            } else {
+                return Type.getInternalName(ObjectMirage.class);
+            }
+        } else {
+            return mirageSuperName;
+        }
+    }
+    
+    public static String[] getMirageInterfaces(boolean isInterface, String[] mirageInterfaces) {
+        if (isInterface) {
+            String[] newInterfaces = new String[mirageInterfaces.length + 1];
+            System.arraycopy(mirageInterfaces, 0, newInterfaces, 0, mirageInterfaces.length);
+            newInterfaces[newInterfaces.length - 1] = Type.getInternalName(Mirage.class);
+            return newInterfaces;
+        } else {
+            return mirageInterfaces;
+        }
+    }
+    
     public static String getMirageBinaryClassName(String className) {
         if (className == null) {
             return null;
@@ -185,7 +197,8 @@ public class MirageClassGenerator extends ClassVisitor {
         if (className.equals(Type.getInternalName(Object.class))) {
             return Type.getInternalName(Mirage.class);
         }
-        if (className.equals("[L" + Type.getInternalName(Object.class) + ";")) {
+        if (className.equals("[L" + Type.getInternalName(Object.class) + ";")
+                || className.equals("[L" + Type.getInternalName(Mirage.class) + ";")) {
             return Type.getInternalName(ObjectArrayMirage.class);
         }
         
@@ -276,6 +289,15 @@ public class MirageClassGenerator extends ClassVisitor {
         return getMirageType(Type.getType(c));
     }
     
+    public static String addMirrorParam(String desc) {
+        Type type = Type.getMethodType(desc);
+        Type argTypes[] = type.getArgumentTypes();
+        Type newArgTypes[] = new Type[argTypes.length + 1];
+        System.arraycopy(argTypes, 0, newArgTypes, 0, argTypes.length);
+        newArgTypes[newArgTypes.length - 1] = instanceMirrorType;
+        return Type.getMethodDescriptor(type.getReturnType(), newArgTypes);
+    }
+    
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
@@ -284,6 +306,11 @@ public class MirageClassGenerator extends ClassVisitor {
         // loading the original class and state will be proxied by ClassMirrors instead.
         if (name.equals("<clinit>")) {
             return null;
+        }
+        
+        if (name.equals("<init>")) {
+            // Add the implicit mirror argument
+            desc = addMirrorParam(desc);
         }
         
         // toString() is a special case - it's defined in java.lang.Object, which this class must ultimately
@@ -365,9 +392,9 @@ public class MirageClassGenerator extends ClassVisitor {
     
     @Override
     public void visitEnd() {
-        // Generate the constructor that takes a mirror instance
+        // Generate the constructor that takes a mirror instance as an Object parameter
         if (!isInterface) {
-            String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirrorType);
+            String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));
             MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
                              "<init>", constructorDesc, null, null);
             methodVisitor.visitCode();
@@ -382,14 +409,14 @@ public class MirageClassGenerator extends ClassVisitor {
         super.visitEnd();
     }
 
-    public static byte[] generate(ClassLoader loader, ClassMirror classMirror) throws IOException {
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES & ClassWriter.COMPUTE_MAXS);
+    public static byte[] generate(MirageClassLoader loader, ClassMirror classMirror) throws IOException {
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
 //        visitor = new CheckClassAdapter(visitor);
         visitor = new FrameAnalyzerAdaptor(loader, visitor);
         visitor = new MirageClassGenerator(classMirror, visitor);
         visitor = new RemappingClassAdapter(visitor, REMAPPER);
-        visitor = new FrameAnalyzerAdaptor(loader, visitor);
+        visitor = new FrameAnalyzerAdaptor(new ClassMirrorHierarchy(loader.getClassMirrorLoader()), visitor);
         ClassReader reader = new ClassReader(classMirror.getBytecodeStream());
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();

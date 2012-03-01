@@ -22,15 +22,14 @@ public abstract class ObjectMirage implements Mirage {
     public final ObjectMirror mirror;
     
     /**
-     * Constructor for translated new statements - instantiates a new native mirror.
+     * Constructor for calls to make() - the mirror instance is passed up the constructor chain.
      */
-    protected ObjectMirage() {
-        Class<?> originalClass = ObjectMirage.getOriginalClass(getClass());
-        this.mirror = new FieldMapMirror(originalClass);
+    public ObjectMirage(Object mirror) {
+        this.mirror = (ObjectMirror)mirror;
     }
     
     /**
-     * Constructor for calls to make() - the mirror instance is passed up the constructor chain.
+     * Constructor for translated new statements.
      */
     public ObjectMirage(ObjectMirror mirror) {
         this.mirror = mirror;
@@ -140,6 +139,13 @@ public abstract class ObjectMirage implements Mirage {
     public static Object lift(Object object, Class<?> classLoaderLiteral) {
         ObjectMirror mirror = new NativeObjectMirror(object);
         return ((MirageClassLoader)classLoaderLiteral.getClassLoader()).makeMirage(mirror);
+    }
+    
+    public static InstanceMirror newInstanceMirror(String className, Class<?> classLoaderLiteral) throws ClassNotFoundException {
+        MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        // TODO-RS: Call ClassMirror.newInstanceMirror() instead!
+        Class<?> originalClass = ObjectMirage.getOriginalClass(loader.loadClass(className));
+        return new FieldMapMirror(originalClass);
     }
     
     public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {
