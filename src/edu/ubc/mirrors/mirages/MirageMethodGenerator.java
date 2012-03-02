@@ -267,9 +267,19 @@ public class MirageMethodGenerator extends InstructionAdapter {
                 suffix = getSortName(arrayElementType.getSort());
             }
             
+            invokestatic(objectMirageType.getInternalName(), 
+                    "getMirror", 
+                    Type.getMethodDescriptor(objectMirrorType, OBJECT_TYPE));
+            checkcast(mirrorType);
+            
             load(indexLocal, Type.INT_TYPE);
             if (isArrayStore) {
                 load(setValueLocal, arrayElementType);
+                if (arrayElementTypeForMirrorCall.equals(objectMirrorType)) {
+                    invokestatic(objectMirageType.getInternalName(), 
+                                 "getMirror", 
+                                 Type.getMethodDescriptor(objectMirrorType, OBJECT_TYPE));
+                }
             }
             
             // Call the appropriate getter/setter method on the mirror
@@ -278,12 +288,6 @@ public class MirageMethodGenerator extends InstructionAdapter {
                 methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.INT_TYPE, arrayElementTypeForMirrorCall);
             } else {
                 methodDesc = Type.getMethodDescriptor(arrayElementTypeForMirrorCall, Type.INT_TYPE);
-            }
-            if (isArrayStore && arrayElementTypeForMirrorCall.equals(objectMirrorType)) {
-                invokestatic(objectMirageType.getInternalName(), 
-                             "getMirror", 
-                             Type.getMethodDescriptor(objectMirrorType, OBJECT_TYPE));
-                checkcast(mirrorType);
             }
             invokeinterface(mirrorType.getInternalName(), 
                             (isArrayStore ? "set" : "get") + suffix, 

@@ -94,7 +94,11 @@ public class MirageClassGenerator extends ClassVisitor {
         this.superName = getMirageSuperclassName(isInterface, superName);
         interfaces = getMirageInterfaces(isInterface, interfaces);
         
-        super.visit(version, access, name, signature, this.superName, interfaces);
+        // Force everything to be public for now, since MirageClassLoader has to reflectively
+        // construct mirages.
+        int mirageAccess = (~(Opcodes.ACC_PRIVATE + Opcodes.ACC_PROTECTED) & access) | Opcodes.ACC_PUBLIC;
+        
+        super.visit(version, mirageAccess, name, signature, this.superName, interfaces);
     }
 
     public static String getMirageSuperclassName(boolean isInterface, String mirageSuperName) {
@@ -322,16 +326,16 @@ public class MirageClassGenerator extends ClassVisitor {
         
         // Take off the native keyword if it's there - we're going to fill in an actual
         // method (even if it's a stub that throws an exception).
-        int noNativeAccess = ~Opcodes.ACC_NATIVE & access;
-        MethodVisitor superVisitor = super.visitMethod(noNativeAccess, name, desc, signature, exceptions);
+        int mirageAccess = ~Opcodes.ACC_NATIVE & access;
+        MethodVisitor superVisitor = super.visitMethod(mirageAccess, name, desc, signature, exceptions);
         
-        MirageMethodGenerator generator = new MirageMethodGenerator(this.name, noNativeAccess, name, desc, superVisitor, isToString);
+        MirageMethodGenerator generator = new MirageMethodGenerator(this.name, mirageAccess, name, desc, superVisitor, isToString);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
         Method mirrorMethod = mirrorMethods.get(name);
         if (mirrorMethod != null) {
-            generateStaticThunk(generator, mirrorMethod);
+            generateStaticThunk(generator, desc, mirrorMethod);
             
             return null;
         } else if ((Opcodes.ACC_NATIVE & access) != 0) {
@@ -355,7 +359,7 @@ public class MirageClassGenerator extends ClassVisitor {
         return lvs;
     }
     
-    public static void generateStaticThunk(MethodVisitor visitor, Method method) {
+    public static void generateStaticThunk(MethodVisitor visitor, String desc, Method method) {
         Class<?>[] parameterClasses = method.getParameterTypes();
         visitor.visitCode();
         Type[] parameterTypes = new Type[parameterClasses.length];
@@ -376,6 +380,7 @@ public class MirageClassGenerator extends ClassVisitor {
                     MirageClassLoader.CLASS_LOADER_LITERAL_NAME, 
                     "makeMirage", 
                     Type.getMethodDescriptor(Type.getType(Object.class), objectMirrorType));
+            visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getReturnType(desc).getInternalName());
         }
         visitor.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
         visitor.visitMaxs(parameterTypes.length, parameterTypes.length);

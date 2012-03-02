@@ -53,7 +53,7 @@ public class MirageClassLoader extends ClassLoader {
     private final File myTraceDir;
     
     final ClassMirrorLoader classMirrorLoader;
-    final ClassMirrorLoader mirageClassMirrorLoader;
+    final MirageClassMirrorLoader mirageClassMirrorLoader;
     
     public ClassMirrorLoader getClassMirrorLoader() {
         return classMirrorLoader;
@@ -127,7 +127,7 @@ public class MirageClassLoader extends ClassLoader {
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         String internalName = name.replace('.', '/');
         if (internalName.equals(CLASS_LOADER_LITERAL_NAME)) {
-            byte[] b = new ClassLoaderLiteralMirror(mirageClassMirrorLoader).getBytecode();
+            byte[] b = mirageClassMirrorLoader.classLoaderLiteralMirror.getBytecode();
             return defineClass(name, b);
         } else if (name.startsWith("miragearray")) {
             Type originalType = Type.getObjectType(getOriginalInternalClassName(internalName));

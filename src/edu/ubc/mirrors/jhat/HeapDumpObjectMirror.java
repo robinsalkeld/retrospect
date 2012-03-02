@@ -39,6 +39,9 @@ public class HeapDumpObjectMirror implements InstanceMirror {
     }
 
     public static ObjectMirror makeMirror(HeapDumpClassMirrorLoader loader, IObject object) {
+        if (object == null) {
+            return null;
+        }
         if (object instanceof IInstance) {
             return new HeapDumpObjectMirror(loader, (IInstance)object);
         } else if (object instanceof IPrimitiveArray) {

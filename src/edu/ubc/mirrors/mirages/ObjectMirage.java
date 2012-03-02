@@ -31,7 +31,7 @@ public abstract class ObjectMirage implements Mirage {
     /**
      * Constructor for translated new statements.
      */
-    public ObjectMirage(ObjectMirror mirror) {
+    public ObjectMirage(InstanceMirror mirror) {
         this.mirror = mirror;
     }
     
@@ -141,10 +141,10 @@ public abstract class ObjectMirage implements Mirage {
         return ((MirageClassLoader)classLoaderLiteral.getClassLoader()).makeMirage(mirror);
     }
     
-    public static InstanceMirror newInstanceMirror(String className, Class<?> classLoaderLiteral) throws ClassNotFoundException {
+    public static InstanceMirror newInstanceMirror(Class<?> classLoaderLiteral, String className) throws ClassNotFoundException {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         // TODO-RS: Call ClassMirror.newInstanceMirror() instead!
-        Class<?> originalClass = ObjectMirage.getOriginalClass(loader.loadClass(className));
+        Class<?> originalClass = ObjectMirage.getOriginalClass(loader.loadClass(className.replace('/', '.')));
         return new FieldMapMirror(originalClass);
     }
     

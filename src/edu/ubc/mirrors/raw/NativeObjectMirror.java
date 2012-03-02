@@ -24,6 +24,9 @@ public class NativeObjectMirror implements InstanceMirror {
     private final Object object;
     
     public NativeObjectMirror(Object object) {
+        if (object == null) {
+            throw new NullPointerException();
+        }
         this.object = object;
     }
     
@@ -154,6 +157,9 @@ public class NativeObjectMirror implements InstanceMirror {
     }
     
     public static ObjectMirror makeMirror(Object object) {
+        if (object == null) {
+            return null;
+        }
         if (object instanceof Object[]) {
             return new NativeObjectArrayMirror((Object[])object);
         } else if (object instanceof boolean[]) {
