@@ -413,11 +413,11 @@ public class MirageClassGenerator extends ClassVisitor {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
 //        visitor = new CheckClassAdapter(visitor);
-        visitor = new FrameAnalyzerAdaptor(loader, visitor);
+//        visitor = new FrameAnalyzerAdaptor(loader.getMirageClassMirrorLoader(), visitor);
         visitor = new MirageClassGenerator(classMirror, visitor);
         visitor = new RemappingClassAdapter(visitor, REMAPPER);
-        visitor = new FrameAnalyzerAdaptor(new ClassMirrorHierarchy(loader.getClassMirrorLoader()), visitor);
-        ClassReader reader = new ClassReader(classMirror.getBytecodeStream());
+        visitor = new FrameAnalyzerAdaptor(loader.getClassMirrorLoader(), visitor);
+        ClassReader reader = new ClassReader(classMirror.getBytecode());
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();
     }

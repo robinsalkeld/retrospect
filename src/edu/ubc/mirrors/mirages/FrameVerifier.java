@@ -14,6 +14,8 @@ import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.Frame;
 import org.objectweb.asm.tree.analysis.Interpreter;
 
+import edu.ubc.mirrors.ClassMirrorLoader;
+
 /**
  * @author robinsalkeld
  */
@@ -23,9 +25,9 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
     
     private Frame<FrameValue> currentFrame;
     
-    public FrameVerifier(ClassHierarchy hierarchy) {
+    public FrameVerifier(ClassMirrorLoader loader) {
         super(ASM4);
-        simplerVerifier = new BetterVerifier(hierarchy);
+        simplerVerifier = new BetterVerifier(loader);
     }
     
     @Override

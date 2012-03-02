@@ -3,17 +3,24 @@ package edu.ubc.mirrors.mirages;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.analysis.SimpleVerifier;
 
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
+
 class BetterVerifier extends SimpleVerifier {
     
-    private final ClassHierarchy hierarchy;
+    private final ClassMirrorLoader loader;
     
-    public BetterVerifier(ClassHierarchy hierarchy) {
-        this.hierarchy = hierarchy;
+    public BetterVerifier(ClassMirrorLoader loader) {
+        this.loader = loader;
     }
     
-    private ClassHierarchy.Node getNode(Type t) {
+    private ClassMirror getClassMirror(Type t) {
         try {
-            return hierarchy.getNode(t.getInternalName());
+            if (t.getSort() == Type.ARRAY) {
+                return loader.loadClassMirror(t.getInternalName().replace('/', '.'));
+            } else {
+                return loader.loadClassMirror(t.getClassName());
+            }
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);
@@ -23,11 +30,12 @@ class BetterVerifier extends SimpleVerifier {
     
     @Override
     protected boolean isInterface(Type t) {
-        return getNode(t).isInterface();
+        return getClassMirror(t).isInterface();
     }
     
     public Type getSuperClass(Type t) {
-        return Type.getObjectType(getNode(t).getSuperclass().getInternalClassName());
+        ClassMirror superClassMirror = getClassMirror(t).getSuperClassMirror();
+        return superClassMirror == null ? null : Type.getObjectType(superClassMirror.getClassName().replace('.', '/'));
     }
     
     protected boolean isAssignableFrom(Type t, Type u) {
@@ -37,11 +45,11 @@ class BetterVerifier extends SimpleVerifier {
         if (t.equals(u)) {
             return true;
         }
-        ClassHierarchy.Node tNode = getNode(t);
+        ClassMirror tNode = getClassMirror(t);
         if (tNode.isInterface()) {
             return true;
         }
-        ClassHierarchy.Node uNode = getNode(u);
+        ClassMirror uNode = getClassMirror(u);
         if (uNode.isInterface()) {
             return t.getInternalName().equals("java/lang/Object");
         }

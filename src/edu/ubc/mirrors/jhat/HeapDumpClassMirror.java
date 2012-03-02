@@ -13,7 +13,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
-public class HeapDumpClassMirror implements ClassMirror {
+public class HeapDumpClassMirror extends ClassMirror {
 
     private final HeapDumpClassMirrorLoader loader;
     private final IClass klass;
@@ -28,8 +28,8 @@ public class HeapDumpClassMirror implements ClassMirror {
     }
     
     @Override
-    public InputStream getBytecodeStream() {
-        return NativeClassMirror.getNativeBytecodeStream(loader.getClassLoader(), getClassName());
+    public byte[] getBytecode() {
+        return NativeClassMirror.getNativeBytecode(loader.getClassLoader(), getClassName());
     }
 
     public boolean isArray() {
@@ -86,6 +86,11 @@ public class HeapDumpClassMirror implements ClassMirror {
             result.add(new NativeClassMirror(i));
         }
         return result;
+    }
+
+    @Override
+    public ClassMirrorLoader getLoader() {
+        return loader;
     }
 
 }

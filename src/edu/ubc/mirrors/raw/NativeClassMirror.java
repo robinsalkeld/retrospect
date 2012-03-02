@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.raw;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -7,10 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror.NativeFieldMirror;
 
-public class NativeClassMirror implements ClassMirror {
+public class NativeClassMirror extends ClassMirror {
 
     private final Class<?> klass;
     
@@ -23,18 +26,31 @@ public class NativeClassMirror implements ClassMirror {
     }
     
     @Override
-    public InputStream getBytecodeStream() {
-        return getNativeBytecodeStream(klass.getClassLoader(), klass.getName());
+    public byte[] getBytecode() {
+        return getNativeBytecode(klass.getClassLoader(), klass.getName());
     }
     
-    public static InputStream getNativeBytecodeStream(ClassLoader classLoader, String name) {
+    public static byte[] getNativeBytecode(ClassLoader classLoader, String name) {
      // TODO-RS: Need instrumentation for fully general solution...
         String resourceName = name.replace('.', '/') + ".class";
+        InputStream bytesIn;
         if (classLoader == null) {
-            return ClassLoader.getSystemResourceAsStream(resourceName);
+            bytesIn = ClassLoader.getSystemResourceAsStream(resourceName);
         } else {
-            return classLoader.getResourceAsStream(resourceName);
+            bytesIn = classLoader.getResourceAsStream(resourceName);
         }
+        
+        int read;
+        byte[] buffer = new byte[16384];
+        ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+        try {
+            while ((read = bytesIn.read(buffer)) != -1) {
+                bytesOut.write(buffer, 0, read);
+            }
+        } catch (IOException e) {
+            throw new InternalError();
+        }
+        return bytesOut.toByteArray();
     }
     
     public ClassMirror getSuperClassMirror() {
@@ -102,5 +118,10 @@ public class NativeClassMirror implements ClassMirror {
             result.add(new NativeClassMirror(i));
         }
         return result;
+    }
+
+    @Override
+    public ClassMirrorLoader getLoader() {
+        return new NativeClassMirrorLoader(klass.getClassLoader());
     }
 }

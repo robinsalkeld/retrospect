@@ -13,14 +13,16 @@ import org.objectweb.asm.tree.analysis.Frame;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceMethodVisitor;
 
+import edu.ubc.mirrors.ClassMirrorLoader;
+
 public class FrameAnalyzerAdaptor extends ClassVisitor {
 
-    private final ClassHierarchy hierarchy;
+    private final ClassMirrorLoader loader;
     private Type thisType = null;
     
-    public FrameAnalyzerAdaptor(ClassHierarchy hierarchy, ClassVisitor cv) {
+    public FrameAnalyzerAdaptor(ClassMirrorLoader loader, ClassVisitor cv) {
         super(Opcodes.ASM4, cv);
-        this.hierarchy = hierarchy;
+        this.loader = loader;
     }
 
     @Override
@@ -82,7 +84,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         final MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         
-        final FrameVerifier verifier = new FrameVerifier(hierarchy);
+        final FrameVerifier verifier = new FrameVerifier(loader);
         return new MethodNode(access, name, desc, null, null) {
             @Override
             public void visitEnd() {
@@ -95,7 +97,6 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
                     {
                         throw new RuntimeException("Data flow checking option requires valid, non zero maxLocals and maxStack values.");
                     }
-                    e.printStackTrace();
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw, true);
                     printAnalyzerResult(this, a, pw);

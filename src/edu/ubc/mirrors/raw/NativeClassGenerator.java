@@ -111,7 +111,7 @@ public class NativeClassGenerator extends RemappingClassAdapter {
         ClassVisitor visitor = classWriter;
         visitor = new CheckClassAdapter(visitor);
         visitor = new NativeClassGenerator(visitor);
-        ClassReader reader = new ClassReader(classMirror.getBytecodeStream());
+        ClassReader reader = new ClassReader(classMirror.getBytecode());
         reader.accept(visitor, ClassReader.SKIP_FRAMES);
         return classWriter.toByteArray();
     }
