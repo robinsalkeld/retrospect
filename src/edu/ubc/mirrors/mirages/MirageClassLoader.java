@@ -51,6 +51,7 @@ public class MirageClassLoader extends ClassLoader {
     public static String traceClass = null;
     public static String traceDir = null;
     private final File myTraceDir;
+    public static boolean debug = false;
     
     final ClassMirrorLoader classMirrorLoader;
     final MirageClassMirrorLoader mirageClassMirrorLoader;
@@ -83,13 +84,14 @@ public class MirageClassLoader extends ClassLoader {
     
     public static void setTraceDir(String newTraceDir) {
         traceDir = newTraceDir;
-        for (File dir : new File(traceDir + "/").listFiles()) {
-//            for (File f : dir.listFiles()) {
-//                f.delete();
-//            }
-            dir.delete();
+        if (traceDir != null) {
+            for (File dir : new File(traceDir + "/").listFiles()) {
+    //            for (File f : dir.listFiles()) {
+    //                f.delete();
+    //            }
+                dir.delete();
+            }
         }
-        
     }
     
     public ClassLoader getOriginalLoader() {
@@ -120,7 +122,7 @@ public class MirageClassLoader extends ClassLoader {
     }
     
     public Class<?> loadMirageClass(Class<?> original) throws ClassNotFoundException {
-        return loadClass(MirageClassGenerator.getMirageBinaryClassName(original.getName()));
+        return loadClass(MirageClassGenerator.getMirageBinaryClassName(original.getName(), false));
     }
     
     @Override
@@ -130,33 +132,47 @@ public class MirageClassLoader extends ClassLoader {
             byte[] b = mirageClassMirrorLoader.classLoaderLiteralMirror.getBytecode();
             return defineClass(name, b);
         } else if (name.startsWith("miragearray")) {
+            boolean isInterface = !name.startsWith("miragearrayimpl");
+            
             Type originalType = Type.getObjectType(getOriginalInternalClassName(internalName));
-            String originalElement = originalType.getElementType().getInternalName();
-            int dims = originalType.getDimensions();
-            ClassMirror originalClassMirror = classMirrorLoader.loadClassMirror(originalElement.replace('/', '.'));
-            ClassMirror superClassMirror = originalClassMirror.getSuperClassMirror();
-            // TODO-RS: miragearray(n).java.lang.Object should extend miragearray(n-1).java.lang.Object
-            String superName = (originalClassMirror.isInterface() ? Type.getInternalName(Object.class) : Type.getInternalName(ObjectArrayMirage.class));
-            if (superClassMirror != null) { 
-                Type superType = MirageClassGenerator.makeArrayType(dims, Type.getObjectType(superClassMirror.getClassName().replace('.', '/'))); 
-                superName = MirageClassGenerator.getMirageType(superType).getInternalName(); 
-            }
+            Type originalElementType = originalType.getElementType();
+            
+            ClassMirror superClassMirror = null;
+            String superName = isInterface ? Type.getInternalName(Object.class) : Type.getInternalName(ObjectArrayMirage.class);
             List<String> interfaces = new ArrayList<String>();
-            for (ClassMirror interfaceMirror : originalClassMirror.getInterfaceMirrors()) {
-                Type superType = MirageClassGenerator.makeArrayType(dims, Type.getObjectType(interfaceMirror.getClassName().replace('.', '/'))); 
-                String interfaceName = MirageClassGenerator.getMirageType(superType).getInternalName(); 
-                interfaces.add(interfaceName);
-            }
-            if (originalClassMirror.isInterface()) {
-                interfaces.add(Type.getInternalName(ObjectArrayMirror.class));
+            int access = Opcodes.ACC_PUBLIC | (isInterface ? Opcodes.ACC_INTERFACE : 0);
+            
+            // TODO-RS: miragearray(n).java.lang.Object should extend miragearray(n-1).java.lang.Object
+            
+            if (originalElementType.getSort() == Type.OBJECT || originalElementType.getSort() == Type.ARRAY) {
+                String originalElement = originalElementType.getInternalName();
+                int dims = originalType.getDimensions();
+                ClassMirror originalClassMirror = classMirrorLoader.loadClassMirror(originalElement.replace('/', '.'));
+                
+                superClassMirror = originalClassMirror.getSuperClassMirror();
+                
+                if (isInterface) {
+                    if (superClassMirror != null) { 
+                        Type superType = MirageClassGenerator.makeArrayType(dims, Type.getObjectType(superClassMirror.getClassName().replace('.', '/'))); 
+                        String superInterfaceName = MirageClassGenerator.getMirageType(superType).getInternalName(); 
+                        interfaces.add(superInterfaceName);
+                    }
+                    
+                    for (ClassMirror interfaceMirror : originalClassMirror.getInterfaceMirrors()) {
+                        Type superType = MirageClassGenerator.makeArrayType(dims, Type.getObjectType(interfaceMirror.getClassName().replace('.', '/'))); 
+                        String interfaceName = MirageClassGenerator.getMirageType(superType).getInternalName(); 
+                        interfaces.add(interfaceName);
+                    }
+                } else {
+                    interfaces.add("miragearray" + name.replace('.', '/').substring("miragearrayimpl".length()));
+                }
             }
             
             ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            int access = Opcodes.ACC_PUBLIC | (originalClassMirror.isInterface() ? Opcodes.ACC_INTERFACE : 0);
-            writer.visit(Opcodes.V1_1, access, internalName, null, superName, null);
+            writer.visit(Opcodes.V1_1, access, internalName, null, superName, interfaces.toArray(new String[0]));
 
             // Generate thunk constructors
-            if (!originalClassMirror.isInterface()) {
+            if (!isInterface) {
                 String initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class));
                 MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
                 mv.visitCode();
@@ -181,6 +197,9 @@ public class MirageClassLoader extends ClassLoader {
             return defineClass(name, b);
         } else if (name.startsWith("mirage")) {
             String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
+            if (originalClassName.equals("org/jruby/RubyFixnum[]")) {
+                int bp = 4;
+            }
             ClassMirror classMirror = classMirrorLoader.loadClassMirror(originalClassName);
             byte[] b;
             try {
@@ -205,16 +224,6 @@ public class MirageClassLoader extends ClassLoader {
     }
     
     protected Class<?> defineClass(String name, byte[] b) {
-        ByteArrayInputStream is = new ByteArrayInputStream(b);
-        try {
-            JavaClass javaClass = new ClassParser(is, "").parse();
-            Repository.addClass(javaClass);
-        } catch (ClassFormatException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        
         if (myTraceDir != null) {
             File file = new File(myTraceDir, name + ".class");
             try {
@@ -246,27 +255,28 @@ public class MirageClassLoader extends ClassLoader {
             return null;
         }
         
-        if (mirror instanceof BooleanArrayMirror) {
+        final String internalClassName = mirror.getClassMirror().getClassName();
+        
+        if (internalClassName.equals("[Z")) {
             return new BooleanArrayMirage((BooleanArrayMirror)mirror);
-        } else if (mirror instanceof ByteArrayMirror) {
+        } else if (internalClassName.equals("[B")) {
             return new ByteArrayMirage((ByteArrayMirror)mirror);
-        } else if (mirror instanceof CharArrayMirror) {
+        } else if (internalClassName.equals("[C")) {
             return new CharArrayMirage((CharArrayMirror)mirror);
-        } else if (mirror instanceof ShortArrayMirror) {
+        } else if (internalClassName.equals("[S")) {
             return new ShortArrayMirage((ShortArrayMirror)mirror);
-        } else if (mirror instanceof IntArrayMirror) {
+        } else if (internalClassName.equals("[I")) {
             return new IntArrayMirage((IntArrayMirror)mirror);
-        } else if (mirror instanceof LongArrayMirror) {
+        } else if (internalClassName.equals("[J")) {
             return new LongArrayMirage((LongArrayMirror)mirror);
-        } else if (mirror instanceof FloatArrayMirror) {
+        } else if (internalClassName.equals("[F")) {
             return new FloatArrayMirage((FloatArrayMirror)mirror);
-        } else if (mirror instanceof DoubleArrayMirror) {
+        } else if (internalClassName.equals("[D")) {
             return new DoubleArrayMirage((DoubleArrayMirror)mirror);
         }
         
-        final String internalClassName = mirror.getClassMirror().getClassName();
         try {
-            final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName);
+            final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName, true);
             final Class<?> mirageClass = loadClass(mirageClassName);
             final Constructor<?> c = mirageClass.getConstructor(mirror instanceof InstanceMirror ? Object.class : ObjectArrayMirror.class);
             return c.newInstance(mirror);

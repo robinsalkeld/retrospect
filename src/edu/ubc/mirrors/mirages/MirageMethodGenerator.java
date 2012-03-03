@@ -341,7 +341,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             // Instantiate the mirage class
             String originalTypeName = getOriginalInternalClassName(type);
             Type arrayType = makeArrayType(1, Type.getObjectType(originalTypeName));
-            Type mirageArrayType = getMirageType(arrayType);
+            Type mirageArrayType = Type.getObjectType(getMirageInternalClassName(arrayType.getInternalName(), true));
             anew(mirageArrayType);
             dup();
 

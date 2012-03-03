@@ -18,16 +18,18 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.jhat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.jhat.HeapDumpObjectMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mutable.MutableInstanceMirror;
+import edu.ubc.mirrors.mutable.MutableObjectArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 
 public class HeapDumpTest implements IApplication {
 
     public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException {
         String snapshotPath = args[0];
-        String traceDir = args[1];
-        String testClass = args[2];
+        String testClass = args[1];
         
-        MirageClassLoader.setTraceDir(traceDir);
+        MirageClassLoader.setTraceDir(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
+        MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
         
         String mirageClass = "mirage." + testClass;
         MirageClassLoader.traceClass = mirageClass;
@@ -42,11 +44,11 @@ public class HeapDumpTest implements IApplication {
         
         MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, nativeParent);
         
-        mirageLoader.loadClass(mirageClass).getMethods();
+//        mirageLoader.loadClass(mirageClass).getMethods();
         
         for (int id : rubyObjectClass.getObjectIds()) {
             IInstance object = (IInstance)snapshot.getObject(id);
-            ObjectMirror mirror = new HeapDumpObjectMirror(loader, object); 
+            ObjectMirror mirror = new MutableInstanceMirror(new HeapDumpObjectMirror(loader, object)); 
             Object o = mirageLoader.makeMirage(mirror);
             System.out.println(o);
         }

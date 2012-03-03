@@ -19,7 +19,7 @@ import edu.ubc.mirrors.raw.SystemClassMirror;
  * @author Robin Salkeld
  */
 public abstract class ObjectMirage implements Mirage {
-    public final ObjectMirror mirror;
+    public ObjectMirror mirror;
     
     /**
      * Constructor for calls to make() - the mirror instance is passed up the constructor chain.

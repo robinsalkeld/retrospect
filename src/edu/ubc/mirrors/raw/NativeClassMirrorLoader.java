@@ -14,7 +14,15 @@ public class NativeClassMirrorLoader extends ClassMirrorLoader {
     
     @Override
     public ClassMirror loadClassMirror(String name) throws ClassNotFoundException {
-        Class<?> klass = Class.forName(name, false, classLoader);
+        
+        Class<?> klass;
+        try {
+        
+            klass = Class.forName(name, false, classLoader);
+        } catch (ClassNotFoundException e) {
+            throw e;
+        }
+        
         if (name.equals(System.class.getName()) || name.equals("java.lang.VMSystem")) {
             return new SystemClassMirror(klass);
         } if (name.equals(Thread.class.getName())) {

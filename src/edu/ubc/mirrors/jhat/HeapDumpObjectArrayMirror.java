@@ -29,6 +29,9 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror {
 
     public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
         long address = ((IObjectArray)array).getReferenceArray()[index];
+        if (address == 0) {
+            return null;
+        }
         IObject object;
         try {
             object = array.getSnapshot().getObject(array.getSnapshot().mapAddressToId(address));

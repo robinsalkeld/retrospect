@@ -1,6 +1,5 @@
 package edu.ubc.mirrors.jhat;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +9,6 @@ import org.eclipse.mat.snapshot.model.IClass;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class HeapDumpClassMirror extends ClassMirror {
@@ -24,7 +22,15 @@ public class HeapDumpClassMirror extends ClassMirror {
     }
     
     public String getClassName() {
-        return klass.getName();
+        String name = klass.getName();
+        if (name.endsWith("[]")) {
+            name = "L" + name;
+            while (name.endsWith("[]")) {
+                name = "[" + name.substring(0, name.length() - 2);
+            }
+            name = name + ";";
+        }
+        return name;
     }
     
     @Override

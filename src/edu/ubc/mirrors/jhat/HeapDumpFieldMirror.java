@@ -33,6 +33,9 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
     public ObjectMirror get() throws IllegalAccessException {
         Object value = field.getValue();
         ObjectReference ref = (ObjectReference)value;
+        if (ref == null) {
+            return null;
+        }
         IObject object;
         try {
             object = ref.getObject();

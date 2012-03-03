@@ -36,6 +36,9 @@ public class FieldMapMirror implements InstanceMirror {
 //        if (field == null) {
 //            throw new NoSuchFieldException();
 //        }
+        if (name.equals("scopeStack")) {
+            int bp = 5;
+        }
         return new MapEntryFieldMirror(null, name);
     }
 
