@@ -53,6 +53,11 @@ public class FieldMapMirror implements InstanceMirror {
             this.name = name;
         }
         
+        @Override
+        public String getName() {
+            return name;
+        }
+        
         public ObjectMirror get() throws IllegalAccessException {
             return (ObjectMirror)getBoxedValue();
         }

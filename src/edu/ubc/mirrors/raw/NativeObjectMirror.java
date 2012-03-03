@@ -50,21 +50,36 @@ public class NativeObjectMirror implements InstanceMirror {
     
     
     private FieldMirror getField(String name, boolean isStatic) throws NoSuchFieldException {
-        Field field = object.getClass().getDeclaredField(name);
-        if (Modifier.isStatic(field.getModifiers()) == isStatic) {
-            // Crap, fall back to manual search
-            field = findField(name, isStatic);
+        Class<?> klass = object.getClass();
+        while (klass != null) {
+            Field field = findField(klass, name, isStatic);
+            if (field != null) {
+                return new NativeFieldMirror(field, object);
+            }
+            klass = klass.getSuperclass();
         }
-        return new NativeFieldMirror(field, object);
+        
+        throw new NoSuchFieldException(name);
     }
     
-    private Field findField(String name, boolean isStatic) throws NoSuchFieldException {
-        for (Field f : object.getClass().getDeclaredFields()) {
+    private Field findField(Class<?> klass, String name, boolean isStatic) {
+        try {
+            Field field = klass.getDeclaredField(name);
+            if (Modifier.isStatic(field.getModifiers()) == isStatic) {
+                return field;
+            }
+        } catch (NoSuchFieldException e) {
+            return null;
+        }
+        
+        // Crap, fall back to manual search
+        for (Field f : klass.getDeclaredFields()) {
             if (f.getName().equals(name) && Modifier.isStatic(f.getModifiers()) == isStatic) {
                 return f;
             }
         }
-        throw new NoSuchFieldException(name);
+        
+        return null;
     }
     
     public ClassMirror getClassMirror() {
@@ -82,6 +97,11 @@ public class NativeObjectMirror implements InstanceMirror {
             this.object = object;
         }
 
+        @Override
+        public String getName() {
+            return field.getName();
+        }
+        
         public ObjectMirror get() throws IllegalAccessException {
             Object nativeValue = field.get(object);
             return makeMirror(nativeValue);
