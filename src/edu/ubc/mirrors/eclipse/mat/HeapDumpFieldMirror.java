@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.eclipse.mat;
 
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.Field;

@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +11,6 @@ import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;

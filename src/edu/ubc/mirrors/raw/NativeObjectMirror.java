@@ -3,20 +3,10 @@ package edu.ubc.mirrors.raw;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import org.eclipse.mat.snapshot.model.IInstance;
-import org.eclipse.mat.snapshot.model.IObject;
-import org.eclipse.mat.snapshot.model.IObjectArray;
-import org.eclipse.mat.snapshot.model.IPrimitiveArray;
-
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.jhat.HeapDumpObjectArrayMirror;
-import edu.ubc.mirrors.jhat.HeapDumpObjectMirror;
-import edu.ubc.mirrors.jhat.HeapDumpPrimitiveArrayMirror;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 
 
 public class NativeObjectMirror implements InstanceMirror {

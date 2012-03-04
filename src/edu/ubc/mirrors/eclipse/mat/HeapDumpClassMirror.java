@@ -1,11 +1,10 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IClass;
-import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;

@@ -1,11 +1,10 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.eclipse.mat;
 
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 

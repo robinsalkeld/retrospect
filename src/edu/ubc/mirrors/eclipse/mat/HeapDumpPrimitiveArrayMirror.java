@@ -1,11 +1,9 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.eclipse.mat;
 
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
 import edu.ubc.mirrors.BoxingArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror {
     

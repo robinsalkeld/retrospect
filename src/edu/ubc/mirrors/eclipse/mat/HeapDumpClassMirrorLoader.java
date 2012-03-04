@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.List;
 
