@@ -14,6 +14,7 @@ import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.snapshot.model.IInstance;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.jhat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.jhat.HeapDumpObjectMirror;
@@ -24,7 +25,7 @@ import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 
 public class HeapDumpTest implements IApplication {
 
-    public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException {
+    public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException, IllegalAccessException, NoSuchFieldException {
         String snapshotPath = args[0];
         String testClass = args[1];
         
@@ -48,10 +49,25 @@ public class HeapDumpTest implements IApplication {
         
         for (int id : rubyObjectClass.getObjectIds()) {
             IInstance object = (IInstance)snapshot.getObject(id);
-            ObjectMirror mirror = new MutableInstanceMirror(new HeapDumpObjectMirror(loader, object)); 
+            HeapDumpObjectMirror immutableMirror = new HeapDumpObjectMirror(loader, object);
+            ObjectMirror mirror = new MutableInstanceMirror(immutableMirror); 
+            
+            Object rubyRuntime = getRubyObjectRuntime((InstanceMirror)mirror);
+            InstanceMirror threadClass = (InstanceMirror)((InstanceMirror)rubyRuntime).getMemberField("threadClass").get();
+            Object rubyThreadRuntime = getRubyObjectRuntime(threadClass);
+            
             Object o = mirageLoader.makeMirage(mirror);
-            System.out.println(o);
+            try {
+                System.out.println(o);
+            } catch (Exception e) {
+                System.out.println("Crap!");
+//                e.printStackTrace();
+            }
         }
+    }
+    
+    private static ObjectMirror getRubyObjectRuntime(InstanceMirror mirror) throws IllegalAccessException, NoSuchFieldException {
+        return ((InstanceMirror)mirror.getMemberField("metaClass").get()).getMemberField("runtime").get();
     }
     
     public Object start(IApplicationContext context) throws Exception {

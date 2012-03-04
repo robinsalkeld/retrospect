@@ -200,13 +200,13 @@ public class MirageClassGenerator extends ClassVisitor {
         return "edu/ubc/mirrors/" + getSortName(elementType.getSort()) + "ArrayMirror";
     }
     
-    public static String getMirageInternalClassName(String className, boolean arrayImpl) {
+    public static String getMirageInternalClassName(String className, boolean impl) {
         if (className == null) {
             return null;
         }
         
         if (className.equals(Type.getInternalName(Object.class))) {
-            return Type.getInternalName(Mirage.class);
+            return impl ? Type.getInternalName(ObjectMirage.class) : Type.getInternalName(Mirage.class);
         }
         if (className.equals("[L" + Type.getInternalName(Object.class) + ";")
                 || className.equals("[L" + Type.getInternalName(Mirage.class) + ";")) {
@@ -228,7 +228,7 @@ public class MirageClassGenerator extends ClassVisitor {
             } else {
                 String elementName = (elementSort == Type.OBJECT ?
                         elementType.getInternalName() : getSortName(elementSort));
-                return (arrayImpl ? "miragearrayimpl" : "miragearray") + dims + "/" + elementName; 
+                return (impl ? "miragearrayimpl" : "miragearray") + dims + "/" + elementName; 
             }
         } else if (!className.startsWith("mirage")) {
             return "mirage/" + className;

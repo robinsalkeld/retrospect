@@ -16,9 +16,12 @@ import edu.ubc.mirrors.raw.NativeObjectMirror;
 import edu.ubc.mirrors.raw.SystemClassMirror;
 
 /**
+ * Superclass for all mirage classes.
+ * Represents java.lang.Object if used directly.
+ * 
  * @author Robin Salkeld
  */
-public abstract class ObjectMirage implements Mirage {
+public class ObjectMirage implements Mirage {
     public ObjectMirror mirror;
     
     /**

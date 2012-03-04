@@ -250,56 +250,66 @@ public class MirageClassLoader extends ClassLoader {
         return c;
     }
     
+    private final Map<ObjectMirror, Object> mirages = new HashMap<ObjectMirror, Object>();
+    
     public Object makeMirage(ObjectMirror mirror) {
         if (mirror == null) {
             return null;
+        }
+        Object mirage = mirages.get(mirror);
+        if (mirage != null) {
+            return mirage;
         }
         
         final String internalClassName = mirror.getClassMirror().getClassName();
         
         if (internalClassName.equals("[Z")) {
-            return new BooleanArrayMirage((BooleanArrayMirror)mirror);
+            mirage = new BooleanArrayMirage((BooleanArrayMirror)mirror);
         } else if (internalClassName.equals("[B")) {
-            return new ByteArrayMirage((ByteArrayMirror)mirror);
+            mirage = new ByteArrayMirage((ByteArrayMirror)mirror);
         } else if (internalClassName.equals("[C")) {
-            return new CharArrayMirage((CharArrayMirror)mirror);
+            mirage = new CharArrayMirage((CharArrayMirror)mirror);
         } else if (internalClassName.equals("[S")) {
-            return new ShortArrayMirage((ShortArrayMirror)mirror);
+            mirage = new ShortArrayMirage((ShortArrayMirror)mirror);
         } else if (internalClassName.equals("[I")) {
-            return new IntArrayMirage((IntArrayMirror)mirror);
+            mirage = new IntArrayMirage((IntArrayMirror)mirror);
         } else if (internalClassName.equals("[J")) {
-            return new LongArrayMirage((LongArrayMirror)mirror);
+            mirage = new LongArrayMirage((LongArrayMirror)mirror);
         } else if (internalClassName.equals("[F")) {
-            return new FloatArrayMirage((FloatArrayMirror)mirror);
+            mirage = new FloatArrayMirage((FloatArrayMirror)mirror);
         } else if (internalClassName.equals("[D")) {
-            return new DoubleArrayMirage((DoubleArrayMirror)mirror);
+            mirage = new DoubleArrayMirage((DoubleArrayMirror)mirror);
+        } else {
+        
+            try {
+                final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName, true);
+                final Class<?> mirageClass = loadClass(mirageClassName);
+                final Constructor<?> c = mirageClass.getConstructor(mirror instanceof InstanceMirror ? Object.class : ObjectArrayMirror.class);
+                mirage = c.newInstance(mirror);
+            } catch (NoSuchMethodException e) {
+                InternalError error = new InternalError("Mirage class constructor not accessible: " + internalClassName);
+                error.initCause(e);
+                throw error;
+            } catch (IllegalAccessException e) {
+                InternalError error = new InternalError("Mirage class constructor not accessible: " + internalClassName);
+                error.initCause(e);
+                throw error;
+            } catch (InstantiationException e) {
+                InternalError error = new InternalError("Result of ObjectMirage#getMirrorClass() is abstract: " + internalClassName);
+                error.initCause(e);
+                throw error;
+            } catch (InvocationTargetException e) {
+                InternalError error = new InternalError("Error on instantiating Mirage class: " + internalClassName);
+                error.initCause(e);
+                throw error;
+            } catch (ClassNotFoundException e) {
+                InternalError error = new InternalError("Error on loading Mirage class: " + internalClassName);
+                error.initCause(e);
+                throw error;
+            }
         }
         
-        try {
-            final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName, true);
-            final Class<?> mirageClass = loadClass(mirageClassName);
-            final Constructor<?> c = mirageClass.getConstructor(mirror instanceof InstanceMirror ? Object.class : ObjectArrayMirror.class);
-            return c.newInstance(mirror);
-        } catch (NoSuchMethodException e) {
-            InternalError error = new InternalError("Mirage class constructor not accessible: " + internalClassName);
-            error.initCause(e);
-            throw error;
-        } catch (IllegalAccessException e) {
-            InternalError error = new InternalError("Mirage class constructor not accessible: " + internalClassName);
-            error.initCause(e);
-            throw error;
-        } catch (InstantiationException e) {
-            InternalError error = new InternalError("Result of ObjectMirage#getMirrorClass() is abstract: " + internalClassName);
-            error.initCause(e);
-            throw error;
-        } catch (InvocationTargetException e) {
-            InternalError error = new InternalError("Error on instantiating Mirage class: " + internalClassName);
-            error.initCause(e);
-            throw error;
-        } catch (ClassNotFoundException e) {
-            InternalError error = new InternalError("Error on loading Mirage class: " + internalClassName);
-            error.initCause(e);
-            throw error;
-        }
+        mirages.put(mirror, mirage);
+        return mirage;
     }
 }

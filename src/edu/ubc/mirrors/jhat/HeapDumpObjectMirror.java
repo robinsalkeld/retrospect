@@ -1,6 +1,8 @@
 package edu.ubc.mirrors.jhat;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IInstance;
@@ -38,18 +40,28 @@ public class HeapDumpObjectMirror implements InstanceMirror {
         return new HeapDumpClassMirror(loader, heapDumpObject.getClazz());
     }
 
+    private static final Map<IObject, ObjectMirror> mirrors = new HashMap<IObject, ObjectMirror>();
+    
     public static ObjectMirror makeMirror(HeapDumpClassMirrorLoader loader, IObject object) {
         if (object == null) {
             return null;
         }
+        ObjectMirror mirror = mirrors.get(object);
+        if (mirror != null) {
+            return mirror;
+        }
+        
         if (object instanceof IInstance) {
-            return new HeapDumpObjectMirror(loader, (IInstance)object);
+            mirror = new HeapDumpObjectMirror(loader, (IInstance)object);
         } else if (object instanceof IPrimitiveArray) {
-            return new HeapDumpPrimitiveArrayMirror(loader, (IPrimitiveArray)object);
+            mirror = new HeapDumpPrimitiveArrayMirror(loader, (IPrimitiveArray)object);
         } else if (object instanceof IObjectArray) {
-            return new HeapDumpObjectArrayMirror(loader, (IObjectArray)object);
+            mirror = new HeapDumpObjectArrayMirror(loader, (IObjectArray)object);
         } else {
             throw new IllegalArgumentException("Unsupported subclass: " + object.getClass());
         }
+        
+        mirrors.put(object, mirror);
+        return mirror;
     }
 }

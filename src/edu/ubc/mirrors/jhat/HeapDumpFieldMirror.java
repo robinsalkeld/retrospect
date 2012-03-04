@@ -40,7 +40,7 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         try {
             object = ref.getObject();
         } catch (SnapshotException e) {
-            throw new InternalError();
+            throw new RuntimeException(e);
         }
         return HeapDumpObjectMirror.makeMirror(loader, object);
     }

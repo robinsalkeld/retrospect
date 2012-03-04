@@ -1,7 +1,19 @@
 package edu.ubc.mirrors.test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Bar {
 
+    private Map<String, String> map = new HashMap<String, String>();
+    
+    public static void main(String[] args) throws InterruptedException {
+        Bar bar = new Bar(47);
+        bar.map.put("foo", "bar");
+        System.out.println("ZZZZZZ");
+        Thread.sleep(1000000);
+    }
+    
     int f;
     
     static int staticF = 5;
@@ -21,7 +33,7 @@ public class Bar {
     
     public String toString() {
         f++;
-        return "" + f + " <> "+ staticF;
+        return "" + f + " <> "+ staticF + " map: " + map;
     }
     
     public void foo(boolean[] s) {

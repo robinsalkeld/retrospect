@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IClass;
+import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -21,14 +22,38 @@ public class HeapDumpClassMirror extends ClassMirror {
         this.klass = klass;
     }
     
+    public static String arrayElementDescriptor(String name) {
+        if (name.equals("boolean")) {
+            return "Z";
+        } else if (name.equals("byte")) {
+            return "B";
+        } else if (name.equals("char")) {
+            return "C";
+        } else if (name.equals("short")) {
+            return "S";
+        } else if (name.equals("int")) {
+            return "I";
+        } else if (name.equals("long")) {
+            return "J";
+        } else if (name.equals("float")) {
+            return "F";
+        } else if (name.equals("double")) {
+            return "D";
+        } else {
+            return "L" + name + ";";
+        }
+    }
+    
     public String getClassName() {
         String name = klass.getName();
         if (name.endsWith("[]")) {
-            name = "L" + name;
-            while (name.endsWith("[]")) {
-                name = "[" + name.substring(0, name.length() - 2);
+            String elementName = name;
+            String dimsString = "";
+            while (elementName.endsWith("[]")) {
+                elementName = elementName.substring(0, elementName.length() - 2);
+                dimsString += "[";
             }
-            name = name + ";";
+            name = dimsString + arrayElementDescriptor(elementName);
         }
         return name;
     }
