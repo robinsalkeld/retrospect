@@ -119,6 +119,10 @@ public class ObjectMirage implements Mirage {
     }
     
     public static String getRealStringForMirage(ObjectMirage mirage) {
+        if (mirage == null) {
+            return null;
+        }
+        
         try {
             InstanceMirror mirror = (InstanceMirror)mirage.mirror;
             CharArrayMirror valueMirror = (CharArrayMirror)mirror.getMemberField("value").get();
@@ -140,6 +144,9 @@ public class ObjectMirage implements Mirage {
     }
     
     public static Object lift(Object object, Class<?> classLoaderLiteral) {
+        if (object == null) {
+            return null;
+        }
         ObjectMirror mirror = new NativeObjectMirror(object);
         return ((MirageClassLoader)classLoaderLiteral.getClassLoader()).makeMirage(mirror);
     }

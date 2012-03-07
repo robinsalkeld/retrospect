@@ -14,13 +14,21 @@ import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.util.ConsoleProgressListener;
 
+import com.sun.tools.hat.internal.model.JavaClass;
+import com.sun.tools.hat.internal.model.Snapshot;
+import com.sun.tools.hat.internal.parser.Reader;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpObjectMirror;
+import edu.ubc.mirrors.jhat.JHatClassMirror;
+import edu.ubc.mirrors.jhat.JHatClassMirrorLoader;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mutable.MutableClassMirror;
 import edu.ubc.mirrors.mutable.MutableInstanceMirror;
 import edu.ubc.mirrors.mutable.MutableObjectArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
@@ -37,20 +45,25 @@ public class HeapDumpTest2 implements IApplication {
         String mirageClass = "mirage." + testClass;
         MirageClassLoader.traceClass = mirageClass;
         
-        ISnapshot snapshot = SnapshotFactory.openSnapshot(new File(snapshotPath), new HashMap<String, String>(), new ConsoleProgressListener(System.out));
-        IClass klass = snapshot.getClassesByName(HashMap.class.getName(), false).iterator().next();
-        IClassLoader classLoader = (IClassLoader)snapshot.getObject(klass.getClassLoaderId());
-        
         ClassLoader runtimeClassLoader = HeapDumpTest.class.getClassLoader();
         ClassMirrorLoader nativeParent = new NativeClassMirrorLoader(runtimeClassLoader);
+        
+        ISnapshot snapshot = SnapshotFactory.openSnapshot(new File(snapshotPath), new HashMap<String, String>(), new ConsoleProgressListener(System.out));
+        IClass iClass = snapshot.getClassesByName(HashMap.class.getName(), false).iterator().next();
+        IClassLoader classLoader = (IClassLoader)snapshot.getObject(iClass.getClassLoaderId());
         HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(nativeParent, runtimeClassLoader, classLoader);
+        
+        HeapDumpClassMirror klass = new HeapDumpClassMirror(loader, iClass);
+        
+//        Snapshot snapshot = Reader.readFile(snapshotPath, false, 0);
+//        snapshot.resolve(false);
+//        JHatClassMirrorLoader loader = new JHatClassMirrorLoader(snapshot, runtimeClassLoader);
+//        JHatClassMirror klass = (JHatClassMirror)loader.loadClassMirror(HashMap.class.getName());
         
         MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, nativeParent);
         
-        for (int id : klass.getObjectIds()) {
-            IInstance object = (IInstance)snapshot.getObject(id);
-            HeapDumpObjectMirror immutableMirror = new HeapDumpObjectMirror(loader, object);
-            ObjectMirror mirror = new MutableInstanceMirror(immutableMirror); 
+        for (ObjectMirror mirror : klass.getInstances()) {
+            mirror = MutableClassMirror.makeMirror(mirror); 
             
             Object o = mirageLoader.makeMirage(mirror);
             try {

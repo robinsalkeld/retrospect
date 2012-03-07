@@ -21,8 +21,20 @@ public class NativeClassMirror extends ClassMirror {
         this.klass = klass;
     }
     
+    public NativeClassMirror(ClassLoader loader, String className) {
+        try {
+            this.klass = Class.forName(className, false, loader);
+        } catch (ClassNotFoundException e) {
+            throw new NoClassDefFoundError(className);
+        }
+    }
+    
     public String getClassName() {
         return klass.getName();
+    }
+    
+    protected ClassMirror findClassMirror(Class<?> forClass) {
+        return new NativeClassMirror(forClass);
     }
     
     @Override
@@ -55,7 +67,7 @@ public class NativeClassMirror extends ClassMirror {
     
     public ClassMirror getSuperClassMirror() {
         Class<?> superclass = klass.getSuperclass();
-        return superclass != null ? new NativeClassMirror(superclass) : null;
+        return superclass != null ? findClassMirror(superclass) : null;
     }
     
     public boolean isArray() {
@@ -64,7 +76,7 @@ public class NativeClassMirror extends ClassMirror {
     
     public ClassMirror getComponentClassMirror() {
         Class<?> componentType = klass.getComponentType();
-        return componentType != null ? new NativeClassMirror(componentType) : null;
+        return componentType != null ? findClassMirror(componentType) : null;
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
@@ -115,7 +127,7 @@ public class NativeClassMirror extends ClassMirror {
     public List<ClassMirror> getInterfaceMirrors() {
         List<ClassMirror> result = new ArrayList<ClassMirror>();
         for (Class<?> i : klass.getInterfaces()) {
-            result.add(new NativeClassMirror(i));
+            result.add(findClassMirror(i));
         }
         return result;
     }

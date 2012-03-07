@@ -71,6 +71,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
             return;
         }
         
+        if (name.equals("getClass") && desc.equals(Type.getMethodDescriptor(getMirageType(Class.class)))) {
+            super.visitMethodInsn(opcode, OBJECT_TYPE.getInternalName(), name, Type.getMethodDescriptor(Type.getType(Class.class)));
+            
+            invokestatic(CLASS_LOADER_LITERAL_NAME,
+                         "lift",
+                         Type.getMethodDescriptor(OBJECT_TYPE, OBJECT_TYPE));
+            checkcast(getMirageType(Class.class));
+            return;
+        }
+        
         if (owner.equals(Type.getInternalName(Mirage.class))) {
             if (name.equals("<init>")) {
                 owner = objectMirageType.getInternalName();

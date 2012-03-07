@@ -25,8 +25,10 @@ public class NativeClassMirrorLoader extends ClassMirrorLoader {
         
         if (name.equals(System.class.getName()) || name.equals("java.lang.VMSystem")) {
             return new SystemClassMirror(klass);
-        } if (name.equals(Thread.class.getName())) {
+        } else if (name.equals(Thread.class.getName())) {
             return new ThreadClassMirror(klass);
+        } else if (name.equals(Class.class.getName())) {
+            return new ClassClassMirror(klass);
         } else {
             return new NativeClassMirror(klass);
         }
