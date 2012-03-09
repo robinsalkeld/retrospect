@@ -25,14 +25,14 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpInstanceMirror;
-import edu.ubc.mirrors.jhat.JHatClassMirror;
-import edu.ubc.mirrors.jhat.JHatClassMirrorLoader;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mutable.MutableClassMirror;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableInstanceMirror;
 import edu.ubc.mirrors.mutable.MutableObjectArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
+import edu.ubc.mirrors.sunhat.JHatClassMirror;
+import edu.ubc.mirrors.sunhat.JHatClassMirrorLoader;
 
 public class HeapDumpTest2 implements IApplication {
 

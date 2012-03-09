@@ -1,10 +1,13 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.sunhat;
 
 import com.sun.tools.hat.internal.model.JavaObject;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.sunhat.JHatClassMirror;
+import edu.ubc.mirrors.sunhat.JHatClassMirrorLoader;
+import edu.ubc.mirrors.sunhat.JHatFieldMirror;
 
 public class JHatInstanceMirror implements InstanceMirror {
 

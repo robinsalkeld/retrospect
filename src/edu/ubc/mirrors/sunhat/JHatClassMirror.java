@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.sunhat;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -10,6 +10,8 @@ import com.sun.tools.hat.internal.model.JavaThing;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.sunhat.JHatClassMirrorLoader;
+import edu.ubc.mirrors.sunhat.JHatFieldMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class JHatClassMirror extends NativeClassMirror {

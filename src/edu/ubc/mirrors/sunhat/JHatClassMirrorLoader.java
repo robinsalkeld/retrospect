@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.sunhat;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +14,9 @@ import com.sun.tools.hat.internal.model.Snapshot;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.sunhat.JHatClassMirror;
+import edu.ubc.mirrors.sunhat.JHatInstanceMirror;
+import edu.ubc.mirrors.sunhat.JHatObjectArrayMirror;
 import edu.ubc.mirrors.raw.NativeBooleanArrayMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;

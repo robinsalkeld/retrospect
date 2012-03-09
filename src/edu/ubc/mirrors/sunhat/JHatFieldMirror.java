@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.jhat;
+package edu.ubc.mirrors.sunhat;
 
 import com.sun.tools.hat.internal.model.JavaBoolean;
 import com.sun.tools.hat.internal.model.JavaByte;
@@ -12,6 +12,7 @@ import com.sun.tools.hat.internal.model.JavaThing;
 
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.sunhat.JHatClassMirrorLoader;
 
 public class JHatFieldMirror implements FieldMirror {
 
