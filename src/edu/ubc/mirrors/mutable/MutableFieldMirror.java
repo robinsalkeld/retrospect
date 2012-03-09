@@ -5,11 +5,14 @@ import edu.ubc.mirrors.ObjectMirror;
 
 public class MutableFieldMirror implements FieldMirror {
 
+    private final MutableClassMirrorLoader loader;
+    
     private final FieldMirror immutableFieldMirror;
     private final FieldMirror mutableLayer;
     private boolean initialized;
     
-    public MutableFieldMirror(FieldMirror mutableLayer, FieldMirror immutableFieldMirror) {
+    public MutableFieldMirror(MutableClassMirrorLoader loader, FieldMirror mutableLayer, FieldMirror immutableFieldMirror) {
+        this.loader = loader;
         this.mutableLayer = mutableLayer;
         this.immutableFieldMirror = immutableFieldMirror;
     }
@@ -22,7 +25,7 @@ public class MutableFieldMirror implements FieldMirror {
     @Override
     public ObjectMirror get() throws IllegalAccessException {
         if (!initialized) {
-            mutableLayer.set(MutableClassMirror.makeMirror(immutableFieldMirror.get()));
+            mutableLayer.set(loader.makeMirror(immutableFieldMirror.get()));
             initialized = true;
         }
         return mutableLayer.get();

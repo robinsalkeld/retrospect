@@ -8,6 +8,7 @@ import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IInstance;
+import org.eclipse.mat.snapshot.model.IObject;
 
 import com.sun.tools.hat.internal.model.JavaThing;
 
@@ -68,14 +69,21 @@ public class HeapDumpClassMirror extends NativeClassMirror {
         List<Field> fields = klass.getStaticFields();
         for (Field field : fields) {
             if (field.getName().equals(name)) {
-                return new HeapDumpFieldMirror(loader, field);
+                return new HeapDumpFieldMirror(loader, null, field);
             }
         }
         throw new NoSuchFieldException(name);
     }
 
     @Override
-    public ClassMirrorLoader getLoader() {
+    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
+        // The MAT model doesn't expose member fields for classes, so grab them
+        // from the native super implementation.
+        return super.getMemberField(name);
+    }
+    
+    @Override
+    public HeapDumpClassMirrorLoader getLoader() {
         return loader;
     }
 
@@ -83,7 +91,7 @@ public class HeapDumpClassMirror extends NativeClassMirror {
         List<ObjectMirror> result = new ArrayList<ObjectMirror>();
         for (int id : klass.getObjectIds()) {
             IInstance object = (IInstance)klass.getSnapshot().getObject(id);
-            result.add(new HeapDumpObjectMirror(loader, object));
+            result.add(new HeapDumpInstanceMirror(loader, object));
         }
         return result;
     }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableInstanceMirror;
 
 public class ThreadClassMirror extends NativeClassMirror {
@@ -21,7 +22,7 @@ public class ThreadClassMirror extends NativeClassMirror {
             return mirror;
         }
         
-        mirror = new MutableInstanceMirror(new NativeObjectMirror(current));
+        mirror = MutableClassMirrorLoader.makeMirrorStatic(new NativeObjectMirror(current));
         threadMirrors.put(current, mirror);
         return mirror;
     }

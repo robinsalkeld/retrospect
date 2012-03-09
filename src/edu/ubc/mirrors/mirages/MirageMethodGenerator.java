@@ -25,6 +25,7 @@ import org.objectweb.asm.commons.AnalyzerAdapter;
 import org.objectweb.asm.commons.InstructionAdapter;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeObjectArrayMirror;
@@ -72,11 +73,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
         }
         
         if (name.equals("getClass") && desc.equals(Type.getMethodDescriptor(getMirageType(Class.class)))) {
-            super.visitMethodInsn(opcode, OBJECT_TYPE.getInternalName(), name, Type.getMethodDescriptor(Type.getType(Class.class)));
+            invokeinterface(Type.getInternalName(Mirage.class), 
+                    "getMirror", 
+                    Type.getMethodDescriptor(objectMirrorType));
+            invokeinterface(objectMirrorType.getInternalName(),
+                            "getClassMirror",
+                            Type.getMethodDescriptor(Type.getType(ClassMirror.class)));
             
             invokestatic(CLASS_LOADER_LITERAL_NAME,
-                         "lift",
-                         Type.getMethodDescriptor(OBJECT_TYPE, OBJECT_TYPE));
+                         "makeMirage",
+                         Type.getMethodDescriptor(OBJECT_TYPE, objectMirrorType));
             checkcast(getMirageType(Class.class));
             return;
         }

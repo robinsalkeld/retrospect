@@ -10,28 +10,27 @@ import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 
 public class MutableInstanceMirror implements InstanceMirror {
 
+    private final MutableClassMirrorLoader loader;
     private final Map<String, FieldMirror> fields = new HashMap<String, FieldMirror>();
     private final InstanceMirror immutableMirror;
     private final InstanceMirror mutableLayer;
     
     @Override
     public ClassMirror getClassMirror() {
-        return new MutableClassMirror(immutableMirror.getClassMirror());
+        return (ClassMirror)loader.makeMirror(immutableMirror.getClassMirror());
     }
 
-    public MutableInstanceMirror(InstanceMirror immutableMirror) {
+    public MutableInstanceMirror(MutableClassMirrorLoader loader, InstanceMirror immutableMirror) {
+        this.loader = loader;
         this.immutableMirror = immutableMirror;
         this.mutableLayer = new FieldMapMirror(null);
     }
     
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        if (name.equals("threadLocals")) {
-            int bp = 5;
-        }
         FieldMirror result = fields.get(name);
         if (result == null) {
-            result = new MutableFieldMirror(mutableLayer.getMemberField(name), immutableMirror.getMemberField(name));
+            result = new MutableFieldMirror(loader, mutableLayer.getMemberField(name), immutableMirror.getMemberField(name));
             fields.put(name, result);
         }
         return result;

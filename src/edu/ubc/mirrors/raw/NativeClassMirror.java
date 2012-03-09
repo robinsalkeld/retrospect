@@ -29,6 +29,10 @@ public class NativeClassMirror extends ClassMirror {
         }
     }
     
+    public Class<?> getKlass() {
+        return klass;
+    }
+    
     public String getClassName() {
         return klass.getName();
     }
@@ -135,5 +139,10 @@ public class NativeClassMirror extends ClassMirror {
     @Override
     public ClassMirrorLoader getLoader() {
         return new NativeClassMirrorLoader(klass.getClassLoader());
+    }
+
+    @Override
+    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
+        return NativeObjectMirror.getField(klass, name, false);
     }
 }

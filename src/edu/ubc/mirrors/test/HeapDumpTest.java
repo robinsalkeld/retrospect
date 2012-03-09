@@ -17,8 +17,9 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpObjectMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpInstanceMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableInstanceMirror;
 import edu.ubc.mirrors.mutable.MutableObjectArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
@@ -43,18 +44,16 @@ public class HeapDumpTest implements IApplication {
         ClassMirrorLoader nativeParent = new NativeClassMirrorLoader(runtimeClassLoader);
         HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(nativeParent, runtimeClassLoader, classLoader);
         
+        MutableClassMirrorLoader mutableLoader = new MutableClassMirrorLoader(loader);
+        
         MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, nativeParent);
         
 //        mirageLoader.loadClass(mirageClass).getMethods();
         
         for (int id : rubyObjectClass.getObjectIds()) {
             IInstance object = (IInstance)snapshot.getObject(id);
-            HeapDumpObjectMirror immutableMirror = new HeapDumpObjectMirror(loader, object);
-            ObjectMirror mirror = new MutableInstanceMirror(immutableMirror); 
-            
-            Object rubyRuntime = getRubyObjectRuntime((InstanceMirror)mirror);
-            InstanceMirror threadClass = (InstanceMirror)((InstanceMirror)rubyRuntime).getMemberField("threadClass").get();
-            Object rubyThreadRuntime = getRubyObjectRuntime(threadClass);
+            HeapDumpInstanceMirror immutableMirror = new HeapDumpInstanceMirror(loader, object);
+            ObjectMirror mirror = mutableLoader.makeMirror(immutableMirror); 
             
             Object o = mirageLoader.makeMirage(mirror);
             try {

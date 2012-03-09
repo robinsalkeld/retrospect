@@ -17,11 +17,15 @@ import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 
 public class MutableClassMirror extends ClassMirror {
 
-    private final InstanceMirror mutableLayer;
+    private final MutableClassMirrorLoader loader;
+    private final InstanceMirror mutableStaticFields;
+    private final InstanceMirror mutableMemberFields;
     private final ClassMirror immutableClassMirror;
     
-    public MutableClassMirror(ClassMirror immutableClassMirror) {
-        this.mutableLayer = new FieldMapMirror(null);
+    public MutableClassMirror(MutableClassMirrorLoader loader, ClassMirror immutableClassMirror) {
+        this.loader = loader;
+        this.mutableStaticFields = new FieldMapMirror(null);
+        this.mutableMemberFields = new FieldMapMirror(null);
         this.immutableClassMirror = immutableClassMirror;
     }
     
@@ -32,8 +36,7 @@ public class MutableClassMirror extends ClassMirror {
 
     @Override
     public ClassMirrorLoader getLoader() {
-        // TODO
-        return null;
+        return loader;
     }
 
     @Override
@@ -68,33 +71,11 @@ public class MutableClassMirror extends ClassMirror {
 
     @Override
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        return new MutableFieldMirror(mutableLayer.getMemberField(name), immutableClassMirror.getStaticField(name));
+        return new MutableFieldMirror(loader, mutableStaticFields.getMemberField(name), immutableClassMirror.getStaticField(name));
     }
 
-    private static final Map<ObjectMirror, ObjectMirror> mirrors = new HashMap<ObjectMirror, ObjectMirror>();
-    
-    public static ObjectMirror makeMirror(ObjectMirror immutableMirror) {
-        if (immutableMirror == null) {
-            return null;
-        }
-        
-        ObjectMirror result = mirrors.get(immutableMirror);
-        if (result != null) {
-            return result;
-        }
-        
-        if (immutableMirror instanceof InstanceMirror) {
-            result = new MutableInstanceMirror((InstanceMirror)immutableMirror);
-        } else if (immutableMirror instanceof ObjectArrayMirror) {
-            result = new MutableObjectArrayMirror((ObjectArrayMirror)immutableMirror);
-        // TODO: fix - should check class name instead!
-        } else if (immutableMirror instanceof CharArrayMirror){
-            result = new MutableCharArrayMirror((CharArrayMirror)immutableMirror);
-        } else {
-            throw new IllegalArgumentException("Unsupported subclass: " + immutableMirror.getClass());
-        }
-        
-        mirrors.put(immutableMirror, result);
-        return result;
+    @Override
+    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
+        return new MutableFieldMirror(loader, mutableMemberFields.getMemberField(name), immutableClassMirror.getMemberField(name));
     }
 }

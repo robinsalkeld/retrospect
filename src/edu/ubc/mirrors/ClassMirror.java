@@ -3,7 +3,7 @@ package edu.ubc.mirrors;
 import java.util.List;
 
 
-public abstract class ClassMirror {
+public abstract class ClassMirror implements InstanceMirror {
 
     public abstract String getClassName();
     
@@ -22,6 +22,11 @@ public abstract class ClassMirror {
     public abstract List<ClassMirror> getInterfaceMirrors();
     
     public abstract FieldMirror getStaticField(String name) throws NoSuchFieldException;
+    
+    @Override
+    public ClassMirror getClassMirror() {
+        return loadClassMirrorInternal(Class.class.getName());
+    }
     
     @Override
     public boolean equals(Object obj) {

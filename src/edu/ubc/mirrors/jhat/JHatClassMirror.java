@@ -2,17 +2,11 @@ package edu.ubc.mirrors.jhat;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.sun.tools.hat.internal.model.JavaClass;
-import com.sun.tools.hat.internal.model.JavaObject;
-import com.sun.tools.hat.internal.model.JavaObjectArray;
 import com.sun.tools.hat.internal.model.JavaThing;
-import com.sun.tools.hat.internal.model.JavaValueArray;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -37,6 +31,13 @@ public class JHatClassMirror extends NativeClassMirror {
     @Override
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
         return new JHatFieldMirror(loader, name, javaClass.getStaticField(name));
+    }
+    
+    @Override
+    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
+        // The JHat model doesn't expose member fields for classes, so grab them
+        // from the native super implementation.
+        return super.getMemberField(name);
     }
     
     public List<ObjectMirror> getInstances() {

@@ -4,7 +4,7 @@ import com.sun.tools.hat.internal.model.JavaBoolean;
 import com.sun.tools.hat.internal.model.JavaByte;
 import com.sun.tools.hat.internal.model.JavaChar;
 import com.sun.tools.hat.internal.model.JavaDouble;
-import com.sun.tools.hat.internal.model.JavaHeapObject;
+import com.sun.tools.hat.internal.model.JavaFloat;
 import com.sun.tools.hat.internal.model.JavaInt;
 import com.sun.tools.hat.internal.model.JavaLong;
 import com.sun.tools.hat.internal.model.JavaShort;
@@ -67,7 +67,7 @@ public class JHatFieldMirror implements FieldMirror {
 
     @Override
     public float getFloat() throws IllegalAccessException {
-        return Long.parseLong(((JavaLong)value).toString());
+        return Float.parseFloat(((JavaFloat)value).toString());
     }
 
     @Override

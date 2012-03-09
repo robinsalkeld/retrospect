@@ -17,7 +17,6 @@ public class NativeClassMirrorLoader extends ClassMirrorLoader {
         
         Class<?> klass;
         try {
-        
             klass = Class.forName(name, false, classLoader);
         } catch (ClassNotFoundException e) {
             throw e;
@@ -27,8 +26,6 @@ public class NativeClassMirrorLoader extends ClassMirrorLoader {
             return new SystemClassMirror(klass);
         } else if (name.equals(Thread.class.getName())) {
             return new ThreadClassMirror(klass);
-        } else if (name.equals(Class.class.getName())) {
-            return new ClassClassMirror(klass);
         } else {
             return new NativeClassMirror(klass);
         }

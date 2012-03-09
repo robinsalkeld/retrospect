@@ -3,12 +3,13 @@ package edu.ubc.mirrors.eclipse.mat;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
+import org.eclipse.mat.snapshot.model.NamedReference;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 
-public class HeapDumpObjectArrayMirror implements ObjectArrayMirror {
+public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObjectMirror {
 
     private final HeapDumpClassMirrorLoader loader;
     private final IObjectArray array;
@@ -18,10 +19,15 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror {
         this.array = array;
     }
     
-    public ClassMirror getClassMirror() {
+    public HeapDumpClassMirror getClassMirror() {
         return new HeapDumpClassMirror(loader, array.getClazz());
     }
 
+    @Override
+    public IObject getHeapDumpObject() {
+        return array;
+    }
+    
     public int length() {
         return array.getLength();
     }
@@ -31,13 +37,7 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror {
         if (address == 0) {
             return null;
         }
-        IObject object;
-        try {
-            object = array.getSnapshot().getObject(array.getSnapshot().mapAddressToId(address));
-        } catch (SnapshotException e) {
-            throw new InternalError();
-        }
-        return HeapDumpObjectMirror.makeMirror(loader, object);
+        return HeapDumpFieldMirror.getObjectWithErrorHandling(this, new NamedReference(array.getSnapshot(), address, "[" + index + "]"));
     }
 
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {

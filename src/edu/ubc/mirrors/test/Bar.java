@@ -9,7 +9,7 @@ public class Bar {
     
     public static void main(String[] args) throws InterruptedException {
         Bar bar = new Bar(47);
-        bar.map.put("foo", "bar");
+        bar.map.put(new String("foo"), new String("bar"));
         System.out.println("ZZZZZZ");
         Thread.sleep(1000000);
     }

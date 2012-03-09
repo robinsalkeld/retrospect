@@ -146,6 +146,12 @@ public class MirageClassMirrorLoader extends ClassMirrorLoader {
             // TODO-RS: Implement
             return null;
         }
+        
+        @Override
+        public FieldMirror getMemberField(String name) throws NoSuchFieldException {
+            // TODO-RS: Implement
+            return null;
+        }
 
         @Override
         public ClassMirrorLoader getLoader() {

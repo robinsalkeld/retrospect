@@ -177,4 +177,9 @@ public class ClassLoaderLiteralMirror extends ClassMirror {
         return null;
     }
 
+    @Override
+    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

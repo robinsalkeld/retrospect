@@ -35,11 +35,11 @@ public class NativeObjectMirror implements InstanceMirror {
     }
     
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        return getField(name, false);
+        return getField(object, name, false);
     }
     
     
-    private FieldMirror getField(String name, boolean isStatic) throws NoSuchFieldException {
+    public static FieldMirror getField(Object object, String name, boolean isStatic) throws NoSuchFieldException {
         Class<?> klass = object.getClass();
         while (klass != null) {
             Field field = findField(klass, name, isStatic);
@@ -52,7 +52,7 @@ public class NativeObjectMirror implements InstanceMirror {
         throw new NoSuchFieldException(name);
     }
     
-    private Field findField(Class<?> klass, String name, boolean isStatic) {
+    private static Field findField(Class<?> klass, String name, boolean isStatic) {
         try {
             Field field = klass.getDeclaredField(name);
             if (Modifier.isStatic(field.getModifiers()) == isStatic) {
@@ -170,7 +170,10 @@ public class NativeObjectMirror implements InstanceMirror {
         if (object == null) {
             return null;
         }
-        if (object instanceof Object[]) {
+        
+        if (object instanceof Class) {
+            return new NativeClassMirror((Class<?>)object);
+        } else if (object instanceof Object[]) {
             return new NativeObjectArrayMirror((Object[])object);
         } else if (object instanceof boolean[]) {
             return new NativeBooleanArrayMirror((boolean[])object);
