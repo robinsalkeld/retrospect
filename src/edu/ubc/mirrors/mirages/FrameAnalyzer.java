@@ -33,17 +33,19 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
 
     private final Map<AbstractInsnNode, Integer> insnIndices = new HashMap<AbstractInsnNode, Integer>();
     
-    private Set<AbstractInsnNode> frameInsnsToAdd = new HashSet<AbstractInsnNode>();
+    private boolean[] jumpIn;
+    private boolean[] stepIn;
+    private AbstractInsnNode currentInsn;
     private MethodNode m;
-    private String owner;
     
     @Override
     protected void init(String owner, MethodNode m) throws AnalyzerException {
         super.init(owner, m);
         
         this.m = m;
-        this.owner = owner;
         int n = m.instructions.size();
+        this.jumpIn = new boolean[n];
+        this.stepIn = new boolean[n];
         
         for (int i = 0; i < n; i++) {
             insnIndices.put(m.instructions.get(i), i);
@@ -57,22 +59,23 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
         }
     }
     
-    private static int counter = 0;
-    
     @Override
     protected void newControlFlowEdge(int insn, int successor) {
-        if (successor != insn + 1) {
-            frameInsnsToAdd.add(m.instructions.get(successor));
+        if (successor == insn + 1 && 
+                (currentInsn == null || 
+                (currentInsn.getOpcode() != Opcodes.TABLESWITCH &&
+                 currentInsn.getOpcode() != Opcodes.LOOKUPSWITCH))) {
+            stepIn[successor] = true;
+        } else {
+            jumpIn[successor] = true;
         }
-//        if (owner.equals("com/kenai/jaffl/provider/jffi/DefaultInvokerFactory") && counter++ % 20 == 0) {
-//            System.out.println(this);
-//        }
+        
         super.newControlFlowEdge(insn, successor);
     }
     
     @Override
     protected boolean newControlFlowExceptionEdge(int insn, int successor) {
-        frameInsnsToAdd.add(m.instructions.get(successor));
+        jumpIn[successor] = true;
         
         return super.newControlFlowExceptionEdge(insn, successor);
     }
@@ -90,6 +93,7 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
         @Override
         public void execute(AbstractInsnNode insn, Interpreter<FrameValue> interpreter) throws AnalyzerException {
             ((FrameVerifier)interpreter).setContext(this);
+           FrameAnalyzer.this.currentInsn = insn;
             super.execute(insn, interpreter);
         }
     }
@@ -104,11 +108,17 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
     
     public void insertFrames() {
         Frame<FrameValue>[] frames = getFrames();
-//        for (AbstractInsnNode needsFrame : frameInsnsToAdd) {
         if (m == null || m.instructions == null) {
             return;
         }
-        for (AbstractInsnNode needsFrame : m.instructions.toArray()) {
+        
+        Set<AbstractInsnNode> frameInsnsToAdd = new HashSet<AbstractInsnNode>();
+        for (int i = 0; i < m.instructions.size(); i++) {
+            if (jumpIn[i] || !stepIn[i]) {
+                frameInsnsToAdd.add(m.instructions.get(i));
+            }
+        }
+        for (AbstractInsnNode needsFrame : frameInsnsToAdd) {
             Frame<FrameValue> frame = frames[insnIndices.get(needsFrame)];
             if (frame == null) {
                 continue;

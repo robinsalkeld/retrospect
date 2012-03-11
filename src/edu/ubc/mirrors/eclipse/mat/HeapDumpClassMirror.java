@@ -1,19 +1,13 @@
 package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IInstance;
-import org.eclipse.mat.snapshot.model.IObject;
 
-import com.sun.tools.hat.internal.model.JavaThing;
-
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;

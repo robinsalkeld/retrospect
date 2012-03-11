@@ -210,7 +210,7 @@ public class MirageClassGenerator extends ClassVisitor {
         }
         if (className.equals("[L" + Type.getInternalName(Object.class) + ";")
                 || className.equals("[L" + Type.getInternalName(Mirage.class) + ";")) {
-            return Type.getInternalName(ObjectArrayMirror.class);
+            return impl ? Type.getInternalName(ObjectArrayMirage.class) : Type.getInternalName(ObjectArrayMirror.class);
         }
         
         if (className.equals(Type.getInternalName(Throwable.class))) {

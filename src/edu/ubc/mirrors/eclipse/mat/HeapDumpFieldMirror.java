@@ -61,18 +61,18 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
             HeapDumpClassMirrorLoader loader = owner.getClassMirror().getLoader();
             return HeapDumpInstanceMirror.makeMirror(loader, ref.getObject());
         } catch (SnapshotException e) {
-            try {
-                System.out.println("Bad address (" + ref.toString() + ") at: " + describePath(owner.getHeapDumpObject(), ref));
-            } catch (SnapshotException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            } catch (SecurityException e2) {
-                // TODO Auto-generated catch block
-                e2.printStackTrace();
-            } catch (NoSuchFieldException e3) {
-                // TODO Auto-generated catch block
-                e3.printStackTrace();
-            }
+//            try {
+//                System.out.println("Bad address (" + ref.toString() + ") at: " + describePath(owner.getHeapDumpObject(), ref));
+//            } catch (SnapshotException e1) {
+//                // TODO Auto-generated catch block
+//                e1.printStackTrace();
+//            } catch (SecurityException e2) {
+//                // TODO Auto-generated catch block
+//                e2.printStackTrace();
+//            } catch (NoSuchFieldException e3) {
+//                // TODO Auto-generated catch block
+//                e3.printStackTrace();
+//            }
             
             // For now...
             return new NativeObjectMirror("(bad string literal?)");
