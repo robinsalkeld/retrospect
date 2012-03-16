@@ -11,6 +11,8 @@ public abstract class ClassMirror implements InstanceMirror {
     
     public abstract byte[] getBytecode();
     
+    public abstract boolean isPrimitive();
+    
     public abstract boolean isArray();
     
     public abstract ClassMirror getComponentClassMirror();
@@ -22,6 +24,10 @@ public abstract class ClassMirror implements InstanceMirror {
     public abstract List<ClassMirror> getInterfaceMirrors();
     
     public abstract FieldMirror getStaticField(String name) throws NoSuchFieldException;
+    
+    public Class<?> getNativeStubsClass() {
+        return null;
+    }
     
     @Override
     public ClassMirror getClassMirror() {

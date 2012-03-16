@@ -37,7 +37,7 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
         if (address == 0) {
             return null;
         }
-        return HeapDumpFieldMirror.getObjectWithErrorHandling(this, new NamedReference(array.getSnapshot(), address, "[" + index + "]"));
+        return HeapDumpFieldMirror.getObjectWithErrorHandling(loader, new NamedReference(array.getSnapshot(), address, "[" + index + "]"));
     }
 
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {

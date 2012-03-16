@@ -78,4 +78,14 @@ public class MutableClassMirror extends ClassMirror {
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
         return new MutableFieldMirror(loader, mutableMemberFields.getMemberField(name), immutableClassMirror.getMemberField(name));
     }
+    
+    @Override
+    public boolean isPrimitive() {
+        return immutableClassMirror.isPrimitive();
+    }
+    
+    @Override
+    public Class<?> getNativeStubsClass() {
+        return immutableClassMirror.getNativeStubsClass();
+    }
 }

@@ -63,7 +63,7 @@ public class HeapDumpClassMirror extends NativeClassMirror {
         List<Field> fields = klass.getStaticFields();
         for (Field field : fields) {
             if (field.getName().equals(name)) {
-                return new HeapDumpFieldMirror(loader, null, field);
+                return new HeapDumpFieldMirror(loader, field);
             }
         }
         throw new NoSuchFieldException(name);

@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.raw;
+package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,12 +6,9 @@ import java.util.Map;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableInstanceMirror;
+import edu.ubc.mirrors.raw.NativeObjectMirror;
 
-public class ThreadClassMirror extends NativeClassMirror {
-
-    public ThreadClassMirror(Class<?> klass) {
-        super(klass);
-    }
+public class ThreadStubs {
     
     private static Map<Thread, ObjectMirror> threadMirrors = new HashMap<Thread, ObjectMirror>();
     

@@ -1,6 +1,8 @@
 package edu.ubc.mirrors.mirages;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +21,7 @@ import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -82,8 +85,11 @@ public class MirageClassGenerator extends ClassVisitor {
     
     public MirageClassGenerator(ClassMirror classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
-        for (Method m : classMirror.getClass().getDeclaredMethods()) {
-            mirrorMethods.put(m.getName(), m);
+        Class<?> nativeStubsClass = classMirror.getNativeStubsClass();
+        if (nativeStubsClass != null) {
+            for (Method m : nativeStubsClass.getDeclaredMethods()) {
+                mirrorMethods.put(m.getName(), m);
+            }
         }
     }
     
@@ -317,6 +323,8 @@ public class MirageClassGenerator extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
 
+        activeMethod = name;
+        
         // Remove all static initializers - these will have already been executed when
         // loading the original class and state will be proxied by ClassMirrors instead.
         if (name.equals("<clinit>")) {
@@ -425,15 +433,29 @@ public class MirageClassGenerator extends ClassVisitor {
         super.visitEnd();
     }
 
+    private static String activeMethod = null;
+    
     public static byte[] generate(MirageClassLoader loader, ClassMirror classMirror) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
+        if (loader.myTraceDir != null) {
+            File txtFile = new File(loader.myTraceDir, classMirror.getClassName() + ".txt");
+            PrintWriter textFileWriter = new PrintWriter(txtFile);
+            visitor = new TraceClassVisitor(visitor, textFileWriter);
+        }
         if (MirageClassLoader.debug) {
-            visitor = new FrameAnalyzerAdaptor(loader.getMirageClassMirrorLoader(), visitor);
+            visitor = new FrameAnalyzerAdaptor(loader.getMirageClassMirrorLoader(), visitor, false);
         }
         visitor = new MirageClassGenerator(classMirror, visitor);
         visitor = new RemappingClassAdapter(visitor, REMAPPER);
-        visitor = new FrameAnalyzerAdaptor(loader.getClassMirrorLoader(), visitor);
+        if (loader.myTraceDir != null) {
+            File txtFile = new File(loader.myTraceDir, classMirror.getClassName() + ".afterframes.txt");
+            PrintWriter textFileWriter = new PrintWriter(txtFile);
+            ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
+            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(loader.getClassMirrorLoader(), traceVisitor, true);
+            new ClassReader(classMirror.getBytecode()).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
+        }
+        visitor = new FrameAnalyzerAdaptor(loader.getClassMirrorLoader(), visitor, true);
         ClassReader reader = new ClassReader(classMirror.getBytecode());
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();

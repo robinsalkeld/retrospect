@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.raw;
+package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
@@ -11,10 +11,10 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 
-public class SystemClassMirror extends NativeClassMirror {
+public class SystemStubs {
 
-    public SystemClassMirror(Class<?> klass) {
-        super(klass);
+    public static int identityHashCode(ObjectMirror o) {
+        return System.identityHashCode(o);
     }
     
     public static void arraycopy(ObjectMirror src, int srcPos, ObjectMirror dest, int destPos, int length) {

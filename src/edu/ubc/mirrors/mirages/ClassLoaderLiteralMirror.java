@@ -182,4 +182,14 @@ public class ClassLoaderLiteralMirror extends ClassMirror {
         // TODO Auto-generated method stub
         return null;
     }
+    
+    @Override
+    public boolean isPrimitive() {
+        return false;
+    }
+    
+    @Override
+    public Class<?> getNativeStubsClass() {
+        return null;
+    }
 }

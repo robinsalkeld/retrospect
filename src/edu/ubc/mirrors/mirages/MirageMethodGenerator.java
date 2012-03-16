@@ -32,6 +32,8 @@ import edu.ubc.mirrors.raw.NativeObjectArrayMirror;
 
 public class MirageMethodGenerator extends InstructionAdapter {
 
+    static String activeMethod = null;
+    
     private AnalyzerAdapter analyzer;
     private MethodVisitor superVisitor;
     private LocalVariablesSorter lvs;
@@ -50,8 +52,17 @@ public class MirageMethodGenerator extends InstructionAdapter {
         this.owner = owner;
         this.methodType = Type.getMethodType(desc);
         this.isToString = isToString;
+        
+        activeMethod = name + desc;
     }
 
+    @Override
+    public void visitEnd() {
+        super.visitEnd();
+        
+        activeMethod = null;
+    }
+    
     public void setLocalVariablesSorter(LocalVariablesSorter lvs) {
         this.lvs = lvs;
     }
@@ -88,11 +99,21 @@ public class MirageMethodGenerator extends InstructionAdapter {
         }
         
         if (owner.equals(Type.getInternalName(Mirage.class))) {
-            if (name.equals("<init>")) {
+            if (name.equals("<init>") || name.equals("toString")) {
                 owner = objectMirageType.getInternalName();
             } else {
                 owner = OBJECT_TYPE.getInternalName();
             }
+        }
+        
+        if (owner.equals(Type.getInternalName(ThrowableMirage.class))) {
+            if (name.equals("<init>") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE, getMirageType(String.class)))) {
+                desc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirageType);
+            }
+        }
+        
+        if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Mirage.class)))) {
+            desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, OBJECT_TYPE);
         }
         
         if (name.equals("<init>")) {
@@ -118,6 +139,13 @@ public class MirageMethodGenerator extends InstructionAdapter {
         }
         
         super.visitMethodInsn(opcode, owner, name, desc);
+        
+        if (owner.equals(Type.getInternalName(Throwable.class)) && name.equals("getStackTraceElement")) {
+            Type steType = Type.getType(StackTraceElement.class);
+            invokestatic(Type.getInternalName(ThrowableMirage.class),
+                         "cleanStackTraceElement",
+                         Type.getMethodDescriptor(steType, steType));
+        }
     }
     
     private void fieldMirrorInsn(boolean isSet, Type fieldType) {

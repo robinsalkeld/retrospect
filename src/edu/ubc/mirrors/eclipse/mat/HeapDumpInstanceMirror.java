@@ -11,7 +11,6 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -34,7 +33,7 @@ public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMir
         List<Field> fields = heapDumpObject.getFields();
         for (Field field : fields) {
             if (field.getName().equals(name)) {
-                return new HeapDumpFieldMirror(loader, this, field);
+                return new HeapDumpFieldMirror(loader, field);
             }
         }
         throw new NoSuchFieldException(name);

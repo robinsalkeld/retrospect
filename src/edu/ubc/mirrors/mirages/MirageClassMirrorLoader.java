@@ -158,5 +158,14 @@ public class MirageClassMirrorLoader extends ClassMirrorLoader {
             return MirageClassMirrorLoader.this;
         }
         
+        @Override
+        public boolean isPrimitive() {
+            return false;
+        }
+        
+        @Override
+        public Class<?> getNativeStubsClass() {
+            return null;
+        }
     }
 }

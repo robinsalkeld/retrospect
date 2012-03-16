@@ -12,6 +12,9 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror.NativeFieldMirror;
+import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
+import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
+import edu.ubc.mirrors.raw.nativestubs.java.lang.ThreadStubs;
 
 public class NativeClassMirror extends ClassMirror {
 
@@ -67,6 +70,11 @@ public class NativeClassMirror extends ClassMirror {
             throw new InternalError();
         }
         return bytesOut.toByteArray();
+    }
+    
+    @Override
+    public boolean isPrimitive() {
+        return klass.isPrimitive();
     }
     
     public ClassMirror getSuperClassMirror() {
@@ -144,5 +152,20 @@ public class NativeClassMirror extends ClassMirror {
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
         return NativeObjectMirror.getField(klass, name, false);
+    }
+    
+
+    public Class<?> getNativeStubsClass() {
+        String name = getClassName();
+        if (name.equals("java.lang.Thread")) {
+            int bp = 4;
+            bp++;
+        }
+        String nativeStubsName = "edu.ubc.mirrors.raw.nativestubs." + name + "Stubs";
+        try {
+            return Class.forName(nativeStubsName);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
     }
 }

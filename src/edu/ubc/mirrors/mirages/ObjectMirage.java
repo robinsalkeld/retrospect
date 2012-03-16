@@ -13,7 +13,7 @@ import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
-import edu.ubc.mirrors.raw.SystemClassMirror;
+import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 /**
  * Superclass for all mirage classes.
@@ -45,6 +45,21 @@ public class ObjectMirage implements Mirage {
     
     public ClassMirror getClassMirror() {
         return mirror.getClassMirror();
+    }
+    
+    /**
+     * Redefined here so the code rewriting can correct getClass() - otherwise we hit the
+     * definition in Object.class which we can't rewrite.
+     * @param o
+     * @return
+     */
+    public static String mirageToString(Mirage o) {
+        return o.getMirror().getClassMirror().getClassName() + "@" + Integer.toHexString(o.hashCode());
+    }
+    
+    @Override
+    public String toString() {
+        return mirageToString(this);
     }
     
     // TODO: Can't do this until we sort out how to automatically specify ClassMirrorLoaders
@@ -82,6 +97,10 @@ public class ObjectMirage implements Mirage {
 //    }
     
     public static Class<?> getOriginalClass(Class<?> mirageClass) {
+        if (mirageClass.equals(ObjectArrayMirage.class)) {
+            return Object[].class;
+        }
+        
         ClassLoader originalLoader = ((MirageClassLoader)mirageClass.getClassLoader()).getOriginalLoader();
         String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClass.getName());
         try {
@@ -97,27 +116,6 @@ public class ObjectMirage implements Mirage {
         throw ie;
     }
     
-    public static void invokeMirageMainMethod(Class<?> originalClass, String[] args) {
-        try {
-            ClassLoader originalLoader = originalClass.getClassLoader();
-            ClassMirrorLoader mirrorLoader = new NativeClassMirrorLoader(originalLoader);
-            MirageClassLoader loader = new MirageClassLoader(originalLoader, mirrorLoader);
-            final Class<?> mirageClass = loader.loadClass(originalClass.getName());
-            final Class<?> mirageStringArray = Class.forName("[Ljava.lang.String;", true, mirageClass.getClassLoader());
-            mirageClass.getDeclaredMethod("main", mirageStringArray).invoke(null, (Object)args);
-        } catch (ClassNotFoundException e) {
-            throwInternalError(e);
-        } catch (SecurityException e) {
-            throwInternalError(e);
-        } catch (IllegalAccessException e) {
-            throwInternalError(e);
-        } catch (InvocationTargetException e) {
-            throwInternalError(e);
-        } catch (NoSuchMethodException e) {
-            throwInternalError(e);
-        }
-    }
-    
     public static String getRealStringForMirage(ObjectMirage mirage) {
         if (mirage == null) {
             return null;
@@ -128,7 +126,7 @@ public class ObjectMirage implements Mirage {
             CharArrayMirror valueMirror = (CharArrayMirror)mirror.getMemberField("value").get();
             char[] value = new char[valueMirror.length()];
             NativeCharArrayMirror nativeValueMirror = new NativeCharArrayMirror(value);
-            SystemClassMirror.arraycopy(valueMirror, 0, nativeValueMirror, 0, value.length);
+            SystemStubs.arraycopy(valueMirror, 0, nativeValueMirror, 0, value.length);
             int offset = mirror.getMemberField("offset").getInt();
             int count = mirror.getMemberField("count").getInt();
             return new String(value, offset, count);
@@ -177,6 +175,6 @@ public class ObjectMirage implements Mirage {
         if (o == null) {
             return null;
         }
-        return ((ObjectMirage)o).mirror;
+        return ((Mirage)o).getMirror();
     }
 }

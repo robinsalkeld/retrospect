@@ -24,15 +24,12 @@ import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 public class HeapDumpFieldMirror extends BoxingFieldMirror {
 
-    private final HeapDumpClassMirrorLoader loader;
     private final Field field;
     
-    // For debugging only
-    private final HeapDumpInstanceMirror ownerMirror;
+    private final HeapDumpClassMirrorLoader loader;
     
-    public HeapDumpFieldMirror(HeapDumpClassMirrorLoader loader, HeapDumpInstanceMirror ownerMirror, Field field) {
+    public HeapDumpFieldMirror(HeapDumpClassMirrorLoader loader, Field field) {
         this.loader = loader;
-        this.ownerMirror = ownerMirror;
         this.field = field;
     }
     
@@ -52,30 +49,15 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         if (ref == null) {
             return null;
         }
-        NamedReference namedRef = new NamedReference(ownerMirror.getHeapDumpObject().getSnapshot(), ref.getObjectAddress(), "." + field.getName());
-        return getObjectWithErrorHandling(ownerMirror, namedRef);
+        return getObjectWithErrorHandling(loader, ref);
     }
 
-    public static ObjectMirror getObjectWithErrorHandling(HeapDumpObjectMirror owner, ObjectReference ref) {
+    public static ObjectMirror getObjectWithErrorHandling(HeapDumpClassMirrorLoader loader, ObjectReference ref) {
         try {
-            HeapDumpClassMirrorLoader loader = owner.getClassMirror().getLoader();
             return HeapDumpInstanceMirror.makeMirror(loader, ref.getObject());
         } catch (SnapshotException e) {
-//            try {
-//                System.out.println("Bad address (" + ref.toString() + ") at: " + describePath(owner.getHeapDumpObject(), ref));
-//            } catch (SnapshotException e1) {
-//                // TODO Auto-generated catch block
-//                e1.printStackTrace();
-//            } catch (SecurityException e2) {
-//                // TODO Auto-generated catch block
-//                e2.printStackTrace();
-//            } catch (NoSuchFieldException e3) {
-//                // TODO Auto-generated catch block
-//                e3.printStackTrace();
-//            }
-            
             // For now...
-            return new NativeObjectMirror("(bad string literal?)");
+            return new NativeObjectMirror("(interned string @ " + Long.toHexString(ref.getObjectAddress()) + ")");
 //            throw new RuntimeException(e);
         }
     }

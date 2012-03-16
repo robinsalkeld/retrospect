@@ -2,6 +2,10 @@ package edu.ubc.mirrors.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.eclipse.equinox.app.IApplication;
@@ -12,6 +16,11 @@ import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.util.ConsoleProgressListener;
+import org.jruby.Ruby;
+import org.jruby.RubyArray;
+import org.jruby.RubyHash;
+import org.jruby.RubyObject;
+import org.jruby.RubyString;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirror;
@@ -25,13 +34,9 @@ public class HeapDumpTest2 implements IApplication {
 
     public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException, IllegalAccessException, NoSuchFieldException, InterruptedException {
         String snapshotPath = args[0];
-        String testClass = args[1];
         
         MirageClassLoader.setTraceDir(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
-        
-        String mirageClass = "mirage." + testClass;
-        MirageClassLoader.traceClass = mirageClass;
         
         ClassLoader runtimeClassLoader = HeapDumpTest.class.getClassLoader();
         ClassMirrorLoader nativeParent = new NativeClassMirrorLoader(runtimeClassLoader);
@@ -49,16 +54,18 @@ public class HeapDumpTest2 implements IApplication {
 //        JHatClassMirror klass = (JHatClassMirror)loader.loadClassMirror(HashMap.class.getName());
         
         MutableClassMirrorLoader mutableLoader = new MutableClassMirrorLoader(loader);
-        MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, nativeParent);
+        MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, mutableLoader);
+        Class<?> mirageClass = mirageLoader.loadMirageClass(JRubyStackTraces.class);
+        mirageClass.getMethods();
         
         for (ObjectMirror mirror : klass.getInstances()) {
             mirror = mutableLoader.makeMirror(mirror); 
             
             Object o = mirageLoader.makeMirage(mirror);
             try {
+//                reflectiveInvoke(mirageClass, "printStackTraces", o);
                 System.out.println(o);
             } catch (Throwable e) {
-                System.out.println("Crap!");
                 e.printStackTrace();
             }
         }
@@ -73,6 +80,53 @@ public class HeapDumpTest2 implements IApplication {
 
     public void stop() {
         
+    }
+    
+    public static Object reflectiveInvoke(Object object, String name, Object... args) {
+        Method match = null;
+        for (Method m : object.getClass().getMethods()) {
+            if (m.getName().equals(name)) {
+                if (match != null) {
+                    throw new IllegalArgumentException("Ambiguous method name: " + object.getClass().getName() + "#" + name);
+                }
+                match = m;
+            }
+        }
+        if (match == null) {
+            throw new IllegalArgumentException("Method not found: " + object.getClass().getName() + "#" + name);
+        }
+        
+        try {
+            return match.invoke(object, args);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        
+    }
+    
+    public static Object reflectiveInvoke(Class<?> klass, String name, Object... args) {
+        Method match = null;
+        for (Method m : klass.getMethods()) {
+            if (m.getName().equals(name)) {
+                if (match != null) {
+                    throw new IllegalArgumentException("Ambiguous method name: " + klass.getName() + "#" + name);
+                }
+                match = m;
+            }
+        }
+        if (match == null) {
+            throw new IllegalArgumentException("Method not found: " + klass.getName() + "#" + name);
+        }
+        
+        try {
+            return match.invoke(null, args);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
     
 }

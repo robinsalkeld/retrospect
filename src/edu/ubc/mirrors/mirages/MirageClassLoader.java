@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalInternalClassName;
 
 import java.io.File;
@@ -43,7 +44,7 @@ public class MirageClassLoader extends ClassLoader {
         
     public static String traceClass = null;
     public static String traceDir = null;
-    private final File myTraceDir;
+    public final File myTraceDir;
     public static boolean debug = false;
     
     final ClassMirrorLoader classMirrorLoader;
@@ -104,14 +105,6 @@ public class MirageClassLoader extends ClassLoader {
                 // Necessary because only subclasses of this can be thrown.
                 // Probably need to introduce a new root subclass as with ObjectMirage.
                 Throwable.class);
-    }
-    
-    @Override
-    protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-//        System.out.println("loadClass: " + name);
-        Class<?> c = super.loadClass(name, resolve);
-//        System.out.println("Done loading class: " + name);
-        return c;
     }
     
     public Class<?> loadMirageClass(Class<?> original) throws ClassNotFoundException {
@@ -190,15 +183,18 @@ public class MirageClassLoader extends ClassLoader {
             return defineClass(name, b);
         } else if (name.startsWith("mirage")) {
             String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
-            if (originalClassName.equals("org/jruby/RubyFixnum[]")) {
-                int bp = 4;
-            }
             ClassMirror classMirror = classMirrorLoader.loadClassMirror(originalClassName);
             byte[] b;
             try {
                 b = MirageClassGenerator.generate(this, classMirror);
             } catch (IOException e) {
                 throw new ClassNotFoundException("Error reading bytecode from class mirror: " + originalClassName, e);
+            } catch (Throwable e) {
+                String target = name;
+                if (MirageMethodGenerator.activeMethod != null) {
+                    target += "#" + MirageMethodGenerator.activeMethod;
+                }
+                throw new RuntimeException("Error caught while generating bytecode for " + target, e);
             }
             return defineClass(name, b);
         } else if (name.startsWith("native")) {
@@ -217,30 +213,19 @@ public class MirageClassLoader extends ClassLoader {
     }
     
     protected Class<?> defineClass(String name, byte[] b) {
-        if (myTraceDir != null) {
-            File file = new File(myTraceDir, name + ".class");
-            try {
+        try {
+            if (myTraceDir != null) {
+                File file = new File(myTraceDir, name + ".class");
                 OutputStream classFile = new FileOutputStream(file);
                 classFile.write(b);
                 classFile.flush();
                 classFile.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
-            File txtFile = new File(myTraceDir, name + ".txt");
-            try {
-                PrintWriter textFileWriter = new PrintWriter(txtFile);
-                new ClassReader(b).accept(new TraceClassVisitor(null, textFileWriter), 0);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            
-//            if (name.equals(traceClass)) {
-//                Verifier.main(new String[] {name});
-//            }
+            Class<?> c = super.defineClass(name, b, 0, b.length);
+            return c;
+        } catch (Throwable e) {
+            throw new RuntimeException("Error caught while defining class " + name, e);
         }
-        Class<?> c = super.defineClass(name, b, 0, b.length);
-        return c;
     }
     
     private final Map<ObjectMirror, Object> mirages = new HashMap<ObjectMirror, Object>();
@@ -304,5 +289,13 @@ public class MirageClassLoader extends ClassLoader {
         
         mirages.put(mirror, mirage);
         return mirage;
+    }
+    
+    public void invokeMirageMethod(Object mirage, String methodName, Object... args) throws ClassNotFoundException, IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        final Class<?> mirageClass = loadClass(getMirageBinaryClassName(mirage.getClass().getName(), false));
+        final Class<?> mirageStringArray = Class.forName("[Ljava.lang.String;", true, mirageClass.getClassLoader());
+        
+        
+        mirageClass.getDeclaredMethod(methodName, mirageStringArray).invoke(null, args);
     }
 }

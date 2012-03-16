@@ -21,5 +21,4 @@ public class ClassMirrorLoader {
             throw new ClassNotFoundException();
         }
     }
-    
 }

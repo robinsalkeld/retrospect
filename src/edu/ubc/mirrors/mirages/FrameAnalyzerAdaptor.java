@@ -18,11 +18,13 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 public class FrameAnalyzerAdaptor extends ClassVisitor {
 
     private final ClassMirrorLoader loader;
+    private final boolean insertFrames;
     private Type thisType = null;
     
-    public FrameAnalyzerAdaptor(ClassMirrorLoader loader, ClassVisitor cv) {
+    public FrameAnalyzerAdaptor(ClassMirrorLoader loader, ClassVisitor cv, boolean insertFrames) {
         super(Opcodes.ASM4, cv);
         this.loader = loader;
+        this.insertFrames = insertFrames;
     }
 
     @Override
@@ -106,7 +108,9 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
                 }
                 
                 if (superVisitor != null) {
-                    a.insertFrames();
+                    if (insertFrames) {
+                        a.insertFrames();
+                    }
                     accept(superVisitor);
                 }
             }

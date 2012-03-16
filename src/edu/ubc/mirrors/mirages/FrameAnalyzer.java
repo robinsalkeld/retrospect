@@ -5,12 +5,10 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -24,11 +22,8 @@ import org.objectweb.asm.tree.analysis.Interpreter;
 
 public class FrameAnalyzer extends Analyzer<FrameValue> {
 
-    FrameVerifier verifier;
-    
     public FrameAnalyzer(FrameVerifier verifier) {
         super(verifier);
-        this.verifier = verifier;
     }
 
     private final Map<AbstractInsnNode, Integer> insnIndices = new HashMap<AbstractInsnNode, Integer>();
@@ -46,6 +41,8 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
         int n = m.instructions.size();
         this.jumpIn = new boolean[n];
         this.stepIn = new boolean[n];
+        
+        this.stepIn[0] = true;
         
         for (int i = 0; i < n; i++) {
             insnIndices.put(m.instructions.get(i), i);
@@ -112,43 +109,63 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
             return;
         }
         
-        Set<AbstractInsnNode> frameInsnsToAdd = new HashSet<AbstractInsnNode>();
-        for (int i = 0; i < m.instructions.size(); i++) {
-            if (jumpIn[i] || !stepIn[i]) {
-                frameInsnsToAdd.add(m.instructions.get(i));
-            }
-        }
-        for (AbstractInsnNode needsFrame : frameInsnsToAdd) {
-            Frame<FrameValue> frame = frames[insnIndices.get(needsFrame)];
-            if (frame == null) {
-                continue;
-            }
+        AbstractInsnNode insnNode = m.instructions.getFirst();
+        int n = m.instructions.size();
+        for (int i = 0; i < n; i++) {
+            int insnType = insnNode.getType();
+            AbstractInsnNode nextNode = insnNode.getNext();
             
-            int numLocals = frame.getLocals();
-            List<Object> localsList = new ArrayList<Object>(frame.getLocals());
-            for (int i = 0; i < numLocals; i++) {
-                FrameValue value = frame.getLocal(i);
-                localsList.add(toFrameObject(value));
-                if (value.getSize() == 2) {
-                    // Skip the next TOP - the visitor API represents locals
-                    // with one element isntead.
-                    i++;
+            if (insnType == AbstractInsnNode.LABEL
+                    || insnType == AbstractInsnNode.LINE
+                    || insnType == AbstractInsnNode.FRAME) {
+                if (i + 1 < n) {
+                    jumpIn[i + 1] |= jumpIn[i];
+                    stepIn[i + 1] = stepIn[i];
+                }
+                
+                if (insnType == AbstractInsnNode.FRAME) {
+                    m.instructions.remove(insnNode);
+                }
+            } else {
+                if (jumpIn[i] || !stepIn[i]) {
+                    Frame<FrameValue> frame = frames[i];
+                    if (frame == null) {
+                        continue;
+                    }
+                    
+                    FrameNode frameNode = toFrameNode(frame);
+                    m.instructions.insertBefore(insnNode, frameNode);
                 }
             }
-            Object[] locals = localsList.toArray();
             
-            int stackSize = frame.getStackSize();
-            Object[] stack = new Object[stackSize];
-            for (int i = 0; i < stackSize; i++) {
-                FrameValue value = frame.getStack(i);
-                stack[i] = toFrameObject(value);
-            }
-            
-            FrameNode frameNode = new FrameNode(Opcodes.F_NEW, locals.length, locals, stack.length, stack);
-            m.instructions.insertBefore(needsFrame, frameNode);
+            insnNode = nextNode;
         }
     }
     
+    private FrameNode toFrameNode(Frame<FrameValue> frame) {
+        int numLocals = frame.getLocals();
+        List<Object> localsList = new ArrayList<Object>(frame.getLocals());
+        for (int i = 0; i < numLocals; i++) {
+            FrameValue value = frame.getLocal(i);
+            localsList.add(toFrameObject(value));
+            if (value.getSize() == 2) {
+                // Skip the next TOP - the visitor API represents locals
+                // with one element instead.
+                i++;
+            }
+        }
+        Object[] locals = localsList.toArray();
+        
+        int stackSize = frame.getStackSize();
+        Object[] stack = new Object[stackSize];
+        for (int i = 0; i < stackSize; i++) {
+            FrameValue value = frame.getStack(i);
+            stack[i] = toFrameObject(value);
+        }
+        
+        return new FrameNode(Opcodes.F_NEW, locals.length, locals, stack.length, stack);
+    }
+        
     public Object toFrameObject(FrameValue value) {
         if (value.isUninitializedThis()) {
             return Opcodes.UNINITIALIZED_THIS;
