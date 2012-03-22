@@ -38,6 +38,17 @@ public class ClassLoaderLiteralMirror extends ClassMirror {
         return loader;
     }
 
+    public static void getClassLoaderLiteralClass(MethodVisitor mv) {
+        mv.visitTypeInsn(Opcodes.NEW, CLASS_LOADER_LITERAL_NAME);
+        mv.visitInsn(Opcodes.DUP);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, CLASS_LOADER_LITERAL_NAME, "<init>", "()V");
+        
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
+                "java/lang/Object", 
+                "getClass", 
+                Type.getMethodDescriptor(Type.getType(Class.class)));
+    }
+    
     @Override
     public byte[] getBytecode() {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
@@ -60,14 +71,9 @@ public class ClassLoaderLiteralMirror extends ClassMirror {
       mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "makeMirage", desc, null, null);
       mv.visitCode();
       mv.visitVarInsn(Opcodes.ALOAD, 0);
-      mv.visitTypeInsn(Opcodes.NEW, CLASS_LOADER_LITERAL_NAME);
-      mv.visitInsn(Opcodes.DUP);
-      mv.visitMethodInsn(Opcodes.INVOKESPECIAL, CLASS_LOADER_LITERAL_NAME, "<init>", "()V");
       
-      mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
-              "java/lang/Object", 
-              "getClass", 
-              Type.getMethodDescriptor(Type.getType(Class.class)));
+      getClassLoaderLiteralClass(mv);
+      
       mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
               Type.getInternalName(ObjectMirage.class), 
               "make", 
@@ -179,6 +185,12 @@ public class ClassLoaderLiteralMirror extends ClassMirror {
 
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    @Override
+    public List<FieldMirror> getMemberFields() {
         // TODO Auto-generated method stub
         return null;
     }

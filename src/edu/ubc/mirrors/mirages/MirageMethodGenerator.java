@@ -11,6 +11,7 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.getPrimitiveArrayMirr
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getSortName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.makeArrayType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
@@ -27,6 +28,7 @@ import org.objectweb.asm.commons.LocalVariablesSorter;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeObjectArrayMirror;
 
@@ -42,8 +44,9 @@ public class MirageMethodGenerator extends InstructionAdapter {
     private String name;
     
     private final boolean isToString;
+    private final boolean isGetStackTrace;
     
-    public MirageMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString) {
+    public MirageMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString, boolean isGetStackTrace) {
         super(Opcodes.ASM4, null);
         this.superVisitor = superVisitor;
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
@@ -52,6 +55,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         this.owner = owner;
         this.methodType = Type.getMethodType(desc);
         this.isToString = isToString;
+        this.isGetStackTrace = isGetStackTrace;
         
         activeMethod = name + desc;
     }
@@ -83,6 +87,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
             return;
         }
         
+        if (name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(StackTraceElement[].class)))) {
+            super.visitMethodInsn(opcode, owner, name, Type.getMethodDescriptor(Type.getType(StackTraceElement[].class)));
+            
+            invokestatic(CLASS_LOADER_LITERAL_NAME,
+                         "lift",
+                         Type.getMethodDescriptor(OBJECT_TYPE, OBJECT_TYPE));
+            checkcast(getMirageType(StackTraceElement[].class));
+            return;
+        }
+        
         if (name.equals("getClass") && desc.equals(Type.getMethodDescriptor(getMirageType(Class.class)))) {
             invokeinterface(Type.getInternalName(Mirage.class), 
                     "getMirror", 
@@ -99,31 +113,37 @@ public class MirageMethodGenerator extends InstructionAdapter {
         }
         
         if (owner.equals(Type.getInternalName(Mirage.class))) {
-            if (name.equals("<init>") || name.equals("toString")) {
+            if (name.equals("<init>") && this.owner.equals(getMirageType(Throwable.class).getInternalName())) {
+                owner = Type.getInternalName(Throwable.class);
+            } else if (name.equals("<init>") || name.equals("toString")) {
                 owner = objectMirageType.getInternalName();
             } else {
                 owner = OBJECT_TYPE.getInternalName();
             }
         }
         
-        if (owner.equals(Type.getInternalName(ThrowableMirage.class))) {
-            if (name.equals("<init>") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE, getMirageType(String.class)))) {
-                desc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirageType);
-            }
+        if (name.equals("clone") && desc.equals(Type.getMethodDescriptor(mirageType))) {
+            desc = Type.getMethodDescriptor(OBJECT_TYPE);
         }
+        
+//        if (owner.equals(getMirageType(Throwable.class).getInternalName())) {
+//            if (name.equals("<init>") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE, getMirageType(String.class)))) {
+//                desc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirageType);
+//            }
+//        }
         
         if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Mirage.class)))) {
             desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, OBJECT_TYPE);
         }
         
-        if (name.equals("<init>")) {
+        if (name.equals("<init>") && !owner.equals(Type.getInternalName(Throwable.class))) {
             int argsSize = Type.getArgumentsAndReturnSizes(desc) >> 2;
             desc = MirageClassGenerator.addMirrorParam(desc);
             
             Object targetType = stackType(argsSize - 1);
             if (targetType.equals(Opcodes.UNINITIALIZED_THIS)) {
                 // If the target is an uninitialized this (i.e. we're calling super(...)
-                // of this(...)), pass along the extra mirror argument
+                // or this(...)), pass along the extra mirror argument
                 load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
             } else if (targetType instanceof Label) {
                 // If the target is just uninitialized (i.e. we're calling <init> after
@@ -134,7 +154,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
                         Type.getMethodDescriptor(instanceMirrorType, Type.getType(String.class)));
             } else {
                 // Shouldn't happen
-                throw new InternalError();
+                throw new RuntimeException("Calling <init> on already initialized type: " + targetType);
             }
         }
         
@@ -142,7 +162,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         
         if (owner.equals(Type.getInternalName(Throwable.class)) && name.equals("getStackTraceElement")) {
             Type steType = Type.getType(StackTraceElement.class);
-            invokestatic(Type.getInternalName(ThrowableMirage.class),
+            invokestatic(Type.getInternalName(ObjectMirage.class),
                          "cleanStackTraceElement",
                          Type.getMethodDescriptor(steType, steType));
         }
@@ -353,26 +373,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
         
         if (opcode == Opcodes.ARETURN) {
             if (isToString) {
-                invokestatic(MirageClassGenerator.objectMirageType.getInternalName(),
+                invokestatic(objectMirageType.getInternalName(),
                              "getRealStringForMirage",
                              Type.getMethodDescriptor(Type.getType(String.class), Type.getType(ObjectMirage.class)));
-            } else if (analyzer.stack == null) {
-                checkcast(methodType.getReturnType());
+            } else if (isGetStackTrace) {
+                invokestatic(objectMirageType.getInternalName(),
+                             "getRealStackTraceForMirage",
+                             Type.getMethodDescriptor(Type.getType(StackTraceElement[].class), Type.getType(Mirage.class)));
             }
         }
         super.visitInsn(opcode);
-    }
-    
-    @Override
-    public void jsr(Label label) {
-        // Don't tell the analyzer - it doesn't support them!
-        superVisitor.visitJumpInsn(Opcodes.JSR, label);
-    }
-    
-    @Override
-    public void ret(int var) {
-     // Don't tell the analyzer - it doesn't support them!
-        superVisitor.visitVarInsn(Opcodes.RET, var);
     }
     
     @Override
@@ -487,6 +497,12 @@ public class MirageMethodGenerator extends InstructionAdapter {
         
         if (name.equals("<init>")) {
             lvs.newLocal(instanceMirrorType);
+
+            if (owner.equals(getMirageType(Throwable.class).getInternalName())) {
+                load(0, Type.getObjectType(owner));
+                load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
+                putfield(owner, "mirror", Type.getDescriptor(ObjectMirror.class));
+            }
         }
     }
 }

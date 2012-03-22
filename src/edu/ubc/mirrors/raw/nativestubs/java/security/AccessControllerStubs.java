@@ -1,21 +1,21 @@
+
 package edu.ubc.mirrors.raw.nativestubs.java.security;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.mirages.ObjectMirage;
+import edu.ubc.mirrors.mirages.Mirage;
 
 public class AccessControllerStubs {
 
     
-    public static ObjectMirror doPrivileged(ObjectMirror action) {
+    public static Mirage doPrivileged(Class<?> classLoaderLiteral, Mirage action) {
         Object result = AccessController.doPrivileged(new PrivilegedAction<Object>() {
             @Override
             public Object run() {
                 return null;
             }
         });
-        return ObjectMirage.getMirror(result);
+        return (Mirage)result;
     }
 }

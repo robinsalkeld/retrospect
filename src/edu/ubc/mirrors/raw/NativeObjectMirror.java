@@ -2,6 +2,8 @@ package edu.ubc.mirrors.raw;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
@@ -38,6 +40,25 @@ public class NativeObjectMirror implements InstanceMirror {
         return getField(object, name, false);
     }
     
+    public static List<FieldMirror> getMemberFields(Object object) {
+        // TODO-RS: Cache this!
+        // TODO-RS: And then possibly use it to implement an
+        // alternate field access API based on offsets instead of names
+        List<FieldMirror> result = new ArrayList<FieldMirror>();
+        Class<?> c = object.getClass();
+        while (c != null) {
+            for (Field f : c.getDeclaredFields()) {
+                result.add(new NativeFieldMirror(f, object));
+            }
+            c = c.getSuperclass();
+        }
+        return result;
+    }
+    
+    @Override
+    public List<FieldMirror> getMemberFields() {
+        return getMemberFields(object);
+    }
     
     public static FieldMirror getField(Object object, String name, boolean isStatic) throws NoSuchFieldException {
         Class<?> klass = object.getClass();
@@ -90,6 +111,11 @@ public class NativeObjectMirror implements InstanceMirror {
         @Override
         public String getName() {
             return field.getName();
+        }
+        
+        @Override
+        public Class<?> getType() {
+            return field.getType();
         }
         
         public ObjectMirror get() throws IllegalAccessException {
@@ -173,6 +199,8 @@ public class NativeObjectMirror implements InstanceMirror {
         
         if (object instanceof Class) {
             return new NativeClassMirror((Class<?>)object);
+        } else if (object instanceof Thread) {
+            return new NativeThreadMirror((Thread)object);
         } else if (object instanceof Object[]) {
             return new NativeObjectArrayMirror((Object[])object);
         } else if (object instanceof boolean[]) {

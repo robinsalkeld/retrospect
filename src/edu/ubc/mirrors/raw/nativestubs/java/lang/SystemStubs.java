@@ -10,14 +10,19 @@ import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
+import edu.ubc.mirrors.mirages.Mirage;
 
 public class SystemStubs {
 
-    public static int identityHashCode(ObjectMirror o) {
+    public static int identityHashCode(Class<?> classLoaderLiteral, Mirage o) {
         return System.identityHashCode(o);
     }
     
-    public static void arraycopy(ObjectMirror src, int srcPos, ObjectMirror dest, int destPos, int length) {
+    public static void arraycopy(Class<?> classLoaderLiteral, Mirage src, int srcPos, Mirage dest, int destPos, int length) {
+        arraycopyMirrors(src.getMirror(), srcPos, dest.getMirror(), destPos, length);
+    }
+    
+    public static void arraycopyMirrors(ObjectMirror src, int srcPos, ObjectMirror dest, int destPos, int length) {
         for (int off = 0; off < length; off++) {
             setArrayElement(dest, destPos + off, getArrayElement(src, srcPos + off));
         }

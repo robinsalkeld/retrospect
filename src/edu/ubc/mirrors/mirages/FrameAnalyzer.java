@@ -4,10 +4,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -103,12 +101,13 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
         return new ContextFrame(src);
     }
     
-    public void insertFrames() {
+    public Frame<FrameValue>[] insertFrames() {
         Frame<FrameValue>[] frames = getFrames();
         if (m == null || m.instructions == null) {
-            return;
+            return frames;
         }
         
+        List<Frame<FrameValue>> newFrames = new ArrayList<Frame<FrameValue>>();
         AbstractInsnNode insnNode = m.instructions.getFirst();
         int n = m.instructions.size();
         for (int i = 0; i < n; i++) {
@@ -125,21 +124,25 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
                 
                 if (insnType == AbstractInsnNode.FRAME) {
                     m.instructions.remove(insnNode);
+                } else {
+                    newFrames.add(frames[i]);
                 }
             } else {
                 if (jumpIn[i] || !stepIn[i]) {
                     Frame<FrameValue> frame = frames[i];
-                    if (frame == null) {
-                        continue;
-                    }
-                    
                     FrameNode frameNode = toFrameNode(frame);
                     m.instructions.insertBefore(insnNode, frameNode);
+                    newFrames.add(newFrame(frame));
                 }
+                newFrames.add(frames[i]);
             }
             
             insnNode = nextNode;
         }
+        
+        @SuppressWarnings("unchecked")
+        Frame<FrameValue>[] result = (Frame<FrameValue>[])newFrames.toArray(new Frame<?>[newFrames.size()]); 
+        return result;
     }
     
     private FrameNode toFrameNode(Frame<FrameValue> frame) {
@@ -217,7 +220,7 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
     public String toString() {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        FrameAnalyzerAdaptor.printAnalyzerResult(m, this, pw);
+        FrameAnalyzerAdaptor.printAnalyzerResult(m, getFrames(), pw);
         return sw.toString();
     }
 }

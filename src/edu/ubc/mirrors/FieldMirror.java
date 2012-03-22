@@ -3,6 +3,7 @@ package edu.ubc.mirrors;
 public interface FieldMirror {
 
     public String getName();
+    public Class<?> getType();
     
     public ObjectMirror get() throws IllegalAccessException;
     public boolean getBoolean() throws IllegalAccessException;

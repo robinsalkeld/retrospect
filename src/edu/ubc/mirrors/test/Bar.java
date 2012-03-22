@@ -8,6 +8,15 @@ public class Bar {
     private Map<String, String> map = new HashMap<String, String>();
     
     public static void main(String[] args) throws InterruptedException {
+        Thread deadThread = new Thread();
+        
+        Thread[] threads = new Thread[Thread.activeCount() + 5];
+        int numThreads = Thread.enumerate(threads);
+        for (int i = 0; i < numThreads; i++) {
+            System.out.println(threads[i] + ": " + threads[i].isAlive());
+        }
+        
+        
         Bar bar = new Bar(47);
         bar.map.put(new String("foo"), new String("bar"));
         System.out.println("ZZZZZZ");

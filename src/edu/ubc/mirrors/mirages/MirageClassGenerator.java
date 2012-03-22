@@ -1,11 +1,13 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
+import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,7 +22,6 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
-import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
 
 import edu.ubc.mirrors.ArrayMirror;
@@ -39,10 +40,13 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type arrayMirrorType = Type.getType(ArrayMirror.class);
     public static Type objectArrayMirrorType = Type.getType(ObjectArrayMirror.class);
     public static Type objectMirageType = Type.getType(ObjectMirage.class);
+    public static Type mirageType = Type.getType(Mirage.class);
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeObjectMirror.class);
     public static Type fieldMapMirrorType = Type.getType(FieldMapMirror.class);
     public static Type classType = Type.getType(Class.class);
+    public static Type stackTraceElementType = Type.getType(StackTraceElement.class);
+    public static Type stackTraceType = Type.getType(StackTraceElement[].class);
     
     public static Remapper REMAPPER = new Remapper() {
         public String map(String typeName) {
@@ -97,7 +101,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         this.name = name;
         this.isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
-        this.superName = getMirageSuperclassName(isInterface, superName);
+        this.superName = getMirageSuperclassName(isInterface, name, superName);
         interfaces = getMirageInterfaces(isInterface, interfaces);
         
         // Force everything to be public for now, since MirageClassLoader has to reflectively
@@ -114,8 +118,10 @@ public class MirageClassGenerator extends ClassVisitor {
         super.visitInnerClass(name, outerName, innerName, mirageAccess);
     }
     
-    public static String getMirageSuperclassName(boolean isInterface, String mirageSuperName) {
-        if (Type.getInternalName(Mirage.class).equals(mirageSuperName)) {
+    public static String getMirageSuperclassName(boolean isInterface, String mirageName, String mirageSuperName) {
+        if (getMirageInternalClassName(Type.getInternalName(Throwable.class), true).equals(mirageName)) {
+            return Type.getInternalName(Throwable.class);
+        } else if (Type.getInternalName(Mirage.class).equals(mirageSuperName)) {
             if (isInterface) {
                 return Type.getInternalName(Object.class);
             } else {
@@ -217,10 +223,6 @@ public class MirageClassGenerator extends ClassVisitor {
         if (className.equals("[L" + Type.getInternalName(Object.class) + ";")
                 || className.equals("[L" + Type.getInternalName(Mirage.class) + ";")) {
             return impl ? Type.getInternalName(ObjectArrayMirage.class) : Type.getInternalName(ObjectArrayMirror.class);
-        }
-        
-        if (className.equals(Type.getInternalName(Throwable.class))) {
-            return Type.getInternalName(ThrowableMirage.class);
         }
         
         Type type = Type.getObjectType(className);
@@ -338,9 +340,17 @@ public class MirageClassGenerator extends ClassVisitor {
         
         // toString() is a special case - it's defined in java.lang.Object, which this class must ultimately
         // extend, so we have to return a real String rather than a mirage.
-        boolean isToString = (name.equals("toString") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(String.class)))));
+        boolean isToString = name.equals("toString") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(String.class))));
         if (isToString) {
             desc = Type.getMethodDescriptor(Type.getType(String.class));
+        }
+        boolean isGetStackTrace = name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement[].class)))); 
+        if (isGetStackTrace) {
+            desc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
+        }
+        boolean isGetOurStackTrace = name.equals("getOurStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement[].class)))); 
+        if (name.equals("getStackTraceElement") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement.class)), Type.INT_TYPE))) {
+            desc = Type.getMethodDescriptor(Type.getType(StackTraceElement.class), Type.INT_TYPE);
         }
         
         // Take off the native keyword if it's there - we're going to fill in an actual
@@ -348,13 +358,46 @@ public class MirageClassGenerator extends ClassVisitor {
         int mirageAccess = ~Opcodes.ACC_NATIVE & access;
         MethodVisitor superVisitor = super.visitMethod(mirageAccess, name, desc, signature, exceptions);
         
-        MirageMethodGenerator generator = new MirageMethodGenerator(this.name, mirageAccess, name, desc, superVisitor, isToString);
+        if (this.name.equals(getMirageType(Throwable.class).getInternalName())) {
+            if (name.equals("fillInStackTrace")) {
+                superVisitor.visitCode();
+                superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+                superVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, superName, name, Type.getMethodDescriptor(Type.getType(Throwable.class)));
+                superVisitor.visitInsn(Opcodes.POP);
+                superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+                superVisitor.visitInsn(Opcodes.ARETURN);
+                superVisitor.visitMaxs(1, 1);
+                superVisitor.visitEnd();
+                
+                return null;
+            } else if (isGetOurStackTrace) {
+                superVisitor.visitCode();
+                superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+                superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+                superVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "getStackTrace", 
+                                                                    Type.getMethodDescriptor(stackTraceType));
+                superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, objectMirageType.getInternalName(), 
+                                                                    "cleanAndSetStackTrace", 
+                                                                    Type.getMethodDescriptor(stackTraceType, mirageType, stackTraceType));
+                superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, CLASS_LOADER_LITERAL_NAME,
+                                                                    "lift",
+                                                                    Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Object.class)));
+                superVisitor.visitTypeInsn(Opcodes.CHECKCAST, getMirageType(stackTraceType).getInternalName());
+                superVisitor.visitInsn(Opcodes.ARETURN);
+                superVisitor.visitMaxs(2, 1);
+                superVisitor.visitEnd();
+                
+                return null;
+            }
+        }
+        
+        MirageMethodGenerator generator = new MirageMethodGenerator(this.name, mirageAccess, name, desc, superVisitor, isToString, isGetStackTrace);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
         Method mirrorMethod = mirrorMethods.get(name);
         if (mirrorMethod != null) {
-            generateStaticThunk(generator, desc, mirrorMethod);
+            generateStaticThunk(superVisitor, desc, mirrorMethod);
             
             return null;
         } else if ((Opcodes.ACC_NATIVE & access) != 0) {
@@ -381,28 +424,22 @@ public class MirageClassGenerator extends ClassVisitor {
     public static void generateStaticThunk(MethodVisitor visitor, String desc, Method method) {
         Class<?>[] parameterClasses = method.getParameterTypes();
         visitor.visitCode();
-        Type[] parameterTypes = new Type[parameterClasses.length];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = Type.getType(parameterClasses[i]);
-            visitor.visitVarInsn(parameterTypes[i].getOpcode(Opcodes.ILOAD), i);
-            if (isRefType(parameterTypes[i])) {
-                visitor.visitMethodInsn(Opcodes.INVOKESTATIC, 
-                            objectMirageType.getInternalName(), 
-                            "getMirror", 
-                            Type.getMethodDescriptor(objectMirrorType, Type.getType(Object.class)));
-            }
+        
+        assert parameterClasses[0].equals(Class.class);
+        ClassLoaderLiteralMirror.getClassLoaderLiteralClass(visitor);
+        for (int i = 1; i < parameterClasses.length; i++) {
+            visitor.visitVarInsn(Type.getType(parameterClasses[i]).getOpcode(Opcodes.ILOAD), i - 1);
         }
+        
         Type returnType = Type.getType(method.getReturnType());
+        
         visitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(method.getDeclaringClass()), method.getName(), Type.getMethodDescriptor(method));
+        
         if (isRefType(returnType)) {
-            visitor.visitMethodInsn(Opcodes.INVOKESTATIC, 
-                    MirageClassLoader.CLASS_LOADER_LITERAL_NAME, 
-                    "makeMirage", 
-                    Type.getMethodDescriptor(Type.getType(Object.class), objectMirrorType));
             visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getReturnType(desc).getInternalName());
         }
         visitor.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
-        visitor.visitMaxs(parameterTypes.length, parameterTypes.length);
+        visitor.visitMaxs(parameterClasses.length + 1, parameterClasses.length + 1);
         visitor.visitEnd();
     }
     
@@ -417,8 +454,33 @@ public class MirageClassGenerator extends ClassVisitor {
     @Override
     public void visitEnd() {
         // Generate the constructor that takes a mirror instance as an Object parameter
-        if (!isInterface) {
-            String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));
+        String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));
+        if (name.equals(getMirageInternalClassName(Type.getInternalName(Throwable.class), true))) {
+            // This doesn't extend ObjectMirage so we have to set the field directly
+            super.visitField(Opcodes.ACC_PUBLIC, "mirror", objectMirrorType.getDescriptor(), null, null);
+            
+            MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
+                             "<init>", constructorDesc, null, null);
+            methodVisitor.visitCode();
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", Type.getMethodDescriptor(Type.VOID_TYPE));
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
+            methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, objectMirrorType.getInternalName());
+            methodVisitor.visitFieldInsn(Opcodes.PUTFIELD, name, "mirror", Type.getDescriptor(ObjectMirror.class));
+            methodVisitor.visitInsn(Opcodes.RETURN);
+            methodVisitor.visitMaxs(2, 2);
+            methodVisitor.visitEnd();
+            
+            methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
+                    "getMirror", Type.getMethodDescriptor(objectMirrorType), null, null);
+            methodVisitor.visitCode();
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            methodVisitor.visitFieldInsn(Opcodes.GETFIELD, name, "mirror", Type.getDescriptor(ObjectMirror.class));
+            methodVisitor.visitInsn(Opcodes.ARETURN);
+            methodVisitor.visitMaxs(1, 1);
+            methodVisitor.visitEnd();
+        } else if (!isInterface) {
             MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
                              "<init>", constructorDesc, null, null);
             methodVisitor.visitCode();
@@ -438,13 +500,13 @@ public class MirageClassGenerator extends ClassVisitor {
     public static byte[] generate(MirageClassLoader loader, ClassMirror classMirror) throws IOException {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
+        if (MirageClassLoader.debug) {
+            visitor = new FrameAnalyzerAdaptor(loader.getMirageClassMirrorLoader(), visitor, false);
+        }
         if (loader.myTraceDir != null) {
             File txtFile = new File(loader.myTraceDir, classMirror.getClassName() + ".txt");
             PrintWriter textFileWriter = new PrintWriter(txtFile);
             visitor = new TraceClassVisitor(visitor, textFileWriter);
-        }
-        if (MirageClassLoader.debug) {
-            visitor = new FrameAnalyzerAdaptor(loader.getMirageClassMirrorLoader(), visitor, false);
         }
         visitor = new MirageClassGenerator(classMirror, visitor);
         visitor = new RemappingClassAdapter(visitor, REMAPPER);

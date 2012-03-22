@@ -1,10 +1,10 @@
 package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
-import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.mirages.Mirage;
 
 public class VMSystemStubs {
 
-    public static void arraycopy(ObjectMirror src, int srcPos, ObjectMirror dest, int destPos, int length) {
-        System.arraycopy(src, srcPos, dest, destPos, length);
+    public static void arraycopy(Class<?> classLoaderLiteral, Mirage src, int srcPos, Mirage dest, int destPos, int length) {
+        SystemStubs.arraycopy(classLoaderLiteral, src, srcPos, dest, destPos, length);
     }
 }

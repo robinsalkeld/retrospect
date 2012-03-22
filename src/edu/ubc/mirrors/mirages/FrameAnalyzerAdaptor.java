@@ -2,11 +2,16 @@ package edu.ubc.mirrors.mirages;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.JSRInlinerAdapter;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.analysis.Analyzer;
 import org.objectweb.asm.tree.analysis.Frame;
@@ -35,10 +40,9 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     
     static void printAnalyzerResult(
             MethodNode method,
-            Analyzer<FrameValue> a,
+            Frame<FrameValue>[] frames,
             final PrintWriter pw)
     {
-        Frame<FrameValue>[] frames = a.getFrames();
         Textifier t = new Textifier();
         TraceMethodVisitor mv = new TraceMethodVisitor(t);
 
@@ -85,35 +89,51 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         final MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-        
+        final Map<Label, LabelNode> labelNodes = new HashMap<Label, LabelNode>();
         final FrameVerifier verifier = new FrameVerifier(loader);
-        return new MethodNode(access, name, desc, null, null) {
+        
+        MethodNode analyzer = new MethodNode(access, name, desc, null, null) {
             @Override
             public void visitEnd() {
                 FrameAnalyzer a = new FrameAnalyzer(verifier);
+                Frame<FrameValue>[] frames = null;
                 try {
-                    a.analyze(thisType.getInternalName(), this);
-                } catch (Exception e) {
+                    frames = a.analyze(thisType.getInternalName(), this);
+                    if (superVisitor != null) {
+                        if (insertFrames) {
+                            frames = a.insertFrames();
+                        }
+                        accept(superVisitor);
+                    }
+                } catch (Throwable e) {
                     if (e instanceof IndexOutOfBoundsException
                             && maxLocals == 0 && maxStack == 0)
                     {
                         throw new RuntimeException("Data flow checking option requires valid, non zero maxLocals and maxStack values.");
                     }
+                    if (frames == null) {
+                        frames = a.getFrames();
+                    }
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw, true);
-                    printAnalyzerResult(this, a, pw);
+                    printAnalyzerResult(this, frames, pw);
                     pw.close();
-                    throw new RuntimeException(e.getMessage() + ' '
+                    throw new RuntimeException(e.getMessage() + "\n"
                             + sw.toString());
                 }
-                
-                if (superVisitor != null) {
-                    if (insertFrames) {
-                        a.insertFrames();
-                    }
-                    accept(superVisitor);
+            }
+            
+            @Override
+            protected LabelNode getLabelNode(Label l) {
+                LabelNode node = labelNodes.get(l);
+                if (node == null) {
+                    node = new LabelNode(l);
+                    labelNodes.put(l, node);
                 }
+                return node;
             }
         };
+        
+        return new JSRInlinerAdapter(analyzer, access, name, desc, signature, exceptions);
     }
 }

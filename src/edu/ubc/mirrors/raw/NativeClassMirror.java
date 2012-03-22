@@ -154,13 +154,13 @@ public class NativeClassMirror extends ClassMirror {
         return NativeObjectMirror.getField(klass, name, false);
     }
     
+    @Override
+    public List<FieldMirror> getMemberFields() {
+        return NativeObjectMirror.getMemberFields(klass);
+    }
 
     public Class<?> getNativeStubsClass() {
         String name = getClassName();
-        if (name.equals("java.lang.Thread")) {
-            int bp = 4;
-            bp++;
-        }
         String nativeStubsName = "edu.ubc.mirrors.raw.nativestubs." + name + "Stubs";
         try {
             return Class.forName(nativeStubsName);

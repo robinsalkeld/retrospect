@@ -2,6 +2,7 @@ package edu.ubc.mirrors.mirages;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalInternalClassName;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -149,6 +150,7 @@ public class MirageClassLoader extends ClassLoader {
                         String interfaceName = MirageClassGenerator.getMirageType(superType).getInternalName(); 
                         interfaces.add(interfaceName);
                     }
+                    interfaces.add(mirageType.getInternalName());
                 } else {
                     interfaces.add("miragearray" + name.replace('.', '/').substring("miragearrayimpl".length()));
                 }

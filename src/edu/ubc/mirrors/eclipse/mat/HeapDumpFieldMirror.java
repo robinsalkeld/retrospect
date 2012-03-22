@@ -43,6 +43,22 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         return field.getName();
     }
     
+    @Override
+    public Class<?> getType() {
+        switch (field.getType()) {
+        case IObject.Type.BOOLEAN: return Boolean.TYPE;
+        case IObject.Type.BYTE: return Byte.TYPE;
+        case IObject.Type.CHAR: return Character.TYPE;
+        case IObject.Type.SHORT: return Short.TYPE;
+        case IObject.Type.INT: return Integer.TYPE;
+        case IObject.Type.LONG: return Long.TYPE;
+        case IObject.Type.FLOAT: return Float.TYPE;
+        case IObject.Type.DOUBLE: return Double.TYPE;
+        default:
+        case IObject.Type.OBJECT: return Object.class;
+        }
+    }
+    
     public ObjectMirror get() throws IllegalAccessException {
         Object value = field.getValue();
         ObjectReference ref = (ObjectReference)value;

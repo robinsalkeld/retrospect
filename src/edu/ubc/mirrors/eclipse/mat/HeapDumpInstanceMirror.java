@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +18,8 @@ import edu.ubc.mirrors.ObjectMirror;
 
 public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMirror {
 
-    private final HeapDumpClassMirrorLoader loader;
-    private final IInstance heapDumpObject;
+    protected final HeapDumpClassMirrorLoader loader;
+    protected final IInstance heapDumpObject;
     
     public HeapDumpInstanceMirror(HeapDumpClassMirrorLoader loader, IInstance heapDumpObject) {
         this.loader = loader;
@@ -39,6 +40,16 @@ public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMir
         throw new NoSuchFieldException(name);
     }
 
+    @Override
+    public List<FieldMirror> getMemberFields() {
+        List<Field> fields = heapDumpObject.getFields();
+        List<FieldMirror> result = new ArrayList<FieldMirror>(fields.size());
+        for (Field field : fields) {
+            result.add(new HeapDumpFieldMirror(loader, field));
+        }
+        return result;
+    }
+    
     public HeapDumpClassMirror getClassMirror() {
         return new HeapDumpClassMirror(loader, heapDumpObject.getClazz());
     }
@@ -56,7 +67,13 @@ public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMir
         
         if (object instanceof IClass) {
             mirror = new HeapDumpClassMirror(loader, (IClass)object);
+        } else if (object.getClazz().getName().equals(Thread.class.getName())) {
+            mirror = new HeapDumpThreadMirror(loader, (IInstance)object);
         } else if (object instanceof IInstance) {
+            if (object.getClazz().getName().equals(Class.class.getName())) {
+                int whatthe = 4;
+                whatthe++;
+            }
             mirror = new HeapDumpInstanceMirror(loader, (IInstance)object);
         } else if (object instanceof IPrimitiveArray) {
             mirror = new HeapDumpPrimitiveArrayMirror(loader, (IPrimitiveArray)object);

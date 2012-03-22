@@ -85,7 +85,7 @@ public class HeapDumpClassMirror extends NativeClassMirror {
         List<ObjectMirror> result = new ArrayList<ObjectMirror>();
         for (int id : klass.getObjectIds()) {
             IInstance object = (IInstance)klass.getSnapshot().getObject(id);
-            result.add(new HeapDumpInstanceMirror(loader, object));
+            result.add(HeapDumpInstanceMirror.makeMirror(loader, object));
         }
         return result;
     }

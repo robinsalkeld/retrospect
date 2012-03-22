@@ -3,25 +3,34 @@ package edu.ubc.mirrors.raw.nativestubs.java.lang;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.mirages.Mirage;
+import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
-import edu.ubc.mirrors.mutable.MutableInstanceMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 public class ThreadStubs {
     
-    private static Map<Thread, ObjectMirror> threadMirrors = new HashMap<Thread, ObjectMirror>();
+    private static Map<Thread, Mirage> threadMirages = new HashMap<Thread, Mirage>();
     
-    public static ObjectMirror currentThread() {
+    public static Mirage currentThread(Class<?> classLoaderLiteral) {
         Thread current = Thread.currentThread();
-        ObjectMirror mirror = threadMirrors.get(current);
-        if (mirror != null) {
-            return mirror;
+        Mirage mirage = threadMirages.get(current);
+        if (mirage != null) {
+            return mirage;
         }
         
-        mirror = MutableClassMirrorLoader.makeMirrorStatic(new NativeObjectMirror(current));
-        threadMirrors.put(current, mirror);
-        return mirror;
+        ObjectMirror mirror = MutableClassMirrorLoader.makeMirrorStatic(NativeObjectMirror.makeMirror(current));
+        mirage = (Mirage)ObjectMirage.make(mirror, classLoaderLiteral);
+        threadMirages.put(current, mirage);
+        return mirage;
     }
+    
+    public static boolean isAlive(Class<?> classLoaderLiteral, Mirage thread) {
+        return ((ThreadMirror)thread.getMirror()).getStackTrace() != null;
+    }
+    
     
 }

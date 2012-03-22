@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -15,6 +16,8 @@ import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IClassLoader;
+import org.eclipse.mat.snapshot.model.IObject;
+import org.eclipse.mat.snapshot.model.IThreadStack;
 import org.eclipse.mat.util.ConsoleProgressListener;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -24,8 +27,10 @@ import org.jruby.RubyString;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpObjectMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
@@ -58,17 +63,21 @@ public class HeapDumpTest2 implements IApplication {
         Class<?> mirageClass = mirageLoader.loadMirageClass(JRubyStackTraces.class);
         mirageClass.getMethods();
         
-        for (ObjectMirror mirror : klass.getInstances()) {
+        List<ObjectMirror> instances = klass.getInstances();
+        int good = 0;
+        for (ObjectMirror mirror : instances) {
             mirror = mutableLoader.makeMirror(mirror); 
             
             Object o = mirageLoader.makeMirage(mirror);
             try {
 //                reflectiveInvoke(mirageClass, "printStackTraces", o);
                 System.out.println(o);
+                good++;
             } catch (Throwable e) {
                 e.printStackTrace();
             }
         }
+        System.out.println("good: " + good + "/" + instances.size());
         
     }
     

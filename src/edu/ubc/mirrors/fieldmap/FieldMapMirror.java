@@ -1,7 +1,9 @@
 package edu.ubc.mirrors.fieldmap;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.ubc.mirrors.BoxingFieldMirror;
@@ -21,7 +23,6 @@ public class FieldMapMirror implements InstanceMirror {
         this.fields = new HashMap<String, Object>();
     }
     
-    
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
 //        Class<?> c = klass;
 //        Field field = null;
@@ -36,12 +37,25 @@ public class FieldMapMirror implements InstanceMirror {
 //        if (field == null) {
 //            throw new NoSuchFieldException();
 //        }
-        if (name.equals("scopeStack")) {
-            int bp = 5;
-        }
         return new MapEntryFieldMirror(null, name);
     }
 
+    @Override
+    public List<FieldMirror> getMemberFields() {
+        List<FieldMirror> result = new ArrayList<FieldMirror>();
+        Class<?> c = klass;
+        while (c != null) {
+            for (Field f : c.getDeclaredFields()) {
+                try {
+                    result.add(getMemberField(f.getName()));
+                } catch (NoSuchFieldException e) {
+                    throw new NoSuchFieldError(e.getMessage());
+                }
+            }
+            c = c.getSuperclass();
+        }
+        return result;
+    }
     
     public ClassMirror getClassMirror() {
         return new NativeClassMirror(klass);
@@ -59,6 +73,11 @@ public class FieldMapMirror implements InstanceMirror {
         @Override
         public String getName() {
             return name;
+        }
+        
+        @Override
+        public Class<?> getType() {
+            return field.getType();
         }
         
         public ObjectMirror get() throws IllegalAccessException {

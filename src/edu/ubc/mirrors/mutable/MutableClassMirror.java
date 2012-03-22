@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.mutable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,19 @@ public class MutableClassMirror extends ClassMirror {
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
         return new MutableFieldMirror(loader, mutableMemberFields.getMemberField(name), immutableClassMirror.getMemberField(name));
+    }
+    
+    @Override
+    public List<FieldMirror> getMemberFields() {
+        List<FieldMirror> result = new ArrayList<FieldMirror>();
+        for (FieldMirror immutableField : immutableClassMirror.getMemberFields()) {
+            try {
+                result.add(getMemberField(immutableField.getName()));
+            } catch (NoSuchFieldException e) {
+                throw new NoSuchFieldError(e.getMessage());
+            }
+        }
+        return result;
     }
     
     @Override

@@ -16,6 +16,7 @@ import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class MutableClassMirrorLoader extends ClassMirrorLoader {
 
@@ -62,6 +63,8 @@ public class MutableClassMirrorLoader extends ClassMirrorLoader {
         // TODO: fix - should check immutableMirror.getClassMirror().getClassName() instead!
         } else if (immutableMirror instanceof ClassMirror) {
             result = new MutableClassMirror(this, (ClassMirror)immutableMirror);
+        } else if (immutableMirror instanceof ThreadMirror) {
+            result = new MutableThreadMirror(this, (ThreadMirror)immutableMirror);
         } else if (immutableMirror instanceof InstanceMirror) {
             result = new MutableInstanceMirror(this, (InstanceMirror)immutableMirror);
         } else if (immutableMirror instanceof ObjectArrayMirror) {

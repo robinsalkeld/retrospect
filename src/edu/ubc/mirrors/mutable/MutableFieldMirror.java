@@ -23,6 +23,11 @@ public class MutableFieldMirror implements FieldMirror {
     }
     
     @Override
+    public Class<?> getType() {
+        return immutableFieldMirror.getType();
+    }
+    
+    @Override
     public ObjectMirror get() throws IllegalAccessException {
         if (!initialized) {
             mutableLayer.set(loader.makeMirror(immutableFieldMirror.get()));

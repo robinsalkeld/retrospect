@@ -14,6 +14,7 @@ import java.util.List;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -72,7 +73,9 @@ public class MirageClassMirrorLoader extends ClassMirrorLoader {
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
                 isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
                 
-                superclassNode = superName == null ? null : loadClassMirrorInternal(getMirageSuperclassName(isInterface, getMirageInternalClassName(superName, false)).replace('/', '.'));
+                String mirageName = getMirageInternalClassName(name, true);
+                String mirageSuperName = getMirageInternalClassName(superName, false);
+                superclassNode = superName == null ? null : loadClassMirrorInternal(getMirageSuperclassName(isInterface, mirageName, mirageSuperName).replace('/', '.'));
                 
                 for (int i = 0; i < interfaces.length; i++) {
                     interfaces[i] = getMirageInternalClassName(interfaces[i], false);
@@ -153,6 +156,12 @@ public class MirageClassMirrorLoader extends ClassMirrorLoader {
             return null;
         }
 
+        @Override
+        public List<FieldMirror> getMemberFields() {
+            // TODO-RS: Implement
+            return null;
+        }
+        
         @Override
         public ClassMirrorLoader getLoader() {
             return MirageClassMirrorLoader.this;

@@ -32,6 +32,12 @@ public class JHatFieldMirror implements FieldMirror {
     }
 
     @Override
+    public Class<?> getType() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    @Override
     public ObjectMirror get() throws IllegalAccessException {
         return loader.getMirror(value);
     }
