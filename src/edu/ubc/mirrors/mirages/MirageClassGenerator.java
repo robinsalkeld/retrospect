@@ -403,7 +403,7 @@ public class MirageClassGenerator extends ClassVisitor {
         } else if ((Opcodes.ACC_NATIVE & access) != 0) {
             // Generate a method body that throws an exception
             generator.visitCode();
-            Type exceptionType = Type.getType(UnsupportedOperationException.class); 
+            Type exceptionType = Type.getType(InternalError.class); 
             generator.anew(exceptionType);
             generator.dup();
             String message = "Unsupported native method: " + this.name + "#" + name;

@@ -16,6 +16,8 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
 
+import java.io.PrintStream;
+
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Label;
@@ -494,6 +496,10 @@ public class MirageMethodGenerator extends InstructionAdapter {
     @Override
     public void visitCode() {
         super.visitCode();
+        
+//        getstatic(Type.getInternalName(System.class), "out", Type.getDescriptor(PrintStream.class));
+//        aconst(owner + "#" + name);
+//        invokevirtual(Type.getInternalName(PrintStream.class), "println", Type.getMethodDescriptor(Type.VOID_TYPE, OBJECT_TYPE));
         
         if (name.equals("<init>")) {
             lvs.newLocal(instanceMirrorType);

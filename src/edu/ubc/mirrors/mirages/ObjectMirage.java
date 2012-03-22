@@ -179,11 +179,7 @@ public class ObjectMirage implements Mirage {
     }
     
     public static Object lift(Object object, Class<?> classLoaderLiteral) {
-        if (object == null) {
-            return null;
-        }
-        ObjectMirror mirror = NativeObjectMirror.makeMirror(object);
-        return ((MirageClassLoader)classLoaderLiteral.getClassLoader()).makeMirage(mirror);
+        return ((MirageClassLoader)classLoaderLiteral.getClassLoader()).lift(object);
     }
     
     public static InstanceMirror newInstanceMirror(Class<?> classLoaderLiteral, String className) {

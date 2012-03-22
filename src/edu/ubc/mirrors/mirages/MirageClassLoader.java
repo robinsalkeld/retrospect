@@ -40,6 +40,7 @@ import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
+import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 public class MirageClassLoader extends ClassLoader {
         
@@ -299,5 +300,13 @@ public class MirageClassLoader extends ClassLoader {
         
         
         mirageClass.getDeclaredMethod(methodName, mirageStringArray).invoke(null, args);
+    }
+    
+    public Object lift(Object object) {
+        if (object == null) {
+            return null;
+        }
+        ObjectMirror mirror = NativeObjectMirror.makeMirror(object);
+        return makeMirage(mirror);
     }
 }

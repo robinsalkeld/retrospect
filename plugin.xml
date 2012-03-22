@@ -37,5 +37,17 @@
          </run>
       </application>
    </extension>
+   <extension
+         id="eclipseheapdumptest"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="edu.ubc.mirrors.test.EclipseHeapDumpTest">
+         </run>
+      </application>
+   </extension>
 
 </plugin>

@@ -118,8 +118,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
                     PrintWriter pw = new PrintWriter(sw, true);
                     printAnalyzerResult(this, frames, pw);
                     pw.close();
-                    throw new RuntimeException(e.getMessage() + "\n"
-                            + sw.toString());
+                    throw new RuntimeException(sw.toString(), e);
                 }
             }
             
