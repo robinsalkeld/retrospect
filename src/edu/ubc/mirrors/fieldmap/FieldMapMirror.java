@@ -16,10 +16,10 @@ import edu.ubc.mirrors.raw.NativeClassMirror;
 public class FieldMapMirror implements InstanceMirror {
 
     private final Map<String, Object> fields;
-    private final Class<?> klass;
+    private final ClassMirror classMirror;
     
-    public FieldMapMirror(Class<?> klass) {
-        this.klass = klass;
+    public FieldMapMirror(ClassMirror classMirror) {
+        this.classMirror = classMirror;
         this.fields = new HashMap<String, Object>();
     }
     
@@ -43,22 +43,22 @@ public class FieldMapMirror implements InstanceMirror {
     @Override
     public List<FieldMirror> getMemberFields() {
         List<FieldMirror> result = new ArrayList<FieldMirror>();
-        Class<?> c = klass;
+        ClassMirror c = classMirror;
         while (c != null) {
-            for (Field f : c.getDeclaredFields()) {
+            for (String name : c.getDeclaredFieldNames()) {
                 try {
-                    result.add(getMemberField(f.getName()));
+                    result.add(getMemberField(name));
                 } catch (NoSuchFieldException e) {
                     throw new NoSuchFieldError(e.getMessage());
                 }
             }
-            c = c.getSuperclass();
+            c = c.getSuperClassMirror();
         }
         return result;
     }
     
     public ClassMirror getClassMirror() {
-        return new NativeClassMirror(klass);
+        return classMirror;
     }
     
     private class MapEntryFieldMirror extends BoxingFieldMirror {

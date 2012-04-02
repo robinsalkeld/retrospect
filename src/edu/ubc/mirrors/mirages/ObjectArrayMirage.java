@@ -10,14 +10,6 @@ public class ObjectArrayMirage extends ObjectMirage implements ObjectArrayMirror
 
     public final ObjectArrayMirror arrayMirror;
     
-    public ObjectArrayMirage(int length) {
-        super(null);
-        Class<?> originalClass = ObjectMirage.getOriginalClass(getClass());
-        // TODO-RS: Call some method on ClassMirror or ClassLoaderMirror instead, ala newInstance
-        this.arrayMirror = new DirectArrayMirror(new NativeClassMirror(originalClass), length);
-        this.mirror = arrayMirror;
-    }
-    
     public ObjectArrayMirage(ObjectArrayMirror mirror) {
         super(mirror);
         this.arrayMirror = mirror;

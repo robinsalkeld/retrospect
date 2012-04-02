@@ -13,4 +13,8 @@ public class ClassStubs {
         return ((ClassMirror)mirage.getMirror()).isPrimitive();
     }
     
+    public static boolean isArray(Class<?> classLoaderLiteral, Mirage mirage) {
+        return ((ClassMirror)mirage.getMirror()).isArray();
+    }
+    
 }

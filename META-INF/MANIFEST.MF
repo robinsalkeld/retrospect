@@ -14,6 +14,7 @@ Ant-Version: Apache Ant 1.8.2
 Import-Package: org.eclipse.equinox.app;version="1.1.0",
  org.eclipse.mat,
  org.eclipse.mat.hprof.extension,
+ org.eclipse.mat.jruby.resolver,
  org.eclipse.mat.parser,
  org.eclipse.mat.parser.index,
  org.eclipse.mat.parser.io,

@@ -8,13 +8,26 @@ public class NativeClassMirrorLoader extends ClassMirrorLoader {
     private final ClassLoader classLoader;
     
     public NativeClassMirrorLoader(ClassLoader classLoader) {
-        super(null);
+        super(getParent(classLoader));
         this.classLoader = classLoader;
+    }
+    
+    private static ClassMirrorLoader getParent(ClassLoader classLoader) {
+        if (classLoader == null) {
+            return null;
+        } 
+        
+        return new NativeClassMirrorLoader(classLoader.getParent());
     }
     
     @Override
     public ClassMirror loadClassMirror(String name) throws ClassNotFoundException {
-        
+        try {
+            return super.loadClassMirror(name);
+        } catch (ClassNotFoundException e) {
+            // Ignore
+        }
+    
         Class<?> klass;
         try {
             klass = Class.forName(name, false, classLoader);

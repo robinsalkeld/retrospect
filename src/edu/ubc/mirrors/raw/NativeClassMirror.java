@@ -59,6 +59,10 @@ public class NativeClassMirror extends ClassMirror {
             bytesIn = classLoader.getResourceAsStream(resourceName);
         }
         
+        return bytesIn == null ? null : readFully(bytesIn);
+    }
+    
+    public static byte[] readFully(InputStream bytesIn) {
         int read;
         byte[] buffer = new byte[16384];
         ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
@@ -66,6 +70,7 @@ public class NativeClassMirror extends ClassMirror {
             while ((read = bytesIn.read(buffer)) != -1) {
                 bytesOut.write(buffer, 0, read);
             }
+            bytesIn.close();
         } catch (IOException e) {
             throw new InternalError();
         }
@@ -159,13 +164,21 @@ public class NativeClassMirror extends ClassMirror {
         return NativeObjectMirror.getMemberFields(klass);
     }
 
-    public Class<?> getNativeStubsClass() {
-        String name = getClassName();
+    public static Class<?> getNativeStubsClass(String name) {
         String nativeStubsName = "edu.ubc.mirrors.raw.nativestubs." + name + "Stubs";
         try {
             return Class.forName(nativeStubsName);
         } catch (ClassNotFoundException e) {
             return null;
         }
+    }
+    
+    @Override
+    public List<String> getDeclaredFieldNames() {
+        List<String> names = new ArrayList<String>();
+        for (Field f : klass.getDeclaredFields()) {
+            names.add(f.getName());
+        }
+        return names;
     }
 }

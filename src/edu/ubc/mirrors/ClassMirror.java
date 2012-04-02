@@ -3,6 +3,8 @@ package edu.ubc.mirrors;
 import java.util.List;
 import java.util.Map;
 
+import edu.ubc.mirrors.raw.NativeClassMirror;
+
 
 public abstract class ClassMirror implements InstanceMirror {
 
@@ -24,10 +26,12 @@ public abstract class ClassMirror implements InstanceMirror {
     
     public abstract List<ClassMirror> getInterfaceMirrors();
     
+    public abstract List<String> getDeclaredFieldNames();
+    
     public abstract FieldMirror getStaticField(String name) throws NoSuchFieldException;
     
     public Class<?> getNativeStubsClass() {
-        return null;
+        return NativeClassMirror.getNativeStubsClass(getClassName());
     }
     
     @Override

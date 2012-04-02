@@ -30,7 +30,6 @@ public class HeapDumpTest implements IApplication {
         String snapshotPath = args[0];
         String testClass = args[1];
         
-        MirageClassLoader.setTraceDir(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
         
         String mirageClass = "mirage." + testClass;
@@ -41,12 +40,12 @@ public class HeapDumpTest implements IApplication {
         IClassLoader classLoader = (IClassLoader)snapshot.getObject(rubyObjectClass.getClassLoaderId());
         
         ClassLoader runtimeClassLoader = HeapDumpTest.class.getClassLoader();
-        ClassMirrorLoader nativeParent = new NativeClassMirrorLoader(runtimeClassLoader);
-        HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(nativeParent, runtimeClassLoader, classLoader);
+        ClassMirrorLoader bytecodeLoader = new NativeClassMirrorLoader(runtimeClassLoader);
+        HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(bytecodeLoader, classLoader);
         
         MutableClassMirrorLoader mutableLoader = new MutableClassMirrorLoader(loader);
         
-        MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, nativeParent);
+        MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, loader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         
 //        mirageLoader.loadClass(mirageClass).getMethods();
         
@@ -63,10 +62,6 @@ public class HeapDumpTest implements IApplication {
 //                e.printStackTrace();
             }
         }
-    }
-    
-    private static ObjectMirror getRubyObjectRuntime(InstanceMirror mirror) throws IllegalAccessException, NoSuchFieldException {
-        return ((InstanceMirror)mirror.getMemberField("metaClass").get()).getMemberField("runtime").get();
     }
     
     public Object start(IApplicationContext context) throws Exception {

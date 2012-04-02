@@ -19,28 +19,30 @@ public class JarVerifier implements IApplication {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         String jarPath = args[0];
 
-        MirageClassLoader.setTraceDir(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
-        
         JarFile jar = new JarFile(jarPath);
         ClassLoader thisLoader = JarVerifier.class.getClassLoader();
-        MirageClassLoader mirageLoader = new MirageClassLoader(thisLoader, new NativeClassMirrorLoader(thisLoader));
+        MirageClassLoader mirageLoader = new MirageClassLoader(thisLoader, new NativeClassMirrorLoader(thisLoader), System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         verifyJar(mirageLoader, jar);
     }
     
     public static void verifyJar(MirageClassLoader loader, JarFile jar) throws IOException {
         int total = 0;
-        int good = 0;
-        String classPath = "com/kenai/jaffl/provider/jffi/DefaultInvokerFactory";
-        testClass(loader, jar.getInputStream(jar.getEntry(classPath + ".class")), classPath.replace('/', '.'));
+        NativeMethodCounter counter = new NativeMethodCounter();
         for (JarEntry entry : Collections.list(jar.entries())) {
             String name = entry.getName();
             total++;
             if (name.endsWith(".class")) {
-                String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
-                if (testClass(loader, jar.getInputStream(entry), className)) good++;
+                new ClassReader(jar.getInputStream(entry)).accept(counter, 0);
+//                String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
+//                if (testClass(loader, jar.getInputStream(entry), className)) good++;
             }
         }
-        System.out.println("Hit rate: " + good + "/" + total);
+        System.out.println("Native methods: " + counter.nativeMethodCount);
+        System.out.println("Classes (" + counter.classesWithNativeMethods.size() + "):");
+        for (String className : counter.classesWithNativeMethods) {
+            System.out.println(className);
+        }
+        
     }
     
     private static boolean testClass(MirageClassLoader loader, InputStream bytesIn, String className) {

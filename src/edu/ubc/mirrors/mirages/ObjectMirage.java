@@ -99,17 +99,12 @@ public class ObjectMirage implements Mirage {
 //        return mirageLoader.defineMirageClass(className, originalReader);
 //    }
     
-    public static Class<?> getOriginalClass(Class<?> mirageClass) {
-        if (mirageClass.equals(ObjectArrayMirage.class)) {
-            return Object[].class;
-        }
-        
-        ClassLoader originalLoader = ((MirageClassLoader)mirageClass.getClassLoader()).getOriginalLoader();
-        String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClass.getName());
+    public static ClassMirror getOriginalClassMirror(MirageClassLoader mirageLoader, String mirageClassName) {
+        String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClassName);
         try {
-            return Class.forName(originalClassName, true, originalLoader);
+            return mirageLoader.getOriginalClassMirrorLoader().loadClassMirror(originalClassName);
         } catch (ClassNotFoundException e) {
-            throw new InternalError();
+            throw new NoClassDefFoundError(originalClassName);
         }
     }
     
@@ -185,19 +180,28 @@ public class ObjectMirage implements Mirage {
     public static InstanceMirror newInstanceMirror(Class<?> classLoaderLiteral, String className) {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         // TODO-RS: Call ClassMirror.newInstanceMirror() instead!
-        Class<?> originalClass;
-        try {
-            originalClass = ObjectMirage.getOriginalClass(loader.loadClass(className.replace('/', '.')));
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(e.getMessage());
-        }
-        return new FieldMapMirror(originalClass);
+        ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror(loader, className.replace('/', '.'));
+        return new FieldMapMirror(originalClassMirror);
+    }
+    
+    public static ObjectArrayMirror newObjectArrayMirror(Class<?> classLoaderLiteral, String arrayClassName, int length) {
+        MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        // TODO-RS: Call ClassMirror.newArrayMirror() instead!
+        ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror(loader, arrayClassName.replace('/', '.'));
+        return new DirectArrayMirror(originalClassMirror, length);
+    }
+    
+    public static ObjectArrayMirror newObjectArrayMirror(Class<?> classLoaderLiteral, String arrayClassName, int[] dims) {
+        MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        // TODO-RS: Call ClassMirror.newArrayMirror() instead!
+        ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror(loader, arrayClassName.replace('/', '.'));
+        return new DirectArrayMirror(originalClassMirror, dims);
     }
     
     public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         String binaryName = className.replace('/', '.');
-        return loader.classMirrorLoader.loadClassMirror(binaryName).getStaticField(fieldName);
+        return loader.originalLoader.loadClassMirror(binaryName).getStaticField(fieldName);
     }
     
     public static Object make(ObjectMirror mirror) {
@@ -280,9 +284,9 @@ public class ObjectMirage implements Mirage {
         } else if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror objectArrayMirror = (ObjectArrayMirror)mirror;
             int length = objectArrayMirror.length();
-            Class<?> originalClass = ObjectMirage.getOriginalClass(mirage.getClass());
+            ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror((MirageClassLoader)classLoaderLiteral.getClassLoader(), mirage.getClass().getName());
             // TODO-RS: Call some method on ClassMirror or ClassLoaderMirror instead, ala newInstance
-            ObjectArrayMirror result = new DirectArrayMirror(new NativeClassMirror(originalClass), length);
+            ObjectArrayMirror result = new DirectArrayMirror(originalClassMirror, length);
             
             SystemStubs.arraycopyMirrors(objectArrayMirror, 0, result, 0, length);
             

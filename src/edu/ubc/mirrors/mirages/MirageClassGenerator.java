@@ -81,6 +81,8 @@ public class MirageClassGenerator extends ClassVisitor {
         };
     };
     
+    private final ClassMirror classMirror;
+    
     private boolean isInterface;
     private String name;
     private String superName;
@@ -89,6 +91,12 @@ public class MirageClassGenerator extends ClassVisitor {
     
     public MirageClassGenerator(ClassMirror classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
+        this.classMirror = classMirror;
+        if (classMirror.getClassName().contains("java.lang.System")) {
+            int bp = 4;
+            bp++;
+        }
+        
         Class<?> nativeStubsClass = classMirror.getNativeStubsClass();
         if (nativeStubsClass != null) {
             for (Method m : nativeStubsClass.getDeclaredMethods()) {
@@ -344,6 +352,9 @@ public class MirageClassGenerator extends ClassVisitor {
         if (isToString) {
             desc = Type.getMethodDescriptor(Type.getType(String.class));
         }
+        if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Mirage.class)))) {
+            desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Object.class));
+        }
         boolean isGetStackTrace = name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement[].class)))); 
         if (isGetStackTrace) {
             desc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
@@ -498,26 +509,27 @@ public class MirageClassGenerator extends ClassVisitor {
     private static String activeMethod = null;
     
     public static byte[] generate(MirageClassLoader loader, ClassMirror classMirror) throws IOException {
+        String internalName = getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), true);
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         if (MirageClassLoader.debug) {
             visitor = new FrameAnalyzerAdaptor(loader.getMirageClassMirrorLoader(), visitor, false);
         }
         if (loader.myTraceDir != null) {
-            File txtFile = new File(loader.myTraceDir, classMirror.getClassName() + ".txt");
+            File txtFile = loader.createClassFile(internalName + ".txt");
             PrintWriter textFileWriter = new PrintWriter(txtFile);
             visitor = new TraceClassVisitor(visitor, textFileWriter);
         }
         visitor = new MirageClassGenerator(classMirror, visitor);
         visitor = new RemappingClassAdapter(visitor, REMAPPER);
         if (loader.myTraceDir != null) {
-            File txtFile = new File(loader.myTraceDir, classMirror.getClassName() + ".afterframes.txt");
+            File txtFile = loader.createClassFile(internalName + ".afterframes.txt");
             PrintWriter textFileWriter = new PrintWriter(txtFile);
             ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
-            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(loader.getClassMirrorLoader(), traceVisitor, true);
+            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(loader.getOriginalClassMirrorLoader(), traceVisitor, true);
             new ClassReader(classMirror.getBytecode()).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
         }
-        visitor = new FrameAnalyzerAdaptor(loader.getClassMirrorLoader(), visitor, true);
+        visitor = new FrameAnalyzerAdaptor(loader.getOriginalClassMirrorLoader(), visitor, true);
         ClassReader reader = new ClassReader(classMirror.getBytecode());
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();

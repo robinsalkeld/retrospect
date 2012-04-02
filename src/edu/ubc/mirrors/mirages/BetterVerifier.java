@@ -39,9 +39,6 @@ class BetterVerifier extends SimpleVerifier {
     }
     
     protected boolean isAssignableFrom(Type t, Type u) {
-        if (u.equals(Type.getObjectType("[Lorg/jruby/runtime/builtin/IRubyObject;"))){
-            int bp = 5;
-        }
         if (t.equals(u)) {
             return true;
         }

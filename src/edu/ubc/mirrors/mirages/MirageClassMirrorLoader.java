@@ -163,6 +163,12 @@ public class MirageClassMirrorLoader extends ClassMirrorLoader {
         }
         
         @Override
+        public List<String> getDeclaredFieldNames() {
+            // TODO-RS: Implement
+            return null;
+        }
+        
+        @Override
         public ClassMirrorLoader getLoader() {
             return MirageClassMirrorLoader.this;
         }

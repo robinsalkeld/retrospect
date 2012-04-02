@@ -1,5 +1,9 @@
 package edu.ubc.mirrors.fieldmap;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -14,6 +18,31 @@ public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayM
     public DirectArrayMirror(ClassMirror classMirror, int length) {
         this.classMirror = classMirror;
         this.array = new Object[length];
+    }
+    
+    public DirectArrayMirror(ClassMirror classMirror, int[] dims) {
+        this(classMirror, dimsList(dims));
+    }
+    
+    private static List<Integer> dimsList(int[] dims) {
+        List<Integer> result = new ArrayList<Integer>(dims.length);
+        for (int dim : dims) {
+            result.add(dim);
+        }
+        return result;
+    }
+    
+    private DirectArrayMirror(ClassMirror classMirror, List<Integer> dims) {
+        this.classMirror = classMirror;
+        this.array = new Object[dims.get(0)];
+        
+        if (dims.size() > 1) {
+            ClassMirror componentClassMirror = classMirror.getComponentClassMirror();
+            List<Integer> componentDims = dims.subList(1, dims.size());
+            for (int i = 0; i < array.length; i++) {
+                this.array[i] = new DirectArrayMirror(componentClassMirror, componentDims);
+            }
+        }
     }
     
     public int length() {

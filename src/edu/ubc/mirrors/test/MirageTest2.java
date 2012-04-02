@@ -3,6 +3,7 @@ package edu.ubc.mirrors.test;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 
 public class MirageTest2 {
@@ -10,12 +11,11 @@ public class MirageTest2 {
         String className = args[0];
         String traceDir = args[1];
         MirageClassLoader.traceClass = className;
-        MirageClassLoader.setTraceDir(traceDir);
         
         ClassLoader originalLoader = MirageTest2.class.getClassLoader();
         ClassMirrorLoader mirrorLoader = new NativeClassMirrorLoader(originalLoader);
         
-        MirageClassLoader mirageClassLoader = new MirageClassLoader(originalLoader, mirrorLoader);
+        MirageClassLoader mirageClassLoader = new MirageClassLoader(originalLoader, mirrorLoader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
 //        try {
 //            mirageClassLoader.loadClass(className).getMethod("main", String[].class).invoke(null, (Object)new String[0]);
 //        } catch (Throwable t) {
@@ -28,7 +28,7 @@ public class MirageTest2 {
 //        klass.getMethods();
 //        System.out.println("Resolved class!");
         
-        FieldMapMirror mirror = new FieldMapMirror(Bar.class);
+        FieldMapMirror mirror = new FieldMapMirror(new NativeClassMirror(Bar.class));
         mirror.getMemberField("f").setInt(47);
         Object b = mirageClassLoader.makeMirage(mirror);
         System.out.println("s! " + b.toString());

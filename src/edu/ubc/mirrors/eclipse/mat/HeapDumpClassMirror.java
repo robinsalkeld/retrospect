@@ -10,17 +10,27 @@ import org.eclipse.mat.snapshot.model.IInstance;
 
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.raw.NativeClassMirror;
+import edu.ubc.mirrors.raw.BytecodeClassMirror;
 
-public class HeapDumpClassMirror extends NativeClassMirror {
+public class HeapDumpClassMirror extends BytecodeClassMirror {
 
     private final HeapDumpClassMirrorLoader loader;
     private final IClass klass;
     
     public HeapDumpClassMirror(HeapDumpClassMirrorLoader loader, IClass klass) {
-        super(loader.getClassLoader(), getClassName(klass));
+        super(loader, getClassName(klass));
         this.loader = loader;
         this.klass = klass;
+    }
+    
+    @Override
+    public byte[] getBytecode() {
+        String className = getClassName(klass);
+        try {
+            return loader.getBytecodeLoader().loadClassMirror(className).getBytecode();
+        } catch (ClassNotFoundException e) {
+            throw new NoClassDefFoundError(className);
+        }
     }
     
     public static String arrayElementDescriptor(String name) {

@@ -102,4 +102,10 @@ public class MutableClassMirror extends ClassMirror {
     public Class<?> getNativeStubsClass() {
         return immutableClassMirror.getNativeStubsClass();
     }
+    
+    @Override
+    public List<String> getDeclaredFieldNames() {
+        return immutableClassMirror.getDeclaredFieldNames();
+    }
 }
+

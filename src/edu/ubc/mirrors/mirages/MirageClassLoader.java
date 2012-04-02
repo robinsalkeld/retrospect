@@ -5,10 +5,10 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalInternalCl
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -16,12 +16,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.util.TraceClassVisitor;
 
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
@@ -38,22 +36,23 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
+import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
+import edu.ubc.mirrors.raw.BytecodeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 public class MirageClassLoader extends ClassLoader {
-        
     public static String traceClass = null;
-    public static String traceDir = null;
     public final File myTraceDir;
-    public static boolean debug = false;
+    public static boolean debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
     
-    final ClassMirrorLoader classMirrorLoader;
+    final ClassMirrorLoader originalLoader;
     final MirageClassMirrorLoader mirageClassMirrorLoader;
     
-    public ClassMirrorLoader getClassMirrorLoader() {
-        return classMirrorLoader;
+    public ClassMirrorLoader getOriginalClassMirrorLoader() {
+        return originalLoader;
     }
     
     public ClassMirrorLoader getMirageClassMirrorLoader() {
@@ -62,31 +61,32 @@ public class MirageClassLoader extends ClassLoader {
     
     public static final String CLASS_LOADER_LITERAL_NAME = "edu/ubc/mirrors/ClassLoaderLiteral";
     
-    public MirageClassLoader(ClassLoader originalLoader, ClassMirrorLoader classMirrorLoader) {
-        super(originalLoader);
-        this.classMirrorLoader = classMirrorLoader;
-        this.mirageClassMirrorLoader = new MirageClassMirrorLoader(new NativeClassMirrorLoader(this), classMirrorLoader);
+    public MirageClassLoader(ClassLoader parent, ClassMirrorLoader originalLoader, String traceDir) {
+        super(parent);
+        this.originalLoader = originalLoader;
+        this.mirageClassMirrorLoader = new MirageClassMirrorLoader(new NativeClassMirrorLoader(this), originalLoader);
         
         if (traceDir != null) {
-            myTraceDir = new File(traceDir/*, hashCode() + "/"*/);
-            myTraceDir.mkdir();
-            for (File f : myTraceDir.listFiles()) {
-                f.delete();
-            }
+            myTraceDir = new File(traceDir);
         } else {
             myTraceDir = null;
         }
     }
     
-    public static void setTraceDir(String newTraceDir) {
-        traceDir = newTraceDir;
-        if (traceDir != null) {
-            for (File dir : new File(traceDir + "/").listFiles()) {
-    //            for (File f : dir.listFiles()) {
-    //                f.delete();
-    //            }
-                dir.delete();
+    public File createClassFile(String internalName) {
+        File classFile = new File(myTraceDir, internalName);
+        createDirRecursive(classFile.getParentFile());
+        return classFile;
+    }
+    
+    private void createDirRecursive(File dir) {
+        if (!dir.exists()) {
+            File parent = dir.getParentFile();
+            if (parent == null) {
+                throw new IllegalArgumentException("Cannot create a root");
             }
+            createDirRecursive(parent);
+            dir.mkdir();
         }
     }
     
@@ -116,9 +116,20 @@ public class MirageClassLoader extends ClassLoader {
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         String internalName = name.replace('.', '/');
+        
+        File classFile = createClassFile(internalName + ".class");
+        if (classFile.exists()) {
+            try {
+                byte[] b = NativeClassMirror.readFully(new FileInputStream(classFile));
+                return defineClass(name, b, 0, b.length);
+            } catch (Throwable e) {
+                throw new RuntimeException("Error caught while using cached class definition " + name, e);
+            }
+        }
+        
         if (internalName.equals(CLASS_LOADER_LITERAL_NAME)) {
             byte[] b = mirageClassMirrorLoader.classLoaderLiteralMirror.getBytecode();
-            return defineClass(name, b);
+            return defineDynamicClass(name, b);
         } else if (name.startsWith("miragearray")) {
             boolean isInterface = !name.startsWith("miragearrayimpl");
             
@@ -135,7 +146,7 @@ public class MirageClassLoader extends ClassLoader {
             if (originalElementType.getSort() == Type.OBJECT || originalElementType.getSort() == Type.ARRAY) {
                 String originalElement = originalElementType.getInternalName();
                 int dims = originalType.getDimensions();
-                ClassMirror originalClassMirror = classMirrorLoader.loadClassMirror(originalElement.replace('/', '.'));
+                ClassMirror originalClassMirror = originalLoader.loadClassMirror(originalElement.replace('/', '.'));
                 
                 superClassMirror = originalClassMirror.getSuperClassMirror();
                 
@@ -183,10 +194,10 @@ public class MirageClassLoader extends ClassLoader {
                 mv.visitEnd();
             }
             byte[] b = writer.toByteArray();
-            return defineClass(name, b);
+            return defineDynamicClass(name, b);
         } else if (name.startsWith("mirage")) {
             String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
-            ClassMirror classMirror = classMirrorLoader.loadClassMirror(originalClassName);
+            ClassMirror classMirror = originalLoader.loadClassMirror(originalClassName);
             byte[] b;
             try {
                 b = MirageClassGenerator.generate(this, classMirror);
@@ -199,26 +210,26 @@ public class MirageClassLoader extends ClassLoader {
                 }
                 throw new RuntimeException("Error caught while generating bytecode for " + target, e);
             }
-            return defineClass(name, b);
+            return defineDynamicClass(name, b);
         } else if (name.startsWith("native")) {
             String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
-            ClassMirror classMirror = classMirrorLoader.loadClassMirror(originalClassName);
+            ClassMirror classMirror = originalLoader.loadClassMirror(originalClassName);
             byte[] b;
             try {
                 b = NativeClassGenerator.generate(classMirror);
             } catch (IOException e) {
                 throw new ClassNotFoundException("Error reading bytecode from class mirror: " + originalClassName, e);
             }
-            return defineClass(name, b);
+            return defineDynamicClass(name, b);
         } else {
-            throw new ClassNotFoundException();
+            throw new ClassNotFoundException(name);
         }
     }
     
-    protected Class<?> defineClass(String name, byte[] b) {
+    protected Class<?> defineDynamicClass(String name, byte[] b) {
         try {
             if (myTraceDir != null) {
-                File file = new File(myTraceDir, name + ".class");
+                File file = createClassFile(name.replace('.', '/') + ".class");
                 OutputStream classFile = new FileOutputStream(file);
                 classFile.write(b);
                 classFile.flush();
@@ -261,30 +272,29 @@ public class MirageClassLoader extends ClassLoader {
         } else if (internalClassName.equals("[D")) {
             mirage = new DoubleArrayMirage((DoubleArrayMirror)mirror);
         } else {
-        
+            final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName, true);
             try {
-                final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName, true);
                 final Class<?> mirageClass = loadClass(mirageClassName);
                 final Constructor<?> c = mirageClass.getConstructor(mirror instanceof InstanceMirror ? Object.class : ObjectArrayMirror.class);
                 mirage = c.newInstance(mirror);
             } catch (NoSuchMethodException e) {
-                InternalError error = new InternalError("Mirage class constructor not accessible: " + internalClassName);
+                InternalError error = new InternalError("Mirage class constructor not accessible: " + mirageClassName);
                 error.initCause(e);
                 throw error;
             } catch (IllegalAccessException e) {
-                InternalError error = new InternalError("Mirage class constructor not accessible: " + internalClassName);
+                InternalError error = new InternalError("Mirage class constructor not accessible: " + mirageClassName);
                 error.initCause(e);
                 throw error;
             } catch (InstantiationException e) {
-                InternalError error = new InternalError("Result of ObjectMirage#getMirrorClass() is abstract: " + internalClassName);
+                InternalError error = new InternalError("Result of ObjectMirage#getMirrorClass() is abstract: " + mirageClassName);
                 error.initCause(e);
                 throw error;
             } catch (InvocationTargetException e) {
-                InternalError error = new InternalError("Error on instantiating Mirage class: " + internalClassName);
+                InternalError error = new InternalError("Error on instantiating Mirage class: " + mirageClassName);
                 error.initCause(e);
                 throw error;
             } catch (ClassNotFoundException e) {
-                InternalError error = new InternalError("Error on loading Mirage class: " + internalClassName);
+                InternalError error = new InternalError("Error on loading Mirage class: " + mirageClassName);
                 error.initCause(e);
                 throw error;
             }
@@ -306,7 +316,7 @@ public class MirageClassLoader extends ClassLoader {
         if (object == null) {
             return null;
         }
-        ObjectMirror mirror = NativeObjectMirror.makeMirror(object);
+        ObjectMirror mirror = MutableClassMirrorLoader.makeMirrorStatic(NativeObjectMirror.makeMirror(object));
         return makeMirage(mirror);
     }
 }

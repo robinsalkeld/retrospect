@@ -31,6 +31,7 @@ import org.objectweb.asm.commons.LocalVariablesSorter;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeObjectArrayMirror;
 
@@ -258,25 +259,32 @@ public class MirageMethodGenerator extends InstructionAdapter {
     
     @Override
     public void visitMultiANewArrayInsn(String desc, int dims) {
-        String internalArrayName = Type.getType(desc).getInternalName();
-        Type originalArrayType = Type.getObjectType(getOriginalInternalClassName(internalArrayName));
-        super.visitMultiANewArrayInsn(originalArrayType.getInternalName(), dims);
+        Type mirageArrayType = Type.getType(desc);
+        Type intArrayType = Type.getObjectType("[I");
         
-        int arrayLocal = lvs.newLocal(originalArrayType);
-        store(arrayLocal, originalArrayType);
-        
-        anew(Type.getType(desc));
+        anew(mirageArrayType);
         dup();
         
-        anew(Type.getType(NativeObjectArrayMirror.class));
-        dup();
+        // Push the dimensions values into an array
+        int dimsArrayVar = lvs.newLocal(intArrayType);
+        newarray(Type.INT_TYPE);
+        store(dimsArrayVar, intArrayType);
         
-        load(arrayLocal, originalArrayType);
+        for (int d = dims - 1; d >= 0; d--) {
+            load(dimsArrayVar, intArrayType);
+            swap();
+            aconst(d);
+            swap();
+            astore(Type.INT_TYPE);
+        }
         
-        invokespecial(Type.getInternalName(NativeObjectArrayMirror.class), 
-                      "<init>", 
-                      Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object[].class)));
-        invokespecial(internalArrayName, 
+        aconst(owner);
+        swap();
+        invokestatic(CLASS_LOADER_LITERAL_NAME,
+                "newObjectArrayMirror",
+                Type.getMethodDescriptor(Type.getType(ObjectArrayMirror.class), Type.getType(String.class), intArrayType));
+        
+        invokespecial(mirageArrayType.getInternalName(), 
                       "<init>", 
                       Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class)));
     }
@@ -390,21 +398,23 @@ public class MirageMethodGenerator extends InstructionAdapter {
     @Override
     public void visitTypeInsn(int opcode, String type) {
         if (opcode == Opcodes.ANEWARRAY) {
-            // Store the array size
-            int arraySizeVar = lvs.newLocal(Type.INT_TYPE);
-            store(arraySizeVar, Type.INT_TYPE);
+            aconst(owner);
+            swap();
+            invokestatic(CLASS_LOADER_LITERAL_NAME,
+                    "newObjectArrayMirror",
+                    Type.getMethodDescriptor(Type.getType(ObjectArrayMirror.class), Type.getType(String.class), Type.INT_TYPE));
             
             // Instantiate the mirage class
             String originalTypeName = getOriginalInternalClassName(type);
             Type arrayType = makeArrayType(1, Type.getObjectType(originalTypeName));
             Type mirageArrayType = Type.getObjectType(getMirageInternalClassName(arrayType.getInternalName(), true));
             anew(mirageArrayType);
-            dup();
-
-            load(arraySizeVar, Type.INT_TYPE);
+            dupX1();
+            swap();
+            
             invokespecial(mirageArrayType.getInternalName(), 
                           "<init>", 
-                          Type.getMethodDescriptor(Type.VOID_TYPE, Type.INT_TYPE));
+                          Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class)));
             return;
         }
         
@@ -435,6 +445,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             case Opcodes.T_DOUBLE:  elementType = Type.DOUBLE_TYPE;  break;
             default: throw new IllegalArgumentException("Unknown type number: " + operand);
             }
+            // Note that native arrays are fine for this purpose since they are mutable
             String nativeArrayMirrorType = "edu/ubc/mirrors/raw/Native" + getSortName(elementType.getSort()) + "ArrayMirror";
             String arrayMirageType = "edu/ubc/mirrors/mirages/" + getSortName(elementType.getSort()) + "ArrayMirage";
             anew(Type.getObjectType(nativeArrayMirrorType));
