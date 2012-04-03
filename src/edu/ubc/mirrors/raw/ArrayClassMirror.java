@@ -42,7 +42,9 @@ public class ArrayClassMirror extends ClassMirror {
     
     @Override
     public String getClassName() {
-        return makeArrayType(dims, elementType).getClassName();
+        // Don't use getClassName() - that will return strings like com.foo.Bar[]
+        // rather than [Lcom.foo.Bar;
+        return makeArrayType(dims, elementType).getInternalName().replace('/', '.');
     }
 
     @Override

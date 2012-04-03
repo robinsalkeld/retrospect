@@ -37,5 +37,10 @@ public class MutableObjectArrayMirror implements ObjectArrayMirror {
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
         mutableValues[index] = o;
     }
+    
+    @Override
+    public String toString() {
+        return "MutableObjectArrayMirror on " + immutableMirror;
+    }
 
 }

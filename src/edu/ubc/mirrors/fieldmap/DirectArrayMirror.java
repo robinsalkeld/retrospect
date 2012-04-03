@@ -70,4 +70,9 @@ public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayM
     protected void setBoxedValue(int index, Object o) throws ArrayIndexOutOfBoundsException {
         array[index] = o;
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getName() + ": " + classMirror.getClassName();
+    }
 }

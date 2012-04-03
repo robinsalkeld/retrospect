@@ -86,4 +86,9 @@ public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMir
         mirrors.put(object, mirror);
         return mirror;
     }
+    
+    @Override
+    public String toString() {
+        return "HeapDumpInstanceMirror: " + heapDumpObject;
+    }
 }

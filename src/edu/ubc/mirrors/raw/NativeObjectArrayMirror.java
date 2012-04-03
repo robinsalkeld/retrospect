@@ -30,4 +30,9 @@ public class NativeObjectArrayMirror implements ObjectArrayMirror {
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public String toString() {
+        return "NativeObjectArrayMirror: " + array;
+    }
 }

@@ -270,6 +270,10 @@ public class MirageClassGenerator extends ClassVisitor {
             return makeArrayType(dims, originalElementType).getInternalName();
         }
         
+        if (Type.getInternalName(Mirage.class).equals(mirageClassName) || Type.getInternalName(ObjectMirage.class).equals(mirageClassName)) {
+            return "java/lang/Object";
+        }
+        
         if (Type.getInternalName(ObjectArrayMirage.class).equals(mirageClassName)) {
             return "[Ljava/lang/Object;";
         }

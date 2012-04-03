@@ -253,7 +253,9 @@ public class MirageClassLoader extends ClassLoader {
             return mirage;
         }
         
-        final String internalClassName = mirror.getClassMirror().getClassName();
+//        System.out.println("Creating mirage on " + mirror);
+        
+        final String internalClassName = mirror.getClassMirror().getClassName().replace('.', '/');
         
         if (internalClassName.equals("[Z")) {
             mirage = new BooleanArrayMirage((BooleanArrayMirror)mirror);

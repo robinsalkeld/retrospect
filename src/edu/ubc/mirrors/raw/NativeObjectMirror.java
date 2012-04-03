@@ -223,4 +223,9 @@ public class NativeObjectMirror implements InstanceMirror {
             return new NativeObjectMirror(object);
         }
     }
+    
+    @Override
+    public String toString() {
+        return "NativeObjectMirror: " + object;
+    }
 }

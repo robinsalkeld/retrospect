@@ -41,4 +41,9 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public String toString() {
+        return "HeapDumpObjectArrayMirror: " + array;
+    }
 }

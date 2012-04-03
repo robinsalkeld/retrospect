@@ -50,4 +50,9 @@ public class MutableInstanceMirror implements InstanceMirror {
         }
         return result;
     }
+    
+    @Override
+    public String toString() {
+        return "MutableInstanceMirror on " + immutableMirror;
+    }
 }

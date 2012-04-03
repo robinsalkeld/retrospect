@@ -260,6 +260,8 @@ public class MirageMethodGenerator extends InstructionAdapter {
     @Override
     public void visitMultiANewArrayInsn(String desc, int dims) {
         Type mirageArrayType = Type.getType(desc);
+        String originalTypeName = getOriginalInternalClassName(mirageArrayType.getInternalName());
+        
         Type intArrayType = Type.getObjectType("[I");
         
         anew(mirageArrayType);
@@ -278,7 +280,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             astore(Type.INT_TYPE);
         }
         
-        aconst(owner);
+        aconst(originalTypeName);
         swap();
         invokestatic(CLASS_LOADER_LITERAL_NAME,
                 "newObjectArrayMirror",
@@ -398,15 +400,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
     @Override
     public void visitTypeInsn(int opcode, String type) {
         if (opcode == Opcodes.ANEWARRAY) {
-            aconst(owner);
+            String originalTypeName = getOriginalInternalClassName(type);
+            Type arrayType = makeArrayType(1, Type.getObjectType(originalTypeName));
+            
+            aconst(arrayType.getInternalName());
             swap();
             invokestatic(CLASS_LOADER_LITERAL_NAME,
                     "newObjectArrayMirror",
                     Type.getMethodDescriptor(Type.getType(ObjectArrayMirror.class), Type.getType(String.class), Type.INT_TYPE));
             
             // Instantiate the mirage class
-            String originalTypeName = getOriginalInternalClassName(type);
-            Type arrayType = makeArrayType(1, Type.getObjectType(originalTypeName));
             Type mirageArrayType = Type.getObjectType(getMirageInternalClassName(arrayType.getInternalName(), true));
             anew(mirageArrayType);
             dupX1();
