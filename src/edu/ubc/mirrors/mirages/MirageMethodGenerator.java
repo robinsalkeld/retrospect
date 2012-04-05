@@ -40,7 +40,6 @@ public class MirageMethodGenerator extends InstructionAdapter {
     static String activeMethod = null;
     
     private AnalyzerAdapter analyzer;
-    private MethodVisitor superVisitor;
     private LocalVariablesSorter lvs;
     private Type methodType;
     private String owner;
@@ -51,7 +50,6 @@ public class MirageMethodGenerator extends InstructionAdapter {
     
     public MirageMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString, boolean isGetStackTrace) {
         super(Opcodes.ASM4, null);
-        this.superVisitor = superVisitor;
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
         this.mv = analyzer;
         this.name = name;
@@ -264,11 +262,9 @@ public class MirageMethodGenerator extends InstructionAdapter {
         
         Type intArrayType = Type.getObjectType("[I");
         
-        anew(mirageArrayType);
-        dup();
-        
         // Push the dimension values into an array
         int dimsArrayVar = lvs.newLocal(intArrayType);
+        aconst(dims);
         newarray(Type.INT_TYPE);
         store(dimsArrayVar, intArrayType);
         
@@ -280,6 +276,9 @@ public class MirageMethodGenerator extends InstructionAdapter {
             astore(Type.INT_TYPE);
         }
         
+        anew(mirageArrayType);
+        dup();
+        
         aconst(originalTypeName);
         load(dimsArrayVar, intArrayType);
         invokestatic(CLASS_LOADER_LITERAL_NAME,
@@ -290,6 +289,8 @@ public class MirageMethodGenerator extends InstructionAdapter {
                       "<init>", 
                       Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class)));
     }
+    
+    
     
     @Override
     public void visitInsn(int opcode) {
@@ -495,16 +496,6 @@ public class MirageMethodGenerator extends InstructionAdapter {
     public void visitMaxs(int maxStack, int maxLocals) {
         // TODO calculate this more precisely (or get ASM to do it for me)
         super.visitMaxs(maxStack + 20, maxLocals + 20);
-    }
-    
-    @Override
-    public void visitAttribute(Attribute attr) {
-        // Do nothing?
-    }
-    
-    @Override
-    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        return null;
     }
     
     @Override
