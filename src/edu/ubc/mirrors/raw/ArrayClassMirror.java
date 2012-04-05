@@ -90,7 +90,7 @@ public class ArrayClassMirror extends ClassMirror {
                 return loadClassMirrorInternal(elementType.getClassName());
             }
         } else { 
-            return loadClassMirrorInternal(makeArrayType(dims - 1, elementType).getClassName());
+            return loadClassMirrorInternal(makeArrayType(dims - 1, elementType).getInternalName().replace('/', '.'));
         }
     }
 
@@ -115,5 +115,10 @@ public class ArrayClassMirror extends ClassMirror {
     @Override
     public List<String> getDeclaredFieldNames() {
         return Collections.emptyList();
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getName() + ": " + makeArrayType(dims, elementType);
     }
 }

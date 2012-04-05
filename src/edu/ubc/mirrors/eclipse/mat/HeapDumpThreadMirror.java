@@ -22,18 +22,20 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
     
     @Override
     public ObjectArrayMirror getStackTrace() {
-        IThreadStack stack;
+        
+        IStackFrame[] frames;
         try {
-            stack = heapDumpObject.getSnapshot().getThreadStack(heapDumpObject.getObjectId());
+            IThreadStack stack = heapDumpObject.getSnapshot().getThreadStack(heapDumpObject.getObjectId());
+            if (stack == null) {
+                return null;
+            }
+            
+            frames = stack.getStackFrames();
         } catch (SnapshotException e) {
-            throw new RuntimeException(e);
+//            throw new RuntimeException(e);
+            frames = new IStackFrame[0];
         }
         
-        if (stack == null) {
-            return null;
-        }
-        
-        IStackFrame[] frames = stack.getStackFrames();
         StackTraceElement[] trace = new StackTraceElement[frames.length];
         for (int i = 0; i < frames.length; i++) {
             String text = frames[i].getText();

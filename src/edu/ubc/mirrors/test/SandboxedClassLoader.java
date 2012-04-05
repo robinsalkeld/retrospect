@@ -17,6 +17,11 @@ public class SandboxedClassLoader extends URLClassLoader {
         // First, check if the class has already been loaded
         Class<?> c = findLoadedClass(name);
         if (c == null) {
+            // Allow a couple of special cases through
+            if (name.equals(Object.class.getName()) || name.equals(Throwable.class.getName())) {
+                return super.loadClass(name, resolve);
+            }
+            
             c = findClass(name);
         }
         if (resolve) {
@@ -27,11 +32,23 @@ public class SandboxedClassLoader extends URLClassLoader {
     
     @Override
     public URL getResource(String name) {
+        // Allow a couple of special cases through
+        if (name.equals(Object.class.getName().replace('.', '/') + ".class") || 
+            name.equals(Throwable.class.getName().replace('.', '/') + ".class")) {
+            return super.getResource(name);
+        }
+        
         return findResource(name);
     }
     
     @Override
     public Enumeration<URL> getResources(String name) throws IOException {
+        // Allow a couple of special cases through
+        if (name.equals(Object.class.getName().replace('.', '/') + ".class") || 
+            name.equals(Throwable.class.getName().replace('.', '/') + ".class")) {
+            return super.findResources(name);
+        }
+        
         return findResources(name);
     }
     

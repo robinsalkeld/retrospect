@@ -11,6 +11,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.analysis.Analyzer;
@@ -133,6 +135,25 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
             }
         };
         
+        analyzer.instructions = new FrameInsnList();
+        
+        // Inline subroutines since other pieces of the pipeline can't handle them
         return new JSRInlinerAdapter(analyzer, access, name, desc, signature, exceptions);
+    }
+    
+    private class FrameInsnList extends InsnList {
+        
+        @Override
+        public void accept(MethodVisitor mv) {
+            final int size = size();
+            for (int i = 0; i < size; i++) {
+                try {
+                    get(i).accept(mv);
+                } catch (RuntimeException e) {
+                    throw new RuntimeException("Error at instruction " + i, e);
+                }
+            }
+        }
+        
     }
 }

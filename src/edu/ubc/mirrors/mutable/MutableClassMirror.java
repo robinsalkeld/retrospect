@@ -107,5 +107,9 @@ public class MutableClassMirror extends ClassMirror {
     public List<String> getDeclaredFieldNames() {
         return immutableClassMirror.getDeclaredFieldNames();
     }
+    
+    public String toString() {
+        return "MutableClassMirror on " + immutableClassMirror;
+    };
 }
 

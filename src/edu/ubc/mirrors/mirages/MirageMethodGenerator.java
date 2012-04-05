@@ -267,7 +267,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         anew(mirageArrayType);
         dup();
         
-        // Push the dimensions values into an array
+        // Push the dimension values into an array
         int dimsArrayVar = lvs.newLocal(intArrayType);
         newarray(Type.INT_TYPE);
         store(dimsArrayVar, intArrayType);
@@ -281,7 +281,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         }
         
         aconst(originalTypeName);
-        swap();
+        load(dimsArrayVar, intArrayType);
         invokestatic(CLASS_LOADER_LITERAL_NAME,
                 "newObjectArrayMirror",
                 Type.getMethodDescriptor(Type.getType(ObjectArrayMirror.class), Type.getType(String.class), intArrayType));

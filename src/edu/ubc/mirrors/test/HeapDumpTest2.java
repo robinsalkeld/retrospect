@@ -48,9 +48,9 @@ public class HeapDumpTest2 implements IApplication {
         
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
         
-        //ClassLoader runtimeClassLoader = HeapDumpTest.class.getClassLoader();
-        URL java7classes = new URL("file:/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre/lib/rt.jar");
-        ClassLoader runtimeClassLoader = new ChainedClassLoader(new SandboxedClassLoader(new URL[] {java7classes}), HeapDumpTest.class.getClassLoader());
+        ClassLoader runtimeClassLoader = HeapDumpTest.class.getClassLoader();
+//        URL java7classes = new URL("file:/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre/lib/rt.jar");
+//        ClassLoader runtimeClassLoader = new ChainedClassLoader(new SandboxedClassLoader(new URL[] {java7classes}), HeapDumpTest.class.getClassLoader());
         
         ClassMirrorLoader bytecodeLoader = new BytecodeClassMirrorLoader(runtimeClassLoader);
         

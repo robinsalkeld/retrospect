@@ -373,8 +373,9 @@ public class MirageClassGenerator extends ClassVisitor {
         int mirageAccess = ~Opcodes.ACC_NATIVE & access;
         MethodVisitor superVisitor = super.visitMethod(mirageAccess, name, desc, signature, exceptions);
         
-        if (this.name.equals(getMirageType(Throwable.class).getInternalName())) {
-            if (name.equals("fillInStackTrace")) {
+        Type mirageThrowableType = getMirageType(Throwable.class);
+        if (this.name.equals(mirageThrowableType.getInternalName())) {
+            if (name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(mirageThrowableType))) {
                 superVisitor.visitCode();
                 superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
                 superVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, superName, name, Type.getMethodDescriptor(Type.getType(Throwable.class)));
@@ -418,7 +419,7 @@ public class MirageClassGenerator extends ClassVisitor {
         } else if ((Opcodes.ACC_NATIVE & access) != 0) {
             // Generate a method body that throws an exception
             generator.visitCode();
-            Type exceptionType = Type.getType(InternalError.class); 
+            Type exceptionType = getMirageType(InternalError.class); 
             generator.anew(exceptionType);
             generator.dup();
             String message = "Unsupported native method: " + this.name + "#" + name;

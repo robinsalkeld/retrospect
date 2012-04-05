@@ -148,4 +148,9 @@ public abstract class BytecodeClassMirror extends ClassMirror {
     public boolean isPrimitive() {
         return false;
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getName() + ": " + getClassName();
+    }
 }
