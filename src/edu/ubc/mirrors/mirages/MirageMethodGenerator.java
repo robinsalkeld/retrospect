@@ -88,7 +88,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             return;
         }
         
-        if (name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(StackTraceElement[].class)))) {
+        if (owner.equals(getMirageType(Throwable.class).getInternalName()) && name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(StackTraceElement[].class)))) {
             super.visitMethodInsn(opcode, owner, name, Type.getMethodDescriptor(Type.getType(StackTraceElement[].class)));
             
             invokestatic(CLASS_LOADER_LITERAL_NAME,

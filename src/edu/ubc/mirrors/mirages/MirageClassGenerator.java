@@ -1,6 +1,5 @@
 package edu.ubc.mirrors.mirages;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
 
 import java.io.File;
@@ -350,6 +349,8 @@ public class MirageClassGenerator extends ClassVisitor {
             desc = addMirrorParam(desc);
         }
         
+        Type mirageThrowableType = getMirageType(Throwable.class);
+        
         // toString() is a special case - it's defined in java.lang.Object, which this class must ultimately
         // extend, so we have to return a real String rather than a mirage.
         boolean isToString = name.equals("toString") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(String.class))));
@@ -359,7 +360,7 @@ public class MirageClassGenerator extends ClassVisitor {
         if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Mirage.class)))) {
             desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Object.class));
         }
-        boolean isGetStackTrace = name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement[].class)))); 
+        boolean isGetStackTrace = this.name.equals(mirageThrowableType.getInternalName()) && name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement[].class)))); 
         if (isGetStackTrace) {
             desc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
         }
@@ -373,7 +374,6 @@ public class MirageClassGenerator extends ClassVisitor {
         int mirageAccess = ~Opcodes.ACC_NATIVE & access;
         MethodVisitor superVisitor = super.visitMethod(mirageAccess, name, desc, signature, exceptions);
         
-        Type mirageThrowableType = getMirageType(Throwable.class);
         if (this.name.equals(mirageThrowableType.getInternalName())) {
             if (name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(mirageThrowableType))) {
                 superVisitor.visitCode();
@@ -419,7 +419,7 @@ public class MirageClassGenerator extends ClassVisitor {
         } else if ((Opcodes.ACC_NATIVE & access) != 0) {
             // Generate a method body that throws an exception
             generator.visitCode();
-            Type exceptionType = getMirageType(InternalError.class); 
+            Type exceptionType = Type.getType(InternalError.class); 
             generator.anew(exceptionType);
             generator.dup();
             String message = "Unsupported native method: " + this.name + "#" + name;

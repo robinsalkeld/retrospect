@@ -54,10 +54,6 @@ public class NativeClassGenerator extends RemappingClassAdapter {
             return null;
         }
         
-        if (MirageClassLoader.COMMON_CLASSES.containsKey(className.replace('/', '.'))) {
-            return className;
-        }
-        
         if (className.equals(Type.getInternalName(Object.class))) {
             return className;
         }

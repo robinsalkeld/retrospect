@@ -32,8 +32,9 @@ public class ThreadStubs {
         return ((ThreadMirror)thread.getMirror()).getStackTrace() != null;
     }
     
-    public static ObjectArrayMirror getStackTrace(Class<?> classLoaderLiteral, Mirage thread) {
-        return ((ThreadMirror)thread.getMirror()).getStackTrace();
+    public static Mirage getStackTrace(Class<?> classLoaderLiteral, Mirage thread) {
+        ObjectArrayMirror mirror = ((ThreadMirror)thread.getMirror()).getStackTrace();
+        return (Mirage)ObjectMirage.make(mirror, classLoaderLiteral);
     }
     
 }

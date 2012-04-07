@@ -101,11 +101,15 @@ public class MirageClassLoader extends ClassLoader {
         }
     }
     
+    public boolean isCommonClassName(String className) {
+        return COMMON_CLASSES.containsKey(className);
+    }
+    
     static {
-        registerCommonClasses(ObjectMirage.class, ObjectMirror.class, FieldMirror.class,
-                FieldMapMirror.class,
+        registerCommonClasses(
+                // Every class must ultimately extend this.
+                Object.class,
                 // Necessary because only subclasses of this can be thrown.
-                // Probably need to introduce a new root subclass as with ObjectMirage.
                 Throwable.class);
     }
     
