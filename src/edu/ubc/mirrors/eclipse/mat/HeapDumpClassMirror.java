@@ -26,11 +26,7 @@ public class HeapDumpClassMirror extends BytecodeClassMirror {
     @Override
     public byte[] getBytecode() {
         String className = getClassName(klass);
-        try {
-            return loader.getBytecodeLoader().loadClassMirror(className).getBytecode();
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(className);
-        }
+        return loader.getBytecodeLoader().findLoadedClassMirror(className).getBytecode();
     }
     
     public static String arrayElementDescriptor(String name) {

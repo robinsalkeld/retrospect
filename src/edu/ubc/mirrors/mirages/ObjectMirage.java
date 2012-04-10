@@ -11,6 +11,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
@@ -102,7 +103,7 @@ public class ObjectMirage implements Mirage {
     public static ClassMirror getOriginalClassMirror(MirageClassLoader mirageLoader, String mirageClassName) {
         String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClassName);
         try {
-            return mirageLoader.getOriginalClassMirrorLoader().loadClassMirror(originalClassName);
+            return mirageLoader.loadOriginalClassMirror(originalClassName);
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(originalClassName);
         }
@@ -181,7 +182,11 @@ public class ObjectMirage implements Mirage {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         // TODO-RS: Call ClassMirror.newInstanceMirror() instead!
         ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror(loader, className.replace('/', '.'));
-        return new FieldMapMirror(originalClassMirror);
+        if (new NativeClassMirror(ClassLoader.class).isAssignableFrom(originalClassMirror)) {
+            return new FieldMapClassMirrorLoader(originalClassMirror);
+        } else {
+            return new FieldMapMirror(originalClassMirror);
+        }
     }
     
     public static ObjectArrayMirror newObjectArrayMirror(Class<?> classLoaderLiteral, String arrayClassName, int length) {
@@ -201,7 +206,7 @@ public class ObjectMirage implements Mirage {
     public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         String binaryName = className.replace('/', '.');
-        return loader.originalLoader.loadClassMirror(binaryName).getStaticField(fieldName);
+        return loader.loadOriginalClassMirror(binaryName).getStaticField(fieldName);
     }
     
     public static Object make(ObjectMirror mirror) {

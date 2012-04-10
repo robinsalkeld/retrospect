@@ -1,17 +1,11 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.snapshot.model.IClass;
@@ -20,7 +14,6 @@ import org.eclipse.mat.util.ConsoleProgressListener;
 import org.eclipse.osgi.framework.internal.core.BundleRepository;
 import org.osgi.framework.Bundle;
 
-import edu.ubc.mirrors.ChainedClassMirrorLoader;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
@@ -41,32 +34,34 @@ public class EclipseHeapDumpTest implements IApplication {
                 new File(snapshotPath), 
                 Collections.<String, String>emptyMap(), 
                 new ConsoleProgressListener(System.out));
-        IClass iClass = snapshot.getClassesByName(BundleRepository.class.getName(), true).iterator().next();
+        
+        IClass iClass = snapshot.getClassesByName(Bundle.class.getName(), true).iterator().next();
         IClassLoader classLoader = (IClassLoader)snapshot.getObject(iClass.getClassLoaderId());
         
         // Create an instance of the mirrors API backed by the snapshot
         ClassMirrorLoader bytecodeLoader = new BytecodeClassMirrorLoader(Bundle.class.getClassLoader());
-        HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(bytecodeLoader, classLoader);
-        HeapDumpClassMirror klass = new HeapDumpClassMirror(loader, iClass);
+        HeapDumpClassMirrorLoader heapDumpLoader = new HeapDumpClassMirrorLoader(bytecodeLoader, classLoader);
+        HeapDumpClassMirror klass = new HeapDumpClassMirror(heapDumpLoader, iClass);
         
         // Note we need a class loader that can see the classes in the OSGi API 
         // as well as our additional code (i.e. PrintOSGiBundles).
-        ClassMirrorLoader extendedLoader = new ChainedClassMirrorLoader(loader, 
-                new NativeClassMirrorLoader(EclipseHeapDumpTest.class.getClassLoader()));
-        extendedLoader.loadClassMirror("org.eclipse.osgi.signedcontent.SignerInfo");
+        ClassLoader nativeLoader = EclipseHeapDumpTest.class.getClassLoader();
+        ClassMirrorLoader nativeMirrorLoader = new NativeClassMirrorLoader(nativeLoader);
+        
+        ClassMirrorLoader extendedLoader = Reflection.makeChainedClassLoaderMirror(heapDumpLoader, nativeMirrorLoader);
+
         // Create a mutable layer on the object model.
         MutableClassMirrorLoader mutableLoader = new MutableClassMirrorLoader(extendedLoader);
         
         // Create a MirageClassLoader to load the transformed code.
-        
-        MirageClassLoader mirageLoader = new MirageClassLoader(EclipseHeapDumpTest.class.getClassLoader(), mutableLoader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
-        Class<?> mirageClass = mirageLoader.loadMirageClass(PrintOSGiBundles.class);
+        MirageClassLoader mirageLoader = new MirageClassLoader(nativeLoader, mutableLoader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
+        Class<?> mirageClass = mirageLoader.loadMirageClass(PrintOSGiBundles.class.getName());
         
         // For each class instance (in this case we only expect one)...
         List<ObjectMirror> instances = klass.getInstances();
         for (ObjectMirror mirror : instances) {
             // Create a mutable layer as above.
-            mirror = mutableLoader.makeMirror(mirror); 
+            mirror = MutableClassMirrorLoader.makeMirror(mirror); 
             
             // Invoke PrintOSGiBundles#print reflectively.
             Object o = mirageLoader.makeMirage(mirror);

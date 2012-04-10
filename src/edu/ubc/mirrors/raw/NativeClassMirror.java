@@ -151,7 +151,7 @@ public class NativeClassMirror extends ClassMirror {
 
     @Override
     public ClassMirrorLoader getLoader() {
-        return new NativeClassMirrorLoader(klass.getClassLoader());
+        return klass.getClassLoader() == null ? null : new NativeClassMirrorLoader(klass.getClassLoader());
     }
 
     @Override
@@ -180,5 +180,10 @@ public class NativeClassMirror extends ClassMirror {
             names.add(f.getName());
         }
         return names;
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": " + klass;
     }
 }

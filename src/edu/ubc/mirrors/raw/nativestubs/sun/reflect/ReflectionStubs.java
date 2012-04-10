@@ -13,7 +13,7 @@ public class ReflectionStubs {
         MirageClassLoader loader = (MirageClassLoader)klass.getClassLoader();
         String className = MirageClassGenerator.getOriginalBinaryClassName(klass.getName());
         try {
-            return (Mirage)loader.makeMirage(loader.getOriginalClassMirrorLoader().loadClassMirror(className));
+            return (Mirage)loader.makeMirage(loader.loadOriginalClassMirror(className));
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(e.getMessage());
         }

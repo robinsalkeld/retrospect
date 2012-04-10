@@ -3,31 +3,17 @@ package edu.ubc.mirrors.raw;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 
-public class BytecodeClassMirrorLoader extends ClassMirrorLoader {
+public class BytecodeClassMirrorLoader extends NativeObjectMirror implements ClassMirrorLoader {
 
     private final ClassLoader loader;
     
     public BytecodeClassMirrorLoader(ClassLoader loader) {
-        super(getParent(loader));
+        super(loader);
         this.loader = loader;
     }
     
-    private static ClassMirrorLoader getParent(ClassLoader classLoader) {
-        if (classLoader == null) {
-            return null;
-        } 
-        
-        return new NativeClassMirrorLoader(classLoader.getParent());
-    }
-    
     @Override
-    public ClassMirror loadClassMirror(final String name) throws ClassNotFoundException {
-        try {
-            return super.loadClassMirror(name);
-        } catch (ClassNotFoundException e) {
-            // Ignore
-        }
-        
+    public ClassMirror findLoadedClassMirror(final String name) {
         final byte[] bytecode = NativeClassMirror.getNativeBytecode(loader, name);
         if (bytecode != null) {
             return new BytecodeClassMirror(this, name) {
@@ -38,7 +24,7 @@ public class BytecodeClassMirrorLoader extends ClassMirrorLoader {
             };
         }
         
-        throw new ClassNotFoundException(name);
+        return null;
     }
     
 }

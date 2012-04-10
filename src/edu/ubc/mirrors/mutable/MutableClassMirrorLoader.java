@@ -18,21 +18,22 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class MutableClassMirrorLoader extends ClassMirrorLoader {
+public class MutableClassMirrorLoader extends MutableInstanceMirror implements ClassMirrorLoader {
 
-    private final Map<ObjectMirror, ObjectMirror> mirrors = new HashMap<ObjectMirror, ObjectMirror>();
+    private static final Map<ObjectMirror, ObjectMirror> mirrors = new HashMap<ObjectMirror, ObjectMirror>();
     private final ClassMirrorLoader immutableLoader;
     
     public MutableClassMirrorLoader(ClassMirrorLoader immutableLoader) {
+        super((MutableClassMirrorLoader)makeMirror(immutableLoader.getClassMirror().getLoader()), immutableLoader);
         this.immutableLoader = immutableLoader;
     }
     
     @Override
-    public ClassMirror loadClassMirror(String name) throws ClassNotFoundException {
-        return (ClassMirror)makeMirror(immutableLoader.loadClassMirror(name));
+    public ClassMirror findLoadedClassMirror(String name) {
+        return (ClassMirror)makeMirror(immutableLoader.findLoadedClassMirror(name));
     }
     
-    public ObjectMirror makeMirror(ObjectMirror immutableMirror) {
+    public static ObjectMirror makeMirror(ObjectMirror immutableMirror) {
         if (immutableMirror == null) {
             return null;
         }
@@ -41,6 +42,9 @@ public class MutableClassMirrorLoader extends ClassMirrorLoader {
         if (result != null) {
             return result;
         }
+        
+        ClassMirrorLoader loader = immutableMirror.getClassMirror().getLoader();
+        MutableClassMirrorLoader mutableLoader = (MutableClassMirrorLoader)makeMirror(loader);
         
         final String internalClassName = immutableMirror.getClassMirror().getClassName();
         
@@ -62,13 +66,15 @@ public class MutableClassMirrorLoader extends ClassMirrorLoader {
             result = new MutableDoubleArrayMirror((DoubleArrayMirror)immutableMirror);
         // TODO: fix - should check immutableMirror.getClassMirror().getClassName() instead!
         } else if (immutableMirror instanceof ClassMirror) {
-            result = new MutableClassMirror(this, (ClassMirror)immutableMirror);
+            result = new MutableClassMirror(mutableLoader, (ClassMirror)immutableMirror);
+        } else if (immutableMirror instanceof ClassMirrorLoader) {
+            result = new MutableClassMirrorLoader((ClassMirrorLoader)immutableMirror);
         } else if (immutableMirror instanceof ThreadMirror) {
-            result = new MutableThreadMirror(this, (ThreadMirror)immutableMirror);
+            result = new MutableThreadMirror(mutableLoader, (ThreadMirror)immutableMirror);
         } else if (immutableMirror instanceof InstanceMirror) {
-            result = new MutableInstanceMirror(this, (InstanceMirror)immutableMirror);
+            result = new MutableInstanceMirror(mutableLoader, (InstanceMirror)immutableMirror);
         } else if (immutableMirror instanceof ObjectArrayMirror) {
-            result = new MutableObjectArrayMirror(this, (ObjectArrayMirror)immutableMirror);
+            result = new MutableObjectArrayMirror(mutableLoader, (ObjectArrayMirror)immutableMirror);
         } else {
             throw new IllegalArgumentException("Unsupported subclass: " + immutableMirror.getClass());
         }
@@ -79,14 +85,4 @@ public class MutableClassMirrorLoader extends ClassMirrorLoader {
     
     private static Map<ClassMirrorLoader, MutableClassMirrorLoader> loaders = new
                HashMap<ClassMirrorLoader, MutableClassMirrorLoader>();
-    
-    public static ObjectMirror makeMirrorStatic(ObjectMirror mirror) {
-        ClassMirrorLoader loader = mirror.getClassMirror().getLoader();
-        MutableClassMirrorLoader mutableLoader = loaders.get(loader);
-        if (mutableLoader == null) {
-            mutableLoader = new MutableClassMirrorLoader(loader);
-            loaders.put(loader, mutableLoader);
-        }
-        return mutableLoader.makeMirror(mirror);
-    }
 }

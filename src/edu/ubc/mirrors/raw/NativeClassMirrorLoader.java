@@ -3,38 +3,25 @@ package edu.ubc.mirrors.raw;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 
-public class NativeClassMirrorLoader extends ClassMirrorLoader {
+public class NativeClassMirrorLoader extends NativeObjectMirror implements ClassMirrorLoader {
 
-    private final ClassLoader classLoader;
+    public final ClassLoader classLoader;
     
     public NativeClassMirrorLoader(ClassLoader classLoader) {
-        super(getParent(classLoader));
+        super(classLoader);
         this.classLoader = classLoader;
     }
     
-    private static ClassMirrorLoader getParent(ClassLoader classLoader) {
-        if (classLoader == null) {
-            return null;
-        } 
-        
-        return new NativeClassMirrorLoader(classLoader.getParent());
-    }
-    
     @Override
-    public ClassMirror loadClassMirror(String name) throws ClassNotFoundException {
-        try {
-            return super.loadClassMirror(name);
-        } catch (ClassNotFoundException e) {
-            // Ignore
-        }
-    
+    public ClassMirror findLoadedClassMirror(String name) {
         Class<?> klass;
         try {
+            // TODO-RS: Do we need to call the native findLoadedClass0() method directly?
+            // Is this shortcut harmful?
             klass = Class.forName(name, false, classLoader);
+            return new NativeClassMirror(klass);
         } catch (ClassNotFoundException e) {
-            throw e;
+            return null;
         }
-        
-        return new NativeClassMirror(klass);
     }
 }

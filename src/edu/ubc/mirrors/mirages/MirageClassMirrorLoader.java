@@ -20,29 +20,31 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 
-public class MirageClassMirrorLoader extends ClassMirrorLoader {
+public class MirageClassMirrorLoader implements ClassMirrorLoader {
 
+    ClassMirrorLoader parent;
+    
     ClassMirrorLoader originalLoader;
     
     ClassLoaderLiteralMirror classLoaderLiteralMirror = new ClassLoaderLiteralMirror(this);
     
     
     public MirageClassMirrorLoader(ClassMirrorLoader parent, ClassMirrorLoader originalLoader) {
-        super(parent);
+        this.parent = parent;
         this.originalLoader = originalLoader;
     }
     
     @Override
-    public ClassMirror loadClassMirror(String name) throws ClassNotFoundException {
+    public ClassMirror findLoadedClassMirror(String name) {
         if (name.startsWith("mirage") && !name.startsWith("miragearray")) {
             String originalClassName = getOriginalBinaryClassName(name);
-            ClassMirror original = originalLoader.loadClassMirror(originalClassName);
+            ClassMirror original = originalLoader.findLoadedClassMirror(originalClassName);
             return new MirageClassMirror(name, original);
         } else if (name.equals(ClassLoaderLiteralMirror.CLASS_LOADER_LITERAL_NAME)) {
             return classLoaderLiteralMirror;
         }
         
-        return super.loadClassMirror(name);
+        return parent.findLoadedClassMirror(name);
     }
     
     private class MirageClassMirror extends ClassMirror {
@@ -182,5 +184,23 @@ public class MirageClassMirrorLoader extends ClassMirrorLoader {
         public Class<?> getNativeStubsClass() {
             return null;
         }
+    }
+    
+    @Override
+    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
+        // TODO-RS
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<FieldMirror> getMemberFields() {
+        // TODO-RS
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ClassMirror getClassMirror() {
+        // TODO-RS
+        throw new UnsupportedOperationException();
     }
 }

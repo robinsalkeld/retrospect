@@ -1,9 +1,15 @@
 package edu.ubc.mirrors;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
+import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
+import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
 
 
 public abstract class ClassMirror implements InstanceMirror {
@@ -29,6 +35,51 @@ public abstract class ClassMirror implements InstanceMirror {
     public abstract List<String> getDeclaredFieldNames();
     
     public abstract FieldMirror getStaticField(String name) throws NoSuchFieldException;
+    
+    /* TODO-RS: this stuff doesn't belong here! Move to a base class or wrapper! */
+    
+    
+    
+    public MethodMirror getInstanceMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+        return findMethod(name, paramTypes, false);
+    }
+    
+    public MethodMirror getStaticMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+        return findMethod(name, paramTypes, true);
+    }
+    
+    private MethodMirror findMethod(String name, ClassMirror[] paramTypes, boolean isStatic) throws SecurityException, NoSuchMethodException {
+        Class<?>[] mirageParamTypes = new Class<?>[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            mirageParamTypes[i] = MirageClassLoader.loadMirageClass(paramTypes[i]);
+        }
+        Class<?> mirageClass = MirageClassLoader.loadMirageClass(this);
+        Method method = mirageClass.getMethod(name, mirageParamTypes);
+        if (Modifier.isStatic(method.getModifiers()) != isStatic) {
+            throw new UnsupportedOperationException("Darnit! Need manual search");
+        }
+        return new MirageMethod(method);
+    }
+    
+    private static class MirageMethod implements MethodMirror {
+
+        private final Method mirageClassMethod;
+        
+        public MirageMethod(Method method) {
+            this.mirageClassMethod = method;
+        }
+        
+        @Override
+        public ObjectMirror invoke(InstanceMirror obj, ObjectMirror... args) throws IllegalAccessException, InvocationTargetException {
+            Object[] mirageArgs = new Object[args.length];
+            for (int i = 0; i < args.length; i++) {
+                mirageArgs[i] = MirageClassLoader.makeMirageStatic(args[i]);
+            }
+            Object result = mirageClassMethod.invoke(obj, mirageArgs);
+            return Reflection.getMirror(result);
+        }
+        
+    }
     
     public Class<?> getNativeStubsClass() {
         return NativeClassMirror.getNativeStubsClass(getClassName());
@@ -81,7 +132,7 @@ public abstract class ClassMirror implements InstanceMirror {
     
     protected ClassMirror loadClassMirrorInternal(String name) {
         try {
-            return getLoader().loadClassMirror(name);
+            return ClassStubs.classMirrorForName(name, false, getLoader());
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);

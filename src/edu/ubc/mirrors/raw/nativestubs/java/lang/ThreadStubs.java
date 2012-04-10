@@ -22,7 +22,7 @@ public class ThreadStubs {
             return mirage;
         }
         
-        ObjectMirror mirror = MutableClassMirrorLoader.makeMirrorStatic(NativeObjectMirror.makeMirror(current));
+        ObjectMirror mirror = MutableClassMirrorLoader.makeMirror(NativeObjectMirror.makeMirror(current));
         mirage = (Mirage)ObjectMirage.make(mirror, classLoaderLiteral);
         threadMirages.put(current, mirage);
         return mirage;

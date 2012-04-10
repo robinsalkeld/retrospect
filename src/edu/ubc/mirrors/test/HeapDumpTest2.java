@@ -61,14 +61,9 @@ public class HeapDumpTest2 implements IApplication {
         
         HeapDumpClassMirror klass = new HeapDumpClassMirror(loader, iClass);
         
-//        Snapshot snapshot = Reader.readFile(snapshotPath, false, 0);
-//        snapshot.resolve(false);
-//        JHatClassMirrorLoader loader = new JHatClassMirrorLoader(snapshot, runtimeClassLoader);
-//        JHatClassMirror klass = (JHatClassMirror)loader.loadClassMirror(HashMap.class.getName());
-        
         MutableClassMirrorLoader mutableLoader = new MutableClassMirrorLoader(loader);
         MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, mutableLoader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
-        Class<?> mirageClass = mirageLoader.loadMirageClass(JRubyStackTraces.class);
+        Class<?> mirageClass = mirageLoader.loadMirageClass(JRubyStackTraces.class.getName());
         mirageClass.getMethods();
         
         List<ObjectMirror> instances = klass.getInstances();

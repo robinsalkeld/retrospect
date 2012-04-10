@@ -26,7 +26,7 @@ import edu.ubc.mirrors.raw.NativeIntArrayMirror;
 import edu.ubc.mirrors.raw.NativeLongArrayMirror;
 import edu.ubc.mirrors.raw.NativeShortArrayMirror;
 
-public class JHatClassMirrorLoader extends ClassMirrorLoader {
+public class JHatClassMirrorLoader extends JHatInstanceMirror implements ClassMirrorLoader {
 
     private final Snapshot snapshot;
     private final ClassLoader classLoader;
@@ -34,6 +34,7 @@ public class JHatClassMirrorLoader extends ClassMirrorLoader {
     private final Map<String, JHatClassMirror> classMirrors = new HashMap<String, JHatClassMirror>();
     
     public JHatClassMirrorLoader(Snapshot snapshot, ClassLoader loader) {
+        super(null, null);
         this.snapshot = snapshot;
         this.classLoader = loader;
     }
@@ -43,7 +44,7 @@ public class JHatClassMirrorLoader extends ClassMirrorLoader {
     }
     
     @Override
-    public ClassMirror loadClassMirror(String name) throws ClassNotFoundException {
+    public ClassMirror findLoadedClassMirror(String name) {
         JHatClassMirror mirror = classMirrors.get(name);
         if (mirror != null) {
             return mirror;

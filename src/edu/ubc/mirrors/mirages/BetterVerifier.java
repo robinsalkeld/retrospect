@@ -16,11 +16,13 @@ class BetterVerifier extends SimpleVerifier {
     
     private ClassMirror getClassMirror(Type t) {
         try {
+            String className;
             if (t.getSort() == Type.ARRAY) {
-                return loader.loadClassMirror(t.getInternalName().replace('/', '.'));
+                className = t.getInternalName().replace('/', '.');
             } else {
-                return loader.loadClassMirror(t.getClassName());
+                className = t.getClassName();
             }
+            return MirageClassLoader.loadClassMirror(loader, className);
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);
