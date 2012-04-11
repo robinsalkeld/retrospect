@@ -9,15 +9,19 @@ import org.eclipse.mat.snapshot.model.IClassLoader;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements ClassMirrorLoader {
 
+    private final VirtualMachineMirror vm;
+    
     private final ClassMirrorLoader bytecodeLoader;
     
     private final Map<String, IClass> loadedClasses = new HashMap<String, IClass>();
     
-    public HeapDumpClassMirrorLoader(ClassMirrorLoader bytecodeLoader, IClassLoader heapDumpClassLoader) {
-        super(getClassLoader(bytecodeLoader, heapDumpClassLoader), heapDumpClassLoader);
+    public HeapDumpClassMirrorLoader(VirtualMachineMirror vm, ClassMirrorLoader bytecodeLoader, IClassLoader heapDumpClassLoader) {
+        super(getClassLoader(vm, bytecodeLoader, heapDumpClassLoader), heapDumpClassLoader);
+        this.vm = vm;
         this.bytecodeLoader = bytecodeLoader;
         
         try {
@@ -29,14 +33,18 @@ public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements
         }
     }
     
-    private static HeapDumpClassMirrorLoader getClassLoader(ClassMirrorLoader bytecodeLoader, IClassLoader heapDumpClassLoader) {
+    public VirtualMachineMirror getVM() {
+        return vm;
+    }
+    
+    private static HeapDumpClassMirrorLoader getClassLoader(VirtualMachineMirror vm, ClassMirrorLoader bytecodeLoader, IClassLoader heapDumpClassLoader) {
         try {
             
             IClassLoader loadersLoader = (IClassLoader)heapDumpClassLoader.getSnapshot().getObject(heapDumpClassLoader.getClazz().getClassLoaderId());
             if (loadersLoader.equals(heapDumpClassLoader)) {
                 return null;
             } else {
-                return new HeapDumpClassMirrorLoader(bytecodeLoader.getClassMirror().getLoader(), loadersLoader);
+                return new HeapDumpClassMirrorLoader(vm, bytecodeLoader.getClassMirror().getLoader(), loadersLoader);
             }
         } catch (SnapshotException e) {
             throw new RuntimeException(e);

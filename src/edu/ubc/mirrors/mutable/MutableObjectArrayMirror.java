@@ -9,12 +9,12 @@ public class MutableObjectArrayMirror implements ObjectArrayMirror {
     private final ObjectMirror[] mutableValues;
     private final ObjectArrayMirror immutableMirror;
     
-    public MutableObjectArrayMirror(MutableClassMirrorLoader loader, ObjectArrayMirror immutableMirror) {
+    public MutableObjectArrayMirror(MutableVirtualMachineMirror vm, ObjectArrayMirror immutableMirror) {
         this.immutableMirror = immutableMirror;
         this.mutableValues = new ObjectMirror[immutableMirror.length()];
         
         for (int index = 0; index < mutableValues.length; index++) {
-            mutableValues[index] = loader.makeMirror(immutableMirror.get(index));
+            mutableValues[index] = vm.makeMirror(immutableMirror.get(index));
         }
     }
     

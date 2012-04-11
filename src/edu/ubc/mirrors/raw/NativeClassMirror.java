@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror.NativeFieldMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
@@ -30,6 +33,11 @@ public class NativeClassMirror extends ClassMirror {
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(className);
         }
+    }
+    
+    @Override
+    public VirtualMachineMirror getVM() {
+        return NativeVirtualMachineMirror.INSTANCE;
     }
     
     public Class<?> getKlass() {
@@ -181,7 +189,7 @@ public class NativeClassMirror extends ClassMirror {
         }
         return names;
     }
-    
+        
     @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + klass;

@@ -5,6 +5,7 @@ import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
+import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class MirageTest2 {
     public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, NoSuchFieldException {
@@ -15,7 +16,7 @@ public class MirageTest2 {
         ClassLoader originalLoader = MirageTest2.class.getClassLoader();
         ClassMirrorLoader mirrorLoader = new NativeClassMirrorLoader(originalLoader);
         
-        MirageClassLoader mirageClassLoader = new MirageClassLoader(originalLoader, mirrorLoader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
+        MirageClassLoader mirageClassLoader = new MirageClassLoader(NativeVirtualMachineMirror.INSTANCE, mirrorLoader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
 //        try {
 //            mirageClassLoader.loadClass(className).getMethod("main", String[].class).invoke(null, (Object)new String[0]);
 //        } catch (Throwable t) {

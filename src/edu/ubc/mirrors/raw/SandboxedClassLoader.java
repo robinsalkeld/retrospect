@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.test;
+package edu.ubc.mirrors.raw;
 
 import java.io.IOException;
 import java.net.URL;

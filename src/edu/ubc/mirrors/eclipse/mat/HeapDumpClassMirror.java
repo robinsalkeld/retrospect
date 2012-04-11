@@ -1,15 +1,20 @@
 package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.mat.SnapshotException;
+import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IInstance;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 
 public class HeapDumpClassMirror extends BytecodeClassMirror {
@@ -17,10 +22,16 @@ public class HeapDumpClassMirror extends BytecodeClassMirror {
     private final HeapDumpClassMirrorLoader loader;
     private final IClass klass;
     
+    
     public HeapDumpClassMirror(HeapDumpClassMirrorLoader loader, IClass klass) {
-        super(loader, getClassName(klass));
+        super(getClassName(klass));
         this.loader = loader;
         this.klass = klass;
+    }
+    
+    @Override
+    public VirtualMachineMirror getVM() {
+        return loader.getVM();
     }
     
     @Override

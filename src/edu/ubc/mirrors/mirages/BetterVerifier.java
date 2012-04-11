@@ -5,12 +5,15 @@ import org.objectweb.asm.tree.analysis.SimpleVerifier;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.VirtualMachineMirror;
 
 class BetterVerifier extends SimpleVerifier {
     
+    private final VirtualMachineMirror vm;
     private final ClassMirrorLoader loader;
     
-    public BetterVerifier(ClassMirrorLoader loader) {
+    public BetterVerifier(VirtualMachineMirror vm, ClassMirrorLoader loader) {
+        this.vm = vm;
         this.loader = loader;
     }
     
@@ -22,7 +25,7 @@ class BetterVerifier extends SimpleVerifier {
             } else {
                 className = t.getClassName();
             }
-            return MirageClassLoader.loadClassMirror(loader, className);
+            return MirageClassLoader.loadClassMirror(vm, loader, className);
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);

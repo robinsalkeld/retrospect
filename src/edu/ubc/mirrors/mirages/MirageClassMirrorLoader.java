@@ -19,17 +19,20 @@ import org.objectweb.asm.Type;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class MirageClassMirrorLoader implements ClassMirrorLoader {
 
+    VirtualMachineMirror vm;
     ClassMirrorLoader parent;
     
     ClassMirrorLoader originalLoader;
     
-    ClassLoaderLiteralMirror classLoaderLiteralMirror = new ClassLoaderLiteralMirror(this);
+    ClassLoaderLiteralMirror classLoaderLiteralMirror = new ClassLoaderLiteralMirror(vm, this);
     
     
-    public MirageClassMirrorLoader(ClassMirrorLoader parent, ClassMirrorLoader originalLoader) {
+    public MirageClassMirrorLoader(VirtualMachineMirror vm, ClassMirrorLoader parent, ClassMirrorLoader originalLoader) {
+        this.vm = vm;
         this.parent = parent;
         this.originalLoader = originalLoader;
     }
@@ -173,6 +176,11 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
         @Override
         public ClassMirrorLoader getLoader() {
             return MirageClassMirrorLoader.this;
+        }
+        
+        @Override
+        public VirtualMachineMirror getVM() {
+            return vm;
         }
         
         @Override

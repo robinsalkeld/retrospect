@@ -16,12 +16,15 @@ import org.eclipse.mat.snapshot.model.IInstance;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpInstanceMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableInstanceMirror;
 import edu.ubc.mirrors.mutable.MutableObjectArrayMirror;
+import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 
 public class HeapDumpTest implements IApplication {
@@ -36,23 +39,25 @@ public class HeapDumpTest implements IApplication {
         MirageClassLoader.traceClass = mirageClass;
         
         ISnapshot snapshot = SnapshotFactory.openSnapshot(new File(snapshotPath), new HashMap<String, String>(), new org.eclipse.mat.util.VoidProgressListener());
+        VirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
         IClass rubyObjectClass = snapshot.getClassesByName("org.jruby.RubyObject", false).iterator().next();
         IClassLoader classLoader = (IClassLoader)snapshot.getObject(rubyObjectClass.getClassLoaderId());
         
         ClassLoader runtimeClassLoader = HeapDumpTest.class.getClassLoader();
         ClassMirrorLoader bytecodeLoader = new NativeClassMirrorLoader(runtimeClassLoader);
-        HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(bytecodeLoader, classLoader);
+        HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(vm, bytecodeLoader, classLoader);
         
-        MutableClassMirrorLoader mutableLoader = new MutableClassMirrorLoader(loader);
+        MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
+        MutableClassMirrorLoader mutableLoader = new MutableClassMirrorLoader(mutableVM, loader);
         
-        MirageClassLoader mirageLoader = new MirageClassLoader(runtimeClassLoader, loader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
+        MirageClassLoader mirageLoader = new MirageClassLoader(vm, loader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         
 //        mirageLoader.loadClass(mirageClass).getMethods();
         
         for (int id : rubyObjectClass.getObjectIds()) {
             IInstance object = (IInstance)snapshot.getObject(id);
             HeapDumpInstanceMirror immutableMirror = new HeapDumpInstanceMirror(loader, object);
-            ObjectMirror mirror = mutableLoader.makeMirror(immutableMirror); 
+            ObjectMirror mirror = mutableVM.makeMirror(immutableMirror); 
             
             Object o = mirageLoader.makeMirage(mirror);
             try {

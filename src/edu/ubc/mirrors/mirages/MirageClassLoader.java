@@ -35,8 +35,10 @@ import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
+import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.NativeClassMirror;
@@ -48,9 +50,15 @@ public class MirageClassLoader extends ClassLoader {
     public final File myTraceDir;
     public static boolean debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
     
+    final VirtualMachineMirror vm;
+    // May be null
     final ClassMirrorLoader originalLoader;
     
     final MirageClassMirrorLoader mirageClassMirrorLoader;
+    
+    public VirtualMachineMirror getVM() {
+        return vm;
+    }
     
     public ClassMirrorLoader getOriginalClassMirrorLoader() {
         return originalLoader;
@@ -62,13 +70,10 @@ public class MirageClassLoader extends ClassLoader {
     
     public static final String CLASS_LOADER_LITERAL_NAME = "edu/ubc/mirrors/ClassLoaderLiteral";
     
-    public MirageClassLoader(ClassLoader parent, ClassMirrorLoader originalLoader, String traceDir) {
-        super(parent);
-        if (originalLoader == null) {
-            throw new NullPointerException();
-        }
+    public MirageClassLoader(VirtualMachineMirror vm, ClassMirrorLoader originalLoader, String traceDir) {
+        this.vm = vm;
         this.originalLoader = originalLoader;
-        this.mirageClassMirrorLoader = new MirageClassMirrorLoader(new NativeClassMirrorLoader(this), originalLoader);
+        this.mirageClassMirrorLoader = new MirageClassMirrorLoader(vm, new NativeClassMirrorLoader(this), originalLoader);
         
         if (traceDir != null) {
             myTraceDir = new File(traceDir);
@@ -81,18 +86,18 @@ public class MirageClassLoader extends ClassLoader {
                  new HashMap<ClassMirrorLoader, MirageClassLoader>();
             
     
-    public static MirageClassLoader getMirageClassLoader(ClassMirrorLoader originalLoader) {
+    public static MirageClassLoader getMirageClassLoader(VirtualMachineMirror vm, ClassMirrorLoader originalLoader) {
         MirageClassLoader result = mirageClassLoaders.get(originalLoader);
         if (result == null) {
-            result = new MirageClassLoader(MirageClassLoader.class.getClassLoader(), originalLoader, null);
+            result = new MirageClassLoader(vm, originalLoader, null);
             mirageClassLoaders.put(originalLoader, result);
         }
         return result;
     }
     
-    public static ClassMirror loadClassMirror(ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException {
-        if (originalLoader instanceof NativeClassMirrorLoader) {
-            return (ClassMirror)NativeClassMirrorLoader.makeMirror(((NativeClassMirrorLoader)originalLoader).classLoader.loadClass(name));
+    public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException {
+        if (originalLoader == null) {
+            return vm.findBootstrapClassMirror(name);
         } else {
             return (ClassMirror)Reflection.mirrorInvoke((ObjectMirror)originalLoader, "loadClass", new NativeObjectMirror(name));
         }
@@ -139,7 +144,7 @@ public class MirageClassLoader extends ClassLoader {
     }
     
     public ClassMirror loadOriginalClassMirror(String originalClassName) throws ClassNotFoundException {
-        return loadClassMirror(originalLoader, originalClassName);
+        return loadClassMirror(vm, originalLoader, originalClassName);
     }
     
     public Class<?> loadMirageClass(String originalClassName) throws ClassNotFoundException {
@@ -147,7 +152,7 @@ public class MirageClassLoader extends ClassLoader {
     }
     
     public static Class<?> loadMirageClass(ClassMirror classMirror) {
-        MirageClassLoader mirageClassLoader = MirageClassLoader.getMirageClassLoader(classMirror.getLoader());
+        MirageClassLoader mirageClassLoader = MirageClassLoader.getMirageClassLoader(classMirror.getVM(), classMirror.getLoader());
         try {
             return mirageClassLoader.loadMirageClass(classMirror.getClassName());
         } catch (ClassNotFoundException e) {
@@ -156,7 +161,7 @@ public class MirageClassLoader extends ClassLoader {
     }
     
     public static Object makeMirageStatic(ObjectMirror mirror) {
-        return getMirageClassLoader(mirror.getClassMirror().getLoader()).makeMirage(mirror);
+        return getMirageClassLoader(mirror.getClassMirror().getVM(), mirror.getClassMirror().getLoader()).makeMirage(mirror);
     }
     
     @Override
@@ -364,7 +369,8 @@ public class MirageClassLoader extends ClassLoader {
         if (object == null) {
             return null;
         }
-        ObjectMirror mirror = MutableClassMirrorLoader.makeMirror(NativeObjectMirror.makeMirror(object));
+        // TODO-RS: Encapsulate the mutable layer better!
+        ObjectMirror mirror = ((MutableVirtualMachineMirror)vm).makeMirror(NativeObjectMirror.makeMirror(object));
         return makeMirage(mirror);
     }
 }

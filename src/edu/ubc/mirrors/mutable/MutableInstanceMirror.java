@@ -12,18 +12,18 @@ import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 
 public class MutableInstanceMirror implements InstanceMirror {
 
-    protected final MutableClassMirrorLoader loader;
+    protected final MutableVirtualMachineMirror vm;
     private final Map<String, FieldMirror> fields = new HashMap<String, FieldMirror>();
     private final InstanceMirror immutableMirror;
     private final InstanceMirror mutableLayer;
     
     @Override
     public ClassMirror getClassMirror() {
-        return (ClassMirror)loader.makeMirror(immutableMirror.getClassMirror());
+        return (ClassMirror)vm.makeMirror(immutableMirror.getClassMirror());
     }
 
-    public MutableInstanceMirror(MutableClassMirrorLoader loader, InstanceMirror immutableMirror) {
-        this.loader = loader;
+    public MutableInstanceMirror(MutableVirtualMachineMirror vm, InstanceMirror immutableMirror) {
+        this.vm = vm;
         this.immutableMirror = immutableMirror;
         this.mutableLayer = new FieldMapMirror(null);
     }
@@ -32,7 +32,7 @@ public class MutableInstanceMirror implements InstanceMirror {
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
         FieldMirror result = fields.get(name);
         if (result == null) {
-            result = new MutableFieldMirror(loader, mutableLayer.getMemberField(name), immutableMirror.getMemberField(name));
+            result = new MutableFieldMirror(vm, mutableLayer.getMemberField(name), immutableMirror.getMemberField(name));
             fields.put(name, result);
         }
         return result;

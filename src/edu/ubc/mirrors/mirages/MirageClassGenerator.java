@@ -518,7 +518,7 @@ public class MirageClassGenerator extends ClassVisitor {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         if (MirageClassLoader.debug) {
-            visitor = new FrameAnalyzerAdaptor(loader.getMirageClassMirrorLoader(), visitor, false);
+            visitor = new FrameAnalyzerAdaptor(loader.getVM(), loader.getMirageClassMirrorLoader(), visitor, false);
         }
         if (loader.myTraceDir != null) {
             File txtFile = loader.createClassFile(internalName + ".txt");
@@ -531,10 +531,10 @@ public class MirageClassGenerator extends ClassVisitor {
             File txtFile = loader.createClassFile(internalName + ".afterframes.txt");
             PrintWriter textFileWriter = new PrintWriter(txtFile);
             ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
-            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(loader.getOriginalClassMirrorLoader(), traceVisitor, true);
+            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(loader.getVM(), loader.getOriginalClassMirrorLoader(), traceVisitor, true);
             new ClassReader(classMirror.getBytecode()).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
         }
-        visitor = new FrameAnalyzerAdaptor(loader.getOriginalClassMirrorLoader(), visitor, true);
+        visitor = new FrameAnalyzerAdaptor(loader.getVM(), loader.getOriginalClassMirrorLoader(), visitor, true);
         ClassReader reader = new ClassReader(classMirror.getBytecode());
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();

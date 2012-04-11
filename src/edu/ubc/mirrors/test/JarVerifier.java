@@ -21,7 +21,7 @@ public class JarVerifier implements IApplication {
 
         JarFile jar = new JarFile(jarPath);
         ClassLoader thisLoader = JarVerifier.class.getClassLoader();
-        MirageClassLoader mirageLoader = new MirageClassLoader(thisLoader, new NativeClassMirrorLoader(thisLoader), System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
+        MirageClassLoader mirageLoader = new MirageClassLoader(null, new NativeClassMirrorLoader(thisLoader), System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         verifyJar(mirageLoader, jar);
     }
     

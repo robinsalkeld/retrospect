@@ -1,33 +1,35 @@
 package edu.ubc.mirrors.mutable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.eclipse.mat.snapshot.model.IObject;
-
-import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
-import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 
 public class MutableClassMirror extends ClassMirror {
 
+    private final MutableVirtualMachineMirror vm;
     private final MutableClassMirrorLoader loader;
     private final InstanceMirror mutableStaticFields;
     private final InstanceMirror mutableMemberFields;
     private final ClassMirror immutableClassMirror;
     
-    public MutableClassMirror(MutableClassMirrorLoader loader, ClassMirror immutableClassMirror) {
-        this.loader = loader;
+    public MutableClassMirror(MutableVirtualMachineMirror vm, ClassMirror immutableClassMirror) {
+        this.vm = vm;
+        ClassMirrorLoader immutableLoader = immutableClassMirror.getLoader();
+        this.loader = (MutableClassMirrorLoader)vm.makeMirror(immutableLoader);
         this.mutableStaticFields = new FieldMapMirror(null);
         this.mutableMemberFields = new FieldMapMirror(null);
         this.immutableClassMirror = immutableClassMirror;
+    }
+    
+    @Override
+    public VirtualMachineMirror getVM() {
+        return vm;
     }
     
     @Override
@@ -72,12 +74,12 @@ public class MutableClassMirror extends ClassMirror {
 
     @Override
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        return new MutableFieldMirror(loader, mutableStaticFields.getMemberField(name), immutableClassMirror.getStaticField(name));
+        return new MutableFieldMirror(vm, mutableStaticFields.getMemberField(name), immutableClassMirror.getStaticField(name));
     }
 
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        return new MutableFieldMirror(loader, mutableMemberFields.getMemberField(name), immutableClassMirror.getMemberField(name));
+        return new MutableFieldMirror(vm, mutableMemberFields.getMemberField(name), immutableClassMirror.getMemberField(name));
     }
     
     @Override

@@ -16,8 +16,6 @@ import edu.ubc.mirrors.FieldMirror;
 
 public abstract class BytecodeClassMirror extends ClassMirror {
 
-    private final ClassMirrorLoader loader;
-    
     private boolean resolved = false;
     
     private ClassMirror superclassNode;
@@ -28,8 +26,7 @@ public abstract class BytecodeClassMirror extends ClassMirror {
     
     private String className;
     
-    public BytecodeClassMirror(ClassMirrorLoader loader, String className) {
-        this.loader = loader;
+    public BytecodeClassMirror(String className) {
         this.className = className;
     }
 
@@ -137,11 +134,6 @@ public abstract class BytecodeClassMirror extends ClassMirror {
     @Override
     public List<FieldMirror> getMemberFields() {
         throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public ClassMirrorLoader getLoader() {
-        return loader;
     }
     
     @Override

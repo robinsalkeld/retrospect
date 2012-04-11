@@ -12,39 +12,51 @@ import org.objectweb.asm.Type;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class ArrayClassMirror extends ClassMirror {
 
+    // May be null
     private final ClassMirrorLoader loader;
-    private final Type elementType;
+    
+    private final ClassMirror elementClassMirror;
     private final int dims;
     
-    public ArrayClassMirror(ClassMirrorLoader loader, Type type) {
+    public ArrayClassMirror(ClassMirrorLoader loader, int dims, ClassMirror elementClassMirror) {
         this.loader = loader;
-        this.elementType = type.getElementType();
-        this.dims = type.getDimensions();
+        this.elementClassMirror = elementClassMirror;
+        this.dims = dims;
+    }
+    
+    @Override
+    public VirtualMachineMirror getVM() {
+        return elementClassMirror.getVM();
+    }
+    
+    private Type getArrayType() {
+        return makeArrayType(dims, Type.getObjectType(elementClassMirror.getClassName().replace('.', '/')));
     }
     
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        throw new UnsupportedOperationException();
+        throw new NoSuchFieldException(name);
     }
 
     @Override
     public List<FieldMirror> getMemberFields() {
-        throw new UnsupportedOperationException();
+        return Collections.emptyList();
     }
     
     @Override
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        throw new UnsupportedOperationException();
+        throw new NoSuchFieldException(name);
     }
     
     @Override
     public String getClassName() {
-        // Don't use getClassName() - that will return strings like com.foo.Bar[]
+        // Don't use Type#getClassName() - that will return strings like com.foo.Bar[]
         // rather than [Lcom.foo.Bar;
-        return makeArrayType(dims, elementType).getInternalName().replace('/', '.');
+        return getArrayType().getInternalName().replace('/', '.');
     }
 
     @Override
@@ -70,27 +82,9 @@ public class ArrayClassMirror extends ClassMirror {
     @Override
     public ClassMirror getComponentClassMirror() {
         if (dims == 1) {
-            if (elementType.equals(Type.BOOLEAN_TYPE)) {
-                return new NativeClassMirror(Boolean.TYPE);
-            } else if (elementType.equals(Type.BYTE_TYPE)) {
-                return new NativeClassMirror(Byte.TYPE);
-            } else if (elementType.equals(Type.CHAR_TYPE)) {
-                return new NativeClassMirror(Character.TYPE);
-            } else if (elementType.equals(Type.SHORT_TYPE)) {
-                return new NativeClassMirror(Short.TYPE);
-            } else if (elementType.equals(Type.INT_TYPE)) {
-                return new NativeClassMirror(Integer.TYPE);
-            } else if (elementType.equals(Type.LONG_TYPE)) {
-                return new NativeClassMirror(Long.TYPE);
-            } else if (elementType.equals(Type.FLOAT_TYPE)) {
-                return new NativeClassMirror(Float.TYPE);
-            } else if (elementType.equals(Type.DOUBLE_TYPE)) {
-                return new NativeClassMirror(Double.TYPE);
-            } else {
-                return loadClassMirrorInternal(elementType.getClassName());
-            }
+            return elementClassMirror;
         } else { 
-            return loadClassMirrorInternal(makeArrayType(dims - 1, elementType).getInternalName().replace('/', '.'));
+            return new ArrayClassMirror(loader, dims - 1, elementClassMirror);
         }
     }
 
@@ -119,6 +113,6 @@ public class ArrayClassMirror extends ClassMirror {
     
     @Override
     public String toString() {
-        return getClass().getName() + ": " + makeArrayType(dims, elementType);
+        return getClass().getName() + ": " + getArrayType();
     }
 }

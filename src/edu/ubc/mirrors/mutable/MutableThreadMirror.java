@@ -14,14 +14,14 @@ public class MutableThreadMirror extends MutableInstanceMirror implements Thread
 
     private final ThreadMirror immutableThreadMirror;
     
-    public MutableThreadMirror(MutableClassMirrorLoader loader, ThreadMirror immutableThreadMirror) {
-        super(loader, immutableThreadMirror);
+    public MutableThreadMirror(MutableVirtualMachineMirror vm, ThreadMirror immutableThreadMirror) {
+        super(vm, immutableThreadMirror);
         this.immutableThreadMirror = immutableThreadMirror;
     }
 
     @Override
     public ObjectArrayMirror getStackTrace() {
-        return (ObjectArrayMirror)loader.makeMirror(immutableThreadMirror.getStackTrace());
+        return (ObjectArrayMirror)vm.makeMirror(immutableThreadMirror.getStackTrace());
     }
 
     

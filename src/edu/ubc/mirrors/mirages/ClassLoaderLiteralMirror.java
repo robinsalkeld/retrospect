@@ -16,15 +16,23 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class ClassLoaderLiteralMirror extends ClassMirror {
 
     public static final String CLASS_LOADER_LITERAL_NAME = "edu/ubc/mirrors/ClassLoaderLiteral";
     
+    private final VirtualMachineMirror vm;
     private final ClassMirrorLoader loader;
     
-    public ClassLoaderLiteralMirror(ClassMirrorLoader loader) {
+    public ClassLoaderLiteralMirror(VirtualMachineMirror vm, ClassMirrorLoader loader) {
+        this.vm = vm;
         this.loader = loader;
+    }
+    
+    @Override
+    public VirtualMachineMirror getVM() {
+        return vm;
     }
     
     @Override

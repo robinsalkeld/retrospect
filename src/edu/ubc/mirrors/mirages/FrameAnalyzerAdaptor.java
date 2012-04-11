@@ -21,15 +21,18 @@ import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceMethodVisitor;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class FrameAnalyzerAdaptor extends ClassVisitor {
 
+    private final VirtualMachineMirror vm;
     private final ClassMirrorLoader loader;
     private final boolean insertFrames;
     private Type thisType = null;
     
-    public FrameAnalyzerAdaptor(ClassMirrorLoader loader, ClassVisitor cv, boolean insertFrames) {
+    public FrameAnalyzerAdaptor(VirtualMachineMirror vm, ClassMirrorLoader loader, ClassVisitor cv, boolean insertFrames) {
         super(Opcodes.ASM4, cv);
+        this.vm = vm;
         this.loader = loader;
         this.insertFrames = insertFrames;
     }
@@ -92,7 +95,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         final MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         final Map<Label, LabelNode> labelNodes = new HashMap<Label, LabelNode>();
-        final FrameVerifier verifier = new FrameVerifier(loader);
+        final FrameVerifier verifier = new FrameVerifier(vm, loader);
         
         MethodNode analyzer = new MethodNode(access, name, desc, null, null) {
             @Override

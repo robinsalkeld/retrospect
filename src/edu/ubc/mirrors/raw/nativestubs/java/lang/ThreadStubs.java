@@ -7,8 +7,10 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.mirages.Mirage;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
+import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 public class ThreadStubs {
@@ -22,7 +24,9 @@ public class ThreadStubs {
             return mirage;
         }
         
-        ObjectMirror mirror = MutableClassMirrorLoader.makeMirror(NativeObjectMirror.makeMirror(current));
+        // TODO-RS: Encapsulate the mutable layer better!
+        MirageClassLoader loader = ((MirageClassLoader)classLoaderLiteral.getClassLoader());
+        ObjectMirror mirror = ((MutableVirtualMachineMirror)loader.getVM()).makeMirror(NativeObjectMirror.makeMirror(current));
         mirage = (Mirage)ObjectMirage.make(mirror, classLoaderLiteral);
         threadMirages.put(current, mirage);
         return mirage;

@@ -14,6 +14,8 @@ import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
 
 public abstract class ClassMirror implements InstanceMirror {
 
+    public abstract VirtualMachineMirror getVM();
+    
     public abstract String getClassName();
     
     public abstract ClassMirrorLoader getLoader();
@@ -132,12 +134,14 @@ public abstract class ClassMirror implements InstanceMirror {
     
     protected ClassMirror loadClassMirrorInternal(String name) {
         try {
-            return ClassStubs.classMirrorForName(name, false, getLoader());
+            return ClassStubs.classMirrorForName(getVM(), name, false, getLoader());
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);
             throw error;
         }
     }
+    
+
     
 }
