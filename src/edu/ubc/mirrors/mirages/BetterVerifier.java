@@ -25,7 +25,7 @@ class BetterVerifier extends SimpleVerifier {
             } else {
                 className = t.getClassName();
             }
-            return MirageClassLoader.loadClassMirror(vm, loader, className);
+            return Reflection.classMirrorForName(vm, className, false, loader);
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);

@@ -12,6 +12,7 @@ import org.objectweb.asm.Type;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class ArrayClassMirror extends ClassMirror {
@@ -109,6 +110,11 @@ public class ArrayClassMirror extends ClassMirror {
     @Override
     public List<String> getDeclaredFieldNames() {
         return Collections.emptyList();
+    }
+    
+    @Override
+    public List<InstanceMirror> getInstances() {
+        throw new UnsupportedOperationException();
     }
     
     @Override

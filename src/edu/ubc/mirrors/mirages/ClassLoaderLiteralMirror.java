@@ -259,4 +259,9 @@ public class ClassLoaderLiteralMirror extends ClassMirror {
     public List<String> getDeclaredFieldNames() {
         return Collections.emptyList();
     }
+    
+    @Override
+    public List<InstanceMirror> getInstances() {
+        throw new UnsupportedOperationException();
+    }
 }

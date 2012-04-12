@@ -1,6 +1,8 @@
 package edu.ubc.mirrors.mutable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.ubc.mirrors.BooleanArrayMirror;
@@ -81,7 +83,14 @@ public class MutableVirtualMachineMirror implements VirtualMachineMirror {
         mirrors.put(immutableMirror, result);
         return result;
     }
-    
-    private static Map<ClassMirrorLoader, MutableClassMirrorLoader> loaders = new
-               HashMap<ClassMirrorLoader, MutableClassMirrorLoader>();
+
+    @Override
+    public List<ClassMirror> findAllClasses(String name) {
+        List<ClassMirror> immutableInstances = immutableVM.findAllClasses(name);
+        List<ClassMirror> result = new ArrayList<ClassMirror>(immutableInstances.size());
+        for (ClassMirror immutableInstance : immutableInstances) {
+            result.add((ClassMirror)makeMirror(immutableInstance));
+        }
+        return result;
+    }
 }

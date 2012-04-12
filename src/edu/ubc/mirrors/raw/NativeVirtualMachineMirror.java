@@ -2,6 +2,7 @@ package edu.ubc.mirrors.raw;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -20,7 +21,7 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
         }
         nativeMethod.setAccessible(true);
         try {
-            return new NativeClassMirror((Class<?>)nativeMethod.invoke(appClassLoader, name));
+            return (ClassMirror)NativeObjectMirror.makeMirror((Class<?>)nativeMethod.invoke(appClassLoader, name));
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         } catch (InvocationTargetException e) {
@@ -28,4 +29,9 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
         }
     }
     
+    
+    @Override
+    public List<ClassMirror> findAllClasses(String name) {
+        throw new UnsupportedOperationException();
+    }
 }

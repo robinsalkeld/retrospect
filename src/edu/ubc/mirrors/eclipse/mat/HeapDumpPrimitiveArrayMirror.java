@@ -7,16 +7,16 @@ import edu.ubc.mirrors.ClassMirror;
 
 public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror {
     
-    private final HeapDumpClassMirrorLoader loader;
+    private final HeapDumpVirtualMachineMirror vm;
     private final IPrimitiveArray array;
     
-    public HeapDumpPrimitiveArrayMirror(HeapDumpClassMirrorLoader loader, IPrimitiveArray array) {
-        this.loader = loader;
+    public HeapDumpPrimitiveArrayMirror(HeapDumpVirtualMachineMirror vm, IPrimitiveArray array) {
+        this.vm = vm;
         this.array = array;
     }
     
     public ClassMirror getClassMirror() {
-        return new HeapDumpClassMirror(loader, array.getClazz());
+        return new HeapDumpClassMirror(vm, array.getClazz());
     }
     public int length() {
         return array.getLength();

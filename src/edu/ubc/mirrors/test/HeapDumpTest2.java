@@ -8,6 +8,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -26,7 +27,9 @@ import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
+import org.osgi.framework.Bundle;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
@@ -43,6 +46,7 @@ import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
+import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class HeapDumpTest2 implements IApplication {
 
@@ -51,44 +55,56 @@ public class HeapDumpTest2 implements IApplication {
         
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
         
-        ClassLoader runtimeClassLoader = HeapDumpTest.class.getClassLoader();
+        ClassLoader runtimeClassLoader = HeapDumpTest2.class.getClassLoader();
 //        URL java7classes = new URL("file:/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre/lib/rt.jar");
 //        ClassLoader runtimeClassLoader = new ChainedClassLoader(new SandboxedClassLoader(new URL[] {java7classes}), HeapDumpTest.class.getClassLoader());
         
-        ClassMirrorLoader bytecodeLoader = new BytecodeClassMirrorLoader(null, runtimeClassLoader);
-        
-        ISnapshot snapshot = SnapshotFactory.openSnapshot(new File(snapshotPath), new HashMap<String, String>(), new ConsoleProgressListener(System.out));
-        VirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
-        IClass iClass = snapshot.getClassesByName(Ruby.class.getName(), false).iterator().next();
-        IClassLoader classLoader = (IClassLoader)snapshot.getObject(iClass.getClassLoaderId());
-        HeapDumpClassMirrorLoader loader = new HeapDumpClassMirrorLoader(vm, bytecodeLoader, classLoader);
-        
-        HeapDumpClassMirror klass = new HeapDumpClassMirror(loader, iClass);
-        
-        MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
-        MutableClassMirrorLoader mutableLoader = new MutableClassMirrorLoader(mutableVM, loader);
-        MirageClassLoader mirageLoader = new MirageClassLoader(vm, mutableLoader, System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
-        Class<?> mirageClass = mirageLoader.loadMirageClass(JRubyStackTraces.class.getName());
-        mirageClass.getMethods();
-        
-        List<ObjectMirror> instances = klass.getInstances();
-        int good = 0;
-        for (ObjectMirror mirror : instances) {
-            mirror = mutableVM.makeMirror(mirror); 
-            
-            Object o = mirageLoader.makeMirage(mirror);
-            try {
-                Object result = Reflection.invoke(mirageClass, "printStackTraces", o);
-                System.out.println(result);
-                good++;
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-        System.out.println("good: " + good + "/" + instances.size());
-        
+     // Open memory snapshot and find the Bundle class
+        ISnapshot snapshot = SnapshotFactory.openSnapshot(
+                new File(snapshotPath), 
+                Collections.<String, String>emptyMap(), 
+                new ConsoleProgressListener(System.out));
+        printJRubyThreadsFromSnapshot(snapshot);
     }
     
+  public static void printJRubyThreadsFromSnapshot(ISnapshot snapshot) 
+          throws SnapshotException, ClassNotFoundException {
+
+    IClass iClass = snapshot.getClassesByName(Bundle.class.getName(), true).iterator().next();
+    IClassLoader classLoader = (IClassLoader)snapshot.getObject(iClass.getClassLoaderId());
+
+    // Create an instance of the mirrors API backed by the snapshot
+    HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
+    vm.addNativeBytecodeLoaders(classLoader, Bundle.class.getClassLoader());
+    HeapDumpClassMirrorLoader heapDumpLoader = new HeapDumpClassMirrorLoader(vm, classLoader);
+
+    // Note we need a class loader that can see the classes in the JRuby API 
+    // as well as our additional code (i.e. this class).
+    ClassLoader nativeLoader = EclipseHeapDumpTest.class.getClassLoader();
+    ClassMirrorLoader nativeMirrorLoader = new NativeClassMirrorLoader(nativeLoader);
+    ClassMirrorLoader extendedLoader = Reflection.makeChainedClassLoaderMirror(
+            heapDumpLoader, nativeMirrorLoader);
+
+    // Create a mutable layer on the object model.
+    MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
+    MutableClassMirrorLoader mutableLoader = 
+            new MutableClassMirrorLoader(mutableVM, extendedLoader);
+
+    ClassMirror rubyClass = Reflection.loadClassMirror(mutableVM, mutableLoader, 
+            Ruby.class.getName());
+    ClassMirror printerClass = Reflection.loadClassMirror(mutableVM, mutableLoader, 
+            JRubyStackTraces.class.getName());
+
+    // For each class instance (in this case we only expect one)...
+    List<InstanceMirror> rubies = rubyClass.getInstances();
+    for (InstanceMirror ruby : rubies) {
+      // Invoke JRubyStackTraces#printStackTraces reflectively.
+      Object result = Reflection.mirrorInvoke(
+              printerClass, "printStackTraces", ruby);
+      System.out.println(result);
+    }
+  }
+
     public Object start(IApplicationContext context) throws Exception {
         String[] args = (String[])context.getArguments().get(IApplicationContext.APPLICATION_ARGS);
         main(args);

@@ -199,6 +199,8 @@ public class NativeObjectMirror implements InstanceMirror {
         
         if (object instanceof Class) {
             return new NativeClassMirror((Class<?>)object);
+        } else if (object instanceof ClassLoader) {
+            return new NativeClassMirrorLoader((ClassLoader)object);
         } else if (object instanceof Thread) {
             return new NativeThreadMirror((Thread)object);
         } else if (object instanceof Object[]) {

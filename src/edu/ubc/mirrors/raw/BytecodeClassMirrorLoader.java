@@ -1,7 +1,10 @@
 package edu.ubc.mirrors.raw;
 
+import java.util.List;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class BytecodeClassMirrorLoader extends NativeObjectMirror implements ClassMirrorLoader {
@@ -30,6 +33,10 @@ public class BytecodeClassMirrorLoader extends NativeObjectMirror implements Cla
                 @Override
                 public ClassMirrorLoader getLoader() {
                     return loaderMirror;
+                }
+                @Override
+                public List<InstanceMirror> getInstances() {
+                    throw new UnsupportedOperationException();
                 }
             };
         }

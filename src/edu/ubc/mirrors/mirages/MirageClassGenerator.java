@@ -518,7 +518,7 @@ public class MirageClassGenerator extends ClassVisitor {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         if (MirageClassLoader.debug) {
-            visitor = new FrameAnalyzerAdaptor(loader.getVM(), loader.getMirageClassMirrorLoader(), visitor, false);
+            visitor = new FrameAnalyzerAdaptor(loader.getMirageClassMirrorLoader().getMirageVM(), loader.getMirageClassMirrorLoader(), visitor, false);
         }
         if (loader.myTraceDir != null) {
             File txtFile = loader.createClassFile(internalName + ".txt");

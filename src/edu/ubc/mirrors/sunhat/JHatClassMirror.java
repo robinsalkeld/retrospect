@@ -9,6 +9,7 @@ import com.sun.tools.hat.internal.model.JavaThing;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.sunhat.JHatClassMirrorLoader;
 import edu.ubc.mirrors.sunhat.JHatFieldMirror;
@@ -42,11 +43,11 @@ public class JHatClassMirror extends NativeClassMirror {
         return super.getMemberField(name);
     }
     
-    public List<ObjectMirror> getInstances() {
-        List<ObjectMirror> result = new ArrayList<ObjectMirror>();
+    public List<InstanceMirror> getInstances() {
+        List<InstanceMirror> result = new ArrayList<InstanceMirror>();
         Enumeration<?> e = javaClass.getInstances(true);
         while (e.hasMoreElements()) {
-            result.add(loader.getMirror((JavaThing)e.nextElement()));
+            result.add((InstanceMirror)loader.getMirror((JavaThing)e.nextElement()));
         }
         return result;
     }

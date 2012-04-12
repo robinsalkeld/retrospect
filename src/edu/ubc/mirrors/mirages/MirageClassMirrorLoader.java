@@ -8,6 +8,7 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalBinaryClas
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,10 @@ import org.objectweb.asm.Type;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
+import edu.ubc.mirrors.raw.SandboxedClassLoader;
 
 public class MirageClassMirrorLoader implements ClassMirrorLoader {
 
@@ -30,24 +34,75 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
     
     ClassLoaderLiteralMirror classLoaderLiteralMirror = new ClassLoaderLiteralMirror(vm, this);
     
+    final VirtualMachineMirror mirageVM = new VirtualMachineMirror() {
+        @Override
+        public ClassMirror findBootstrapClassMirror(String name) {
+            ClassMirror result = parent.findLoadedClassMirror(name);
+            if (result != null) {
+                return result;
+            }
+                        
+            if (name.startsWith("mirage") && !name.startsWith("miragearray")) {
+                String originalClassName = getOriginalBinaryClassName(name);
+                ClassMirror original = vm.findBootstrapClassMirror(originalClassName);
+                return new MirageClassMirror(name, original);
+            } else if (name.equals(ClassLoaderLiteralMirror.CLASS_LOADER_LITERAL_NAME)) {
+                return classLoaderLiteralMirror;
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public List<ClassMirror> findAllClasses(String name) {
+            throw new UnsupportedOperationException();
+        }
+    };
+    
+    public VirtualMachineMirror getMirageVM() {
+        return mirageVM;
+    }
+    
+    // We need a more legitimate loader to expose as the actual object loading these classes,
+    // even though the classes will never be executed. Something has to be available to run
+    // the mirage-lifted findClass() method on.
+    private final ClassMirrorLoader nativeMirror;
     
     public MirageClassMirrorLoader(VirtualMachineMirror vm, ClassMirrorLoader parent, ClassMirrorLoader originalLoader) {
         this.vm = vm;
         this.parent = parent;
         this.originalLoader = originalLoader;
+        
+        // Use a sandboxed class loader that can't load anything so that the mirage class loader
+        // only loads what the findLoadedClassMirror (i.e. the native findLoadedClass() method) returns.
+        this.nativeMirror = new NativeClassMirrorLoader(new SandboxedClassLoader(new URL[0])) {
+            @Override
+            public ClassMirror findLoadedClassMirror(String name) {
+                return MirageClassMirrorLoader.this.findLoadedClassMirror(name);
+            }
+        };
     }
     
-    @Override
     public ClassMirror findLoadedClassMirror(String name) {
+        ClassMirror result = parent.findLoadedClassMirror(name);
+        if (result != null) {
+            return result;
+        }
+                    
         if (name.startsWith("mirage") && !name.startsWith("miragearray")) {
             String originalClassName = getOriginalBinaryClassName(name);
-            ClassMirror original = originalLoader.findLoadedClassMirror(originalClassName);
+            ClassMirror original;
+            try {
+                original = Reflection.loadClassMirror(vm, originalLoader, originalClassName);
+            } catch (ClassNotFoundException e) {
+                throw new NoClassDefFoundError(e.getMessage());
+            }
             return new MirageClassMirror(name, original);
         } else if (name.equals(ClassLoaderLiteralMirror.CLASS_LOADER_LITERAL_NAME)) {
             return classLoaderLiteralMirror;
+        } else {
+            return null;
         }
-        
-        return parent.findLoadedClassMirror(name);
     }
     
     private class MirageClassMirror extends ClassMirror {
@@ -151,26 +206,22 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
 
         @Override
         public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-            // TODO-RS: Implement
-            return null;
+            throw new UnsupportedOperationException();
         }
         
         @Override
         public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-            // TODO-RS: Implement
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public List<FieldMirror> getMemberFields() {
-            // TODO-RS: Implement
-            return null;
+            throw new UnsupportedOperationException();
         }
         
         @Override
         public List<String> getDeclaredFieldNames() {
-            // TODO-RS: Implement
-            return null;
+            throw new UnsupportedOperationException();
         }
         
         @Override
@@ -192,23 +243,25 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
         public Class<?> getNativeStubsClass() {
             return null;
         }
+        
+        @Override
+        public List<InstanceMirror> getInstances() {
+            throw new UnsupportedOperationException();
+        }
     }
     
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        // TODO-RS
-        throw new UnsupportedOperationException();
+        return nativeMirror.getMemberField(name);
     }
 
     @Override
     public List<FieldMirror> getMemberFields() {
-        // TODO-RS
-        throw new UnsupportedOperationException();
+        return nativeMirror.getMemberFields();
     }
 
     @Override
     public ClassMirror getClassMirror() {
-        // TODO-RS
-        throw new UnsupportedOperationException();
+        return nativeMirror.getClassMirror();
     }
 }

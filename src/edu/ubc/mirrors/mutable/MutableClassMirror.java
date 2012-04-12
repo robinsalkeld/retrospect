@@ -110,6 +110,16 @@ public class MutableClassMirror extends ClassMirror {
         return immutableClassMirror.getDeclaredFieldNames();
     }
     
+    @Override
+    public List<InstanceMirror> getInstances() {
+        List<InstanceMirror> immutableInstances = immutableClassMirror.getInstances();
+        List<InstanceMirror> result = new ArrayList<InstanceMirror>(immutableInstances.size());
+        for (InstanceMirror immutableInstance : immutableInstances) {
+            result.add((InstanceMirror)vm.makeMirror(immutableInstance));
+        }
+        return result;
+    }
+    
     public String toString() {
         return "MutableClassMirror on " + immutableClassMirror;
     };

@@ -14,8 +14,8 @@ import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements ThreadMirror {
 
-    public HeapDumpThreadMirror(HeapDumpClassMirrorLoader loader, IInstance heapDumpObject) {
-        super(loader, heapDumpObject);
+    public HeapDumpThreadMirror(HeapDumpVirtualMachineMirror vm, IInstance heapDumpObject) {
+        super(vm, heapDumpObject);
     }
 
     private static final Pattern framePattern = Pattern.compile("at (.*)\\.(.*)\\(.*\\).* \\((?:(.*):(\\d*)|(.*))\\)");

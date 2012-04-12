@@ -38,6 +38,8 @@ public abstract class ClassMirror implements InstanceMirror {
     
     public abstract FieldMirror getStaticField(String name) throws NoSuchFieldException;
     
+    public abstract List<InstanceMirror> getInstances();
+    
     /* TODO-RS: this stuff doesn't belong here! Move to a base class or wrapper! */
     
     
@@ -56,7 +58,12 @@ public abstract class ClassMirror implements InstanceMirror {
             mirageParamTypes[i] = MirageClassLoader.loadMirageClass(paramTypes[i]);
         }
         Class<?> mirageClass = MirageClassLoader.loadMirageClass(this);
-        Method method = mirageClass.getMethod(name, mirageParamTypes);
+        Method method;
+        try {
+            method = mirageClass.getMethod(name, mirageParamTypes);
+        } catch (NoSuchMethodException e) {
+            throw e;
+        }
         if (Modifier.isStatic(method.getModifiers()) != isStatic) {
             throw new UnsupportedOperationException("Darnit! Need manual search");
         }
@@ -77,7 +84,8 @@ public abstract class ClassMirror implements InstanceMirror {
             for (int i = 0; i < args.length; i++) {
                 mirageArgs[i] = MirageClassLoader.makeMirageStatic(args[i]);
             }
-            Object result = mirageClassMethod.invoke(obj, mirageArgs);
+            Object mirageObj = MirageClassLoader.makeMirageStatic(obj);
+            Object result = mirageClassMethod.invoke(mirageObj, mirageArgs);
             return Reflection.getMirror(result);
         }
         
@@ -134,7 +142,7 @@ public abstract class ClassMirror implements InstanceMirror {
     
     protected ClassMirror loadClassMirrorInternal(String name) {
         try {
-            return ClassStubs.classMirrorForName(getVM(), name, false, getLoader());
+            return Reflection.classMirrorForName(getVM(), name, false, getLoader());
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);

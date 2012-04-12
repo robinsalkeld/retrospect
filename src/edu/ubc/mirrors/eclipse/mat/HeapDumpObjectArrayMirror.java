@@ -9,16 +9,16 @@ import edu.ubc.mirrors.ObjectMirror;
 
 public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObjectMirror {
 
-    private final HeapDumpClassMirrorLoader loader;
+    private final HeapDumpVirtualMachineMirror vm;
     private final IObjectArray array;
     
-    public HeapDumpObjectArrayMirror(HeapDumpClassMirrorLoader loader, IObjectArray array) {
-        this.loader = loader;
+    public HeapDumpObjectArrayMirror(HeapDumpVirtualMachineMirror vm, IObjectArray array) {
+        this.vm = vm;
         this.array = array;
     }
     
     public HeapDumpClassMirror getClassMirror() {
-        return new HeapDumpClassMirror(loader, array.getClazz());
+        return (HeapDumpClassMirror)vm.makeMirror(array.getClazz());
     }
 
     @Override
@@ -35,7 +35,7 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
         if (address == 0) {
             return null;
         }
-        return HeapDumpFieldMirror.getObjectWithErrorHandling(loader, new NamedReference(array.getSnapshot(), address, "[" + index + "]"));
+        return HeapDumpFieldMirror.getObjectWithErrorHandling(vm, new NamedReference(array.getSnapshot(), address, "[" + index + "]"));
     }
 
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {

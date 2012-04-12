@@ -13,6 +13,7 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror.NativeFieldMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
@@ -190,6 +191,11 @@ public class NativeClassMirror extends ClassMirror {
         return names;
     }
         
+    @Override
+    public List<InstanceMirror> getInstances() {
+        throw new UnsupportedOperationException();
+    }
+    
     @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + klass;

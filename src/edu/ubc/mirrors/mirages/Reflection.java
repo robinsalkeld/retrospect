@@ -1,13 +1,19 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassName;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 import edu.ubc.mirrors.test.ChainedClassLoader;
@@ -124,4 +130,68 @@ public class Reflection {
         return new ChainedClassLoader(parent, child);
     }
     
+    public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException {
+        if (name.equals("sun.misc.PathPermissions")) {
+            int bp = 5;
+            bp++;
+        }
+        // String must be special-cased, because we can't call loadClass(String) to load String itself! We just make the
+        // assumption that the VM defines the class, which is legitimate since the VM must also create string constants at the bytecode level.
+        ClassMirror result;
+        if (originalLoader == null || name.equals(String.class.getName()) || name.equals(getMirageBinaryClassName(String.class.getName(), false))) {
+            result = vm.findBootstrapClassMirror(name);
+        } else {
+            ClassMirror stringClass = originalLoader.getClassMirror().getVM().findBootstrapClassMirror(String.class.getName());
+            MethodMirror method;
+            try {
+                method = originalLoader.getClassMirror().getInstanceMethod("loadClass", stringClass);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                result = (ClassMirror)method.invoke((InstanceMirror)originalLoader, getMirror(name));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (result == null) {
+            throw new ClassNotFoundException(name);
+        }
+        return result;
+    }
+    
+    private static ClassMirror loadElementClassMirror(VirtualMachineMirror vm, Type elementType, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException {
+        if (elementType.equals(Type.BOOLEAN_TYPE)) {
+            return new NativeClassMirror(Boolean.TYPE);
+        } else if (elementType.equals(Type.BYTE_TYPE)) {
+            return new NativeClassMirror(Byte.TYPE);
+        } else if (elementType.equals(Type.CHAR_TYPE)) {
+            return new NativeClassMirror(Character.TYPE);
+        } else if (elementType.equals(Type.SHORT_TYPE)) {
+            return new NativeClassMirror(Short.TYPE);
+        } else if (elementType.equals(Type.INT_TYPE)) {
+            return new NativeClassMirror(Integer.TYPE);
+        } else if (elementType.equals(Type.LONG_TYPE)) {
+            return new NativeClassMirror(Long.TYPE);
+        } else if (elementType.equals(Type.FLOAT_TYPE)) {
+            return new NativeClassMirror(Float.TYPE);
+        } else if (elementType.equals(Type.DOUBLE_TYPE)) {
+            return new NativeClassMirror(Double.TYPE);
+        } else {
+            return classMirrorForName(vm, elementType.getClassName(), resolve, loader);
+        }
+    }
+    
+    public static ClassMirror classMirrorForName(VirtualMachineMirror vm, String name, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException {
+        Type type = Type.getObjectType(name);
+        if (type.getSort() == Type.ARRAY) {
+            Type elementType = type.getElementType();
+            ClassMirror elementClassMirror = loadElementClassMirror(vm, elementType, resolve, loader);
+            return new ArrayClassMirror(loader, type.getDimensions(), elementClassMirror);
+        } else {
+            return Reflection.loadClassMirror(vm, loader, name);
+        }
+    }
 }

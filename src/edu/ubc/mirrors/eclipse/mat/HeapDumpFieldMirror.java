@@ -22,10 +22,10 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
 
     private final Field field;
     
-    private final HeapDumpClassMirrorLoader loader;
+    private final HeapDumpVirtualMachineMirror vm;
     
-    public HeapDumpFieldMirror(HeapDumpClassMirrorLoader loader, Field field) {
-        this.loader = loader;
+    public HeapDumpFieldMirror(HeapDumpVirtualMachineMirror vm, Field field) {
+        this.vm = vm;
         this.field = field;
     }
     
@@ -61,12 +61,12 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         if (ref == null) {
             return null;
         }
-        return getObjectWithErrorHandling(loader, ref);
+        return getObjectWithErrorHandling(vm, ref);
     }
 
-    public static ObjectMirror getObjectWithErrorHandling(HeapDumpClassMirrorLoader loader, ObjectReference ref) {
+    public static ObjectMirror getObjectWithErrorHandling(HeapDumpVirtualMachineMirror vm, ObjectReference ref) {
         try {
-            return HeapDumpInstanceMirror.makeMirror(loader, ref.getObject());
+            return vm.makeMirror(ref.getObject());
         } catch (SnapshotException e) {
             // For now...
             return new NativeObjectMirror("(interned string @ " + Long.toHexString(ref.getObjectAddress()) + ")");
