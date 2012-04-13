@@ -12,8 +12,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -49,6 +51,7 @@ public class MirageClassLoader extends ClassLoader {
     // May be null
     final ClassMirrorLoader originalLoader;
     
+    private final Set<String> inFlightClasses = new HashSet<String>();
     
     final MirageClassMirrorLoader mirageClassMirrorLoader;
     
@@ -173,7 +176,14 @@ public class MirageClassLoader extends ClassLoader {
             int bp = 4;
             bp++;
         }
+        
+        // Similar check to what the VM does - we can also get into infinite recursion
+        // if the code generation is circular.
+        if (inFlightClasses.contains(name)) {
+            throw new ClassCircularityError(name);
+        }
         System.out.println("Generating bytecode for class: " + name);
+        inFlightClasses.add(name);
         
         if (internalName.equals(CLASS_LOADER_LITERAL_NAME)) {
             byte[] b = mirageClassMirrorLoader.classLoaderLiteralMirror.getBytecode();
@@ -285,6 +295,7 @@ public class MirageClassLoader extends ClassLoader {
                 classFile.close();
             }
             Class<?> c = getMirageClassLoader(vm, originalLoader).defineClass(name, b, 0, b.length);
+            inFlightClasses.remove(name);
             return c;
         } catch (Throwable e) {
             throw new RuntimeException("Error caught while defining class " + name, e);

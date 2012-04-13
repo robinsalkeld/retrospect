@@ -13,6 +13,21 @@ public class NativeClassMirrorLoader extends NativeObjectMirror implements Class
     }
     
     @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof NativeClassMirrorLoader)) {
+            return false;
+        }
+        
+        NativeClassMirrorLoader other = (NativeClassMirrorLoader)obj;
+        return classLoader == null ? other.classLoader == null : classLoader.equals(other.classLoader);
+    }
+    
+    @Override
+    public int hashCode() {
+        return 17 + classLoader.hashCode();
+    }
+    
+    @Override
     public ClassMirror findLoadedClassMirror(String name) {
         Class<?> klass;
         try {

@@ -123,7 +123,9 @@ public class Reflection {
     
     public static ClassMirrorLoader makeChainedClassLoaderMirror(ClassMirrorLoader parent, ClassMirrorLoader child) {
         ClassMirror reflectionClassMirror = new NativeClassMirror(Reflection.class);
-        return (ClassMirrorLoader)mirrorInvoke(reflectionClassMirror, "makeChainedClassLoader", parent, child);
+        ClassMirror classLoaderClass = new NativeClassMirror(ClassLoader.class);
+        MethodMirror method = getStaticMethod(reflectionClassMirror, "makeChainedClassLoader", classLoaderClass, classLoaderClass);
+        return (ClassMirrorLoader)mirrorInvoke(method, null, parent, child);
     }
     
     public static ChainedClassLoader makeChainedClassLoader(ClassLoader parent, ClassLoader child) {
@@ -131,10 +133,6 @@ public class Reflection {
     }
     
     public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException {
-        if (name.equals("sun.misc.PathPermissions")) {
-            int bp = 5;
-            bp++;
-        }
         // String must be special-cased, because we can't call loadClass(String) to load String itself! We just make the
         // assumption that the VM defines the class, which is legitimate since the VM must also create string constants at the bytecode level.
         ClassMirror result;
@@ -194,4 +192,39 @@ public class Reflection {
             return Reflection.loadClassMirror(vm, loader, name);
         }
     }
+    
+    public static MethodMirror getInstanceMethod(ClassMirror klass, String name, ClassMirror... parameterTypes) {
+        try {
+            return klass.getInstanceMethod(name, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            NoSuchMethodError error = new NoSuchMethodError(e.getMessage());
+            error.initCause(e);
+            throw error;
+        }
+    }
+    
+    public static MethodMirror getStaticMethod(ClassMirror klass, String name, ClassMirror... parameterTypes) {
+        try {
+            return klass.getStaticMethod(name, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            NoSuchMethodError error = new NoSuchMethodError(e.getMessage());
+            error.initCause(e);
+            throw error;
+        }
+    }
+    
+    public static ObjectMirror mirrorInvoke(MethodMirror method, InstanceMirror obj, ObjectMirror... args) {
+        try {
+            return method.invoke(obj, args);
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (IllegalAccessException e) {
+            IllegalAccessError error = new IllegalAccessError(e.getMessage());
+            error.initCause(e);
+            throw error;
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
 }
