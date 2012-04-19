@@ -10,6 +10,7 @@ import com.sun.tools.hat.internal.model.JavaLong;
 import com.sun.tools.hat.internal.model.JavaShort;
 import com.sun.tools.hat.internal.model.JavaThing;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.sunhat.JHatClassMirrorLoader;
@@ -32,7 +33,7 @@ public class JHatFieldMirror implements FieldMirror {
     }
 
     @Override
-    public Class<?> getType() {
+    public ClassMirror getType() {
         // TODO Auto-generated method stub
         return null;
     }

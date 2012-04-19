@@ -1,16 +1,12 @@
 package edu.ubc.mirrors.mutable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.DoubleArrayMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
@@ -20,77 +16,56 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
-public class MutableVirtualMachineMirror implements VirtualMachineMirror {
+public class MutableVirtualMachineMirror extends WrappingVirtualMachine {
 
-    private final VirtualMachineMirror immutableVM;
-    
     public MutableVirtualMachineMirror(VirtualMachineMirror immutableVM) {
-        this.immutableVM = immutableVM;
+        super(immutableVM);
     }
     
-    @Override
-    public ClassMirror findBootstrapClassMirror(String name) {
-        return (ClassMirror)makeMirror(immutableVM.findBootstrapClassMirror(name));
-    }
-
-    private final Map<ObjectMirror, ObjectMirror> mirrors = new HashMap<ObjectMirror, ObjectMirror>();
-    
-    public ObjectMirror makeMirror(ObjectMirror immutableMirror) {
-        if (immutableMirror == null) {
-            return null;
-        }
-        
-        ObjectMirror result = mirrors.get(immutableMirror);
-        if (result != null) {
-            return result;
-        }
-        
+    public ObjectMirror wrapMirror(ObjectMirror immutableMirror) {
         final String internalClassName = immutableMirror.getClassMirror().getClassName();
         
         if (internalClassName.equals("[Z")) {
-            result = new MutableBooleanArrayMirror((BooleanArrayMirror)immutableMirror);
+            return new MutableBooleanArrayMirror((BooleanArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[B")) {
-            result = new MutableByteArrayMirror((ByteArrayMirror)immutableMirror);
+            return new MutableByteArrayMirror((ByteArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[C")) {
-            result = new MutableCharArrayMirror((CharArrayMirror)immutableMirror);
+            return new MutableCharArrayMirror((CharArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[S")) {
-            result = new MutableShortArrayMirror((ShortArrayMirror)immutableMirror);
+            return new MutableShortArrayMirror((ShortArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[I")) {
-            result = new MutableIntArrayMirror((IntArrayMirror)immutableMirror);
+            return new MutableIntArrayMirror((IntArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[J")) {
-            result = new MutableLongArrayMirror((LongArrayMirror)immutableMirror);
+            return new MutableLongArrayMirror((LongArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[F")) {
-            result = new MutableFloatArrayMirror((FloatArrayMirror)immutableMirror);
+            return new MutableFloatArrayMirror((FloatArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[D")) {
-            result = new MutableDoubleArrayMirror((DoubleArrayMirror)immutableMirror);
+            return new MutableDoubleArrayMirror((DoubleArrayMirror)immutableMirror);
         // TODO: fix - should check immutableMirror.getClassMirror().getClassName() instead!
         } else if (immutableMirror instanceof ClassMirror) {
-            result = new MutableClassMirror(this, (ClassMirror)immutableMirror);
+            return new MutableClassMirror(this, (ClassMirror)immutableMirror);
         } else if (immutableMirror instanceof ClassMirrorLoader) {
-            
-            result = new MutableClassMirrorLoader(this, (ClassMirrorLoader)immutableMirror);
+            return new MutableClassMirrorLoader(this, (ClassMirrorLoader)immutableMirror);
         } else if (immutableMirror instanceof ThreadMirror) {
-            result = new MutableThreadMirror(this, (ThreadMirror)immutableMirror);
+            return new MutableThreadMirror(this, (ThreadMirror)immutableMirror);
         } else if (immutableMirror instanceof InstanceMirror) {
-            result = new MutableInstanceMirror(this, (InstanceMirror)immutableMirror);
+            return new MutableInstanceMirror(this, (InstanceMirror)immutableMirror);
         } else if (immutableMirror instanceof ObjectArrayMirror) {
-            result = new MutableObjectArrayMirror(this, (ObjectArrayMirror)immutableMirror);
+            return new MutableObjectArrayMirror(this, (ObjectArrayMirror)immutableMirror);
         } else {
             throw new IllegalArgumentException("Unsupported subclass: " + immutableMirror.getClass());
         }
-        
-        mirrors.put(immutableMirror, result);
-        return result;
     }
-
+    
     @Override
-    public List<ClassMirror> findAllClasses(String name) {
-        List<ClassMirror> immutableInstances = immutableVM.findAllClasses(name);
-        List<ClassMirror> result = new ArrayList<ClassMirror>(immutableInstances.size());
-        for (ClassMirror immutableInstance : immutableInstances) {
-            result.add((ClassMirror)makeMirror(immutableInstance));
-        }
-        return result;
+    protected ObjectMirror unwrapMirror(ObjectMirror mirror) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    protected FieldMirror wrapFieldMirror(FieldMirror fieldMirror) {
+        return new MutableFieldMirror(this, fieldMirror);
     }
 }

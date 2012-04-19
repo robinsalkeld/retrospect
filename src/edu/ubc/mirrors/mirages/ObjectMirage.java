@@ -257,7 +257,7 @@ public class ObjectMirage implements Mirage {
             InstanceMirror instanceMirror = (InstanceMirror)mirror;
             InstanceMirror result = newInstanceMirror(classLoaderLiteral, mirror.getClassMirror().getClassName());
             for (FieldMirror field : instanceMirror.getMemberFields()) {
-                Class<?> fieldType = field.getType();
+                ClassMirror fieldType = field.getType();
                 try {
                     FieldMirror resultField = result.getMemberField(field.getName());
                     if (fieldType.equals(Boolean.TYPE)) {

@@ -15,6 +15,7 @@ import org.eclipse.mat.snapshot.model.NamedReference;
 import org.eclipse.mat.snapshot.model.ObjectReference;
 
 import edu.ubc.mirrors.BoxingFieldMirror;
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 
@@ -39,8 +40,7 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         return field.getName();
     }
     
-    @Override
-    public Class<?> getType() {
+    public Class<?> getKlass() {
         switch (field.getType()) {
         case IObject.Type.BOOLEAN: return Boolean.TYPE;
         case IObject.Type.BYTE: return Byte.TYPE;
@@ -53,6 +53,11 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         default:
         case IObject.Type.OBJECT: return Object.class;
         }
+    }
+    
+    @Override
+    public ClassMirror getType() {
+        return (ClassMirror)NativeObjectMirror.makeMirror(getKlass());
     }
     
     public ObjectMirror get() throws IllegalAccessException {

@@ -114,8 +114,8 @@ public class NativeObjectMirror implements InstanceMirror {
         }
         
         @Override
-        public Class<?> getType() {
-            return field.getType();
+        public ClassMirror getType() {
+            return (ClassMirror)NativeObjectMirror.makeMirror(field.getType());
         }
         
         public ObjectMirror get() throws IllegalAccessException {

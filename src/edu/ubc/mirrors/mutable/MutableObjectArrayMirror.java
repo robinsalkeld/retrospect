@@ -14,7 +14,7 @@ public class MutableObjectArrayMirror implements ObjectArrayMirror {
         this.mutableValues = new ObjectMirror[immutableMirror.length()];
         
         for (int index = 0; index < mutableValues.length; index++) {
-            mutableValues[index] = vm.makeMirror(immutableMirror.get(index));
+            mutableValues[index] = vm.getWrappedMirror(immutableMirror.get(index));
         }
     }
     

@@ -26,7 +26,7 @@ public class ThreadStubs {
         
         // TODO-RS: Encapsulate the mutable layer better!
         MirageClassLoader loader = ((MirageClassLoader)classLoaderLiteral.getClassLoader());
-        ObjectMirror mirror = ((MutableVirtualMachineMirror)loader.getVM()).makeMirror(NativeObjectMirror.makeMirror(current));
+        ObjectMirror mirror = ((MutableVirtualMachineMirror)loader.getVM()).getWrappedMirror(NativeObjectMirror.makeMirror(current));
         mirage = (Mirage)ObjectMirage.make(mirror, classLoaderLiteral);
         threadMirages.put(current, mirage);
         return mirage;

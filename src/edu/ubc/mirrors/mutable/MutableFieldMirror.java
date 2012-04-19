@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.mutable;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
 
@@ -8,12 +9,11 @@ public class MutableFieldMirror implements FieldMirror {
     private final MutableVirtualMachineMirror vm;
     
     private final FieldMirror immutableFieldMirror;
-    private final FieldMirror mutableLayer;
-    private boolean initialized;
+    private Object newValue;
+    private boolean initialized = false;
     
-    public MutableFieldMirror(MutableVirtualMachineMirror vm, FieldMirror mutableLayer, FieldMirror immutableFieldMirror) {
+    public MutableFieldMirror(MutableVirtualMachineMirror vm, FieldMirror immutableFieldMirror) {
         this.vm = vm;
-        this.mutableLayer = mutableLayer;
         this.immutableFieldMirror = immutableFieldMirror;
     }
     
@@ -23,110 +23,110 @@ public class MutableFieldMirror implements FieldMirror {
     }
     
     @Override
-    public Class<?> getType() {
+    public ClassMirror getType() {
         return immutableFieldMirror.getType();
     }
     
     @Override
     public ObjectMirror get() throws IllegalAccessException {
         if (!initialized) {
-            mutableLayer.set(vm.makeMirror(immutableFieldMirror.get()));
+            newValue = vm.getWrappedMirror(immutableFieldMirror.get());
             initialized = true;
         }
-        return mutableLayer.get();
+        return (ObjectMirror)newValue;
     }
 
     @Override
     public boolean getBoolean() throws IllegalAccessException {
-        return (initialized ? mutableLayer.getBoolean() : immutableFieldMirror.getBoolean());
+        return (initialized ? (Boolean)newValue : immutableFieldMirror.getBoolean());
     }
 
     @Override
     public byte getByte() throws IllegalAccessException {
-        return (initialized ? mutableLayer.getByte() : immutableFieldMirror.getByte());
+        return (initialized ? (Byte)newValue : immutableFieldMirror.getByte());
     }
 
     @Override
     public char getChar() throws IllegalAccessException {
-        return (initialized ? mutableLayer.getChar() : immutableFieldMirror.getChar());
+        return (initialized ? (Character)newValue : immutableFieldMirror.getChar());
     }
 
     @Override
     public short getShort() throws IllegalAccessException {
-        return (initialized ? mutableLayer.getShort() : immutableFieldMirror.getShort());
+        return (initialized ? (Short)newValue : immutableFieldMirror.getShort());
     }
 
     @Override
     public int getInt() throws IllegalAccessException {
-        return (initialized ? mutableLayer.getInt() : immutableFieldMirror.getInt());
+        return (initialized ? (Integer)newValue : immutableFieldMirror.getInt());
     }
 
     @Override
     public long getLong() throws IllegalAccessException {
-        return (initialized ? mutableLayer.getLong() : immutableFieldMirror.getLong());
+        return (initialized ? (Long)newValue : immutableFieldMirror.getLong());
     }
 
     @Override
     public float getFloat() throws IllegalAccessException {
-        return (initialized ? mutableLayer.getFloat() : immutableFieldMirror.getFloat());
+        return (initialized ? (Float)newValue : immutableFieldMirror.getFloat());
     }
 
     @Override
     public double getDouble() throws IllegalAccessException {
-        return (initialized ? mutableLayer.getDouble() : immutableFieldMirror.getDouble());
+        return (initialized ? (Double)newValue : immutableFieldMirror.getDouble());
     }
 
     @Override
     public void set(ObjectMirror o) throws IllegalAccessException {
-        mutableLayer.set(o);
+        newValue = o;
         initialized = true;
     }
 
     @Override
     public void setBoolean(boolean b) throws IllegalAccessException {
-        mutableLayer.setBoolean(b);
+        newValue = b;
         initialized = true;
     }
 
     @Override
     public void setByte(byte b) throws IllegalAccessException {
-        mutableLayer.setByte(b);
+        newValue = b;
         initialized = true;
     }
 
     @Override
     public void setChar(char c) throws IllegalAccessException {
-        mutableLayer.setChar(c);
+        newValue = c;
         initialized = true;
     }
 
     @Override
     public void setShort(short s) throws IllegalAccessException {
-        mutableLayer.setShort(s);
+        newValue = s;
         initialized = true;
     }
 
     @Override
     public void setInt(int i) throws IllegalAccessException {
-        mutableLayer.setInt(i);
+        newValue = i;
         initialized = true;
     }
 
     @Override
     public void setLong(long l) throws IllegalAccessException {
-        mutableLayer.setLong(l);
+        newValue = l;
         initialized = true;
     }
 
     @Override
     public void setFloat(float f) throws IllegalAccessException {
-        mutableLayer.setFloat(f);
+        newValue = f;
         initialized = true;
     }
 
     @Override
     public void setDouble(double d) throws IllegalAccessException {
-        mutableLayer.setDouble(d);
+        newValue = d;
         initialized = true;
     }
 
