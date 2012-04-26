@@ -12,13 +12,15 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
-public class ClassLoaderLiteralMirror extends ClassMirror {
+public class ClassLoaderLiteralMirror implements ClassMirror {
 
     public static final String CLASS_LOADER_LITERAL_NAME = "edu/ubc/mirrors/ClassLoaderLiteral";
     
@@ -217,7 +219,7 @@ public class ClassLoaderLiteralMirror extends ClassMirror {
 
     @Override
     public ClassMirror getSuperClassMirror() {
-        return loadClassMirrorInternal(Object.class.getName());
+        return Reflection.loadClassMirrorInternal(this, Object.class.getName());
     }
 
     @Override
@@ -246,13 +248,21 @@ public class ClassLoaderLiteralMirror extends ClassMirror {
     }
     
     @Override
-    public boolean isPrimitive() {
-        return false;
+    public MethodMirror getMethod(String name, ClassMirror... paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        throw new UnsupportedOperationException();
     }
     
     @Override
-    public Class<?> getNativeStubsClass() {
-        return null;
+    public ConstructorMirror getConstructor(ClassMirror... paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        
+        throw new NoSuchMethodException();
+    }
+    
+    @Override
+    public boolean isPrimitive() {
+        return false;
     }
     
     @Override
@@ -263,5 +273,10 @@ public class ClassLoaderLiteralMirror extends ClassMirror {
     @Override
     public List<InstanceMirror> getInstances() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ClassMirror getClassMirror() {
+        return getVM().findBootstrapClassMirror(Class.class.getName());
     }
 }

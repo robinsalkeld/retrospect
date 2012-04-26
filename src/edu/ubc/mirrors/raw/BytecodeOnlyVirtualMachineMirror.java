@@ -26,4 +26,14 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     public List<ClassMirror> findAllClasses(String name) {
         throw new UnsupportedOperationException(); 
     }    
+    
+    @Override
+    public ClassMirror getPrimitiveClass(String name) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -16,4 +16,9 @@ public class WrappingMirror implements ObjectMirror {
     public WrappingClassMirror getClassMirror() {
         return vm.getWrappedClassMirror(wrapped.getClassMirror());
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + wrapped;
+    }
 }

@@ -5,17 +5,18 @@ import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
-public class WrappingClassMirror extends ClassMirror {
+public class WrappingClassMirror extends WrappingInstanceMirror implements ClassMirror {
 
-    protected final WrappingVirtualMachine vm;
     protected final ClassMirror wrapped;
     
     protected WrappingClassMirror(WrappingVirtualMachine vm, ClassMirror wrapped) {
-        this.vm = vm;
+        super(vm, wrapped);
         this.wrapped = wrapped;
     }
     
@@ -85,11 +86,6 @@ public class WrappingClassMirror extends ClassMirror {
     }
     
     @Override
-    public Class<?> getNativeStubsClass() {
-        return wrapped.getNativeStubsClass();
-    }
-    
-    @Override
     public List<String> getDeclaredFieldNames() {
         return wrapped.getDeclaredFieldNames();
     }
@@ -102,6 +98,27 @@ public class WrappingClassMirror extends ClassMirror {
             result.add((InstanceMirror)vm.getWrappedMirror(instance));
         }
         return result;
+    }
+
+    @Override
+    public MethodMirror getMethod(String name, ClassMirror... paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        
+        ClassMirror[] unwrappedParamTypes = new ClassMirror[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            unwrappedParamTypes[i] = (ClassMirror)vm.unwrapMirror(paramTypes[i]);
+        }
+        return new WrappingMethodMirror(vm, wrapped.getMethod(name, unwrappedParamTypes));
+    }
+    
+    @Override
+    public ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+        
+        ClassMirror[] unwrappedParamTypes = new ClassMirror[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            unwrappedParamTypes[i] = (ClassMirror)vm.unwrapMirror(paramTypes[i]);
+        }
+        return new WrappingConstructorMirror(vm, wrapped.getConstructor(unwrappedParamTypes));
     }
     
 }

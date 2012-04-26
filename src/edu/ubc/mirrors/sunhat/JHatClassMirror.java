@@ -21,11 +21,19 @@ public class JHatClassMirror extends NativeClassMirror {
     private final JavaClass javaClass;
     
     public JHatClassMirror(JHatClassMirrorLoader loader, JavaClass javaClass) {
-        super(loader.getClassLoader(), javaClass.getName());
+        super(loadClass(loader, javaClass));
         this.loader = loader;
         this.javaClass = javaClass;
     }
 
+    private static Class<?> loadClass(JHatClassMirrorLoader loader, JavaClass javaClass) {
+        try {
+            return loader.getClassLoader().loadClass(javaClass.getName());
+        } catch (ClassNotFoundException e) {
+            throw new NoClassDefFoundError(e.getMessage());
+        }
+    }
+    
     @Override
     public ClassMirrorLoader getLoader() {
         return loader;

@@ -12,9 +12,12 @@ import org.objectweb.asm.Opcodes;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 
-public abstract class BytecodeClassMirror extends ClassMirror {
+public abstract class BytecodeClassMirror implements ClassMirror {
 
     private boolean resolved = false;
     
@@ -24,7 +27,7 @@ public abstract class BytecodeClassMirror extends ClassMirror {
     private List<String> memberFieldNames = new ArrayList<String>();
     
     
-    private String className;
+    protected String className;
     
     public BytecodeClassMirror(String className) {
         this.className = className;
@@ -42,11 +45,11 @@ public abstract class BytecodeClassMirror extends ClassMirror {
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
             
-            superclassNode = superName == null ? null : loadClassMirrorInternal(superName.replace('/', '.'));
+            superclassNode = superName == null ? null : Reflection.loadClassMirrorInternal(BytecodeClassMirror.this, superName.replace('/', '.'));
             
             interfaceNodes = new ArrayList<ClassMirror>(interfaces.length);
             for (String i : interfaces) {
-                interfaceNodes.add(loadClassMirrorInternal(i.replace('/', '.')));
+                interfaceNodes.add(Reflection.loadClassMirrorInternal(BytecodeClassMirror.this, i.replace('/', '.')));
             }
         }
         
@@ -83,7 +86,12 @@ public abstract class BytecodeClassMirror extends ClassMirror {
     public String getClassName() {
         return className;
     }
-
+    
+    @Override
+    public ClassMirror getClassMirror() {
+        return getVM().findBootstrapClassMirror(Class.class.getName());
+    }
+    
     @Override
     public abstract byte[] getBytecode();
 
@@ -142,7 +150,23 @@ public abstract class BytecodeClassMirror extends ClassMirror {
     }
     
     @Override
+    public MethodMirror getMethod(String name, ClassMirror[] paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        
+        // Could create un-invocable methods, but no use for that yet.
+        throw new UnsupportedOperationException();
+    }
+    @Override
+    public ConstructorMirror getConstructor(ClassMirror... paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        
+        // Could create un-invocable methods, but no use for that yet.
+        throw new UnsupportedOperationException();
+    }
+    
+    
+    @Override
     public String toString() {
-        return getClass().getName() + ": " + getClassName();
+        return getClass().getSimpleName() + ": " + getClassName();
     }
 }

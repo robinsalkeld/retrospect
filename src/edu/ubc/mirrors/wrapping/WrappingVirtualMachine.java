@@ -99,6 +99,10 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return result;
     }
     
+    public WrappingClassMirrorLoader getWrappedClassLoaderMirror(ClassMirrorLoader mirror) {
+        return (WrappingClassMirrorLoader)getWrappedMirror(mirror);
+    }
+    
     @Override
     public List<ClassMirror> findAllClasses(String name) {
         return getWrappedClassMirrorList(wrappedVM.findAllClasses(name));
@@ -133,5 +137,15 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
             result.add(getFieldMirror(field));
         }
         return result;
+    }
+    
+    @Override
+    public ClassMirror getPrimitiveClass(String name) {
+        return getWrappedClassMirror(wrappedVM.getPrimitiveClass(name));
+    }
+    
+    @Override
+    public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
+        return getWrappedClassMirror(wrappedVM.getArrayClass(dimensions, elementClass));
     }
 }

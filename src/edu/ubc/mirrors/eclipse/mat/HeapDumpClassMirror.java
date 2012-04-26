@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import edu.ubc.mirrors.raw.BytecodeClassMirror;
 public class HeapDumpClassMirror extends BytecodeClassMirror {
 
     private final HeapDumpVirtualMachineMirror vm;
+    // Will be null if this class was never actually loaded in the snapshot
     private final IClass klass;
     private final IClassLoader loader;
     
@@ -32,6 +34,13 @@ public class HeapDumpClassMirror extends BytecodeClassMirror {
         this.vm = vm;
         this.klass = klass;
         this.loader = getClassLoader(klass);
+    }
+    
+    public HeapDumpClassMirror(HeapDumpVirtualMachineMirror vm, String className) {
+        super(className);
+        this.vm = vm;
+        this.klass = null;
+        this.loader = null;
     }
     
     public static IClassLoader getClassLoader(IClass klass) {
@@ -117,6 +126,10 @@ public class HeapDumpClassMirror extends BytecodeClassMirror {
     }
 
     public List<InstanceMirror> getInstances() {
+        if (klass == null) {
+            return Collections.emptyList();
+        }
+        
         List<InstanceMirror> result = new ArrayList<InstanceMirror>();
         try {
             for (int id : klass.getObjectIds()) {

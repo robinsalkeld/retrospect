@@ -11,20 +11,19 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 
-public class ArrayClassMirror extends ClassMirror {
+public class ArrayClassMirror implements ClassMirror {
 
-    // May be null
-    private final ClassMirrorLoader loader;
-    
     private final ClassMirror elementClassMirror;
     private final int dims;
     
-    public ArrayClassMirror(ClassMirrorLoader loader, int dims, ClassMirror elementClassMirror) {
-        this.loader = loader;
+    public ArrayClassMirror(int dims, ClassMirror elementClassMirror) {
         this.elementClassMirror = elementClassMirror;
         this.dims = dims;
     }
@@ -35,7 +34,34 @@ public class ArrayClassMirror extends ClassMirror {
     }
     
     private Type getArrayType() {
-        return makeArrayType(dims, Type.getObjectType(elementClassMirror.getClassName().replace('.', '/')));
+        return makeArrayType(dims, getType(elementClassMirror));
+    }
+    
+    private Type getType(ClassMirror classMirror) {
+        String name = classMirror.getClassName();
+        if (classMirror.isPrimitive()) {
+            if (name.equals("int")) {
+                return Type.INT_TYPE;
+            } else if (name.equals("void")) {
+                return Type.VOID_TYPE;
+            } else if (name.equals("boolean")) {
+                return Type.BOOLEAN_TYPE;
+            } else if (name.equals("byte")) {
+                return Type.BYTE_TYPE;
+            } else if (name.equals("char")) {
+                return Type.CHAR_TYPE;
+            } else if (name.equals("short")) {
+                return Type.SHORT_TYPE;
+            } else if (name.equals("double")) {
+                return Type.DOUBLE_TYPE;
+            } else if (name.equals("float")) {
+                return Type.FLOAT_TYPE;
+            } else /* if (name.equals("long")) */{
+                return Type.LONG_TYPE;
+            }
+        } else {
+            return Type.getObjectType(name.replace('.', '/'));
+        }
     }
     
     @Override
@@ -62,7 +88,7 @@ public class ArrayClassMirror extends ClassMirror {
 
     @Override
     public ClassMirrorLoader getLoader() {
-        return loader;
+        return elementClassMirror.getLoader();
     }
 
     @Override
@@ -85,13 +111,13 @@ public class ArrayClassMirror extends ClassMirror {
         if (dims == 1) {
             return elementClassMirror;
         } else { 
-            return new ArrayClassMirror(loader, dims - 1, elementClassMirror);
+            return new ArrayClassMirror(dims - 1, elementClassMirror);
         }
     }
 
     @Override
     public ClassMirror getSuperClassMirror() {
-        return loadClassMirrorInternal(Object.class.getName());
+        return Reflection.loadClassMirrorInternal(this, Object.class.getName());
     }
 
     @Override
@@ -102,8 +128,8 @@ public class ArrayClassMirror extends ClassMirror {
     @Override
     public List<ClassMirror> getInterfaceMirrors() {
         List<ClassMirror> result = new ArrayList<ClassMirror>(2);
-        result.add(loadClassMirrorInternal(Cloneable.class.getName()));
-        result.add(loadClassMirrorInternal(Serializable.class.getName()));
+        result.add(Reflection.loadClassMirrorInternal(this, Cloneable.class.getName()));
+        result.add(Reflection.loadClassMirrorInternal(this, Serializable.class.getName()));
         return result;
     }
     
@@ -120,5 +146,24 @@ public class ArrayClassMirror extends ClassMirror {
     @Override
     public String toString() {
         return getClass().getName() + ": " + getArrayType();
+    }
+
+    @Override
+    public MethodMirror getMethod(String name, ClassMirror... paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        
+        throw new NoSuchMethodException(name);
+    }
+
+    @Override
+    public ConstructorMirror getConstructor(ClassMirror... paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        
+        throw new NoSuchMethodException();
+    }
+    
+    @Override
+    public ClassMirror getClassMirror() {
+        return getVM().findBootstrapClassMirror(Class.class.getName());
     }
 }

@@ -29,50 +29,48 @@ public class SystemStubs {
     }
     
     private static Object getArrayElement(ObjectMirror am, int index) {
-        if (am instanceof ObjectArrayMirror) {
-            return ((ObjectArrayMirror)am).get(index);
-        } else if (am instanceof BooleanArrayMirror) {
+        String className = am.getClassMirror().getClassName();
+        if (className.equals("[Z")) {
             return ((BooleanArrayMirror)am).getBoolean(index);
-        } else if (am instanceof ByteArrayMirror) {
+        } else if (className.equals("[B")) {
             return ((ByteArrayMirror)am).getByte(index);
-        } else if (am instanceof CharArrayMirror) {
+        } else if (className.equals("[C")) {
             return ((CharArrayMirror)am).getChar(index);
-        } else if (am instanceof ShortArrayMirror) {
+        } else if (className.equals("[S")) {
             return ((ShortArrayMirror)am).getShort(index);
-        } else if (am instanceof IntArrayMirror) {
+        } else if (className.equals("[I")) {
             return ((IntArrayMirror)am).getInt(index);
-        } else if (am instanceof LongArrayMirror) {
+        } else if (className.equals("[J")) {
             return ((LongArrayMirror)am).getLong(index);
-        } else if (am instanceof FloatArrayMirror) {
+        } else if (className.equals("[F")) {
             return ((FloatArrayMirror)am).getFloat(index);
-        } else if (am instanceof DoubleArrayMirror) {
+        } else if (className.equals("[D")) {
             return ((DoubleArrayMirror)am).getDouble(index);
         } else {
-            throw new IllegalArgumentException();
+            return ((ObjectArrayMirror)am).get(index);
         }
     }
     
     private static void setArrayElement(ObjectMirror am, int index, Object o) {
-        if (am instanceof ObjectArrayMirror) {
-            ((ObjectArrayMirror)am).set(index, (ObjectMirror)o);
-        } else if (am instanceof BooleanArrayMirror) {
+        String className = am.getClassMirror().getClassName();
+        if (className.equals("[Z")) {
             ((BooleanArrayMirror)am).setBoolean(index, (Boolean)o);
-        } else if (am instanceof ByteArrayMirror) {
+        } else if (className.equals("[B")) {
             ((ByteArrayMirror)am).setByte(index, (Byte)o);
-        } else if (am instanceof CharArrayMirror) {
+        } else if (className.equals("[C")) {
             ((CharArrayMirror)am).setChar(index, (Character)o);
-        } else if (am instanceof ShortArrayMirror) {
+        } else if (className.equals("[S")) {
             ((ShortArrayMirror)am).setShort(index, (Short)o);
-        } else if (am instanceof IntArrayMirror) {
+        } else if (className.equals("[I")) {
             ((IntArrayMirror)am).setInt(index, (Integer)o);
-        } else if (am instanceof LongArrayMirror) {
+        } else if (className.equals("[J")) {
             ((LongArrayMirror)am).setLong(index, (Long)o);
-        } else if (am instanceof FloatArrayMirror) {
+        } else if (className.equals("[F")) {
             ((FloatArrayMirror)am).setFloat(index, (Float)o);
-        } else if (am instanceof DoubleArrayMirror) {
+        } else if (className.equals("[D")) {
             ((DoubleArrayMirror)am).setDouble(index, (Double)o);
         } else {
-            throw new IllegalArgumentException();
+            ((ObjectArrayMirror)am).set(index, (ObjectMirror)o);
         }
     }
 }

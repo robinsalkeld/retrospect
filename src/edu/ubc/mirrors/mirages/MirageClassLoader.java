@@ -36,6 +36,9 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.NativeClassMirror;
@@ -47,7 +50,7 @@ public class MirageClassLoader extends ClassLoader {
     public final File myTraceDir;
     public static boolean debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
     
-    final VirtualMachineMirror vm;
+    final VirtualMachineHolograph vm;
     // May be null
     final ClassMirrorLoader originalLoader;
     
@@ -69,7 +72,7 @@ public class MirageClassLoader extends ClassLoader {
     
     public static final String CLASS_LOADER_LITERAL_NAME = "edu/ubc/mirrors/ClassLoaderLiteral";
     
-    public MirageClassLoader(VirtualMachineMirror vm, ClassMirrorLoader originalLoader, String traceDir) {
+    public MirageClassLoader(VirtualMachineHolograph vm, ClassMirrorLoader originalLoader, String traceDir) {
         super(MirageClassLoader.class.getClassLoader());
         this.vm = vm;
         this.originalLoader = originalLoader;
@@ -80,19 +83,6 @@ public class MirageClassLoader extends ClassLoader {
         } else {
             myTraceDir = null;
         }
-    }
-    
-    private static final Map<ClassMirrorLoader, MirageClassLoader> mirageClassLoaders = 
-                 new HashMap<ClassMirrorLoader, MirageClassLoader>();
-            
-    
-    public static MirageClassLoader getMirageClassLoader(VirtualMachineMirror vm, ClassMirrorLoader originalLoader) {
-        MirageClassLoader result = mirageClassLoaders.get(originalLoader);
-        if (result == null) {
-            result = new MirageClassLoader(vm, originalLoader, null);
-            mirageClassLoaders.put(originalLoader, result);
-        }
-        return result;
     }
     
     public File createClassFile(String internalName) {
@@ -135,25 +125,12 @@ public class MirageClassLoader extends ClassLoader {
                 Throwable.class);
     }
     
-    public ClassMirror loadOriginalClassMirror(String originalClassName) throws ClassNotFoundException {
-        return Reflection.loadClassMirror(vm, originalLoader, originalClassName);
+    public ClassHolograph loadOriginalClassMirror(String originalClassName) throws ClassNotFoundException {
+        return (ClassHolograph)Reflection.classMirrorForName(vm, originalClassName, false, originalLoader);
     }
     
     public Class<?> loadMirageClass(String originalClassName) throws ClassNotFoundException {
         return loadClass(MirageClassGenerator.getMirageBinaryClassName(originalClassName, false));
-    }
-    
-    public static Class<?> loadMirageClass(ClassMirror classMirror) {
-        MirageClassLoader mirageClassLoader = MirageClassLoader.getMirageClassLoader(classMirror.getVM(), classMirror.getLoader());
-        try {
-            return mirageClassLoader.loadMirageClass(classMirror.getClassName());
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(e.getMessage());
-        }
-    }
-    
-    public static Object makeMirageStatic(ObjectMirror mirror) {
-        return mirror == null ? null : getMirageClassLoader(mirror.getClassMirror().getVM(), mirror.getClassMirror().getLoader()).makeMirage(mirror);
     }
     
     @Override
@@ -187,7 +164,7 @@ public class MirageClassLoader extends ClassLoader {
         
         if (internalName.equals(CLASS_LOADER_LITERAL_NAME)) {
             byte[] b = mirageClassMirrorLoader.classLoaderLiteralMirror.getBytecode();
-            return defineDynamicClass(mirageClassMirrorLoader, name, b);
+            return defineDynamicClass(name, b);
         } else if (name.startsWith("miragearray")) {
             boolean isInterface = !name.startsWith("miragearrayimpl");
             
@@ -200,11 +177,11 @@ public class MirageClassLoader extends ClassLoader {
             int access = Opcodes.ACC_PUBLIC | (isInterface ? Opcodes.ACC_INTERFACE : 0);
             
             // TODO-RS: miragearray(n).java.lang.Object should extend miragearray(n-1).java.lang.Object
-            ClassMirrorLoader originalLoader = null;
+            ClassLoaderHolograph originalLoader = null;
             if (originalElementType.getSort() == Type.OBJECT || originalElementType.getSort() == Type.ARRAY) {
                 String originalElement = originalElementType.getInternalName();
                 int dims = originalType.getDimensions();
-                ClassMirror originalClassMirror = loadOriginalClassMirror(originalElement.replace('/', '.'));
+                ClassHolograph originalClassMirror = loadOriginalClassMirror(originalElement.replace('/', '.'));
                 originalLoader = originalClassMirror.getLoader();
                 
                 superClassMirror = originalClassMirror.getSuperClassMirror();
@@ -253,10 +230,10 @@ public class MirageClassLoader extends ClassLoader {
                 mv.visitEnd();
             }
             byte[] b = writer.toByteArray();
-            return defineDynamicClass(originalLoader, name, b);
+            return ClassHolograph.getMirageClassLoader(vm, originalLoader).defineDynamicClass(name, b);
         } else if (name.startsWith("mirage")) {
             String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
-            ClassMirror classMirror = loadOriginalClassMirror(originalClassName);
+            ClassHolograph classMirror = loadOriginalClassMirror(originalClassName);
             byte[] b;
             try {
                 b = MirageClassGenerator.generate(this, classMirror);
@@ -269,23 +246,23 @@ public class MirageClassLoader extends ClassLoader {
                 }
                 throw new RuntimeException("Error caught while generating bytecode for " + target, e);
             }
-            return defineDynamicClass(classMirror.getLoader(), name, b);
+            return ClassHolograph.getMirageClassLoader(vm, classMirror.getLoader()).defineDynamicClass(name, b);
         } else if (name.startsWith("native")) {
             String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
-            ClassMirror classMirror = loadOriginalClassMirror(originalClassName);
+            ClassHolograph classMirror = loadOriginalClassMirror(originalClassName);
             byte[] b;
             try {
                 b = NativeClassGenerator.generate(classMirror);
             } catch (IOException e) {
                 throw new ClassNotFoundException("Error reading bytecode from class mirror: " + originalClassName, e);
             }
-            return defineDynamicClass(classMirror.getLoader(), name, b);
+            return ClassHolograph.getMirageClassLoader(vm, classMirror.getLoader()).defineDynamicClass(name, b);
         } else {
             throw new ClassNotFoundException(name);
         }
     }
     
-    protected Class<?> defineDynamicClass(ClassMirrorLoader originalLoader, String name, byte[] b) {
+    protected Class<?> defineDynamicClass(String name, byte[] b) {
         try {
             if (myTraceDir != null) {
                 File file = createClassFile(name.replace('.', '/') + ".class");
@@ -294,7 +271,7 @@ public class MirageClassLoader extends ClassLoader {
                 classFile.flush();
                 classFile.close();
             }
-            Class<?> c = getMirageClassLoader(vm, originalLoader).defineClass(name, b, 0, b.length);
+            Class<?> c = defineClass(name, b, 0, b.length);
             inFlightClasses.remove(name);
             return c;
         } catch (Throwable e) {

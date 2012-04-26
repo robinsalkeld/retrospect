@@ -4,6 +4,7 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalBinaryClas
 
 import java.util.Map;
 
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
@@ -66,24 +67,6 @@ public class ObjectMirage implements Mirage {
         return mirageToString(this);
     }
     
-    // TODO: Can't do this until we sort out how to automatically specify ClassMirrorLoaders
-
-//    private static Map<ClassLoader, MirageClassLoader> mirageClassLoaders = new HashMap<ClassLoader, MirageClassLoader>();
-//    
-//    public static MirageClassLoader getMirageClassLoader(ClassLoader originalLoader) {
-//        MirageClassLoader mirageLoader = mirageClassLoaders.get(originalLoader);
-//        if (mirageLoader == null) {
-//            mirageLoader = new MirageClassLoader(originalLoader);
-//            mirageClassLoaders.put(originalLoader, mirageLoader);
-//        }
-//        return mirageLoader;
-//    }
-//    
-//    public static Class<?> getMirageClass(Class<?> original) throws ClassNotFoundException {
-//        MirageClassLoader mirageLoader = getMirageClassLoader(original.getClassLoader());
-//        return mirageLoader.loadClass(MirageClassGenerator.getMirageBinaryClassName(original.getName()));
-//    }
-    
     public static Class<?> getNativeClass(Class<?> mirageClass) {
         final String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClass.getName());
         final String nativeClassName = NativeClassGenerator.getNativeBinaryClassName(originalClassName);
@@ -93,12 +76,6 @@ public class ObjectMirage implements Mirage {
             throw new InternalError();
         }
     }
-    
-    // TODO: Can't do this until we sort out how to automatically specify ClassMirrorLoaders
-//    public static Class<?> defineMirageClass(String className, ClassLoader originalLoader, ClassReader originalReader) {
-//        MirageClassLoader mirageLoader = getMirageClassLoader(originalLoader);
-//        return mirageLoader.defineMirageClass(className, originalReader);
-//    }
     
     public static ClassMirror getOriginalClassMirror(MirageClassLoader mirageLoader, String mirageClassName) {
         String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClassName);
@@ -182,7 +159,7 @@ public class ObjectMirage implements Mirage {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         // TODO-RS: Call ClassMirror.newInstanceMirror() instead!
         ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror(loader, className.replace('/', '.'));
-        if (new NativeClassMirror(ClassLoader.class).isAssignableFrom(originalClassMirror)) {
+        if (Reflection.isAssignableFrom(new NativeClassMirror(ClassLoader.class), originalClassMirror)) {
             return new FieldMapClassMirrorLoader(originalClassMirror);
         } else {
             return new FieldMapMirror(originalClassMirror);
@@ -289,9 +266,7 @@ public class ObjectMirage implements Mirage {
         } else if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror objectArrayMirror = (ObjectArrayMirror)mirror;
             int length = objectArrayMirror.length();
-            ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror((MirageClassLoader)classLoaderLiteral.getClassLoader(), mirage.getClass().getName());
-            // TODO-RS: Call some method on ClassMirror or ClassLoaderMirror instead, ala newInstance
-            ObjectArrayMirror result = new DirectArrayMirror(originalClassMirror, length);
+            ObjectArrayMirror result = newObjectArrayMirror(classLoaderLiteral, mirage.getClass().getName(), length);
             
             SystemStubs.arraycopyMirrors(objectArrayMirror, 0, result, 0, length);
             

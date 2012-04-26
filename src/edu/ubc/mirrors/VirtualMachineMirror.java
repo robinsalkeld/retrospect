@@ -7,4 +7,8 @@ public interface VirtualMachineMirror {
     public ClassMirror findBootstrapClassMirror(String name);
     
     public List<ClassMirror> findAllClasses(String name); 
+    
+    public ClassMirror getPrimitiveClass(String name);
+    
+    public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass);
 }

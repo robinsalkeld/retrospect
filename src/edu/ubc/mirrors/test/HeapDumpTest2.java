@@ -32,6 +32,7 @@ import org.osgi.framework.Bundle;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -45,12 +46,14 @@ import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirrorLoader;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
+import edu.ubc.mirrors.wrapping.WrappingClassMirrorLoader;
 
 public class HeapDumpTest2 implements IApplication {
 
-    public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException, IllegalAccessException, NoSuchFieldException, InterruptedException {
+    public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException, IllegalAccessException, NoSuchFieldException, IllegalArgumentException, NoSuchMethodException, InvocationTargetException {
         String snapshotPath = args[0];
         
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
@@ -68,7 +71,7 @@ public class HeapDumpTest2 implements IApplication {
     }
     
   public static void printJRubyThreadsFromSnapshot(ISnapshot snapshot) 
-          throws SnapshotException, ClassNotFoundException {
+          throws SnapshotException, ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 
     IClass iClass = snapshot.getClassesByName(Bundle.class.getName(), true).iterator().next();
     IClassLoader classLoader = (IClassLoader)snapshot.getObject(iClass.getClassLoaderId());
@@ -78,29 +81,22 @@ public class HeapDumpTest2 implements IApplication {
     vm.addNativeBytecodeLoaders(classLoader, Bundle.class.getClassLoader());
     HeapDumpClassMirrorLoader heapDumpLoader = new HeapDumpClassMirrorLoader(vm, classLoader);
 
-    // Note we need a class loader that can see the classes in the JRuby API 
-    // as well as our additional code (i.e. this class).
-    ClassLoader nativeLoader = EclipseHeapDumpTest.class.getClassLoader();
-    ClassMirrorLoader nativeMirrorLoader = new NativeClassMirrorLoader(nativeLoader);
-    ClassMirrorLoader extendedLoader = Reflection.makeChainedClassLoaderMirror(
-            heapDumpLoader, nativeMirrorLoader);
-
     // Create a mutable layer on the object model.
     MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
-    MutableClassMirrorLoader mutableLoader = 
-            new MutableClassMirrorLoader(mutableVM, extendedLoader);
-
-    ClassMirror rubyClass = Reflection.loadClassMirror(mutableVM, mutableLoader, 
-            Ruby.class.getName());
-    ClassMirror printerClass = Reflection.loadClassMirror(mutableVM, mutableLoader, 
-            JRubyStackTraces.class.getName());
+    
+    // Note we need a class loader that can see the classes in the JRuby API 
+    // as well as our additional code (i.e. this class).
+    WrappingClassMirrorLoader mutableHeapDumpLoader = mutableVM.getWrappedClassLoaderMirror(heapDumpLoader);
+    ClassMirror printerClass = Reflection.injectBytecode(mutableHeapDumpLoader, new NativeClassMirror(JRubyStackTraces.class));
+    
+    ClassMirror rubyClass = Reflection.loadClassMirror(mutableVM, mutableHeapDumpLoader,  Ruby.class.getName());
 
     // For each class instance (in this case we only expect one)...
     List<InstanceMirror> rubies = rubyClass.getInstances();
+    MethodMirror method = printerClass.getMethod("printStackTraces", rubyClass);
     for (InstanceMirror ruby : rubies) {
       // Invoke JRubyStackTraces#printStackTraces reflectively.
-      Object result = Reflection.mirrorInvoke(
-              printerClass, "printStackTraces", ruby);
+      Object result = method.invoke(ruby);
       System.out.println(result);
     }
   }

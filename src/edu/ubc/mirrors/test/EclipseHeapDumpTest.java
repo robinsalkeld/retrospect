@@ -16,11 +16,15 @@ import org.osgi.framework.Bundle;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
@@ -34,32 +38,30 @@ public class EclipseHeapDumpTest implements IApplication {
                 new File(snapshotPath), 
                 Collections.<String, String>emptyMap(), 
                 new ConsoleProgressListener(System.out));
-        IClass iClass = snapshot.getClassesByName(Bundle.class.getName(), true).iterator().next();
-        IClassLoader classLoader = (IClassLoader)snapshot.getObject(iClass.getClassLoaderId());
         
         // Create an instance of the mirrors API backed by the snapshot
         HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
+        IClass iClass = snapshot.getClassesByName(Bundle.class.getName(), true).iterator().next();
+        IClassLoader classLoader = (IClassLoader)snapshot.getObject(iClass.getClassLoaderId());
         vm.addNativeBytecodeLoaders(classLoader, Bundle.class.getClassLoader());
-        HeapDumpClassMirrorLoader heapDumpLoader = new HeapDumpClassMirrorLoader(vm, classLoader);
+        
+        // Create a mutable layer on the object model.
+        MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
+        
+        // Create a holograph VM
+        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(mutableVM);
         
         // Note we need a class loader that can see the classes in the OSGi API 
         // as well as our additional code (i.e. PrintOSGiBundles).
-        ClassLoader nativeLoader = EclipseHeapDumpTest.class.getClassLoader();
-        ClassMirrorLoader nativeMirrorLoader = new NativeClassMirrorLoader(nativeLoader);
-        ClassMirrorLoader extendedLoader = Reflection.makeChainedClassLoaderMirror(heapDumpLoader, nativeMirrorLoader);
-
-        // Create a mutable layer on the object model.
-        MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
-        MutableClassMirrorLoader mutableLoader = new MutableClassMirrorLoader(mutableVM, extendedLoader);
-        
-        ClassMirror bundleClass = Reflection.loadClassMirror(mutableVM, mutableLoader, Bundle.class.getName());
-        ClassMirror printerClass = Reflection.loadClassMirror(mutableVM, mutableLoader, PrintOSGiBundles.class.getName());
+        ClassMirror bundleClass = holographVM.findAllClasses(Bundle.class.getName()).get(0);
+        ClassMirror printerClass = Reflection.injectBytecode(bundleClass.getLoader(), 
+                new NativeClassMirror(PrintOSGiBundles.class));
         
         // For each class instance (in this case we only expect one)...
-        List<InstanceMirror> bundles = bundleClass.getInstances();
-        for (InstanceMirror bundle : bundles) {
+        MethodMirror method = printerClass.getMethod("print", bundleClass);
+        for (InstanceMirror bundle : bundleClass.getInstances()) {
             // Invoke PrintOSGiBundles#print reflectively.
-            Object result = Reflection.invoke(printerClass, "print", bundle);
+            Object result = method.invoke(null, bundle);
             System.out.println(result);
         }
     }

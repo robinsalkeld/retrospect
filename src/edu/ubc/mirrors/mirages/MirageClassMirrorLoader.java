@@ -6,8 +6,6 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageInternalClas
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageSuperclassName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalBinaryClassName;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +13,13 @@ import java.util.List;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.SandboxedClassLoader;
@@ -56,6 +55,16 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
         @Override
         public List<ClassMirror> findAllClasses(String name) {
             throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        public ClassMirror getPrimitiveClass(String name) {
+            return vm.getPrimitiveClass(name);
+        }
+        
+        @Override
+        public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
+            return vm.getArrayClass(dimensions, elementClass);
         }
     };
     
@@ -105,7 +114,7 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
         }
     }
     
-    private class MirageClassMirror extends ClassMirror {
+    private class MirageClassMirror implements ClassMirror {
 
         private final String className;
         private final ClassMirror originalMirror;
@@ -135,14 +144,14 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
                 
                 String mirageName = getMirageInternalClassName(name, true);
                 String mirageSuperName = getMirageInternalClassName(superName, false);
-                superclassNode = superName == null ? null : loadClassMirrorInternal(getMirageSuperclassName(isInterface, mirageName, mirageSuperName).replace('/', '.'));
+                superclassNode = superName == null ? null : Reflection.loadClassMirrorInternal(MirageClassMirror.this, getMirageSuperclassName(isInterface, mirageName, mirageSuperName).replace('/', '.'));
                 
                 for (int i = 0; i < interfaces.length; i++) {
                     interfaces[i] = getMirageInternalClassName(interfaces[i], false);
                 }
                 interfaceNodes = new ArrayList<ClassMirror>(interfaces.length);
                 for (String i : getMirageInterfaces(isInterface, interfaces)) {
-                    interfaceNodes.add(loadClassMirrorInternal(i.replace('/', '.')));
+                    interfaceNodes.add(Reflection.loadClassMirrorInternal(MirageClassMirror.this, i.replace('/', '.')));
                 }
                 
                 throw new Stop();
@@ -218,6 +227,19 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
         public List<FieldMirror> getMemberFields() {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public MethodMirror getMethod(String name, ClassMirror... paramTypes)
+                throws SecurityException, NoSuchMethodException {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        public ConstructorMirror getConstructor(ClassMirror... paramTypes)
+                throws SecurityException, NoSuchMethodException {
+            
+            throw new UnsupportedOperationException();
+        }
         
         @Override
         public List<String> getDeclaredFieldNames() {
@@ -240,13 +262,13 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
         }
         
         @Override
-        public Class<?> getNativeStubsClass() {
-            return null;
-        }
-        
-        @Override
         public List<InstanceMirror> getInstances() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ClassMirror getClassMirror() {
+            return getVM().findBootstrapClassMirror(Class.class.getName());
         }
     }
     

@@ -30,6 +30,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 public class MirageClassGenerator extends ClassVisitor {
@@ -88,7 +89,7 @@ public class MirageClassGenerator extends ClassVisitor {
     
     private final Map<String, Method> mirrorMethods = new HashMap<String, Method>();
     
-    public MirageClassGenerator(ClassMirror classMirror, ClassVisitor output) {
+    public MirageClassGenerator(ClassHolograph classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
         this.classMirror = classMirror;
         if (classMirror.getClassName().contains("java.lang.System")) {
@@ -513,7 +514,7 @@ public class MirageClassGenerator extends ClassVisitor {
 
     private static String activeMethod = null;
     
-    public static byte[] generate(MirageClassLoader loader, ClassMirror classMirror) throws IOException {
+    public static byte[] generate(MirageClassLoader loader, ClassHolograph classMirror) throws IOException {
         String internalName = getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), true);
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;

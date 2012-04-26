@@ -18,6 +18,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
@@ -56,8 +57,15 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
             return result;
         }
         
-        // Fall back to the bytecode loader if the class wasn't previously loaded
-        return bytecodeVM.findBootstrapClassMirror(name);
+        // If the class wasn't loaded already, imitate what the VM would have done to define it.
+        // TODO-RS: Not completely sure how incomplete this is. Class transformers may still
+        // apply etc.
+        ClassMirror bytecodeClass = bytecodeVM.findBootstrapClassMirror(name);
+        if (bytecodeClass != null) {
+            return new HeapDumpClassMirror(this, name);
+        } else {
+            return null;
+        }
     }
     
     private final Map<IClassLoader, ClassMirrorLoader> bytecodeLoaders = 
@@ -148,5 +156,17 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
             throw new RuntimeException(e);
         }
         return result;
+    }
+    
+    @Override
+    public ClassMirror getPrimitiveClass(String name) {
+        // TODO-RS: Doesn't seem to be a way to get these, but this shouldn't be
+        // an issue unless we start explicitly checking for VM mismatches like the JDI does.
+        return NativeVirtualMachineMirror.INSTANCE.getPrimitiveClass(name);
+    }
+    
+    @Override
+    public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
+        return new ArrayClassMirror(dimensions, elementClass);
     }
 }

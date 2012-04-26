@@ -3,6 +3,7 @@ package edu.ubc.mirrors.raw;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -12,28 +13,24 @@ import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror.NativeFieldMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ThreadStubs;
 
-public class NativeClassMirror extends ClassMirror {
+public class NativeClassMirror extends NativeObjectMirror implements ClassMirror {
 
     private final Class<?> klass;
     
     public NativeClassMirror(Class<?> klass) {
+        super(klass);
         this.klass = klass;
-    }
-    
-    public NativeClassMirror(ClassLoader loader, String className) {
-        try {
-            this.klass = Class.forName(className, false, loader);
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(className);
-        }
     }
     
     @Override
@@ -191,6 +188,33 @@ public class NativeClassMirror extends ClassMirror {
         return names;
     }
         
+    @Override
+    public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+        Class<?>[] nativeParamTypes = new Class<?>[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            nativeParamTypes[i] = getNativeClass(paramTypes[i]);
+        }
+        Method nativeMethod = klass.getMethod(name, nativeParamTypes);
+        return new NativeMethodMirror(nativeMethod);
+    }
+
+    @Override
+    public ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+        Class<?>[] nativeParamTypes = new Class<?>[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            nativeParamTypes[i] = getNativeClass(paramTypes[i]);
+        }
+        Constructor<?> nativeConstructor = klass.getConstructor(nativeParamTypes);
+        return new NativeConstructorMirror(nativeConstructor);
+    }
+    
+    private Class<?> getNativeClass(ClassMirror mirror) {
+        if (mirror instanceof NativeClassMirror) {
+            return ((NativeClassMirror)mirror).getKlass();
+        } else {
+            throw new IllegalArgumentException("Native class mirror expected: " + mirror);
+        }
+    }
     @Override
     public List<InstanceMirror> getInstances() {
         throw new UnsupportedOperationException();

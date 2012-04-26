@@ -7,7 +7,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
-class BetterVerifier extends SimpleVerifier {
+public class BetterVerifier extends SimpleVerifier {
     
     private final VirtualMachineMirror vm;
     private final ClassMirrorLoader loader;
@@ -55,6 +55,6 @@ class BetterVerifier extends SimpleVerifier {
         if (uNode.isInterface()) {
             return t.getInternalName().equals("java/lang/Object");
         }
-        return tNode.isAssignableFrom(uNode);
+        return Reflection.isAssignableFrom(tNode, uNode);
     }
 }

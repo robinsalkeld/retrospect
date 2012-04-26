@@ -4,18 +4,27 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassN
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.SecureClassLoader;
 
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
+import edu.ubc.mirrors.raw.NativeByteArrayMirror;
+import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 import edu.ubc.mirrors.test.ChainedClassLoader;
 
 public class Reflection {
@@ -77,59 +86,46 @@ public class Reflection {
         }
     }
     
-    public static ObjectMirror mirrorInvoke(ObjectMirror object, String name, ObjectMirror... args) {
-        ClassMirror[] paramTypes = new ClassMirror[args.length];
-        for (int i = 0; i < args.length; i++) {
-            paramTypes[i] = args[i].getClassMirror();
-        }
+    
+    public static ClassMirror injectBytecode(ClassMirrorLoader parent, ClassMirror newClass) {
+        VirtualMachineMirror vm = parent.getClassMirror().getVM();
         
-        MethodMirror match;
-        try {
-            match = object.getClassMirror().getInstanceMethod(name, paramTypes);
-        } catch (NoSuchMethodException e1) {
-            throw new IllegalArgumentException("Method not found: " + object.getClassMirror().getClassName() + "#" + name);
-        }
+        ClassMirror secureClassLoaderClass = vm.findBootstrapClassMirror(SecureClassLoader.class.getName());
+        ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
+        ConstructorMirror constructor = getConstructor(secureClassLoaderClass, classLoaderClass);
+        ClassMirrorLoader newLoader = (ClassMirrorLoader)newInstance(constructor, parent);
         
-        try {
-            return match.invoke((InstanceMirror)object, args);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
+        ClassMirror byteArrayClass = loadClassMirrorInternal(stringClass, "[B");
+        ClassMirror intClass = vm.getPrimitiveClass("int");
+        MethodMirror defineClassMethod = getMethod(classLoaderClass, "defineClass", stringClass, byteArrayClass, intClass, intClass);
+
+        InstanceMirror name = makeString(vm, newClass.getClassName());
+        byte[] bytecode = newClass.getBytecode();
+        ObjectMirror bytecodeInVM = copyArray(vm, new NativeByteArrayMirror(bytecode));
+        
+        return (ClassMirror)mirrorInvoke(defineClassMethod, newLoader, name, bytecodeInVM, 0, bytecode.length);
     }
     
-    public static Object mirrorInvoke(ClassMirror klass, String name, ObjectMirror... args) {
-        ClassMirror[] paramTypes = new ClassMirror[args.length];
-        for (int i = 0; i < args.length; i++) {
-            paramTypes[i] = args[i].getClassMirror();
-        }
-        
-        MethodMirror match;
-        try {
-            match = klass.getStaticMethod(name, paramTypes);
-        } catch (NoSuchMethodException e1) {
-            throw new IllegalArgumentException("Method not found: " + klass.getClassName() + "#" + name);
-        }
-        
-        try {
-            return match.invoke(null, args);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+    public static InstanceMirror makeString(VirtualMachineMirror vm, String value) {
+        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
+        ObjectMirror chars = copyArray(vm, new NativeCharArrayMirror(value.toCharArray()));
+        ConstructorMirror constructor = getConstructor(stringClass, chars.getClassMirror());
+        return newInstance(constructor, chars);
     }
     
-    public static ClassMirrorLoader makeChainedClassLoaderMirror(ClassMirrorLoader parent, ClassMirrorLoader child) {
-        ClassMirror reflectionClassMirror = new NativeClassMirror(Reflection.class);
-        ClassMirror classLoaderClass = new NativeClassMirror(ClassLoader.class);
-        MethodMirror method = getStaticMethod(reflectionClassMirror, "makeChainedClassLoader", classLoaderClass, classLoaderClass);
-        return (ClassMirrorLoader)mirrorInvoke(method, null, parent, child);
-    }
-    
-    public static ChainedClassLoader makeChainedClassLoader(ClassLoader parent, ClassLoader child) {
-        return new ChainedClassLoader(parent, child);
+    public static ArrayMirror copyArray(VirtualMachineMirror vm, ArrayMirror otherValue) {
+        ClassMirror targetClass;
+        try {
+            targetClass = classMirrorForName(vm, otherValue.getClassMirror().getClassName(), false, null);
+        } catch (ClassNotFoundException e) {
+            throw new NoClassDefFoundError(e.getMessage());
+        }
+        
+        // TODO-RS: Call ClassMirror.newArrayMirror() instead!
+        ArrayMirror target = new DirectArrayMirror(targetClass, otherValue.length());
+        SystemStubs.arraycopyMirrors(otherValue, 0, target, 0, otherValue.length());
+        return target;
     }
     
     public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException {
@@ -140,19 +136,8 @@ public class Reflection {
             result = vm.findBootstrapClassMirror(name);
         } else {
             ClassMirror stringClass = originalLoader.getClassMirror().getVM().findBootstrapClassMirror(String.class.getName());
-            MethodMirror method;
-            try {
-                method = originalLoader.getClassMirror().getInstanceMethod("loadClass", stringClass);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                result = (ClassMirror)method.invoke((InstanceMirror)originalLoader, getMirror(name));
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+            MethodMirror method = getMethod(originalLoader.getClassMirror(), "loadClass", stringClass);
+            result = (ClassMirror)mirrorInvoke(method, (InstanceMirror)originalLoader, makeString(vm, name));
         }
         if (result == null) {
             throw new ClassNotFoundException(name);
@@ -160,42 +145,39 @@ public class Reflection {
         return result;
     }
     
-    private static ClassMirror loadElementClassMirror(VirtualMachineMirror vm, Type elementType, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException {
-        if (elementType.equals(Type.BOOLEAN_TYPE)) {
-            return new NativeClassMirror(Boolean.TYPE);
-        } else if (elementType.equals(Type.BYTE_TYPE)) {
-            return new NativeClassMirror(Byte.TYPE);
-        } else if (elementType.equals(Type.CHAR_TYPE)) {
-            return new NativeClassMirror(Character.TYPE);
-        } else if (elementType.equals(Type.SHORT_TYPE)) {
-            return new NativeClassMirror(Short.TYPE);
-        } else if (elementType.equals(Type.INT_TYPE)) {
-            return new NativeClassMirror(Integer.TYPE);
-        } else if (elementType.equals(Type.LONG_TYPE)) {
-            return new NativeClassMirror(Long.TYPE);
-        } else if (elementType.equals(Type.FLOAT_TYPE)) {
-            return new NativeClassMirror(Float.TYPE);
-        } else if (elementType.equals(Type.DOUBLE_TYPE)) {
-            return new NativeClassMirror(Double.TYPE);
+    private static ClassMirror classMirrorForType(VirtualMachineMirror vm, Type type, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException {
+        if (type.getSort() == Type.ARRAY) {
+            Type elementType = type.getElementType();
+            ClassMirror elementClassMirror = classMirrorForType(vm, elementType, resolve, loader);
+            return vm.getArrayClass(type.getDimensions(), elementClassMirror);
+        } else if (type.equals(Type.BOOLEAN_TYPE)) {
+            return vm.getPrimitiveClass("boolean");
+        } else if (type.equals(Type.BYTE_TYPE)) {
+            return vm.getPrimitiveClass("byte");
+        } else if (type.equals(Type.CHAR_TYPE)) {
+            return vm.getPrimitiveClass("char");
+        } else if (type.equals(Type.SHORT_TYPE)) {
+            return vm.getPrimitiveClass("short");
+        } else if (type.equals(Type.INT_TYPE)) {
+            return vm.getPrimitiveClass("int");
+        } else if (type.equals(Type.LONG_TYPE)) {
+            return vm.getPrimitiveClass("long");
+        } else if (type.equals(Type.FLOAT_TYPE)) {
+            return vm.getPrimitiveClass("float");
+        } else if (type.equals(Type.DOUBLE_TYPE)) {
+            return vm.getPrimitiveClass("double");
         } else {
-            return classMirrorForName(vm, elementType.getClassName(), resolve, loader);
+            return Reflection.loadClassMirror(vm, loader, type.getClassName());
         }
     }
     
     public static ClassMirror classMirrorForName(VirtualMachineMirror vm, String name, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException {
-        Type type = Type.getObjectType(name);
-        if (type.getSort() == Type.ARRAY) {
-            Type elementType = type.getElementType();
-            ClassMirror elementClassMirror = loadElementClassMirror(vm, elementType, resolve, loader);
-            return new ArrayClassMirror(loader, type.getDimensions(), elementClassMirror);
-        } else {
-            return Reflection.loadClassMirror(vm, loader, name);
-        }
+        return classMirrorForType(vm, Type.getObjectType(name), resolve, loader);
     }
     
-    public static MethodMirror getInstanceMethod(ClassMirror klass, String name, ClassMirror... parameterTypes) {
+    public static MethodMirror getMethod(ClassMirror klass, String name, ClassMirror... parameterTypes) {
         try {
-            return klass.getInstanceMethod(name, parameterTypes);
+            return klass.getMethod(name, parameterTypes);
         } catch (NoSuchMethodException e) {
             NoSuchMethodError error = new NoSuchMethodError(e.getMessage());
             error.initCause(e);
@@ -203,9 +185,9 @@ public class Reflection {
         }
     }
     
-    public static MethodMirror getStaticMethod(ClassMirror klass, String name, ClassMirror... parameterTypes) {
+    public static ConstructorMirror getConstructor(ClassMirror klass, ClassMirror... parameterTypes) {
         try {
-            return klass.getStaticMethod(name, parameterTypes);
+            return klass.getConstructor(parameterTypes);
         } catch (NoSuchMethodException e) {
             NoSuchMethodError error = new NoSuchMethodError(e.getMessage());
             error.initCause(e);
@@ -213,7 +195,7 @@ public class Reflection {
         }
     }
     
-    public static ObjectMirror mirrorInvoke(MethodMirror method, InstanceMirror obj, ObjectMirror... args) {
+    public static Object mirrorInvoke(MethodMirror method, InstanceMirror obj, Object... args) {
         try {
             return method.invoke(obj, args);
         } catch (IllegalArgumentException e) {
@@ -227,4 +209,55 @@ public class Reflection {
         }
     }
     
+    public static InstanceMirror newInstance(ConstructorMirror constructor, ObjectMirror... args) {
+        try {
+            return constructor.newInstance(args);
+        } catch (IllegalAccessException e) {
+            IllegalAccessError error = new IllegalAccessError(e.getMessage());
+            error.initCause(e);
+            throw error;
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            InstantiationError error = new InstantiationError(e.getMessage());
+            error.initCause(e);
+            throw error;
+        }
+    }
+    
+    public static boolean isAssignableFrom(ClassMirror thiz, ClassMirror other) {
+        if (thiz.equals(other)) {
+            return true;
+        }
+        
+        if (thiz.isArray()) {
+            return other.isArray() && isAssignableFrom(thiz.getComponentClassMirror(), other.getComponentClassMirror());
+        }
+        
+        if (other.isInterface() && thiz.getClassName().equals(Object.class.getName())) {
+            return true; 
+        }
+        ClassMirror otherSuperclass = other.getSuperClassMirror();
+        if (otherSuperclass != null && isAssignableFrom(thiz, otherSuperclass)) {
+            return true;
+        }
+
+        for (ClassMirror interfaceNode : other.getInterfaceMirrors()) {
+            if (isAssignableFrom(thiz, interfaceNode)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public static ClassMirror loadClassMirrorInternal(ClassMirror context, String name) {
+        try {
+            return classMirrorForName(context.getVM(), name, false, context.getLoader());
+        } catch (ClassNotFoundException e) {
+            NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
+            error.initCause(e);
+            throw error;
+        }
+    }
 }

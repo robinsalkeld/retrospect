@@ -97,6 +97,10 @@ public class NativeObjectMirror implements InstanceMirror {
         return new NativeClassMirror(object.getClass());
     }
     
+    public Object getNativeObject() {
+        return object;
+    }
+    
     static class NativeFieldMirror implements FieldMirror {
         
         private final Field field;
