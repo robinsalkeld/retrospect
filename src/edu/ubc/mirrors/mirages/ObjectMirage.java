@@ -2,21 +2,18 @@ package edu.ubc.mirrors.mirages;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalBinaryClassName;
 
-import java.util.Map;
+import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
-import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
-import edu.ubc.mirrors.fieldmap.FieldMapMirror;
-import edu.ubc.mirrors.raw.NativeCharArrayMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
-import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
@@ -77,15 +74,6 @@ public class ObjectMirage implements Mirage {
         }
     }
     
-    public static ClassMirror getOriginalClassMirror(MirageClassLoader mirageLoader, String mirageClassName) {
-        String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClassName);
-        try {
-            return mirageLoader.loadOriginalClassMirror(originalClassName);
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(originalClassName);
-        }
-    }
-    
     private static void throwInternalError(Throwable t) {
         InternalError ie = new InternalError();
         ie.initCause(t);
@@ -97,31 +85,7 @@ public class ObjectMirage implements Mirage {
             return null;
         }
         
-        return getRealStringForMirror((InstanceMirror)mirage.mirror);
-    }
-    
-    public static String getRealStringForMirror(InstanceMirror mirror) {
-        if (mirror == null) {
-            return null;
-        }
-        
-        try {
-            CharArrayMirror valueMirror = (CharArrayMirror)mirror.getMemberField("value").get();
-            char[] value = new char[valueMirror.length()];
-            NativeCharArrayMirror nativeValueMirror = new NativeCharArrayMirror(value);
-            SystemStubs.arraycopyMirrors(valueMirror, 0, nativeValueMirror, 0, value.length);
-            int offset = mirror.getMemberField("offset").getInt();
-            int count = mirror.getMemberField("count").getInt();
-            return new String(value, offset, count);
-        } catch (IllegalAccessException e) {
-            throwInternalError(e);
-            return null;
-        } catch (NoSuchFieldException e) {
-            throwInternalError(e);
-        }
-        
-        // Never reached
-        return null;
+        return Reflection.getRealStringForMirror((InstanceMirror)mirage.mirror);
     }
     
     public static StackTraceElement[] getRealStackTraceForMirage(Mirage mirage) {
@@ -134,9 +98,9 @@ public class ObjectMirage implements Mirage {
             StackTraceElement[] result = new StackTraceElement[arrayMirror.length()];
             for (int i = 0; i < result.length; i++) {
                 InstanceMirror element = (InstanceMirror)arrayMirror.get(i);
-                String declaringClass = getRealStringForMirror((InstanceMirror)element.getMemberField("declaringClass").get());
-                String methodName = getRealStringForMirror((InstanceMirror)element.getMemberField("methodName").get());
-                String fileName = getRealStringForMirror((InstanceMirror)element.getMemberField("fileName").get());
+                String declaringClass = Reflection.getRealStringForMirror((InstanceMirror)element.getMemberField("declaringClass").get());
+                String methodName = Reflection.getRealStringForMirror((InstanceMirror)element.getMemberField("methodName").get());
+                String fileName = Reflection.getRealStringForMirror((InstanceMirror)element.getMemberField("fileName").get());
                 int lineNumber = element.getMemberField("lineNumber").getInt();
                 
                 result[i] = new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
@@ -151,33 +115,23 @@ public class ObjectMirage implements Mirage {
         }
     }
     
-    public static Object lift(Object object, Class<?> classLoaderLiteral) {
-        return ((MirageClassLoader)classLoaderLiteral.getClassLoader()).lift(object);
+    public static InstanceMirror newInstanceMirror(Class<?> classLoaderLiteral, String mirageClassName) {
+        String originalClassName = MirageClassGenerator.getOriginalInternalClassName(mirageClassName);
+        MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        ClassMirror originalClassMirror = loader.loadOriginalClassMirror(Type.getObjectType(originalClassName));
+        return originalClassMirror.newRawInstance();
     }
     
-    public static InstanceMirror newInstanceMirror(Class<?> classLoaderLiteral, String className) {
+    public static ArrayMirror newArrayMirror(Class<?> classLoaderLiteral, String elementDescriptor, int length) {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        // TODO-RS: Call ClassMirror.newInstanceMirror() instead!
-        ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror(loader, className.replace('/', '.'));
-        if (Reflection.isAssignableFrom(new NativeClassMirror(ClassLoader.class), originalClassMirror)) {
-            return new FieldMapClassMirrorLoader(originalClassMirror);
-        } else {
-            return new FieldMapMirror(originalClassMirror);
-        }
+        ClassMirror originalClassMirror = loader.loadOriginalClassMirror(Type.getType(elementDescriptor));
+        return originalClassMirror.newArray(length);
     }
     
-    public static ObjectArrayMirror newObjectArrayMirror(Class<?> classLoaderLiteral, String arrayClassName, int length) {
+    public static ArrayMirror newArrayMirror(Class<?> classLoaderLiteral, String elementDescriptor, int[] dims) {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        // TODO-RS: Call ClassMirror.newArrayMirror() instead!
-        ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror(loader, arrayClassName.replace('/', '.'));
-        return new DirectArrayMirror(originalClassMirror, length);
-    }
-    
-    public static ObjectArrayMirror newObjectArrayMirror(Class<?> classLoaderLiteral, String arrayClassName, int[] dims) {
-        MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        // TODO-RS: Call ClassMirror.newArrayMirror() instead!
-        ClassMirror originalClassMirror = ObjectMirage.getOriginalClassMirror(loader, arrayClassName.replace('/', '.'));
-        return new DirectArrayMirror(originalClassMirror, dims);
+        ClassMirror originalClassMirror = loader.loadOriginalClassMirror(Type.getType(elementDescriptor));
+        return originalClassMirror.newArray(dims);
     }
     
     public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {
@@ -190,9 +144,34 @@ public class ObjectMirage implements Mirage {
         return ((MirageClassLoader)mirror.getClass().getClassLoader()).makeMirage(mirror);
     }
     
-    public static Object make(ObjectMirror mirror, Class<?> classLoaderLiteral) {
-        MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+    public static Mirage make(ObjectMirror mirror, Class<?> classLoaderLiteral) {
+        if (mirror == null) {
+            return null;
+        }
+        
+        MirageClassLoader loader = ClassHolograph.getMirageClassLoader((ClassHolograph)mirror.getClassMirror());
         return loader.makeMirage(mirror);
+    }
+    
+    public static Mirage makeStringMirage(String s, Class<?> classLoaderLiteral) {
+        if (s == null) {
+            return null;
+        }
+        
+        MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        InstanceMirror sMirror = Reflection.makeString(loader.getVM(), s);
+        return loader.makeMirage(sMirror);
+    }
+    
+    public static Mirage makeClassMirage(Class<?> c, Class<?> classLoaderLiteral) {
+        if (c == null) {
+            return null;
+        }
+        
+        MirageClassLoader loader = (MirageClassLoader)c.getClassLoader();
+        String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(c.getName());
+        ClassMirror originalMirror = loader.loadOriginalClassMirror(originalClassName);
+        return loader.makeMirage(originalMirror);
     }
     
     public static ObjectMirror getMirror(Object o) {
@@ -202,24 +181,26 @@ public class ObjectMirage implements Mirage {
         return ((Mirage)o).getMirror();
     }
     
-    public static StackTraceElement cleanStackTraceElement(StackTraceElement e) {
-        return new StackTraceElement(getOriginalBinaryClassName(e.getClassName()), e.getMethodName(), e.getFileName(), e.getLineNumber());
-    }
-    
-    public static StackTraceElement[] cleanAndSetStackTrace(Mirage throwable, StackTraceElement[] nativeTrace) {
-        StackTraceElement[] correctedTrace = new StackTraceElement[nativeTrace.length];
+    public static Mirage cleanAndSetStackTrace(Mirage throwable, StackTraceElement[] nativeTrace) {
+        VirtualMachineMirror vm = throwable.getMirror().getClassMirror().getVM();
+        ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
+        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
+        ClassMirror intClass = vm.getPrimitiveClass("int");
+        ConstructorMirror constructor = Reflection.getConstructor(stackTraceElementClass, stringClass, stringClass, stringClass, intClass);
+                
+        ObjectArrayMirror correctedTrace = (ObjectArrayMirror)stackTraceElementClass.newArray(nativeTrace.length);
         for (int i = 0; i < nativeTrace.length; i++) {
-            correctedTrace[i] = ObjectMirage.cleanStackTraceElement(nativeTrace[i]);
+            StackTraceElement e = nativeTrace[i];
+            InstanceMirror className = Reflection.makeString(vm, getOriginalBinaryClassName(e.getClassName()));
+            InstanceMirror methodName = Reflection.makeString(vm, e.getMethodName());
+            InstanceMirror fieldName = Reflection.makeString(vm, e.getFileName());
+            int lineNumber = e.getLineNumber();
+            InstanceMirror mapped = Reflection.newInstance(constructor, className, methodName, fieldName, lineNumber);
+            correctedTrace.set(i, mapped);
         }
         InstanceMirror mirror = (InstanceMirror)throwable.getMirror();
-        try {
-            mirror.getMemberField("stackTrace").set(NativeObjectMirror.makeMirror(correctedTrace));
-        } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
-        } catch (NoSuchFieldException e) {
-            throw new NoSuchFieldError(e.getMessage());
-        }
-        return correctedTrace;
+        Reflection.setField(mirror, "stackTrace", NativeObjectMirror.makeMirror(correctedTrace));
+        return make(correctedTrace, throwable.getClass());
     }
     
     @Override
@@ -266,7 +247,7 @@ public class ObjectMirage implements Mirage {
         } else if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror objectArrayMirror = (ObjectArrayMirror)mirror;
             int length = objectArrayMirror.length();
-            ObjectArrayMirror result = newObjectArrayMirror(classLoaderLiteral, mirage.getClass().getName(), length);
+            ArrayMirror result = newArrayMirror(classLoaderLiteral, mirage.getClass().getName(), length);
             
             SystemStubs.arraycopyMirrors(objectArrayMirror, 0, result, 0, length);
             

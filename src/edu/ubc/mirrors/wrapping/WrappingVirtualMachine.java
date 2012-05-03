@@ -21,6 +21,14 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.mirages.BooleanArrayMirage;
+import edu.ubc.mirrors.mirages.ByteArrayMirage;
+import edu.ubc.mirrors.mirages.CharArrayMirage;
+import edu.ubc.mirrors.mirages.DoubleArrayMirage;
+import edu.ubc.mirrors.mirages.FloatArrayMirage;
+import edu.ubc.mirrors.mirages.IntArrayMirage;
+import edu.ubc.mirrors.mirages.LongArrayMirage;
+import edu.ubc.mirrors.mirages.ShortArrayMirage;
 import edu.ubc.mirrors.mutable.MutableBooleanArrayMirror;
 import edu.ubc.mirrors.mutable.MutableByteArrayMirror;
 import edu.ubc.mirrors.mutable.MutableCharArrayMirror;
@@ -67,7 +75,29 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     }
 
     protected ObjectMirror wrapMirror(ObjectMirror mirror) {
-        if (mirror instanceof ClassMirror) {
+        if (mirror == null) {
+            return null;
+        }
+        
+        String classNameString = mirror.getClassMirror().getClassName();
+        
+        if (classNameString.equals("[Z")) {
+            return new WrappingBooleanArrayMirror(this, (BooleanArrayMirror)mirror);
+        } else if (classNameString.equals("[B")) {
+            return new WrappingByteArrayMirror(this, (ByteArrayMirror)mirror);
+        } else if (classNameString.equals("[C")) {
+            return new WrappingCharArrayMirror(this, (CharArrayMirror)mirror);
+        } else if (classNameString.equals("[S")) {
+            return new WrappingShortArrayMirror(this, (ShortArrayMirror)mirror);
+        } else if (classNameString.equals("[I")) {
+            return new WrappingIntArrayMirror(this, (IntArrayMirror)mirror);
+        } else if (classNameString.equals("[J")) {
+            return new WrappingLongArrayMirror(this, (LongArrayMirror)mirror);
+        } else if (classNameString.equals("[F")) {
+            return new WrappingFloatArrayMirror(this, (FloatArrayMirror)mirror);
+        } else if (classNameString.equals("[D")) {
+            return new WrappingDoubleArrayMirror(this, (DoubleArrayMirror)mirror);
+        } else if (mirror instanceof ClassMirror) {
             return new WrappingClassMirror(this, (ClassMirror)mirror);
         } else if (mirror instanceof ClassMirrorLoader) {
             return new WrappingClassMirrorLoader(this, (ClassMirrorLoader)mirror);

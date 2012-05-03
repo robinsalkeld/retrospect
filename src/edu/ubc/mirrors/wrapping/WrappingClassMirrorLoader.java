@@ -1,11 +1,13 @@
 package edu.ubc.mirrors.wrapping;
 
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
 
 public class WrappingClassMirrorLoader extends WrappingInstanceMirror implements ClassMirrorLoader {
 
-    private final ClassMirrorLoader wrappedLoader;
+    protected final ClassMirrorLoader wrappedLoader;
     
     protected WrappingClassMirrorLoader(WrappingVirtualMachine vm, ClassMirrorLoader wrappedLoader) {
         super(vm, wrappedLoader);
@@ -17,4 +19,10 @@ public class WrappingClassMirrorLoader extends WrappingInstanceMirror implements
         return vm.getWrappedClassMirror(wrappedLoader.findLoadedClassMirror(name));
     }
 
+    @Override
+    public ClassMirror defineClass1(String name, ByteArrayMirror b,
+            int off, int len, InstanceMirror pd, InstanceMirror source,
+            boolean verify) {
+        return vm.getWrappedClassMirror(wrappedLoader.defineClass1(name, b, off, len, pd, source, verify));
+    }
 }

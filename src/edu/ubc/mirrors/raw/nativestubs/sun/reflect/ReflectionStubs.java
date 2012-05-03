@@ -12,11 +12,7 @@ public class ReflectionStubs {
         // Need to map from the native Class<?> to a mirage on the ClassMirror
         MirageClassLoader loader = (MirageClassLoader)klass.getClassLoader();
         String className = MirageClassGenerator.getOriginalBinaryClassName(klass.getName());
-        try {
-            return (Mirage)loader.makeMirage(loader.loadOriginalClassMirror(className));
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(e.getMessage());
-        }
+        return (Mirage)loader.makeMirage(loader.loadOriginalClassMirror(className));
     }
     
 }

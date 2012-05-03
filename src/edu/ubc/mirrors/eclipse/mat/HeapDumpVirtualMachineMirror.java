@@ -50,9 +50,9 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     @Override
-    public ClassMirror findBootstrapClassMirror(String name) {
+    public HeapDumpClassMirror findBootstrapClassMirror(String name) {
         initBootstrapClasses();
-        ClassMirror result = bootstrapClasses.get(name);
+        HeapDumpClassMirror result = bootstrapClasses.get(name);
         if (result != null) {
             return result;
         }
@@ -70,9 +70,12 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     
     private final Map<IClassLoader, ClassMirrorLoader> bytecodeLoaders = 
           new HashMap<IClassLoader, ClassMirrorLoader>();
-    
+    private final Map<ClassMirrorLoader, IClassLoader> loadersForBytecodeLoaders = 
+          new HashMap<ClassMirrorLoader, IClassLoader>();
+      
     public void addBytecodeLoader(IClassLoader snapshotLoader, ClassMirrorLoader bytecodeLoader) {
         bytecodeLoaders.put(snapshotLoader, bytecodeLoader);
+        loadersForBytecodeLoaders.put(bytecodeLoader, snapshotLoader);
     }
     
     public void addNativeBytecodeLoaders(IClassLoader snapshotLoader, ClassLoader bytecodeLoader) {
@@ -107,6 +110,20 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
             }
             // TODO-RS: Reflection.loadClassMirror() instead?
             return bytecodeLoader.findLoadedClassMirror(snapshotClass.getClassName());
+        }
+    }
+    
+    public HeapDumpClassMirror getClassMirrorForBytecodeClassMirror(ClassMirror bytecodeClass) {
+        ClassMirrorLoader bytecodeLoader = bytecodeClass.getLoader();
+        if (bytecodeLoader == null) {
+            return findBootstrapClassMirror(bytecodeClass.getClassName());
+        } else {
+            IClassLoader snapshotLoader = loadersForBytecodeLoaders.get(bytecodeLoader);
+            if (snapshotLoader == null) {
+                throw new IllegalArgumentException("No snapshot loader found for: " + bytecodeLoader);
+            }
+            // TODO-RS: Reflection.loadClassMirror() instead?
+            return new HeapDumpClassMirrorLoader(this, snapshotLoader).findLoadedClassMirror(bytecodeClass.getClassName());
         }
     }
     

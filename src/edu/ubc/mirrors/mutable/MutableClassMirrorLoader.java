@@ -8,4 +8,6 @@ public class MutableClassMirrorLoader extends WrappingClassMirrorLoader {
     public MutableClassMirrorLoader(MutableVirtualMachineMirror vm, ClassMirrorLoader immutableLoader) {
         super(vm, immutableLoader);
     }
+    
+    
 }

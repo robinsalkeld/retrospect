@@ -113,6 +113,22 @@ public class NativeObjectMirror implements InstanceMirror {
         }
 
         @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof NativeFieldMirror)) {
+                return false;
+            }
+            
+            NativeFieldMirror other = (NativeFieldMirror)obj;
+            return field.equals(other.field)
+                && object == other.object;
+        }
+        
+        @Override
+        public int hashCode() {
+            return field.hashCode() + System.identityHashCode(object);
+        }
+        
+        @Override
         public String getName() {
             return field.getName();
         }

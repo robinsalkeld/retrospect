@@ -7,8 +7,10 @@ import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IClassLoader;
 
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements ClassMirrorLoader {
@@ -34,12 +36,18 @@ public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements
     }
     
     @Override
-    public ClassMirror findLoadedClassMirror(String name) {
+    public HeapDumpClassMirror findLoadedClassMirror(String name) {
         IClass klass = loadedClasses.get(name);
         if (klass != null) {
             return new HeapDumpClassMirror(vm, klass);
         } else {
             return null;
         }
+    }
+    
+@Override
+    public ClassMirror defineClass1(String name, ByteArrayMirror b, int off,
+            int len, InstanceMirror pd, InstanceMirror source, boolean verify) {
+        throw new UnsupportedOperationException();
     }
 }

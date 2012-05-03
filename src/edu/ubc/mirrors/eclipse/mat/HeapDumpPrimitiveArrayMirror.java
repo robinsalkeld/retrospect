@@ -1,11 +1,12 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
 import edu.ubc.mirrors.BoxingArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
-public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror {
+public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements HeapDumpObjectMirror {
     
     private final HeapDumpVirtualMachineMirror vm;
     private final IPrimitiveArray array;
@@ -15,7 +16,21 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror {
         this.array = array;
     }
     
-    public ClassMirror getClassMirror() {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+        
+        return ((HeapDumpPrimitiveArrayMirror)obj).array.equals(array);
+    }
+    
+    @Override
+    public int hashCode() {
+        return 11 * array.hashCode();
+    }
+    
+    public HeapDumpClassMirror getClassMirror() {
         return new HeapDumpClassMirror(vm, array.getClazz());
     }
     public int length() {
@@ -26,5 +41,10 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror {
     }
     public void setBoxedValue(int index, Object o) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public IObject getHeapDumpObject() {
+        return array;
     }
 }

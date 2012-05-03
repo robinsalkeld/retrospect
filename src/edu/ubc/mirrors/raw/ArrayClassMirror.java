@@ -9,12 +9,14 @@ import java.util.List;
 
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
@@ -165,5 +167,24 @@ public class ArrayClassMirror implements ClassMirror {
     @Override
     public ClassMirror getClassMirror() {
         return getVM().findBootstrapClassMirror(Class.class.getName());
+    }
+    
+    @Override
+    public InstanceMirror newRawInstance() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ArrayMirror newArray(int size) {
+        // TODO-RS: Semantics are defined perfectly well by java.lang.reflect.Array#newInstance,
+        // but the holograms architecture won't call this.
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ArrayMirror newArray(int... dims) {
+     // TODO-RS: Semantics are defined perfectly well by java.lang.reflect.Array#newInstance,
+        // but the holograms architecture won't call this.
+        throw new UnsupportedOperationException();
     }
 }

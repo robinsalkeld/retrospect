@@ -37,27 +37,31 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
         throw new UnsupportedOperationException();
     }
     
-    @Override
-    public ClassMirror getPrimitiveClass(String name) {
+    public static Class<?> getNativePrimitiveClass(String name) {
         if (name.equals("boolean")) {
-            return new NativeClassMirror(Boolean.TYPE);
+            return Boolean.TYPE;
         } else if (name.equals("byte")) {
-            return new NativeClassMirror(Byte.TYPE);
+            return Byte.TYPE;
         } else if (name.equals("char")) {
-            return new NativeClassMirror(Character.TYPE);
+            return Character.TYPE;
         } else if (name.equals("short")) {
-            return new NativeClassMirror(Short.TYPE);
+            return Short.TYPE;
         } else if (name.equals("int")) {
-            return new NativeClassMirror(Integer.TYPE);
+            return Integer.TYPE;
         } else if (name.equals("long")) {
-            return new NativeClassMirror(Long.TYPE);
+            return Long.TYPE;
         } else if (name.equals("float")) {
-            return new NativeClassMirror(Float.TYPE);
+            return Float.TYPE;
         } else if (name.equals("double")) {
-            return new NativeClassMirror(Double.TYPE);
+            return Double.TYPE;
         } else {
             throw new IllegalArgumentException(name);
         }
+    }
+    
+    @Override
+    public ClassMirror getPrimitiveClass(String name) {
+        return new NativeClassMirror(getNativePrimitiveClass(name));
     }
     
     @Override

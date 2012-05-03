@@ -4,8 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectMirror;
 
 public class WrappingConstructorMirror implements ConstructorMirror {
 
@@ -18,16 +16,20 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     }
     
     @Override
-    public InstanceMirror newInstance(ObjectMirror... args)
+    public InstanceMirror newInstance(Object... args)
             throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException, InstantiationException {
 
-        ObjectMirror[] unwrappedArgs = new ObjectMirror[args.length];
+        Object[] unwrappedArgs = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
-            unwrappedArgs[i] = vm.unwrapMirror(args[i]);
+            unwrappedArgs[i] = WrappingMethodMirror.getWrappedValue(vm, args[i]);
         }
         InstanceMirror result = wrapped.newInstance(unwrappedArgs);
         return (InstanceMirror)vm.getWrappedMirror(result);
     }
     
+    @Override
+    public void setAccessible(boolean flag) {
+        wrapped.setAccessible(flag);
+    }
 }

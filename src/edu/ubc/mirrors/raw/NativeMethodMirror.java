@@ -44,4 +44,9 @@ public class NativeMethodMirror implements MethodMirror {
             return obj;
         }
     }
+    
+    @Override
+    public void setAccessible(boolean flag) {
+        nativeMethod.setAccessible(flag);
+    }
 }

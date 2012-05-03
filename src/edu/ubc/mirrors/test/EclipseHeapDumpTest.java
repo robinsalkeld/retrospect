@@ -11,6 +11,7 @@ import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.util.ConsoleProgressListener;
+import org.eclipse.osgi.framework.internal.core.BundleRepository;
 import org.osgi.framework.Bundle;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -21,6 +22,7 @@ import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
@@ -32,6 +34,7 @@ public class EclipseHeapDumpTest implements IApplication {
 
     public static void main(String[] args) throws Exception {
         String snapshotPath = args[0];
+        MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         
         // Open memory snapshot and find the Bundle class
         ISnapshot snapshot = SnapshotFactory.openSnapshot(
@@ -53,15 +56,15 @@ public class EclipseHeapDumpTest implements IApplication {
         
         // Note we need a class loader that can see the classes in the OSGi API 
         // as well as our additional code (i.e. PrintOSGiBundles).
-        ClassMirror bundleClass = holographVM.findAllClasses(Bundle.class.getName()).get(0);
-        ClassMirror printerClass = Reflection.injectBytecode(bundleClass.getLoader(), 
+        ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName()).get(0);
+        ClassMirror printerClass = Reflection.injectBytecode(bundleRepositoryClass.getLoader(), 
                 new NativeClassMirror(PrintOSGiBundles.class));
         
         // For each class instance (in this case we only expect one)...
-        MethodMirror method = printerClass.getMethod("print", bundleClass);
-        for (InstanceMirror bundle : bundleClass.getInstances()) {
+        MethodMirror method = printerClass.getMethod("print", bundleRepositoryClass);
+        for (InstanceMirror bundleRepository : bundleRepositoryClass.getInstances()) {
             // Invoke PrintOSGiBundles#print reflectively.
-            Object result = method.invoke(null, bundle);
+            Object result = method.invoke(null, bundleRepository);
             System.out.println(result);
         }
     }

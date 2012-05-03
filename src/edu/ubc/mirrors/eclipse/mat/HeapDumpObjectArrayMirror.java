@@ -17,6 +17,20 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
         this.array = array;
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+        
+        return ((HeapDumpObjectArrayMirror)obj).array.equals(array);
+    }
+    
+    @Override
+    public int hashCode() {
+        return 11 * array.hashCode();
+    }
+    
     public HeapDumpClassMirror getClassMirror() {
         return (HeapDumpClassMirror)vm.makeMirror(array.getClazz());
     }

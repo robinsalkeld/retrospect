@@ -3,12 +3,14 @@ package edu.ubc.mirrors.wrapping;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class WrappingClassMirror extends WrappingInstanceMirror implements ClassMirror {
@@ -121,4 +123,18 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
         return new WrappingConstructorMirror(vm, wrapped.getConstructor(unwrappedParamTypes));
     }
     
+    @Override
+    public InstanceMirror newRawInstance() {
+        return (InstanceMirror)vm.getWrappedMirror(wrapped.newRawInstance());
+    }
+    
+    @Override
+    public ArrayMirror newArray(int size) {
+        return (ArrayMirror)vm.getWrappedMirror(wrapped.newArray(size));
+    }
+    
+    @Override
+    public ArrayMirror newArray(int... dims) {
+        return (ArrayMirror)vm.getWrappedMirror(wrapped.newArray(dims));
+    }
 }

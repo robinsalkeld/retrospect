@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.test;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -21,7 +22,8 @@ public class JarVerifier implements IApplication {
 
         JarFile jar = new JarFile(jarPath);
         ClassLoader thisLoader = JarVerifier.class.getClassLoader();
-        MirageClassLoader mirageLoader = new MirageClassLoader(null, new NativeClassMirrorLoader(thisLoader), System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
+        MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
+        MirageClassLoader mirageLoader = new MirageClassLoader(null, new NativeClassMirrorLoader(thisLoader));
         verifyJar(mirageLoader, jar);
     }
     

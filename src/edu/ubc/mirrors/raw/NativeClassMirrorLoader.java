@@ -1,7 +1,9 @@
 package edu.ubc.mirrors.raw;
 
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
 
 public class NativeClassMirrorLoader extends NativeObjectMirror implements ClassMirrorLoader {
 
@@ -38,5 +40,12 @@ public class NativeClassMirrorLoader extends NativeObjectMirror implements Class
         } catch (ClassNotFoundException e) {
             return null;
         }
+    }
+    
+    @Override
+    public ClassMirror defineClass1(String name, ByteArrayMirror b, int off,
+            int len, InstanceMirror pd, InstanceMirror source, boolean verify) {
+        // TODO-RS: Bah, no time...
+        throw new UnsupportedOperationException();
     }
 }

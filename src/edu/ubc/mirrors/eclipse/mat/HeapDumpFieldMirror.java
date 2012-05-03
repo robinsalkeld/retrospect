@@ -31,6 +31,20 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
     }
     
     @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof HeapDumpFieldMirror)) {
+            return false;
+        }
+        
+        return field.equals(((HeapDumpFieldMirror)obj).field);
+    }
+    
+    @Override
+    public int hashCode() {
+        return 7 * field.hashCode();
+    }
+    
+    @Override
     public Object getBoxedValue() throws IllegalAccessException {
         return field.getValue();
     }

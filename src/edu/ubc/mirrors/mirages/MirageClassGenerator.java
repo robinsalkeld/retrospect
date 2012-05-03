@@ -1,13 +1,13 @@
 package edu.ubc.mirrors.mirages;
 
-import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,6 +44,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeObjectMirror.class);
     public static Type fieldMapMirrorType = Type.getType(FieldMapMirror.class);
+    public static Type stringType = Type.getType(String.class);
     public static Type classType = Type.getType(Class.class);
     public static Type stackTraceElementType = Type.getType(StackTraceElement.class);
     public static Type stackTraceType = Type.getType(StackTraceElement[].class);
@@ -253,6 +254,12 @@ public class MirageClassGenerator extends ClassVisitor {
         }
     }
     
+    public static boolean isImplementationClass(String mirageClassBinaryName) {
+        return mirageClassBinaryName.equals(ObjectMirage.class.getName())
+            || mirageClassBinaryName.equals(ObjectArrayMirage.class.getName())
+            || mirageClassBinaryName.startsWith("miragearrayimpl");
+    }
+    
     public static String getOriginalInternalClassName(String mirageClassName) {
         if (mirageClassName == null) {
             return null;
@@ -396,9 +403,6 @@ public class MirageClassGenerator extends ClassVisitor {
                 superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, objectMirageType.getInternalName(), 
                                                                     "cleanAndSetStackTrace", 
                                                                     Type.getMethodDescriptor(stackTraceType, mirageType, stackTraceType));
-                superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, CLASS_LOADER_LITERAL_NAME,
-                                                                    "lift",
-                                                                    Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Object.class)));
                 superVisitor.visitTypeInsn(Opcodes.CHECKCAST, getMirageType(stackTraceType).getInternalName());
                 superVisitor.visitInsn(Opcodes.ARETURN);
                 superVisitor.visitMaxs(2, 1);
@@ -423,7 +427,7 @@ public class MirageClassGenerator extends ClassVisitor {
             Type exceptionType = Type.getType(InternalError.class); 
             generator.anew(exceptionType);
             generator.dup();
-            String message = "Unsupported native method: " + this.name + "#" + name;
+            String message = "Unsupported native method: " + this.name + "#" + name + desc;
             generator.aconst(message);
             generator.invokespecial(exceptionType.getInternalName(), 
                                     "<init>", 
@@ -539,5 +543,71 @@ public class MirageClassGenerator extends ClassVisitor {
         ClassReader reader = new ClassReader(classMirror.getBytecode());
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();
+    }
+    
+    public static byte[] generateArray(MirageClassLoader loader, ClassHolograph classMirror, boolean isInterface) {
+        String internalName = getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), !isInterface);
+        
+        Type originalType = Type.getObjectType(classMirror.getClassName().replace('.', '/'));
+        Type originalElementType = originalType.getElementType();
+        int dims = originalType.getDimensions();
+        
+        ClassMirror superClassMirror = null;
+        String superName = isInterface ? Type.getInternalName(Object.class) : Type.getInternalName(ObjectArrayMirage.class);
+        Set<String> interfaces = new HashSet<String>();
+        int access = Opcodes.ACC_PUBLIC | (isInterface ? Opcodes.ACC_INTERFACE : 0);
+        
+        if (originalElementType.getSort() == Type.OBJECT || originalElementType.getSort() == Type.ARRAY) {
+            ClassHolograph elementClass = loader.loadOriginalClassMirror(originalElementType.getClassName());
+            superClassMirror = elementClass.getSuperClassMirror();
+            
+            if (isInterface) {
+                if (superClassMirror != null) { 
+                    Type superType = makeArrayType(dims, Type.getObjectType(superClassMirror.getClassName().replace('.', '/'))); 
+                    String superInterfaceName = getMirageType(superType).getInternalName(); 
+                    interfaces.add(superInterfaceName);
+                }
+                
+                for (ClassMirror interfaceMirror : elementClass.getInterfaceMirrors()) {
+                    Type superType = makeArrayType(dims, Type.getObjectType(interfaceMirror.getClassName().replace('.', '/'))); 
+                    String interfaceName = getMirageType(superType).getInternalName(); 
+                    interfaces.add(interfaceName);
+                }
+                
+                interfaces.add(mirageType.getInternalName());
+                
+                Type nMinus1Type = makeArrayType(dims - 1, Type.getType(Object.class)); 
+                interfaces.add(getMirageType(nMinus1Type).getInternalName());
+            } else {
+                interfaces.add(getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), false));
+            }
+        }
+        
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V1_1, access, internalName, null, superName, interfaces.toArray(new String[0]));
+
+        // Generate thunk constructors
+        if (!isInterface) {
+            String initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class));
+            MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
+            mv.visitCode();
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+            mv.visitVarInsn(Opcodes.ALOAD, 1);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", initDesc);
+            mv.visitInsn(Opcodes.RETURN);
+            mv.visitMaxs(2, 2);
+            mv.visitEnd();
+            
+            initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.INT_TYPE);
+            mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
+            mv.visitCode();
+            mv.visitVarInsn(Opcodes.ALOAD, 0);
+            mv.visitVarInsn(Opcodes.ILOAD, 1);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", initDesc);
+            mv.visitInsn(Opcodes.RETURN);
+            mv.visitMaxs(2, 2);
+            mv.visitEnd();
+        }
+        return writer.toByteArray();
     }
 }

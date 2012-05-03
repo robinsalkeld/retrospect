@@ -11,8 +11,10 @@ import com.sun.tools.hat.internal.model.JavaThing;
 import com.sun.tools.hat.internal.model.JavaValueArray;
 import com.sun.tools.hat.internal.model.Snapshot;
 
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.sunhat.JHatClassMirror;
 import edu.ubc.mirrors.sunhat.JHatInstanceMirror;
@@ -104,4 +106,9 @@ public class JHatClassMirrorLoader extends JHatInstanceMirror implements ClassMi
         return result;
     }
     
+    @Override
+    public ClassMirror defineClass1(String name, ByteArrayMirror b, int off,
+            int len, InstanceMirror pd, InstanceMirror source, boolean verify) {
+        throw new UnsupportedOperationException();
+    }
 }

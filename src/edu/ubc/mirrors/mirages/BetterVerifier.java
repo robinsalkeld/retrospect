@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.mirages;
 
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.SimpleVerifier;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -56,5 +57,13 @@ public class BetterVerifier extends SimpleVerifier {
             return t.getInternalName().equals("java/lang/Object");
         }
         return Reflection.isAssignableFrom(tNode, uNode);
+    }
+    
+    protected boolean isSubTypeOf(final BasicValue value, final BasicValue expected) {
+        boolean result = super.isSubTypeOf(value, expected);
+        if (!result && value.getType().getSort() == Type.OBJECT && expected.getType().getSort() == Type.OBJECT) {
+            super.isSubTypeOf(value, expected);
+        }
+        return result;
     }
 }

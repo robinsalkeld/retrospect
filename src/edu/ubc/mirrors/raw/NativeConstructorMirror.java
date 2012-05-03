@@ -2,12 +2,9 @@ package edu.ubc.mirrors.raw;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectMirror;
 
 public class NativeConstructorMirror implements ConstructorMirror {
 
@@ -19,7 +16,7 @@ public class NativeConstructorMirror implements ConstructorMirror {
     
 
     @Override
-    public InstanceMirror newInstance(ObjectMirror... args)
+    public InstanceMirror newInstance(Object... args)
             throws InstantiationException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
         
@@ -29,5 +26,10 @@ public class NativeConstructorMirror implements ConstructorMirror {
         }
         Object result = nativeConstructor.newInstance(nativeArgs);
         return (InstanceMirror)NativeObjectMirror.makeMirror(result);
+    }
+    
+    @Override
+    public void setAccessible(boolean flag) {
+        nativeConstructor.setAccessible(flag);
     }
 }

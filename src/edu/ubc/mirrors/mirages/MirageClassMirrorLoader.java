@@ -14,6 +14,8 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 
+import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
@@ -267,6 +269,21 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
         }
 
         @Override
+        public InstanceMirror newRawInstance() {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        public ArrayMirror newArray(int size) {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        public ArrayMirror newArray(int... dims) {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
         public ClassMirror getClassMirror() {
             return getVM().findBootstrapClassMirror(Class.class.getName());
         }
@@ -285,5 +302,11 @@ public class MirageClassMirrorLoader implements ClassMirrorLoader {
     @Override
     public ClassMirror getClassMirror() {
         return nativeMirror.getClassMirror();
+    }
+    
+    @Override
+    public ClassMirror defineClass1(String name, ByteArrayMirror b, int off,
+            int len, InstanceMirror pd, InstanceMirror source, boolean verify) {
+        throw new UnsupportedOperationException();
     }
 }

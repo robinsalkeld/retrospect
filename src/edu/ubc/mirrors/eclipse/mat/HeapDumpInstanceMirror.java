@@ -26,6 +26,20 @@ public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMir
         this.heapDumpObject = heapDumpObject;
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+        
+        return ((HeapDumpInstanceMirror)obj).heapDumpObject.equals(heapDumpObject);
+    }
+    
+    @Override
+    public int hashCode() {
+        return 11 * heapDumpObject.hashCode();
+    }
+    
     public IInstance getHeapDumpObject() {
         return heapDumpObject;
     }

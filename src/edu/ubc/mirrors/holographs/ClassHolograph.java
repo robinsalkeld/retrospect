@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -21,6 +22,10 @@ public class ClassHolograph extends WrappingClassMirror {
         super(vm, wrapped);
     }
     
+    public ClassMirror getWrappedClassMirror() {
+        return wrapped;
+    }
+    
     public Class<?> getNativeStubsClass() {
         return NativeClassMirror.getNativeStubsClass(getClassName());
     }
@@ -28,10 +33,10 @@ public class ClassHolograph extends WrappingClassMirror {
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
         Class<?>[] mirageParamTypes = new Class<?>[paramTypes.length];
         for (int i = 0; i < paramTypes.length; i++) {
-            mirageParamTypes[i] = getMirageClass(paramTypes[i]);
+            mirageParamTypes[i] = getMirageClass(paramTypes[i], false);
         }
-        Class<?> mirageClass = getMirageClass(this);
-        Method method = mirageClass.getMethod(name, mirageParamTypes);
+        Class<?> mirageClass = getMirageClass(this, false);
+        Method method = mirageClass.getDeclaredMethod(name, mirageParamTypes);
         return new MirageMethod(method);
     }
     
@@ -41,11 +46,11 @@ public class ClassHolograph extends WrappingClassMirror {
         // Add the extra implicit mirror parameter
         Class<?>[] mirageParamTypes = new Class<?>[paramTypes.length + 1];
         for (int i = 0; i < paramTypes.length; i++) {
-            mirageParamTypes[i] = getMirageClass(paramTypes[i]);
+            mirageParamTypes[i] = getMirageClass(paramTypes[i], false);
         }
         mirageParamTypes[paramTypes.length] = InstanceMirror.class;
         
-        Class<?> mirageClass = getMirageClass(this);
+        Class<?> mirageClass = getMirageClass(this, false);
         Constructor<?> constructor = mirageClass.getDeclaredConstructor(mirageParamTypes);
         return new MirageConstructor(constructor);
     }
@@ -59,6 +64,10 @@ public class ClassHolograph extends WrappingClassMirror {
         return (ClassLoaderHolograph)super.getLoader();
     }
     
+    public static MirageClassLoader getMirageClassLoader(ClassHolograph classMirror) {
+        return getMirageClassLoader(classMirror.getVM(), classMirror.getLoader());
+    }
+    
     public static MirageClassLoader getMirageClassLoader(VirtualMachineHolograph vm, ClassLoaderHolograph loader) {
         return loader == null ? vm.getMirageClassLoader() : loader.getMirageClassLoader();
     }
@@ -67,17 +76,17 @@ public class ClassHolograph extends WrappingClassMirror {
         return getMirageClassLoader(getVM(), getLoader());
     }
     
-    public static Class<?> getMirageClass(ClassMirror classMirror) {
+    public static Class<?> getMirageClass(ClassMirror classMirror, boolean impl) {
         if (classMirror instanceof ClassHolograph) {
-            return ((ClassHolograph)classMirror).getMirageClass();
+            return ((ClassHolograph)classMirror).getMirageClass(impl);
         } else {
             throw new IllegalArgumentException();
         }
     }
     
-    public Class<?> getMirageClass() {
+    public Class<?> getMirageClass(boolean impl) {
         try {
-            return getMirageClassLoader().loadMirageClass(getClassName());
+            return getMirageClassLoader().getMirageClass(this, impl);
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(e.getMessage());
         }
@@ -101,6 +110,11 @@ public class ClassHolograph extends WrappingClassMirror {
             Object result = mirageClassMethod.invoke(mirageObj, mirageArgs);
             return unwrapMirage(result);
         }
+        
+        @Override
+        public void setAccessible(boolean flag) {
+            mirageClassMethod.setAccessible(flag);
+        }
     }
     
     private static class MirageConstructor implements ConstructorMirror {
@@ -112,7 +126,7 @@ public class ClassHolograph extends WrappingClassMirror {
         }
         
         @Override
-        public InstanceMirror newInstance(ObjectMirror... args)
+        public InstanceMirror newInstance(Object... args)
                 throws InstantiationException, IllegalAccessException,
                 IllegalArgumentException, InvocationTargetException {
 
@@ -126,6 +140,11 @@ public class ClassHolograph extends WrappingClassMirror {
             mirageArgs[args.length] = mirror;
             Object result = mirageClassConstructor.newInstance(mirageArgs);
             return (InstanceMirror)unwrapMirage(result);
+        }
+        
+        @Override
+        public void setAccessible(boolean flag) {
+            mirageClassConstructor.setAccessible(flag);
         }
     }
     

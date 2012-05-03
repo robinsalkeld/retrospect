@@ -1,6 +1,8 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.MethodHandle.OBJECT_MIRAGE_MAKE_STRING_MIRAGE;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMirrorType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
 
 import java.util.Collections;
 import java.util.List;
@@ -10,13 +12,13 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
@@ -76,7 +78,7 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
         
         // makeMirage
 
-        desc = Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(ObjectMirror.class));
+        desc = Type.getMethodDescriptor(mirageType, Type.getType(ObjectMirror.class));
         mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "makeMirage", desc, null, null);
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
@@ -86,15 +88,36 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
                 Type.getInternalName(ObjectMirage.class), 
                 "make", 
-                Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(ObjectMirror.class), Type.getType(Class.class)));
+                Type.getMethodDescriptor(mirageType, Type.getType(ObjectMirror.class), Type.getType(Class.class)));
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(3, 1);
         mv.visitEnd();
 
-        // lift
+        // makeStringMirage
 
-        desc = Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Object.class));
-        mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "lift", desc, null, null);
+        desc = Type.getMethodDescriptor(Type.getType(Mirage.class), Type.getType(String.class));
+        mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "makeStringMirage", desc, null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitTypeInsn(Opcodes.NEW, CLASS_LOADER_LITERAL_NAME);
+        mv.visitInsn(Opcodes.DUP);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, CLASS_LOADER_LITERAL_NAME, "<init>", "()V");
+
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
+                "java/lang/Object", 
+                "getClass", 
+                Type.getMethodDescriptor(Type.getType(Class.class)));
+        
+        OBJECT_MIRAGE_MAKE_STRING_MIRAGE.invoke(mv);
+        
+        mv.visitInsn(Opcodes.ARETURN);
+        mv.visitMaxs(3, 1);
+        mv.visitEnd();
+
+        // makeClassMirage
+
+        desc = Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Class.class));
+        mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "makeClassMirage", desc, null, null);
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitTypeInsn(Opcodes.NEW, CLASS_LOADER_LITERAL_NAME);
@@ -107,8 +130,8 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
                 Type.getMethodDescriptor(Type.getType(Class.class)));
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
                 Type.getInternalName(ObjectMirage.class), 
-                "lift", 
-                Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Object.class), Type.getType(Class.class)));
+                "makeClassMirage", 
+                Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Class.class), Type.getType(Class.class)));
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(3, 1);
         mv.visitEnd();
@@ -158,10 +181,10 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
         mv.visitMaxs(3, 1);
         mv.visitEnd();
       
-        // newObjectArrayMirror(String, int)
+        // newArrayMirror(String, int)
 
-        desc = Type.getMethodDescriptor(Type.getType(ObjectArrayMirror.class), Type.getType(String.class), Type.INT_TYPE);
-        mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "newObjectArrayMirror", desc, null, null);
+        desc = Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.getType(String.class), Type.INT_TYPE);
+        mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "newArrayMirror", desc, null, null);
         mv.visitCode();
         mv.visitTypeInsn(Opcodes.NEW, CLASS_LOADER_LITERAL_NAME);
         mv.visitInsn(Opcodes.DUP);
@@ -175,16 +198,16 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
         mv.visitVarInsn(Opcodes.ILOAD, 1);
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
                 Type.getInternalName(ObjectMirage.class), 
-                "newObjectArrayMirror", 
-                Type.getMethodDescriptor(Type.getType(ObjectArrayMirror.class), Type.getType(Class.class), Type.getType(String.class), Type.INT_TYPE));
+                "newArrayMirror", 
+                Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.getType(Class.class), Type.getType(String.class), Type.INT_TYPE));
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(4, 1);
         mv.visitEnd();
         
-        // newObjectArrayMirror(String, int[])
+        // newArrayMirror(String, int[])
 
-        desc = Type.getMethodDescriptor(Type.getType(ObjectArrayMirror.class), Type.getType(String.class), Type.getObjectType("[I"));
-        mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "newObjectArrayMirror", desc, null, null);
+        desc = Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.getType(String.class), Type.getObjectType("[I"));
+        mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "newArrayMirror", desc, null, null);
         mv.visitCode();
         mv.visitTypeInsn(Opcodes.NEW, CLASS_LOADER_LITERAL_NAME);
         mv.visitInsn(Opcodes.DUP);
@@ -198,8 +221,8 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
         mv.visitVarInsn(Opcodes.ALOAD, 1);
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
                 Type.getInternalName(ObjectMirage.class), 
-                "newObjectArrayMirror", 
-                Type.getMethodDescriptor(Type.getType(ObjectArrayMirror.class), Type.getType(Class.class), Type.getType(String.class), Type.getObjectType("[I")));
+                "newArrayMirror", 
+                Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.getType(Class.class), Type.getType(String.class), Type.getObjectType("[I")));
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(4, 1);
         mv.visitEnd();
@@ -275,6 +298,21 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public InstanceMirror newRawInstance() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ArrayMirror newArray(int size) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ArrayMirror newArray(int... dims) {
+        throw new UnsupportedOperationException();
+    }
+    
     @Override
     public ClassMirror getClassMirror() {
         return getVM().findBootstrapClassMirror(Class.class.getName());

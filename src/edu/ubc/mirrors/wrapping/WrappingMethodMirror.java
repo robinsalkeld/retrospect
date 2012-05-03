@@ -45,4 +45,9 @@ public class WrappingMethodMirror implements MethodMirror {
             return value;
         }
     }
+    
+    @Override
+    public void setAccessible(boolean flag) {
+        wrapped.setAccessible(flag);
+    }
 }

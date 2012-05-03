@@ -1,15 +1,6 @@
 package edu.ubc.mirrors;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.List;
-import java.util.Map;
-
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.raw.NativeClassMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
 
 
 public interface ClassMirror extends InstanceMirror {
@@ -43,4 +34,10 @@ public interface ClassMirror extends InstanceMirror {
     public abstract MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
 
     public abstract ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
+    
+    public abstract InstanceMirror newRawInstance();
+    
+    public abstract ArrayMirror newArray(int size);
+    
+    public abstract ArrayMirror newArray(int... dims);
 }

@@ -11,7 +11,6 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
 
 public class FieldMapMirror implements InstanceMirror {
@@ -69,6 +68,26 @@ public class FieldMapMirror implements InstanceMirror {
         public MapEntryFieldMirror(Field field, String name) {
             this.field = field;
             this.name = name;
+        }
+        
+        private FieldMapMirror getEnclosingThis() {
+            return FieldMapMirror.this;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof MapEntryFieldMirror)) {
+                return false;
+            }
+            
+            MapEntryFieldMirror other = (MapEntryFieldMirror)obj;
+            return getEnclosingThis().equals(other.getEnclosingThis())
+                && name.equals(other.name);
+        }
+        
+        @Override
+        public int hashCode() {
+            return getEnclosingThis().hashCode() + name.hashCode();
         }
         
         @Override
