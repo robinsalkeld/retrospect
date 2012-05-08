@@ -82,8 +82,6 @@ public class MirageClassGenerator extends ClassVisitor {
         };
     };
     
-    private final ClassMirror classMirror;
-    
     private boolean isInterface;
     private String name;
     private String superName;
@@ -92,11 +90,6 @@ public class MirageClassGenerator extends ClassVisitor {
     
     public MirageClassGenerator(ClassHolograph classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
-        this.classMirror = classMirror;
-        if (classMirror.getClassName().contains("java.lang.System")) {
-            int bp = 4;
-            bp++;
-        }
         
         Class<?> nativeStubsClass = classMirror.getNativeStubsClass();
         if (nativeStubsClass != null) {
@@ -344,8 +337,6 @@ public class MirageClassGenerator extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
 
-        activeMethod = name;
-        
         // Remove all static initializers - these will have already been executed when
         // loading the original class and state will be proxied by ClassMirrors instead.
         if (name.equals("<clinit>")) {
@@ -516,35 +507,6 @@ public class MirageClassGenerator extends ClassVisitor {
         super.visitEnd();
     }
 
-    private static String activeMethod = null;
-    
-    public static byte[] generate(MirageClassLoader loader, ClassHolograph classMirror) throws IOException {
-        String internalName = getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), true);
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        ClassVisitor visitor = classWriter;
-        if (MirageClassLoader.debug) {
-            visitor = new FrameAnalyzerAdaptor(loader.getMirageClassMirrorLoader().getMirageVM(), loader.getMirageClassMirrorLoader(), visitor, false);
-        }
-        if (loader.myTraceDir != null) {
-            File txtFile = loader.createClassFile(internalName + ".txt");
-            PrintWriter textFileWriter = new PrintWriter(txtFile);
-            visitor = new TraceClassVisitor(visitor, textFileWriter);
-        }
-        visitor = new MirageClassGenerator(classMirror, visitor);
-        visitor = new RemappingClassAdapter(visitor, REMAPPER);
-        if (loader.myTraceDir != null) {
-            File txtFile = loader.createClassFile(internalName + ".afterframes.txt");
-            PrintWriter textFileWriter = new PrintWriter(txtFile);
-            ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
-            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(loader.getVM(), loader.getOriginalClassMirrorLoader(), traceVisitor, true);
-            new ClassReader(classMirror.getBytecode()).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
-        }
-        visitor = new FrameAnalyzerAdaptor(loader.getVM(), loader.getOriginalClassMirrorLoader(), visitor, true);
-        ClassReader reader = new ClassReader(classMirror.getBytecode());
-        reader.accept(visitor, ClassReader.EXPAND_FRAMES);
-        return classWriter.toByteArray();
-    }
-    
     public static byte[] generateArray(MirageClassLoader loader, ClassHolograph classMirror, boolean isInterface) {
         String internalName = getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), !isInterface);
         

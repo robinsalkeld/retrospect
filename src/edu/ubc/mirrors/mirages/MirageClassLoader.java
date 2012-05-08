@@ -1,31 +1,29 @@
 package edu.ubc.mirrors.mirages;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalInternalClassName;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
-
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.RemappingClassAdapter;
+import org.objectweb.asm.util.TraceClassVisitor;
 
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.DoubleArrayMirror;
 import edu.ubc.mirrors.FloatArrayMirror;
@@ -37,13 +35,9 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
-import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class MirageClassLoader extends ClassLoader {
@@ -78,8 +72,8 @@ public class MirageClassLoader extends ClassLoader {
         super(MirageClassLoader.class.getClassLoader());
         this.vm = vm;
         this.originalLoader = originalLoader;
-        this.mirageClassMirrorLoader = new MirageClassMirrorLoader(vm, new NativeClassMirrorLoader(getParent()), originalLoader);
-        
+        this.mirageClassMirrorLoader = new MirageClassMirrorLoader(vm.getMirageVM(), new NativeClassMirrorLoader(getParent()), originalLoader);
+
         if (traceDir != null) {
             String loaderID = originalLoader == null ? "0" : String.valueOf(originalLoader.hashCode());
             myTraceDir = new File(traceDir, loaderID);
@@ -150,7 +144,8 @@ public class MirageClassLoader extends ClassLoader {
             return NativeVirtualMachineMirror.getNativePrimitiveClass(classMirror.getClassName());
         }
         
-        String name = MirageClassGenerator.getMirageBinaryClassName(classMirror.getClassName(), impl);
+        MirageClassMirror mirageMirror = new MirageClassMirror(vm.getMirageVM(), classMirror, impl);
+        String name = mirageMirror.getClassName();
         
         if (!name.startsWith("mirage")) {
             return super.loadClass(name);
@@ -161,45 +156,17 @@ public class MirageClassLoader extends ClassLoader {
             return c;
         }
         
-        String internalName = name.replace('.', '/');
-        if (myTraceDir != null) {
-            File classFile = createClassFile(internalName + ".class");
-            if (classFile.exists()) {
-                try {
-                    byte[] b = NativeClassMirror.readFully(new FileInputStream(classFile));
-                    return defineClass(name, b, 0, b.length);
-                } catch (Throwable e) {
-                    throw new RuntimeException("Error caught while using cached class definition " + name, e);
-                }
+        byte[] b;
+        try {
+            b = mirageMirror.getBytecode();
+        } catch (Throwable e) {
+            String target = name;
+            if (MirageMethodGenerator.activeMethod != null) {
+                target += "#" + MirageMethodGenerator.activeMethod;
             }
+            throw new RuntimeException("Error caught while generating bytecode for " + target, e);
         }
-        
-        // Similar check to what the VM does - we can also get into infinite recursion
-        // if the code generation is circular.
-        if (inFlightClasses.contains(name)) {
-            throw new ClassCircularityError(name);
-        }
-        System.out.println("Generating bytecode for class: " + name);
-        inFlightClasses.add(name);
-        
-        if (name.startsWith("miragearray")) {
-            byte[] b = MirageClassGenerator.generateArray(this, classMirror, !impl);
-            return defineDynamicClass(name, b);
-        } else {
-            byte[] b;
-            try {
-                b = MirageClassGenerator.generate(this, classMirror);
-            } catch (IOException e) {
-                throw new ClassNotFoundException("Error reading bytecode from class mirror: " + classMirror.getClassName(), e);
-            } catch (Throwable e) {
-                String target = name;
-                if (MirageMethodGenerator.activeMethod != null) {
-                    target += "#" + MirageMethodGenerator.activeMethod;
-                }
-                throw new RuntimeException("Error caught while generating bytecode for " + target, e);
-            }
-            return defineDynamicClass(name, b);
-        }
+        return defineDynamicClass(name, b);
     }
     
     @Override
@@ -231,16 +198,7 @@ public class MirageClassLoader extends ClassLoader {
     
     protected Class<?> defineDynamicClass(String name, byte[] b) {
         try {
-            if (myTraceDir != null) {
-                File file = createClassFile(name.replace('.', '/') + ".class");
-                OutputStream classFile = new FileOutputStream(file);
-                classFile.write(b);
-                classFile.flush();
-                classFile.close();
-            }
-            Class<?> c = defineClass(name, b, 0, b.length);
-            inFlightClasses.remove(name);
-            return c;
+            return defineClass(name, b, 0, b.length);
         } catch (Throwable e) {
             throw new RuntimeException("Error caught while defining class " + name, e);
         }
@@ -307,6 +265,91 @@ public class MirageClassLoader extends ClassLoader {
         mirages.put(mirror, mirage);
         return mirage;
     }
+    
+    public byte[] getBytecode(MirageClassMirror mirageClassMirror) {
+        String name = mirageClassMirror.getClassName();
+        String internalName = name.replace('.', '/');
+        if (myTraceDir != null) {
+            File classFile = createClassFile(internalName + ".class");
+            if (classFile.exists()) {
+                try {
+                    return NativeClassMirror.readFully(new FileInputStream(classFile));
+                } catch (Throwable e) {
+                    throw new RuntimeException("Error caught while using cached class definition " + name, e);
+                }
+            }
+        }
+        
+        // Similar check to what the VM does - we can also get into infinite recursion
+        // if the code generation is circular.
+        if (inFlightClasses.contains(name)) {
+            throw new ClassCircularityError(name);
+        }
+        System.out.println("Generating bytecode for class: " + name);
+        inFlightClasses.add(name);
+        
+        byte[] result = generateBytecode(mirageClassMirror);
+        
+        if (myTraceDir != null) {
+            File file = createClassFile(name.replace('.', '/') + ".class");
+            OutputStream classFile;
+            try {
+                classFile = new FileOutputStream(file);
+                classFile.write(result);
+                classFile.flush();
+                classFile.close();
+            } catch (IOException e) {
+                throw new RuntimeException();
+            }
+        }
+        inFlightClasses.remove(name);
+        
+        return result;
+    }
+    
+    public byte[] generateBytecode(MirageClassMirror mirageClassMirror) {
+        if (mirageClassMirror.getOriginal().isArray()) {
+            return MirageClassGenerator.generateArray(this, mirageClassMirror.getOriginal(), !mirageClassMirror.isImplementationClass());
+        }
+        
+        String internalName = mirageClassMirror.getClassName().replace('.', '/');
+        
+        ClassHolograph original = mirageClassMirror.getOriginal();
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassVisitor visitor = classWriter;
+        if (debug) {
+            visitor = new FrameAnalyzerAdaptor(mirageClassMirror.getVM(), mirageClassMirror.getLoader(), visitor, false);
+        }
+        if (myTraceDir != null) {
+            File txtFile = createClassFile(internalName + ".txt");
+            PrintWriter textFileWriter;
+            try {
+                textFileWriter = new PrintWriter(txtFile);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            visitor = new TraceClassVisitor(visitor, textFileWriter);
+        }
+        visitor = new MirageClassGenerator(original, visitor);
+        visitor = new RemappingClassAdapter(visitor, MirageClassGenerator.REMAPPER);
+        if (myTraceDir != null) {
+            File txtFile = createClassFile(internalName + ".afterframes.txt");
+            PrintWriter textFileWriter;
+            try {
+                textFileWriter = new PrintWriter(txtFile);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
+            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), traceVisitor, true);
+            new ClassReader(mirageClassMirror.getOriginal().getBytecode()).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
+        }
+        visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true);
+        ClassReader reader = new ClassReader(original.getBytecode());
+        reader.accept(visitor, ClassReader.EXPAND_FRAMES);
+        return classWriter.toByteArray();
+    }
+
     
     @Override
     public String toString() {

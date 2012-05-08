@@ -87,9 +87,7 @@ public class Reflection {
     }
     
     
-    public static ClassMirror injectBytecode(ClassMirrorLoader parent, ClassMirror newClass) {
-        VirtualMachineMirror vm = parent.getClassMirror().getVM();
-        
+    public static ClassMirror injectBytecode(VirtualMachineMirror vm, ClassMirrorLoader parent, ClassMirror newClass) {
         ClassMirror secureClassLoaderClass = vm.findBootstrapClassMirror(SecureClassLoader.class.getName());
         ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
         ConstructorMirror constructor = getConstructor(secureClassLoaderClass, classLoaderClass);

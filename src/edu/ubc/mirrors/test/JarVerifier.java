@@ -14,6 +14,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mirages.MirageClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 
 public class JarVerifier implements IApplication {

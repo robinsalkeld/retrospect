@@ -23,6 +23,7 @@ import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mirages.MirageClassMirrorLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
 import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
@@ -57,7 +58,7 @@ public class EclipseHeapDumpTest implements IApplication {
         // Note we need a class loader that can see the classes in the OSGi API 
         // as well as our additional code (i.e. PrintOSGiBundles).
         ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName()).get(0);
-        ClassMirror printerClass = Reflection.injectBytecode(bundleRepositoryClass.getLoader(), 
+        ClassMirror printerClass = Reflection.injectBytecode(holographVM, bundleRepositoryClass.getLoader(), 
                 new NativeClassMirror(PrintOSGiBundles.class));
         
         // For each class instance (in this case we only expect one)...

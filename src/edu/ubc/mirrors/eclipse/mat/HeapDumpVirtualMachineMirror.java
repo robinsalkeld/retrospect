@@ -78,8 +78,12 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         loadersForBytecodeLoaders.put(bytecodeLoader, snapshotLoader);
     }
     
+    public void setBytecodeVM(VirtualMachineMirror vm) {
+        this.bytecodeVM = vm;
+    }
+    
     public void addNativeBytecodeLoaders(IClassLoader snapshotLoader, ClassLoader bytecodeLoader) {
-        bytecodeVM = NativeVirtualMachineMirror.INSTANCE;
+        setBytecodeVM(NativeVirtualMachineMirror.INSTANCE);
         
         addBytecodeLoader(snapshotLoader, (ClassMirrorLoader)NativeObjectMirror.makeMirror(bytecodeLoader));
             

@@ -1,6 +1,5 @@
 package edu.ubc.mirrors.raw;
 
-import java.net.URL;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -8,10 +7,13 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
 
+    private final VirtualMachineMirror baseVM;
+    
     // May be null
     private final ClassLoader bootstrapLoader;
     
-    public BytecodeOnlyVirtualMachineMirror(ClassLoader bootstrapLoader) {
+    public BytecodeOnlyVirtualMachineMirror(VirtualMachineMirror baseVM, ClassLoader bootstrapLoader) {
+        this.baseVM = baseVM;
         this.bootstrapLoader = bootstrapLoader;
     }
     
@@ -29,11 +31,11 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public ClassMirror getPrimitiveClass(String name) {
-        throw new UnsupportedOperationException();
+        return baseVM.getPrimitiveClass(name);
     }
     
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
-        throw new UnsupportedOperationException();
+        return baseVM.getArrayClass(dimensions, elementClass);
     }
 }

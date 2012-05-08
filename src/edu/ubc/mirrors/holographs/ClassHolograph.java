@@ -5,7 +5,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -72,7 +71,7 @@ public class ClassHolograph extends WrappingClassMirror {
         return loader == null ? vm.getMirageClassLoader() : loader.getMirageClassLoader();
     }
     
-    private MirageClassLoader getMirageClassLoader() {
+    public MirageClassLoader getMirageClassLoader() {
         return getMirageClassLoader(getVM(), getLoader());
     }
     

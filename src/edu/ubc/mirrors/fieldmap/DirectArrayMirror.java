@@ -63,7 +63,34 @@ public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayM
 
     @Override
     protected Object getBoxedValue(int index) throws ArrayIndexOutOfBoundsException {
-        return array[index];
+        Object result = array[index];
+        if (result != null) {
+            return result;
+        } else if (classMirror.getComponentClassMirror().isPrimitive()) {
+            // Return the appropriate primitive default
+            String elementName = classMirror.getComponentClassMirror().getClassName();
+            if (elementName.equals("boolean")) {
+                return Boolean.FALSE;
+            } else if (elementName.equals("byte")) {
+                return Byte.valueOf((byte)0);
+            } else if (elementName.equals("char")) {
+                return Character.valueOf((char)0);
+            } else if (elementName.equals("short")) {
+                return Short.valueOf((short)0);
+            } else if (elementName.equals("int")) {
+                return Integer.valueOf(0);
+            } else if (elementName.equals("long")) {
+                return Long.valueOf(0);
+            } else if (elementName.equals("float")) {
+                return Float.valueOf((float)0.0);
+            } else if (elementName.equals("double")) {
+                return Double.valueOf(0.0);
+            } else {
+                throw new IllegalStateException();
+            }
+        } else {
+            return result;
+        }
     }
 
     @Override

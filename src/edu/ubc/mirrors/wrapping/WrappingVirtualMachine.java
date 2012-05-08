@@ -45,10 +45,14 @@ import edu.ubc.mirrors.mutable.MutableThreadMirror;
 
 public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
 
-    private final VirtualMachineMirror wrappedVM;
+    protected final VirtualMachineMirror wrappedVM;
     
     public WrappingVirtualMachine(VirtualMachineMirror wrappedVM) {
         this.wrappedVM = wrappedVM;
+    }
+    
+    public VirtualMachineMirror getWrappedVM() {
+        return wrappedVM;
     }
     
     @Override

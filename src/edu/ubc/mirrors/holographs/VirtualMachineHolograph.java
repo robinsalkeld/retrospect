@@ -5,17 +5,22 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mirages.MirageVirtualMachine;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class VirtualMachineHolograph extends WrappingVirtualMachine {
 
-    private final MirageClassLoader mirageLoader;
+    private final MirageVirtualMachine mirageVM;
+    
+    private final MirageClassLoader mirageBootstrapLoader;
     
     public VirtualMachineHolograph(VirtualMachineMirror wrappedVM) {
         super(wrappedVM);
-        this.mirageLoader = new MirageClassLoader(this, null);
+        this.mirageVM = new MirageVirtualMachine(this);
+        this.mirageBootstrapLoader = new MirageClassLoader(this, null);
     }
     
     @Override
@@ -24,6 +29,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             return new ClassHolograph(this, (ClassMirror)mirror);
         } else if (mirror instanceof ClassMirrorLoader) {
             return new ClassLoaderHolograph(this, (ClassMirrorLoader)mirror);
+        } else if (mirror instanceof ThreadMirror) {
+            return new ThreadHolograph(this, (ThreadMirror)mirror);
         } else if (mirror instanceof InstanceMirror) {
             return new InstanceHolograph(this, (InstanceMirror)mirror);
         } else if (mirror.getClassMirror().getClassName().length() == 2) {
@@ -37,6 +44,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     public MirageClassLoader getMirageClassLoader() {
-        return mirageLoader;
+        return mirageBootstrapLoader;
+    }
+    
+    public MirageVirtualMachine getMirageVM() {
+        return mirageVM;
     }
 }
