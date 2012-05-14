@@ -3,20 +3,17 @@ package edu.ubc.mirrors.raw;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
-public class NativeBooleanArrayMirror implements BooleanArrayMirror {
+public class NativeBooleanArrayMirror extends NativeObjectMirror implements BooleanArrayMirror {
 
     private final boolean[] array;
     
     public NativeBooleanArrayMirror(boolean[] array) {
+        super(array);
         this.array = array;
     }
     
     public int length() {
         return array.length;
-    }
-
-    public ClassMirror getClassMirror() {
-        return new NativeClassMirror(array.getClass());
     }
 
     public boolean getBoolean(int index) throws ArrayIndexOutOfBoundsException {

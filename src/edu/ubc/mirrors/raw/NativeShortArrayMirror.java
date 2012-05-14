@@ -3,11 +3,12 @@ package edu.ubc.mirrors.raw;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
-public class NativeShortArrayMirror implements ShortArrayMirror {
+public class NativeShortArrayMirror extends NativeObjectMirror implements ShortArrayMirror {
 
     private final short[] array;
     
     public NativeShortArrayMirror(short[] array) {
+        super(array);
         this.array = array;
     }
     

@@ -22,12 +22,12 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.raw.NativeObjectMirror.NativeFieldMirror;
+import edu.ubc.mirrors.raw.NativeInstanceMirror.NativeFieldMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ThreadStubs;
 
-public class NativeClassMirror extends NativeObjectMirror implements ClassMirror {
+public class NativeClassMirror extends NativeInstanceMirror implements ClassMirror {
 
     private final Class<?> klass;
     
@@ -122,25 +122,6 @@ public class NativeClassMirror extends NativeObjectMirror implements ClassMirror
             }
         }
         
-        // Damn! Search the superclass and interfaces
-        // TODO-RS: Check the spec on the ordering here
-        Class<?> superclass = klass.getSuperclass();
-        if (superclass != null) {
-            try {
-                return new NativeClassMirror(superclass).getStaticField(name);
-            } catch (NoSuchFieldException e) {
-                // Ignore
-            }
-        }
-        
-        for (Class<?> i : klass.getInterfaces()) {
-            try {
-                return new NativeClassMirror(i).getStaticField(name);
-            } catch (NoSuchFieldException e) {
-                // Ignore
-            }
-        }
-        
         throw new NoSuchFieldException();
     }
     
@@ -165,12 +146,12 @@ public class NativeClassMirror extends NativeObjectMirror implements ClassMirror
 
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        return NativeObjectMirror.getField(klass, name, false);
+        return NativeInstanceMirror.getField(klass, name, false);
     }
     
     @Override
     public List<FieldMirror> getMemberFields() {
-        return NativeObjectMirror.getMemberFields(klass);
+        return NativeInstanceMirror.getMemberFields(klass);
     }
 
     public static Class<?> getNativeStubsClass(String name) {
@@ -211,6 +192,21 @@ public class NativeClassMirror extends NativeObjectMirror implements ClassMirror
         return new NativeConstructorMirror(nativeConstructor);
     }
     
+    @Override
+    public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
+        Constructor<?>[] nativeConstructors = publicOnly ? klass.getConstructors() : klass.getDeclaredConstructors();
+        List<ConstructorMirror> result = new ArrayList<ConstructorMirror>();
+        for (Constructor<?> nativeConstructor : nativeConstructors) {
+            result.add(new NativeConstructorMirror(nativeConstructor));
+        }
+        return result;
+    }
+    
+    @Override
+    public int getModifiers() {
+        return klass.getModifiers();
+    }
+    
     private Class<?> getNativeClass(ClassMirror mirror) {
         if (mirror instanceof NativeClassMirror) {
             return ((NativeClassMirror)mirror).getKlass();
@@ -230,12 +226,12 @@ public class NativeClassMirror extends NativeObjectMirror implements ClassMirror
     
     @Override
     public ArrayMirror newArray(int size) {
-        return (ArrayMirror)NativeObjectMirror.makeMirror(Array.newInstance(klass, size));
+        return (ArrayMirror)NativeInstanceMirror.makeMirror(Array.newInstance(klass, size));
     }
     
     @Override
     public ArrayMirror newArray(int... dims) {
-        return (ArrayMirror)NativeObjectMirror.makeMirror(Array.newInstance(klass, dims));
+        return (ArrayMirror)NativeInstanceMirror.makeMirror(Array.newInstance(klass, dims));
     }
     
     @Override

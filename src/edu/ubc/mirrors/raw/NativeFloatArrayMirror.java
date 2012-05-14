@@ -3,11 +3,12 @@ package edu.ubc.mirrors.raw;
 import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
-public class NativeFloatArrayMirror implements FloatArrayMirror {
+public class NativeFloatArrayMirror extends NativeObjectMirror implements FloatArrayMirror {
 
     private final float[] array;
     
     public NativeFloatArrayMirror(float[] array) {
+        super(array);
         this.array = array;
     }
     

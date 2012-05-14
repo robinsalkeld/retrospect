@@ -13,14 +13,14 @@ public class ClassLoaderStubs {
     public static Mirage findLoadedClass0(Class<?> classLoaderLiteral, Mirage classLoader, Mirage name) {
         String realName = ObjectMirage.getRealStringForMirage((ObjectMirage)name);
         ClassMirror klass = ((ClassMirrorLoader)classLoader.getMirror()).findLoadedClassMirror(realName);
-        return (Mirage)ObjectMirage.make(klass, classLoaderLiteral);
+        return (Mirage)ObjectMirage.make(klass);
     }
     
     public static Mirage findBootstrapClass(Class<?> classLoaderLiteral, Mirage classLoader, Mirage name) {
         String realName = ObjectMirage.getRealStringForMirage((ObjectMirage)name);
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         ClassMirror klass = loader.getVM().findBootstrapClassMirror(realName);
-        return (Mirage)ObjectMirage.make(klass, classLoaderLiteral);
+        return (Mirage)ObjectMirage.make(klass);
     }
     
     public static Mirage defineClass1(Class<?> classLoaderLiteral, Mirage classLoader, Mirage name, ByteArrayMirage b, int off, int len,
@@ -31,6 +31,6 @@ public class ClassLoaderStubs {
         InstanceMirror sourceMirror = ((InstanceMirror)Reflection.getMirror(source));
         
         ClassMirror newClass = classLoaderMirror.defineClass1(realName, b, off, len, pdMirror, sourceMirror, verify);
-        return (Mirage)ObjectMirage.make(newClass, classLoaderLiteral);
+        return (Mirage)ObjectMirage.make(newClass);
     }
 }

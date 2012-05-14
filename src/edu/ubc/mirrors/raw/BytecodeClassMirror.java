@@ -23,6 +23,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
     private boolean resolved = false;
     
+    private int access;
     private ClassMirror superclassNode;
     private List<ClassMirror> interfaceNodes;
     private boolean isInterface;
@@ -43,6 +44,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+            BytecodeClassMirror.this.access = access;
             isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
             
             superclassNode = superName == null ? null : loadClassMirrorInternal(superName.replace('/', '.'));
@@ -162,6 +164,18 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         
         // Could create un-invocable methods, but no use for that yet.
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
+        // Could create un-invocable methods, but no use for that yet.
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public int getModifiers() {
+        resolve();
+        return access;
     }
     
     @Override

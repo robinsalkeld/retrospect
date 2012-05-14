@@ -2,9 +2,13 @@ package edu.ubc.mirrors.mirages;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassName;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.SecureClassLoader;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.objectweb.asm.Type;
 
@@ -13,9 +17,12 @@ import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
@@ -23,7 +30,7 @@ import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.raw.NativeInstanceMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 import edu.ubc.mirrors.test.ChainedClassLoader;
 
@@ -33,7 +40,7 @@ public class Reflection {
         if (o instanceof Mirage) {
             return ((Mirage)o).getMirror();
         } else {
-            return NativeObjectMirror.makeMirror(o);
+            return NativeInstanceMirror.makeMirror(o);
         }
     }
     
@@ -88,14 +95,17 @@ public class Reflection {
     
     
     public static ClassMirror injectBytecode(VirtualMachineMirror vm, ClassMirrorLoader parent, ClassMirror newClass) {
+        // TODO-RS: Does this make sense?
+        ThreadMirror thread = vm.getThreads().get(0);
+        
         ClassMirror secureClassLoaderClass = vm.findBootstrapClassMirror(SecureClassLoader.class.getName());
         ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
         ConstructorMirror constructor = getConstructor(secureClassLoaderClass, classLoaderClass);
-        constructor.setAccessible(true);
+        
         ClassMirrorLoader newLoader = (ClassMirrorLoader)newInstance(constructor, parent);
         
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
-        ClassMirror byteArrayClass = loadClassMirrorInternal(stringClass, "[B");
+        ClassMirror byteArrayClass = loadClassMirrorInternal(vm, null, "[B");
         ClassMirror intClass = vm.getPrimitiveClass("int");
         MethodMirror defineClassMethod = getMethod(classLoaderClass, "defineClass", stringClass, byteArrayClass, intClass, intClass);
         defineClassMethod.setAccessible(true);
@@ -104,10 +114,14 @@ public class Reflection {
         byte[] bytecode = newClass.getBytecode();
         ObjectMirror bytecodeInVM = copyArray(vm, new NativeByteArrayMirror(bytecode));
         
-        return (ClassMirror)mirrorInvoke(defineClassMethod, newLoader, name, bytecodeInVM, 0, bytecode.length);
+        return (ClassMirror)mirrorInvoke(thread, defineClassMethod, newLoader, name, bytecodeInVM, 0, bytecode.length);
     }
     
     public static InstanceMirror makeString(VirtualMachineMirror vm, String value) {
+        if (value == null) {
+            return null;
+        }
+        
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
         ObjectMirror chars = copyArray(vm, new NativeCharArrayMirror(value.toCharArray()));
         ConstructorMirror constructor = getConstructor(stringClass, chars.getClassMirror());
@@ -135,16 +149,95 @@ public class Reflection {
     }
     
     public static ArrayMirror copyArray(VirtualMachineMirror vm, ArrayMirror otherValue) {
-        ClassMirror targetClass;
-        try {
-            targetClass = classMirrorForName(vm, otherValue.getClassMirror().getClassName(), false, null).getComponentClassMirror();
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(e.getMessage());
+        if (otherValue == null) {
+            return null;
         }
         
+        ClassMirror targetClass = loadClassMirrorInternal(vm, null, otherValue.getClassMirror().getClassName()).getComponentClassMirror();
         ArrayMirror target = targetClass.newArray(otherValue.length());
         SystemStubs.arraycopyMirrors(otherValue, 0, target, 0, otherValue.length());
         return target;
+    }
+    
+    public static ObjectMirror deepcopy(VirtualMachineMirror vm, ObjectMirror mirror) {
+        return deepcopy(vm, mirror, new HashMap<ObjectMirror, ObjectMirror>());
+    }
+    
+    public static ObjectMirror deepcopy(VirtualMachineMirror vm, ObjectMirror mirror, Map<ObjectMirror, ObjectMirror> copies) {
+        if (mirror == null) {
+            return null;
+        }
+        
+        ObjectMirror result = copies.get(mirror);
+        if (result != null) {
+            return result;
+        }
+        
+        if (mirror instanceof ClassMirror) {
+            ClassMirror src = (ClassMirror)mirror;
+            if (src.getLoader() != null) {
+                throw new IllegalArgumentException("Class mirror " + src + " is not a bootstrap class");
+            }
+            result = loadClassMirrorInternal(vm, null, src.getClassName());
+        } else {
+            ClassMirror targetClass = (ClassMirror)deepcopy(vm, mirror.getClassMirror(), copies);
+            
+            if (mirror instanceof ArrayMirror) {
+                ArrayMirror src = (ArrayMirror)mirror;
+                int length = src.length();
+                ArrayMirror dest = targetClass.getComponentClassMirror().newArray(src.length());
+                result = dest;
+                copies.put(mirror, result);
+                
+                if (targetClass.getComponentClassMirror().isPrimitive()) {
+                    SystemStubs.arraycopyMirrors(src, 0, dest, 0, length);
+                } else {
+                    ObjectArrayMirror srcOA = (ObjectArrayMirror)src;
+                    ObjectArrayMirror destOA = (ObjectArrayMirror)dest;
+                    for (int i = 0; i < length; i++) {
+                        destOA.set(i, deepcopy(vm, srcOA.get(i), copies));
+                    }
+                }
+            } else if (mirror instanceof InstanceMirror) {
+                InstanceMirror src = (InstanceMirror)mirror;
+                InstanceMirror dest = targetClass.newRawInstance();
+                result = dest;
+                copies.put(mirror, result);
+                
+                for (FieldMirror field : src.getMemberFields()) {
+                    ClassMirror fieldType = field.getType();
+                    String fieldTypeName = fieldType.getClassName();
+                    try {
+                        FieldMirror resultField = dest.getMemberField(field.getName());
+                        if (fieldTypeName.equals("boolean")) {
+                            resultField.setBoolean(field.getBoolean());
+                        } else if (fieldTypeName.equals("byte")) {
+                            resultField.setByte(field.getByte());
+                        } else if (fieldTypeName.equals("char")) {
+                            resultField.setChar(field.getChar());
+                        } else if (fieldTypeName.equals("short")) {
+                            resultField.setShort(field.getShort());
+                        } else if (fieldTypeName.equals("int")) {
+                            resultField.setInt(field.getInt());
+                        } else if (fieldTypeName.equals("long")) {
+                            resultField.setLong(field.getLong());
+                        } else if (fieldTypeName.equals("float")) {
+                            resultField.setFloat(field.getFloat());
+                        } else if (fieldTypeName.equals("double")) {
+                            resultField.setDouble(field.getDouble());
+                        } else {
+                            resultField.set(deepcopy(vm, field.get(), copies));
+                        }
+                    } catch (NoSuchFieldException e) {
+                        throw new NoSuchFieldError(e.getMessage());
+                    } catch (IllegalAccessException e) {
+                        throw new IllegalAccessError(e.getMessage());
+                    }
+                }
+            }
+        }
+        
+        return result;
     }
     
     public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException {
@@ -157,7 +250,11 @@ public class Reflection {
             ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
             ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
             MethodMirror method = getMethod(classLoaderClass, "loadClass", stringClass);
-            result = (ClassMirror)mirrorInvoke(method, (InstanceMirror)originalLoader, makeString(vm, name));
+            
+            // TODO-RS: Does this make sense?
+            ThreadMirror thread = vm.getThreads().get(0);
+            
+            result = (ClassMirror)mirrorInvoke(thread, method, (InstanceMirror)originalLoader, makeString(vm, name));
         }
         if (result == null) {
             throw new ClassNotFoundException(name);
@@ -215,9 +312,9 @@ public class Reflection {
         }
     }
     
-    public static Object mirrorInvoke(MethodMirror method, InstanceMirror obj, Object... args) {
+    public static Object mirrorInvoke(ThreadMirror thread, MethodMirror method, InstanceMirror obj, Object... args) {
         try {
-            return method.invoke(obj, args);
+            return method.invoke(thread, obj, args);
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (IllegalAccessException e) {
@@ -272,8 +369,12 @@ public class Reflection {
     }
     
     public static ClassMirror loadClassMirrorInternal(ClassMirror context, String name) {
+        return loadClassMirrorInternal(context.getVM(), context.getLoader(), name);
+    }
+    
+    public static ClassMirror loadClassMirrorInternal(VirtualMachineMirror vm, ClassMirrorLoader loader, String name) {
         try {
-            return classMirrorForName(context.getVM(), name, false, context.getLoader());
+            return classMirrorForName(vm, name, false, loader);
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);
@@ -281,6 +382,16 @@ public class Reflection {
         }
     }
     
+    public static ObjectMirror getField(InstanceMirror o, String name) {
+        try {
+            return o.getMemberField(name).get();
+        } catch (IllegalAccessException e) {
+            throw new IllegalAccessError(e.getMessage());
+        } catch (NoSuchFieldException e) {
+            throw new NoSuchFieldError(e.getMessage());
+        }
+    }
+     
     public static void setField(InstanceMirror o, String name, ObjectMirror value) {
         try {
             o.getMemberField(name).set(value);
@@ -289,5 +400,32 @@ public class Reflection {
         } catch (NoSuchFieldException e) {
             throw new NoSuchFieldError(e.getMessage());
         }
+    }
+     
+    public static void setField(InstanceMirror o, String name, int value) {
+        try {
+            o.getMemberField(name).setInt(value);
+        } catch (IllegalAccessException e) {
+            throw new IllegalAccessError(e.getMessage());
+        } catch (NoSuchFieldException e) {
+            throw new NoSuchFieldError(e.getMessage());
+        }
+    }
+     
+    public static ObjectArrayMirror toArray(ClassMirror elementType, Collection<? extends ObjectMirror> c) {
+        ObjectArrayMirror result = (ObjectArrayMirror)elementType.newArray(c.size());
+        int i = 0;
+        for (ObjectMirror o : c) {
+            result.set(i++, o);
+        }
+        return result;
+    }
+    
+    public static ObjectMirror[] fromArray(ObjectArrayMirror mirror) {
+        ObjectMirror[] result = new ObjectMirror[mirror.length()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = mirror.get(i);
+        }
+        return result;
     }
 }

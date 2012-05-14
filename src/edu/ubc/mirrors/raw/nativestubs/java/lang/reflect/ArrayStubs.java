@@ -13,6 +13,6 @@ public class ArrayStubs {
     
     public static Mirage get(Class<?> classLoaderLiteral, Mirage array, int index) {
         ObjectMirror mirror = ((ObjectArrayMirror)array.getMirror()).get(index);
-        return (Mirage)ObjectMirage.make(mirror, classLoaderLiteral);
+        return (Mirage)ObjectMirage.make(mirror);
     }
 }

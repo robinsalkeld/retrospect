@@ -31,7 +31,7 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class MirageClassGenerator extends ClassVisitor {
 
@@ -42,8 +42,9 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type objectMirageType = Type.getType(ObjectMirage.class);
     public static Type mirageType = Type.getType(Mirage.class);
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
-    public static Type nativeObjectMirrorType = Type.getType(NativeObjectMirror.class);
+    public static Type nativeObjectMirrorType = Type.getType(NativeInstanceMirror.class);
     public static Type fieldMapMirrorType = Type.getType(FieldMapMirror.class);
+    public static Type objectType = Type.getType(Object.class);
     public static Type stringType = Type.getType(String.class);
     public static Type classType = Type.getType(Class.class);
     public static Type stackTraceElementType = Type.getType(StackTraceElement.class);
@@ -548,8 +549,13 @@ public class MirageClassGenerator extends ClassVisitor {
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         writer.visit(Opcodes.V1_1, access, internalName, null, superName, interfaces.toArray(new String[0]));
 
-        // Generate thunk constructors
-        if (!isInterface) {
+        if (isInterface) {
+            // Generate clone()
+            String cloneDesc = Type.getMethodDescriptor(objectType);
+            MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "clone", cloneDesc, null, null);
+            mv.visitEnd();
+        } else {
+            // Generate thunk constructors
             String initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class));
             MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
             mv.visitCode();

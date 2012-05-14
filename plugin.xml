@@ -2,18 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         id="heapdumptest"
-         point="org.eclipse.core.runtime.applications">
-      <application
-            cardinality="singleton-global"
-            thread="main"
-            visible="true">
-         <run
-               class="edu.ubc.mirrors.test.HeapDumpTest">
-         </run>
-      </application>
-   </extension>
-   <extension
          id="jarverifier"
          point="org.eclipse.core.runtime.applications">
       <application

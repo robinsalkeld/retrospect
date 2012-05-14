@@ -5,7 +5,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class ThrowableStubs {
 

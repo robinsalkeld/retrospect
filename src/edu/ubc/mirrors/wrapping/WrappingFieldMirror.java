@@ -7,7 +7,7 @@ import edu.ubc.mirrors.ObjectMirror;
 public class WrappingFieldMirror implements FieldMirror {
 
     private final WrappingVirtualMachine vm;
-    private final FieldMirror wrapped;
+    protected final FieldMirror wrapped;
     
     protected WrappingFieldMirror(WrappingVirtualMachine vm, FieldMirror wrapped) {
         this.vm = vm;

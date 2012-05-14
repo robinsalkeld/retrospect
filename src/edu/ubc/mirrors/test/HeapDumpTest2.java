@@ -31,6 +31,7 @@ public class HeapDumpTest2 implements IApplication {
     public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException, IllegalAccessException, NoSuchFieldException, IllegalArgumentException, NoSuchMethodException, InvocationTargetException {
         String snapshotPath = args[0];
         
+        MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
         
         ClassLoader runtimeClassLoader = HeapDumpTest2.class.getClassLoader();
@@ -71,7 +72,7 @@ public class HeapDumpTest2 implements IApplication {
     MethodMirror method = printerClass.getMethod("printStackTraces", rubyClass);
     for (InstanceMirror ruby : rubies) {
       // Invoke JRubyStackTraces#printStackTraces reflectively.
-      Object result = method.invoke(null, ruby);
+      Object result = method.invoke(holographVM.getThreads().get(0), null, ruby);
       System.out.println(result);
     }
   }

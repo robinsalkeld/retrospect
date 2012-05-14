@@ -6,7 +6,7 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
-public class BytecodeClassMirrorLoader extends NativeObjectMirror implements ClassMirrorLoader {
+public class BytecodeClassMirrorLoader extends NativeInstanceMirror implements ClassMirrorLoader {
 
     private final VirtualMachineMirror vm;
     private final ClassLoader loader;

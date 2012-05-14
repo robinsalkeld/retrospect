@@ -3,6 +3,7 @@ package edu.ubc.mirrors.raw;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.makeArrayType;
 
 import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -162,6 +163,16 @@ public class ArrayClassMirror implements ClassMirror {
             throws SecurityException, NoSuchMethodException {
         
         throw new NoSuchMethodException();
+    }
+    
+    @Override
+    public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
+        return Collections.emptyList();
+    }
+    
+    @Override
+    public int getModifiers() {
+        return Modifier.FINAL | elementClassMirror.getModifiers();
     }
     
     @Override

@@ -10,7 +10,7 @@ import org.eclipse.mat.snapshot.model.IThreadStack;
 
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements ThreadMirror {
 
@@ -52,7 +52,7 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
             }
         }
         
-        return (ObjectArrayMirror)NativeObjectMirror.makeMirror(trace);
+        return (ObjectArrayMirror)NativeInstanceMirror.makeMirror(trace);
     }
 
 }

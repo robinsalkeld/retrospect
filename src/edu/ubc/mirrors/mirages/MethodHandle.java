@@ -12,7 +12,7 @@ public abstract class MethodHandle {
     public static MethodHandle OBJECT_MIRAGE_MAKE = new MethodHandle() {
         @Override 
         public void methodCall() {
-            ObjectMirage.make(null, null);
+            ObjectMirage.make(null);
         }
     };
     
@@ -20,6 +20,13 @@ public abstract class MethodHandle {
         @Override
         public void methodCall() {
             ObjectMirage.makeStringMirage(null, null);
+        }
+    };
+
+    public static MethodHandle OBJECT_MIRAGE_MAKE_CLASS_MIRAGE = new MethodHandle() {
+        @Override
+        public void methodCall() {
+            ObjectMirage.makeClassMirage(null, null);
         }
     };
 

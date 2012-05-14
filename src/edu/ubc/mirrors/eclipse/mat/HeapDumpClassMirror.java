@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,11 +12,13 @@ import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.snapshot.model.IInstance;
 
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.BoxingFieldMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class HeapDumpClassMirror implements ClassMirror {
@@ -28,6 +31,9 @@ public class HeapDumpClassMirror implements ClassMirror {
     
     
     public HeapDumpClassMirror(HeapDumpVirtualMachineMirror vm, IClass klass) {
+        if (klass == null) {
+            throw new NullPointerException();
+        }
         this.className = getClassName(klass);
         this.vm = vm;
         this.klass = klass;
@@ -135,10 +141,61 @@ public class HeapDumpClassMirror implements ClassMirror {
     }
 
     @Override
-    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        // TODO-RS: The MAT model doesn't expose member fields for classes.
-        // Can we delegate to the bytecode implementation somehow?
-        throw new UnsupportedOperationException();
+    public FieldMirror getMemberField(final String name) throws NoSuchFieldException {
+        return new ClassFieldMirror(this, name);
+    }
+    
+    // The MAT model doesn't expose member fields for classes.
+    // All the fields on Class are caches though, so it's safe to start off null/0
+    private static class ClassFieldMirror extends BoxingFieldMirror {
+        private final HeapDumpClassMirror klass;
+        private final String name;
+        
+        public ClassFieldMirror(HeapDumpClassMirror klass, String name) {
+            this.klass = klass;
+            this.name = name;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ClassFieldMirror)) {
+                return false;
+            }
+            
+            ClassFieldMirror other = (ClassFieldMirror)obj;
+            return klass.equals(other.klass) && name.equals(other.name);
+        }
+        
+        @Override
+        public int hashCode() {
+            return klass.hashCode() * 32 + name.hashCode();
+        }
+        
+        @Override
+        public String getName() {
+            return name;
+        }
+        @Override
+        public ClassMirror getType() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+        @Override
+        public ObjectMirror get() throws IllegalAccessException {
+            return null;
+        }
+        @Override
+        public Object getBoxedValue() throws IllegalAccessException {
+            return null;
+        }
+        @Override
+        public void set(ObjectMirror o) throws IllegalAccessException {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public void setBoxedValue(Object o) throws IllegalAccessException {
+            throw new UnsupportedOperationException();
+        }
     }
     
     @Override
@@ -239,6 +296,17 @@ public class HeapDumpClassMirror implements ClassMirror {
             throws SecurityException, NoSuchMethodException {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public int getModifiers() {
+        // TODO-RS: Let's pretend for now
+        return Modifier.PUBLIC;
+    }
     
     @Override
     public InstanceMirror newRawInstance() {
@@ -257,6 +325,6 @@ public class HeapDumpClassMirror implements ClassMirror {
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ": " + klass;
+        return getClass().getSimpleName() + ": " + (klass == null ? className : klass);
     }
 }

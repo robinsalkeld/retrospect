@@ -3,20 +3,17 @@ package edu.ubc.mirrors.raw;
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
-public class NativeCharArrayMirror implements CharArrayMirror {
+public class NativeCharArrayMirror extends NativeObjectMirror implements CharArrayMirror {
 
     private final char[] array;
     
     public NativeCharArrayMirror(char[] array) {
+        super(array);
         this.array = array;
     }
     
     public int length() {
         return array.length;
-    }
-
-    public ClassMirror getClassMirror() {
-        return new NativeClassMirror(array.getClass());
     }
 
     public char getChar(int index) throws ArrayIndexOutOfBoundsException {

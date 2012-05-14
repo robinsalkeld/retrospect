@@ -5,7 +5,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 
-public class NativeClassMirrorLoader extends NativeObjectMirror implements ClassMirrorLoader {
+public class NativeClassMirrorLoader extends NativeInstanceMirror implements ClassMirrorLoader {
 
     public final ClassLoader classLoader;
     

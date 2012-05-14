@@ -124,6 +124,21 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
     
     @Override
+    public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
+        List<ConstructorMirror> originals = wrapped.getDeclaredConstructors(publicOnly);
+        List<ConstructorMirror> result = new ArrayList<ConstructorMirror>(originals.size());
+        for (ConstructorMirror original : originals) {
+            result.add(new WrappingConstructorMirror(vm, original));
+        }
+        return result;
+    }
+    
+    @Override
+    public int getModifiers() {
+        return wrapped.getModifiers();
+    }
+    
+    @Override
     public InstanceMirror newRawInstance() {
         return (InstanceMirror)vm.getWrappedMirror(wrapped.newRawInstance());
     }

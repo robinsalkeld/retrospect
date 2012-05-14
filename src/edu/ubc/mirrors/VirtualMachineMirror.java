@@ -8,6 +8,8 @@ public interface VirtualMachineMirror {
     
     public List<ClassMirror> findAllClasses(String name); 
     
+    public List<ThreadMirror> getThreads();
+    
     public ClassMirror getPrimitiveClass(String name);
     
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass);

@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public interface MethodMirror {
     // TODO-RS: Should we have a different InvocationTargetException that has a mirror as a cause instead?
-    public Object invoke(InstanceMirror obj, Object ... args) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
+    public Object invoke(ThreadMirror thread, InstanceMirror obj, Object ... args) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
     
     public void setAccessible(boolean flag);
 }

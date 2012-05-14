@@ -133,6 +133,14 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return result;
     }
     
+    public List<ThreadMirror> getWrappedThreadMirrorList(List<ThreadMirror> list) {
+        List<ThreadMirror> result = new ArrayList<ThreadMirror>(list.size());
+        for (ThreadMirror c : list) {
+            result.add((ThreadMirror)getWrappedMirror(c));
+        }
+        return result;
+    }
+    
     public WrappingClassMirrorLoader getWrappedClassLoaderMirror(ClassMirrorLoader mirror) {
         return (WrappingClassMirrorLoader)getWrappedMirror(mirror);
     }
@@ -140,6 +148,11 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     @Override
     public List<ClassMirror> findAllClasses(String name) {
         return getWrappedClassMirrorList(wrappedVM.findAllClasses(name));
+    }
+    
+    @Override
+    public List<ThreadMirror> getThreads() {
+        return getWrappedThreadMirrorList(wrappedVM.getThreads());
     }
     
     // TODO-RS: Should these be full-on object mirrors as well? Probably. :(

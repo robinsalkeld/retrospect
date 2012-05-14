@@ -11,7 +11,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class FieldMapMirror implements InstanceMirror {
 
@@ -97,7 +97,7 @@ public class FieldMapMirror implements InstanceMirror {
         
         @Override
         public ClassMirror getType() {
-            return (ClassMirror)NativeObjectMirror.makeMirror(field.getType());
+            return (ClassMirror)NativeInstanceMirror.makeMirror(field.getType());
         }
         
         public ObjectMirror get() throws IllegalAccessException {

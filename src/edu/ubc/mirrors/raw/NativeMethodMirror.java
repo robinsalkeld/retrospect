@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class NativeMethodMirror implements MethodMirror {
 
@@ -16,10 +17,14 @@ public class NativeMethodMirror implements MethodMirror {
     }
     
     @Override
-    public Object invoke(InstanceMirror obj, Object... args)
+    public Object invoke(ThreadMirror thread, InstanceMirror obj, Object... args)
             throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
 
+        if (!thread.equals(NativeInstanceMirror.makeMirror(Thread.currentThread()))) {
+            throw new IllegalThreadStateException("The native VM can only invoke methods on the current thread");
+        }
+        
         Object[] nativeArgs = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
             nativeArgs[i] = getNativeObject(args[i]);
@@ -30,16 +35,16 @@ public class NativeMethodMirror implements MethodMirror {
     }
 
     static Object getNativeObject(Object obj) {
-        if (obj instanceof NativeObjectMirror) {
-            return ((NativeObjectMirror)obj).getNativeObject();
+        if (obj instanceof NativeInstanceMirror) {
+            return ((NativeInstanceMirror)obj).getNativeObject();
         } else {
             return obj;
         }
     }
     
     static Object wrapNativeObject(Object obj) {
-        if (obj instanceof NativeObjectMirror) {
-            return ((NativeObjectMirror)obj).getNativeObject();
+        if (obj instanceof NativeInstanceMirror) {
+            return ((NativeInstanceMirror)obj).getNativeObject();
         } else {
             return obj;
         }

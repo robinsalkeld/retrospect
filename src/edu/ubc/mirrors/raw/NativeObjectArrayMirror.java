@@ -1,14 +1,14 @@
 package edu.ubc.mirrors.raw;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 
-public class NativeObjectArrayMirror implements ObjectArrayMirror {
+public class NativeObjectArrayMirror extends NativeObjectMirror implements ObjectArrayMirror {
     
     private final Object[] array;
     
     public NativeObjectArrayMirror(Object[] array) {
+        super(array);
         if (array == null) {
             throw new NullPointerException();
         }
@@ -19,12 +19,8 @@ public class NativeObjectArrayMirror implements ObjectArrayMirror {
         return array.length;
     }
 
-    public ClassMirror getClassMirror() {
-        return new NativeClassMirror(array.getClass());
-    }
-
     public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
-        return NativeObjectMirror.makeMirror(array[index]);
+        return NativeInstanceMirror.makeMirror(array[index]);
     }
 
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {

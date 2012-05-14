@@ -3,20 +3,34 @@ package edu.ubc.mirrors.holographs;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.mirages.Mirage;
+import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
+import edu.ubc.mirrors.raw.NativeConstructorMirror;
+import edu.ubc.mirrors.raw.NativeInstanceMirror;
+import edu.ubc.mirrors.raw.NativeObjectMirror;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
+import edu.ubc.mirrors.wrapping.WrappingFieldMirror;
+import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class ClassHolograph extends WrappingClassMirror {
 
+    public static ThreadLocal<ThreadMirror> currentThreadMirror = new ThreadLocal<ThreadMirror>();
+    
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
     }
@@ -49,9 +63,20 @@ public class ClassHolograph extends WrappingClassMirror {
         }
         mirageParamTypes[paramTypes.length] = InstanceMirror.class;
         
-        Class<?> mirageClass = getMirageClass(this, false);
+        Class<?> mirageClass = getMirageClass(this, true);
         Constructor<?> constructor = mirageClass.getDeclaredConstructor(mirageParamTypes);
         return new MirageConstructor(constructor);
+    }
+    
+    @Override
+    public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
+        Class<?> mirageClass = getMirageClass(this, true);
+        Constructor<?>[] constructors = publicOnly ? mirageClass.getConstructors() : mirageClass.getDeclaredConstructors();
+        List<ConstructorMirror> result = new ArrayList<ConstructorMirror>();
+        for (Constructor<?> constructor : constructors) {
+            result.add(new MirageConstructor(constructor));
+        }
+        return result;
     }
     
     @Override
@@ -100,14 +125,20 @@ public class ClassHolograph extends WrappingClassMirror {
         }
         
         @Override
-        public Object invoke(InstanceMirror obj, Object ... args) throws IllegalAccessException, InvocationTargetException {
+        public Object invoke(ThreadMirror thread, InstanceMirror obj, Object ... args) throws IllegalAccessException, InvocationTargetException {
             Object[] mirageArgs = new Object[args.length];
             for (int i = 0; i < args.length; i++) {
                 mirageArgs[i] = makeMirage(args[i]);
             }
             Object mirageObj = makeMirage(obj);
-            Object result = mirageClassMethod.invoke(mirageObj, mirageArgs);
-            return unwrapMirage(result);
+            ThreadMirror original = currentThreadMirror.get();
+            currentThreadMirror.set(thread);
+            try {
+                Object result = mirageClassMethod.invoke(mirageObj, mirageArgs);
+                return unwrapMirage(result);
+            } finally {
+                currentThreadMirror.set(original);
+            }
         }
         
         @Override
@@ -116,12 +147,14 @@ public class ClassHolograph extends WrappingClassMirror {
         }
     }
     
-    private static class MirageConstructor implements ConstructorMirror {
+    private class MirageConstructor extends NativeConstructorMirror implements ConstructorMirror {
 
         private final Constructor<?> mirageClassConstructor;
         
         public MirageConstructor(Constructor<?> mirageClassConstructor) {
+            super(mirageClassConstructor);
             this.mirageClassConstructor = mirageClassConstructor;
+            this.mirageClassConstructor.setAccessible(true);
         }
         
         @Override
@@ -142,9 +175,32 @@ public class ClassHolograph extends WrappingClassMirror {
         }
         
         @Override
-        public void setAccessible(boolean flag) {
-            mirageClassConstructor.setAccessible(flag);
+        public ClassMirror getDeclaringClass() {
+            return ClassHolograph.this;
         }
+        
+        @Override
+        public List<ClassMirror> getParameterTypes() {
+            List<ClassMirror> result = new ArrayList<ClassMirror>();
+            Class<?>[] mirageParamTypes = mirageClassConstructor.getParameterTypes();
+            // Skip the extra mirror argument
+            for (int i = 0; i < mirageParamTypes.length - 1; i++) {
+                result.add(getOriginalClassMirror(mirageParamTypes[i]));
+            }
+            return result;
+        }
+        
+        @Override
+        public List<ClassMirror> getExceptionTypes() {
+            List<ClassMirror> result = new ArrayList<ClassMirror>();
+            Class<?>[] mirageParamTypes = mirageClassConstructor.getExceptionTypes();
+            for (Class<?> mirageParamType : mirageParamTypes) {
+                result.add(getOriginalClassMirror(mirageParamType));
+            }
+            return result;
+        }
+        
+        // TODO-RS: May need to translate annotations back to original classes too...
     }
     
     public static Object makeMirage(Object mirror) {
@@ -157,6 +213,11 @@ public class ClassHolograph extends WrappingClassMirror {
         }
     }
     
+    public static ClassMirror getOriginalClassMirror(Class<?> mirageValue) {
+        MirageClassLoader loader = (MirageClassLoader)mirageValue.getClassLoader();
+        return loader.loadOriginalClassMirror(MirageClassGenerator.getOriginalBinaryClassName(mirageValue.getName()));
+    }
+
     public static Object unwrapMirage(Object mirage) {
         if (mirage instanceof Mirage) {
             return ((Mirage)mirage).getMirror();

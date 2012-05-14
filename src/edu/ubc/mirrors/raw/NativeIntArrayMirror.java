@@ -1,22 +1,18 @@
 package edu.ubc.mirrors.raw;
 
 import edu.ubc.mirrors.IntArrayMirror;
-import edu.ubc.mirrors.ClassMirror;
 
-public class NativeIntArrayMirror implements IntArrayMirror {
+public class NativeIntArrayMirror extends NativeObjectMirror implements IntArrayMirror {
 
     private final int[] array;
     
     public NativeIntArrayMirror(int[] array) {
+        super(array);
         this.array = array;
     }
     
     public int length() {
         return array.length;
-    }
-
-    public ClassMirror getClassMirror() {
-        return new NativeClassMirror(array.getClass());
     }
 
     public int getInt(int index) throws ArrayIndexOutOfBoundsException {

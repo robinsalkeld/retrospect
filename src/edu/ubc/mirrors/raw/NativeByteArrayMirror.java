@@ -3,20 +3,17 @@ package edu.ubc.mirrors.raw;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
-public class NativeByteArrayMirror implements ByteArrayMirror {
+public class NativeByteArrayMirror extends NativeObjectMirror implements ByteArrayMirror {
 
     private final byte[] array;
     
     public NativeByteArrayMirror(byte[] array) {
+        super(array);
         this.array = array;
     }
     
     public int length() {
         return array.length;
-    }
-
-    public ClassMirror getClassMirror() {
-        return new NativeClassMirror(array.getClass());
     }
 
     public byte getByte(int index) throws ArrayIndexOutOfBoundsException {

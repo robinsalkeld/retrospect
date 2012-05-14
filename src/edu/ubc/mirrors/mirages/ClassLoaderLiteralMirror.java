@@ -1,9 +1,11 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.MethodHandle.OBJECT_MIRAGE_MAKE_CLASS_MIRAGE;
 import static edu.ubc.mirrors.mirages.MethodHandle.OBJECT_MIRAGE_MAKE_STRING_MIRAGE;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
 
+import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 
@@ -83,12 +85,8 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
 
-        getClassLoaderLiteralClass(mv);
+        MethodHandle.OBJECT_MIRAGE_MAKE.invoke(mv);
 
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
-                Type.getInternalName(ObjectMirage.class), 
-                "make", 
-                Type.getMethodDescriptor(mirageType, Type.getType(ObjectMirror.class), Type.getType(Class.class)));
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(3, 1);
         mv.visitEnd();
@@ -116,7 +114,7 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
 
         // makeClassMirage
 
-        desc = Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Class.class));
+        desc = Type.getMethodDescriptor(Type.getType(Mirage.class), Type.getType(Class.class));
         mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "makeClassMirage", desc, null, null);
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
@@ -128,10 +126,9 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
                 "java/lang/Object", 
                 "getClass", 
                 Type.getMethodDescriptor(Type.getType(Class.class)));
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, 
-                Type.getInternalName(ObjectMirage.class), 
-                "makeClassMirage", 
-                Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Class.class), Type.getType(Class.class)));
+        
+        OBJECT_MIRAGE_MAKE_CLASS_MIRAGE.invoke(mv);
+        
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(3, 1);
         mv.visitEnd();
@@ -284,6 +281,11 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
     }
     
     @Override
+    public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public boolean isPrimitive() {
         return false;
     }
@@ -291,6 +293,11 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
     @Override
     public List<String> getDeclaredFieldNames() {
         return Collections.emptyList();
+    }
+    
+    @Override
+    public int getModifiers() {
+        return Modifier.PUBLIC;
     }
     
     @Override

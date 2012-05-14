@@ -3,11 +3,12 @@ package edu.ubc.mirrors.raw;
 import edu.ubc.mirrors.DoubleArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
-public class NativeDoubleArrayMirror implements DoubleArrayMirror {
+public class NativeDoubleArrayMirror extends NativeObjectMirror implements DoubleArrayMirror {
 
     private final double[] array;
     
     public NativeDoubleArrayMirror(double[] array) {
+        super(array);
         this.array = array;
     }
     

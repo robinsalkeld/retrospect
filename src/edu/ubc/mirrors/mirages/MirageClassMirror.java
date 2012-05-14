@@ -3,7 +3,6 @@ package edu.ubc.mirrors.mirages;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
-import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class MirageClassMirror extends WrappingClassMirror {
 

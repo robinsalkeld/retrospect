@@ -35,6 +35,10 @@ public interface ClassMirror extends InstanceMirror {
 
     public abstract ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
     
+    public abstract List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly);
+    
+    public abstract int getModifiers();
+    
     public abstract InstanceMirror newRawInstance();
     
     public abstract ArrayMirror newArray(int size);

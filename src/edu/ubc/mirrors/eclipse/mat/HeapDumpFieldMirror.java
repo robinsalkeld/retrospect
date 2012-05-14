@@ -17,7 +17,7 @@ import org.eclipse.mat.snapshot.model.ObjectReference;
 import edu.ubc.mirrors.BoxingFieldMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HeapDumpFieldMirror extends BoxingFieldMirror {
 
@@ -71,7 +71,7 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
     
     @Override
     public ClassMirror getType() {
-        return (ClassMirror)NativeObjectMirror.makeMirror(getKlass());
+        return (ClassMirror)NativeInstanceMirror.makeMirror(getKlass());
     }
     
     public ObjectMirror get() throws IllegalAccessException {
@@ -88,7 +88,7 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
             return vm.makeMirror(ref.getObject());
         } catch (SnapshotException e) {
             // For now...
-            return new NativeObjectMirror("(interned string @ " + Long.toHexString(ref.getObjectAddress()) + ")");
+            return new NativeInstanceMirror("(interned string @ " + Long.toHexString(ref.getObjectAddress()) + ")");
 //            throw new RuntimeException(e);
         }
     }

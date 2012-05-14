@@ -16,10 +16,12 @@ import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.raw.NativeInstanceMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
@@ -85,7 +87,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     public void addNativeBytecodeLoaders(IClassLoader snapshotLoader, ClassLoader bytecodeLoader) {
         setBytecodeVM(NativeVirtualMachineMirror.INSTANCE);
         
-        addBytecodeLoader(snapshotLoader, (ClassMirrorLoader)NativeObjectMirror.makeMirror(bytecodeLoader));
+        addBytecodeLoader(snapshotLoader, (ClassMirrorLoader)NativeInstanceMirror.makeMirror(bytecodeLoader));
             
         IClassLoader parent;
         try {
@@ -178,6 +180,19 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         }
         return result;
     }
+    
+    @Override
+    public List<ThreadMirror> getThreads() {
+        ClassMirror threadMirror = findBootstrapClassMirror(Thread.class.getName());
+        List<InstanceMirror> instances = threadMirror.getInstances();
+        List<ThreadMirror> threads = new ArrayList<ThreadMirror>(instances.size());
+        for (InstanceMirror instance : instances) {
+            threads.add((ThreadMirror)instance);
+        }
+        return threads;
+    }
+    
+    
     
     @Override
     public ClassMirror getPrimitiveClass(String name) {

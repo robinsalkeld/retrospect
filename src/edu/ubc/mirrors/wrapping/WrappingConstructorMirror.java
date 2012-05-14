@@ -1,7 +1,9 @@
 package edu.ubc.mirrors.wrapping;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 
@@ -29,7 +31,41 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     }
     
     @Override
-    public void setAccessible(boolean flag) {
-        wrapped.setAccessible(flag);
+    public ClassMirror getDeclaringClass() {
+        return vm.getWrappedClassMirror(wrapped.getDeclaringClass());
     }
+    
+    @Override
+    public List<ClassMirror> getParameterTypes() {
+        return vm.getWrappedClassMirrorList(wrapped.getParameterTypes());
+    }
+    
+    @Override
+    public List<ClassMirror> getExceptionTypes() {
+        return vm.getWrappedClassMirrorList(wrapped.getExceptionTypes());
+    }
+    
+    @Override
+    public int getSlot() {
+        return wrapped.getSlot();
+    }
+    
+    @Override
+    public byte[] getAnnotations() {
+        return wrapped.getAnnotations();
+    }
+    
+    @Override
+    public int getModifiers() {
+        return wrapped.getModifiers();
+    }
+    
+    @Override
+    public byte[] getParameterAnnotations() {
+        return wrapped.getParameterAnnotations();
+    }
+    
+    public String getSignature() {
+        return wrapped.getSignature();
+    };
 }

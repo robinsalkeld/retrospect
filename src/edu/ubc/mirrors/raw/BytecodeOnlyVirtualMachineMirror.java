@@ -3,6 +3,7 @@ package edu.ubc.mirrors.raw;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
@@ -28,6 +29,11 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     public List<ClassMirror> findAllClasses(String name) {
         throw new UnsupportedOperationException(); 
     }    
+    
+    @Override
+    public List<ThreadMirror> getThreads() {
+        throw new UnsupportedOperationException(); 
+    }
     
     @Override
     public ClassMirror getPrimitiveClass(String name) {

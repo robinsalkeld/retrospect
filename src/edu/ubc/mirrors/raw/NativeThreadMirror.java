@@ -3,7 +3,7 @@ package edu.ubc.mirrors.raw;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class NativeThreadMirror extends NativeObjectMirror implements ThreadMirror {
+public class NativeThreadMirror extends NativeInstanceMirror implements ThreadMirror {
 
     public NativeThreadMirror(Thread thread) {
         super(thread);
