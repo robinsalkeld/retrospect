@@ -119,4 +119,36 @@ public class FieldMapMirror implements InstanceMirror {
             fields.put(name, o);
         }
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        toString(sb, 3);
+        return sb.toString();
+    }
+    
+    public void toString(StringBuilder sb, int maxDepth) {
+        sb.append(getClass().getSimpleName() + "@" + System.identityHashCode(this) + "(");
+        if (maxDepth == 0) {
+            sb.append("...");
+        } else {
+            boolean first = true;
+            for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(", ");
+                }
+                sb.append(entry.getKey());
+                sb.append("=");
+                Object value = entry.getValue();
+                if (value instanceof FieldMapMirror) {
+                    ((FieldMapMirror)value).toString(sb, maxDepth - 1);
+                } else {
+                    sb.append(value);
+                }
+            }
+        }
+        sb.append(")");
+    }
 }

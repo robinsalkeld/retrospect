@@ -3,6 +3,7 @@ package edu.ubc.mirrors.test;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,6 +34,8 @@ public class HeapDumpTest2 implements IApplication {
         
         MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
+        
+        Charset.forName("ISO-8859-1");
         
         ClassLoader runtimeClassLoader = HeapDumpTest2.class.getClassLoader();
 //        URL java7classes = new URL("file:/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre/lib/rt.jar");

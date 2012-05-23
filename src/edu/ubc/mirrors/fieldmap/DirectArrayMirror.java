@@ -100,6 +100,6 @@ public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayM
     
     @Override
     public String toString() {
-        return getClass().getName() + ": " + classMirror.getClassName();
+        return getClass().getSimpleName() + ": " + classMirror.getClassName();
     }
 }

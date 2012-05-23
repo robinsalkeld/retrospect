@@ -279,6 +279,10 @@ public class MirageClassGenerator extends ClassVisitor {
             return "[Ljava/lang/Object;";
         }
         
+        if (Type.getInternalName(ArrayMirage.class).equals(mirageClassName)) {
+            return mirageClassName;
+        }
+        
         m = Pattern.compile("edu/ubc/mirrors/mirages/(.*)ArrayMirage").matcher(mirageClassName);
         if (m.matches()) {
             String sortName = m.group(1);
@@ -315,6 +319,15 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type getMirageType(Type type) {
         if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
             return Type.getObjectType(getMirageInternalClassName(type.getInternalName(), false));
+        } else {
+            return type;
+        }
+        
+    }
+    
+    public static Type getOriginalType(Type type) {
+        if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
+            return Type.getObjectType(getOriginalInternalClassName(type.getInternalName()));
         } else {
             return type;
         }
