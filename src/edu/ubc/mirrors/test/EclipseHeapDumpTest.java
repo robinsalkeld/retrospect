@@ -18,6 +18,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
@@ -63,9 +64,10 @@ public class EclipseHeapDumpTest implements IApplication {
         
         // For each class instance (in this case we only expect one)...
         MethodMirror method = printerClass.getMethod("print", bundleRepositoryClass);
+        ThreadMirror thread = holographVM.getThreads().get(0);
         for (InstanceMirror bundleRepository : bundleRepositoryClass.getInstances()) {
             // Invoke PrintOSGiBundles#print reflectively.
-            Object result = method.invoke(null, bundleRepository);
+            Object result = method.invoke(thread, null, bundleRepository);
             System.out.println(result);
         }
     }
