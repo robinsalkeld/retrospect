@@ -18,10 +18,17 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     private final MirageClassLoader mirageBootstrapLoader;
     
+    private final Thread debuggingThread;
+    
     public VirtualMachineHolograph(VirtualMachineMirror wrappedVM) {
         super(wrappedVM);
         this.mirageVM = new MirageVirtualMachine(this);
         this.mirageBootstrapLoader = new MirageClassLoader(this, null);
+        
+        // Start a thread dedicated to debugging, so the debugger has something to
+        // execute mirror interface methods on without messing up the rest of the VM.
+        this.debuggingThread = new HolographDebuggingThread("HolographDebuggingThread");
+        this.debuggingThread.start();
     }
     
     @Override

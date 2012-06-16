@@ -1,6 +1,5 @@
 package edu.ubc.mirrors.fieldmap;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +10,6 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class FieldMapMirror implements InstanceMirror {
 
@@ -24,20 +22,19 @@ public class FieldMapMirror implements InstanceMirror {
     }
     
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-//        Class<?> c = klass;
-//        Field field = null;
-//        while (c != null) {
-//            try {
-//                field = c.getDeclaredField(name);
-//                break;
-//            } catch (NoSuchFieldException e) {
-//            }
-//            c = c.getSuperclass();
-//        }
-//        if (field == null) {
-//            throw new NoSuchFieldException();
-//        }
-        return new MapEntryFieldMirror(null, name);
+        ClassMirror c = classMirror;
+        ClassMirror fieldType = null;
+        while (c != null) {
+            fieldType = c.getDeclaredFields().get(name);
+            if (fieldType != null) {
+                break;
+            }
+            c = c.getSuperClassMirror();
+        }
+        if (fieldType == null) {
+            throw new NoSuchFieldException();
+        }
+        return new MapEntryFieldMirror(name, fieldType);
     }
 
     @Override
@@ -45,9 +42,9 @@ public class FieldMapMirror implements InstanceMirror {
         List<FieldMirror> result = new ArrayList<FieldMirror>();
         ClassMirror c = classMirror;
         while (c != null) {
-            for (String name : c.getDeclaredFieldNames()) {
+            for (Map.Entry<String, ClassMirror> entry : c.getDeclaredFields().entrySet()) {
                 try {
-                    result.add(getMemberField(name));
+                    result.add(getMemberField(entry.getKey()));
                 } catch (NoSuchFieldException e) {
                     throw new NoSuchFieldError(e.getMessage());
                 }
@@ -62,11 +59,11 @@ public class FieldMapMirror implements InstanceMirror {
     }
     
     private class MapEntryFieldMirror extends BoxingFieldMirror {
-        private final Field field;
+        private final ClassMirror type;
         private final String name;
 
-        public MapEntryFieldMirror(Field field, String name) {
-            this.field = field;
+        public MapEntryFieldMirror(String name, ClassMirror type) {
+            this.type = type;
             this.name = name;
         }
         
@@ -97,7 +94,7 @@ public class FieldMapMirror implements InstanceMirror {
         
         @Override
         public ClassMirror getType() {
-            return (ClassMirror)NativeInstanceMirror.makeMirror(field.getType());
+            return type;
         }
         
         public ObjectMirror get() throws IllegalAccessException {

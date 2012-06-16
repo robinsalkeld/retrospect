@@ -2,6 +2,7 @@ package edu.ubc.mirrors.wrapping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -88,8 +89,8 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
     
     @Override
-    public List<String> getDeclaredFieldNames() {
-        return wrapped.getDeclaredFieldNames();
+    public Map<String, ClassMirror> getDeclaredFields() {
+        return wrapped.getDeclaredFields();
     }
     
     @Override

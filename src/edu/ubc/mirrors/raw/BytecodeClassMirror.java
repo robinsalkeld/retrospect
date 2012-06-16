@@ -2,13 +2,16 @@ package edu.ubc.mirrors.raw;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -27,7 +30,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     private ClassMirror superclassNode;
     private List<ClassMirror> interfaceNodes;
     private boolean isInterface;
-    private List<String> memberFieldNames = new ArrayList<String>();
+    private Map<String, ClassMirror> memberFieldNames = new HashMap<String, ClassMirror>();
     
     
     protected String className;
@@ -47,18 +50,18 @@ public abstract class BytecodeClassMirror implements ClassMirror {
             BytecodeClassMirror.this.access = access;
             isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
             
-            superclassNode = superName == null ? null : loadClassMirrorInternal(superName.replace('/', '.'));
+            superclassNode = superName == null ? null : loadClassMirrorInternal(Type.getObjectType(superName));
             
             interfaceNodes = new ArrayList<ClassMirror>(interfaces.length);
             for (String i : interfaces) {
-                interfaceNodes.add(loadClassMirrorInternal(i.replace('/', '.')));
+                interfaceNodes.add(loadClassMirrorInternal(Type.getObjectType(i)));
             }
         }
         
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
             if ((Opcodes.ACC_STATIC & access) == 0) {
-                memberFieldNames.add(name);
+                memberFieldNames.put(name, loadClassMirrorInternal(Type.getType(desc)));
             }
             return null;
         }
@@ -70,8 +73,12 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         }
     }
     
-    protected ClassMirror loadClassMirrorInternal(String name) {
-        return Reflection.loadClassMirrorInternal(this, name.replace('/', '.'));
+    protected ClassMirror loadClassMirrorInternal(Type type) {
+        try {
+            return Reflection.classMirrorForType(getVM(), type, false, getLoader());
+        } catch (ClassNotFoundException e) {
+            throw new NoClassDefFoundError(e.getMessage());
+        }
     }
     
     private void resolve() {
@@ -126,9 +133,9 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     }
 
     @Override
-    public List<String> getDeclaredFieldNames() {
+    public Map<String, ClassMirror> getDeclaredFields() {
         resolve();
-        return Collections.unmodifiableList(memberFieldNames);
+        return Collections.unmodifiableMap(memberFieldNames);
     }
     
     @Override

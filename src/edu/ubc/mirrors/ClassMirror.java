@@ -1,6 +1,7 @@
 package edu.ubc.mirrors;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface ClassMirror extends InstanceMirror {
@@ -25,7 +26,7 @@ public interface ClassMirror extends InstanceMirror {
     
     public abstract List<ClassMirror> getInterfaceMirrors();
     
-    public abstract List<String> getDeclaredFieldNames();
+    public abstract Map<String, ClassMirror> getDeclaredFields();
     
     public abstract FieldMirror getStaticField(String name) throws NoSuchFieldException;
     

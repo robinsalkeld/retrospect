@@ -28,6 +28,9 @@ Import-Package: com.ibm.icu.text;version="4.4.2.1",
  org.osgi.framework;version="1.6.0",
  org.osgi.framework.launch;version="1.0.0"
 Service-Component: component.xml
-Export-Package: edu.ubc.mirrors.mirages,
+Export-Package: edu.ubc.mirrors,
+ edu.ubc.mirrors.holographs,
+ edu.ubc.mirrors.mirages,
  edu.ubc.mirrors.test,
- org.objectweb.asm;version="4.0.0"
+ org.objectweb.asm;version="4.0.0",
+ org.objectweb.asm.tree;version="4.0.0"

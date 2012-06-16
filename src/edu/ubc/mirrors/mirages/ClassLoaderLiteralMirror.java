@@ -8,6 +8,7 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -291,8 +292,8 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
     }
     
     @Override
-    public List<String> getDeclaredFieldNames() {
-        return Collections.emptyList();
+    public Map<String, ClassMirror> getDeclaredFields() {
+        return Collections.emptyMap();
     }
     
     @Override

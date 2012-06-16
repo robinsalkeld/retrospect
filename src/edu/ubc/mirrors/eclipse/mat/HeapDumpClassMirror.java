@@ -4,6 +4,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.Field;
@@ -281,8 +282,8 @@ public class HeapDumpClassMirror implements ClassMirror {
     }
 
     @Override
-    public List<String> getDeclaredFieldNames() {
-        return vm.getBytecodeClassMirror(this).getDeclaredFieldNames();
+    public Map<String, ClassMirror> getDeclaredFields() {
+        return vm.getBytecodeClassMirror(this).getDeclaredFields();
     }
 
     @Override

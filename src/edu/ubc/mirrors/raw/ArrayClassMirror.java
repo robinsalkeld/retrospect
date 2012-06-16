@@ -7,6 +7,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.Type;
 
@@ -137,8 +138,8 @@ public class ArrayClassMirror implements ClassMirror {
     }
     
     @Override
-    public List<String> getDeclaredFieldNames() {
-        return Collections.emptyList();
+    public Map<String, ClassMirror> getDeclaredFields() {
+        return Collections.emptyMap();
     }
     
     @Override

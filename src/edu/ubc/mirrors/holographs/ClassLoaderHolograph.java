@@ -3,6 +3,8 @@ package edu.ubc.mirrors.holographs;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.objectweb.asm.Type;
+
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -64,10 +66,10 @@ public class ClassLoaderHolograph extends WrappingClassMirrorLoader {
             }
             
             @Override
-            protected ClassMirror loadClassMirrorInternal(String name) {
+            protected ClassMirror loadClassMirrorInternal(Type type) {
                 ClassMirror classHolograph;
                 try {
-                    classHolograph = Reflection.classMirrorForName(ClassLoaderHolograph.this.vm, name, false, ClassLoaderHolograph.this);
+                    classHolograph = Reflection.classMirrorForType(ClassLoaderHolograph.this.vm, type, false, ClassLoaderHolograph.this);
                 } catch (ClassNotFoundException e) {
                     // TODO-RS: This is actually wrong - this error should be caught when
                     // defining the class and raised to the caller!

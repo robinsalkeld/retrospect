@@ -6,9 +6,18 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.MethodInsnNode;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public abstract class MethodHandle {
+    public static MethodHandle MIRAGE_GET_MIRROR = new MethodHandle() {
+        Mirage mirage;
+        @Override 
+        public void methodCall() {
+            mirage.getMirror();
+        }
+    };
+    
     public static MethodHandle OBJECT_MIRAGE_MAKE = new MethodHandle() {
         @Override 
         public void methodCall() {
@@ -27,6 +36,22 @@ public abstract class MethodHandle {
         @Override
         public void methodCall() {
             ObjectMirage.makeClassMirage(null, null);
+        }
+    };
+    
+    public static MethodHandle MIRAGE_CLASS_LOADER_LOAD_ORIGINAL_CLASS_MIRROR = new MethodHandle() {
+        MirageClassLoader loader = null;
+        @Override
+        public void methodCall() {
+            loader.loadOriginalClassMirror((String)null);
+        }
+    };
+    
+    public static MethodHandle CLASS_MIRROR_GET_DECLARED_FIELDS = new MethodHandle() {
+        ClassMirror classMirror = null;
+        @Override
+        public void methodCall() {
+            classMirror.getDeclaredFields();
         }
     };
 
@@ -66,9 +91,9 @@ public abstract class MethodHandle {
         }
     }
     
-    protected abstract void methodCall();
+    protected abstract void methodCall() throws Throwable;
     
-    private MethodInsnNode getMethod() {
+    public synchronized MethodInsnNode getMethod() {
         if (method == null) {
             ClassReader myReader = new ClassReader(new NativeClassMirror(getClass()).getBytecode());
             myReader.accept(new MyClassVisitor(), 0);

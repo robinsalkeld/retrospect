@@ -498,12 +498,17 @@ public class MirageMethodGenerator extends InstructionAdapter {
     }
     
     @Override
+    public void visitLineNumber(int line, Label start) {
+        super.visitLineNumber(line, start);
+        
+        getstatic(Type.getInternalName(System.class), "out", Type.getDescriptor(PrintStream.class));
+        aconst(owner + "#" + name + ":" + line);
+        invokevirtual(Type.getInternalName(PrintStream.class), "println", Type.getMethodDescriptor(Type.VOID_TYPE, OBJECT_TYPE));
+    }
+    
+    @Override
     public void visitCode() {
         super.visitCode();
-        
-//        getstatic(Type.getInternalName(System.class), "out", Type.getDescriptor(PrintStream.class));
-//        aconst(owner + "#" + name);
-//        invokevirtual(Type.getInternalName(PrintStream.class), "println", Type.getMethodDescriptor(Type.VOID_TYPE, OBJECT_TYPE));
         
         if (name.equals("<init>")) {
             lvs.newLocal(instanceMirrorType);

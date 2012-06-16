@@ -10,7 +10,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -164,12 +166,12 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     @Override
-    public List<String> getDeclaredFieldNames() {
-        List<String> names = new ArrayList<String>();
+    public Map<String, ClassMirror> getDeclaredFields() {
+        Map<String, ClassMirror> fields = new HashMap<String, ClassMirror>();
         for (Field f : klass.getDeclaredFields()) {
-            names.add(f.getName());
+            fields.put(f.getName(), (ClassMirror)NativeInstanceMirror.makeMirror(f.getType()));
         }
-        return names;
+        return fields;
     }
         
     @Override
