@@ -14,7 +14,7 @@ public class WrappingMirror implements ObjectMirror {
     }
     
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (obj == null || !getClass().equals(obj.getClass())) {
             return false;
         }
@@ -23,7 +23,7 @@ public class WrappingMirror implements ObjectMirror {
     }
     
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return 47 * wrapped.hashCode();
     }
     

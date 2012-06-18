@@ -501,9 +501,9 @@ public class MirageMethodGenerator extends InstructionAdapter {
     public void visitLineNumber(int line, Label start) {
         super.visitLineNumber(line, start);
         
-        getstatic(Type.getInternalName(System.class), "out", Type.getDescriptor(PrintStream.class));
-        aconst(owner + "#" + name + ":" + line);
-        invokevirtual(Type.getInternalName(PrintStream.class), "println", Type.getMethodDescriptor(Type.VOID_TYPE, OBJECT_TYPE));
+//        getstatic(Type.getInternalName(System.class), "out", Type.getDescriptor(PrintStream.class));
+//        aconst(owner + "#" + name + ":" + line);
+//        invokevirtual(Type.getInternalName(PrintStream.class), "println", Type.getMethodDescriptor(Type.VOID_TYPE, OBJECT_TYPE));
     }
     
     @Override

@@ -1,6 +1,8 @@
 package edu.ubc.mirrors.raw;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -13,6 +15,8 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     // May be null
     private final ClassLoader bootstrapLoader;
     
+    private final Map<String, ClassMirror> bootstrapClasses = new HashMap<String, ClassMirror>();
+    
     public BytecodeOnlyVirtualMachineMirror(VirtualMachineMirror baseVM, ClassLoader bootstrapLoader) {
         this.baseVM = baseVM;
         this.bootstrapLoader = bootstrapLoader;
@@ -20,9 +24,16 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public ClassMirror findBootstrapClassMirror(String name) {
+        ClassMirror result = bootstrapClasses.get(name);
+        if (result != null) {
+            return result;
+        }
+        
         // Note using null as the ClassMirrorLoader since the bootstrapLoader acts like the
         // VM's bootstrap loader, which is sometimes (and in this case) represented by null.
-        return BytecodeClassMirrorLoader.loadBytecodeClassMirror(this, null, bootstrapLoader, name);
+        result = BytecodeClassMirrorLoader.loadBytecodeClassMirror(this, null, bootstrapLoader, name);
+        bootstrapClasses.put(name, result);
+        return result;
     }
     
     @Override

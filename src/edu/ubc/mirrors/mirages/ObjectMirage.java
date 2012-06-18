@@ -31,6 +31,7 @@ public class ObjectMirage implements Mirage {
      */
     public ObjectMirage(Object mirror) {
         this.mirror = (ObjectMirror)mirror;
+        register();
     }
     
     /**
@@ -38,6 +39,12 @@ public class ObjectMirage implements Mirage {
      */
     public ObjectMirage(InstanceMirror mirror) {
         this.mirror = mirror;
+        register();
+    }
+    
+    private void register() {
+        MirageClassLoader loader = ClassHolograph.getMirageClassLoader((ClassHolograph)mirror.getClassMirror());
+        loader.registerMirage(this);
     }
     
     @Override

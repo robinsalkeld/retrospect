@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.raw;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -10,6 +13,8 @@ public class BytecodeClassMirrorLoader extends NativeInstanceMirror implements C
 
     private final VirtualMachineMirror vm;
     private final ClassLoader loader;
+    
+    private final Map<String, ClassMirror> classes = new HashMap<String, ClassMirror>();
     
     public BytecodeClassMirrorLoader(VirtualMachineMirror vm, ClassLoader loader) {
         super(loader);
@@ -41,7 +46,14 @@ public class BytecodeClassMirrorLoader extends NativeInstanceMirror implements C
     
     @Override
     public ClassMirror findLoadedClassMirror(final String name) {
-        return loadBytecodeClassMirror(vm, this, loader, name);
+        ClassMirror result = classes.get(name);
+        if (result != null) {
+            return result;
+        }
+        
+        result = loadBytecodeClassMirror(vm, this, loader, name);
+        classes.put(name, result);
+        return result;
     }
     
     @Override

@@ -262,8 +262,11 @@ public class MirageClassLoader extends ClassLoader {
             }
         }
         
-        mirages.put(mirror, mirage);
         return mirage;
+    }
+    
+    public void registerMirage(Mirage mirage) {
+        mirages.put(mirage.getMirror(), mirage);
     }
     
     public byte[] getBytecode(MirageClassMirror mirageClassMirror) {
