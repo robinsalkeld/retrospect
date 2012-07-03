@@ -153,4 +153,9 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     public ArrayMirror newArray(int... dims) {
         return (ArrayMirror)vm.getWrappedMirror(wrapped.newArray(dims));
     }
+    
+    @Override
+    public boolean initialized() {
+        return wrapped.initialized();
+    }
 }

@@ -3,6 +3,7 @@ package edu.ubc.mirrors.raw;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,15 +15,73 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.BoxingFieldMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public abstract class BytecodeClassMirror implements ClassMirror {
+
+    public class StaticField extends BoxingFieldMirror {
+
+        private final String name;
+        private final ClassMirror type;
+        
+        public StaticField(String name, ClassMirror type) {
+            this.name = name;
+            this.type = type;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof StaticField)) {
+                return false;
+            }
+            
+            return name.equals(((StaticField)obj).name);
+        }
+        
+        @Override
+        public int hashCode() {
+            return 17 + name.hashCode();
+        }
+        
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ClassMirror getType() {
+            return type;
+        }
+
+        @Override
+        public ObjectMirror get() throws IllegalAccessException {
+            return null;
+        }
+
+        @Override
+        public void set(ObjectMirror o) throws IllegalAccessException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object getBoxedValue() throws IllegalAccessException {
+            return null;
+        }
+
+        @Override
+        public void setBoxedValue(Object o) throws IllegalAccessException {
+            throw new UnsupportedOperationException();
+        }
+
+    }
 
     private boolean resolved = false;
     
@@ -30,7 +89,8 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     private ClassMirror superclassNode;
     private List<ClassMirror> interfaceNodes;
     private boolean isInterface;
-    private Map<String, ClassMirror> memberFieldNames = new HashMap<String, ClassMirror>();
+    private Map<String, ClassMirror> memberFieldNames = new LinkedHashMap<String, ClassMirror>();
+    private Map<String, ClassMirror> staticFields = new LinkedHashMap<String, ClassMirror>();
     
     
     protected String className;
@@ -62,6 +122,8 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
             if ((Opcodes.ACC_STATIC & access) == 0) {
                 memberFieldNames.put(name, loadClassMirrorInternal(Type.getType(desc)));
+            } else {
+                staticFields.put(name, loadClassMirrorInternal(Type.getType(desc)));
             }
             return null;
         }
@@ -140,7 +202,13 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     
     @Override
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        throw new UnsupportedOperationException();
+        resolve();
+        ClassMirror type = staticFields.get(name);
+        if (type != null) {
+            return new StaticField(name, type);
+        } else {
+            throw new NoSuchFieldException(name);
+        }
     }
     
     @Override

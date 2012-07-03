@@ -5,6 +5,10 @@ import java.util.Map;
 
 public class Bar {
 
+    static {
+        System.out.println("Wassaaaaaaaap???");
+    }
+    
     private Map<String, String> map = new HashMap<String, String>();
     
     public static void main(String[] args) throws InterruptedException {
@@ -26,6 +30,10 @@ public class Bar {
     int f;
     
     static int staticF = 5;
+    
+    public Bar() {
+        this.f = 5;
+    }
     
     public Bar(int f) {
         this.f = f;

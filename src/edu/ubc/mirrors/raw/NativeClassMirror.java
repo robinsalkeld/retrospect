@@ -237,6 +237,11 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     @Override
+    public boolean initialized() {
+        return true;
+    }
+    
+    @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + klass;
     }

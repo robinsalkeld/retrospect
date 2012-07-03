@@ -108,7 +108,7 @@ public class JHatClassMirrorLoader extends JHatInstanceMirror implements ClassMi
     
     @Override
     public ClassMirror defineClass1(String name, ByteArrayMirror b, int off,
-            int len, InstanceMirror pd, InstanceMirror source, boolean verify) {
+            int len, InstanceMirror pd, InstanceMirror source) {
         throw new UnsupportedOperationException();
     }
 }

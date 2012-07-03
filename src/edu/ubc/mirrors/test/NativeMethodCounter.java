@@ -1,7 +1,11 @@
 package edu.ubc.mirrors.test;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.objectweb.asm.ClassVisitor;
@@ -16,7 +20,7 @@ public class NativeMethodCounter extends ClassVisitor {
 
     int nativeMethodCount = 0;
     String currentClass = null;
-    Set<String> classesWithNativeMethods = new TreeSet<String>();
+    Map<String, List<String>> classesWithNativeMethods = new TreeMap<String, List<String>>();
     
     @Override
     public void visit(int version, int access, String name, String signature,
@@ -31,7 +35,12 @@ public class NativeMethodCounter extends ClassVisitor {
         
         if ((access & Opcodes.ACC_NATIVE) != 0) {
             nativeMethodCount++;
-            classesWithNativeMethods.add(currentClass);
+            List<String> methods = classesWithNativeMethods.get(currentClass);
+            if (methods == null) {
+                methods = new ArrayList<String>();
+                classesWithNativeMethods.put(currentClass, methods);
+            }
+            methods.add(name);
         }
 
         return super.visitMethod(access, name, desc, signature, exceptions);

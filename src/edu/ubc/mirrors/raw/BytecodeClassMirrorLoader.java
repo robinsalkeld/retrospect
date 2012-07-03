@@ -38,6 +38,10 @@ public class BytecodeClassMirrorLoader extends NativeInstanceMirror implements C
                 public ClassMirrorLoader getLoader() {
                     return loaderMirror;
                 }
+                @Override
+                public boolean initialized() {
+                    return false;
+                }
             };
         }
         
@@ -58,7 +62,7 @@ public class BytecodeClassMirrorLoader extends NativeInstanceMirror implements C
     
     @Override
     public ClassMirror defineClass1(String name, ByteArrayMirror b, int off,
-            int len, InstanceMirror pd, InstanceMirror source, boolean verify) {
+            int len, InstanceMirror pd, InstanceMirror source) {
         throw new UnsupportedOperationException();
     }
 }

@@ -325,4 +325,9 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
     public ClassMirror getClassMirror() {
         return getVM().findBootstrapClassMirror(Class.class.getName());
     }
+    
+    @Override
+    public boolean initialized() {
+        return true;
+    }
 }

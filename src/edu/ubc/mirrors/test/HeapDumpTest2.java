@@ -21,6 +21,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.BytecodeOnlyVirtualMachineMirror;
@@ -76,7 +77,8 @@ public class HeapDumpTest2 implements IApplication {
     for (InstanceMirror ruby : rubies) {
       // Invoke JRubyStackTraces#printStackTraces reflectively.
       Object result = method.invoke(holographVM.getThreads().get(0), null, ruby);
-      System.out.println(result);
+      String asString = Reflection.getRealStringForMirror((InstanceMirror)result);
+      System.out.println(asString);
     }
   }
 

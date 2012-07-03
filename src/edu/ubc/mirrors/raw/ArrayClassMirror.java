@@ -199,4 +199,9 @@ public class ArrayClassMirror implements ClassMirror {
         // but the holograms architecture won't call this.
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public boolean initialized() {
+        return true;
+    }
 }

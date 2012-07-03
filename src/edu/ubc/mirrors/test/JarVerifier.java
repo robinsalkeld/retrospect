@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -22,10 +24,10 @@ public class JarVerifier implements IApplication {
         String jarPath = args[0];
 
         JarFile jar = new JarFile(jarPath);
-        ClassLoader thisLoader = JarVerifier.class.getClassLoader();
-        MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
-        MirageClassLoader mirageLoader = new MirageClassLoader(null, new NativeClassMirrorLoader(thisLoader));
-        verifyJar(mirageLoader, jar);
+//        ClassLoader thisLoader = JarVerifier.class.getClassLoader();
+//        MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
+//        MirageClassLoader mirageLoader = new MirageClassLoader(null, new NativeClassMirrorLoader(thisLoader));
+        verifyJar(null, jar);
     }
     
     public static void verifyJar(MirageClassLoader loader, JarFile jar) throws IOException {
@@ -42,8 +44,12 @@ public class JarVerifier implements IApplication {
         }
         System.out.println("Native methods: " + counter.nativeMethodCount);
         System.out.println("Classes (" + counter.classesWithNativeMethods.size() + "):");
-        for (String className : counter.classesWithNativeMethods) {
-            System.out.println(className);
+        for (Map.Entry<String, List<String>> entry : counter.classesWithNativeMethods.entrySet()) {
+            System.out.print(entry.getKey() + ": ");
+            for (String method : entry.getValue()) {
+                System.out.print(method + ", ");
+            }
+            System.out.println();
         }
         
     }

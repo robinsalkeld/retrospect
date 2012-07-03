@@ -18,4 +18,14 @@ public class AccessControllerStubs {
             }
         });
     }
+    
+    public static Mirage doPrivileged(Class<?> classLoaderLiteral, final Mirage action, final Mirage context) {
+        // TODO-RS: Hoping the context doesn't matter for my examples...
+        return (Mirage)AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                return Reflection.invoke(action, "run");
+            }
+        });
+    }
 }

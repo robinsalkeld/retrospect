@@ -45,4 +45,6 @@ public interface ClassMirror extends InstanceMirror {
     public abstract ArrayMirror newArray(int size);
     
     public abstract ArrayMirror newArray(int... dims);
+    
+    public abstract boolean initialized();
 }

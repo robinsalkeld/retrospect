@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -83,19 +85,23 @@ public class MirageClassGenerator extends ClassVisitor {
         };
     };
     
+    private final boolean needsInitialization;
+    
     private boolean isInterface;
     private String name;
     private String superName;
     
-    private final Map<String, Method> mirrorMethods = new HashMap<String, Method>();
+    private final Map<org.objectweb.asm.commons.Method, Method> mirrorMethods = new HashMap<org.objectweb.asm.commons.Method, Method>();
     
     public MirageClassGenerator(ClassHolograph classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
         
+        this.needsInitialization = !classMirror.initialized();
         Class<?> nativeStubsClass = classMirror.getNativeStubsClass();
         if (nativeStubsClass != null) {
             for (Method m : nativeStubsClass.getDeclaredMethods()) {
-                mirrorMethods.put(m.getName(), m);
+                org.objectweb.asm.commons.Method method = org.objectweb.asm.commons.Method.getMethod(m);
+                mirrorMethods.put(method, m);
             }
         }
     }
@@ -351,9 +357,10 @@ public class MirageClassGenerator extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
 
-        // Remove all static initializers - these will have already been executed when
+        // Remove all static initializers for classes that were already defined - 
+        // these will have already been executed when
         // loading the original class and state will be proxied by ClassMirrors instead.
-        if (name.equals("<clinit>")) {
+        if (!needsInitialization && name.equals("<clinit>")) {
             return null;
         }
         
@@ -421,7 +428,23 @@ public class MirageClassGenerator extends ClassVisitor {
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
-        Method mirrorMethod = mirrorMethods.get(name);
+        Type methodType = Type.getMethodType(desc);
+        Type[] argumentTypes = methodType.getArgumentTypes();
+        List<Type> stubArgumentTypes = new ArrayList<Type>(argumentTypes.length + 1);
+        stubArgumentTypes.add(Type.getType(Class.class));
+        if ((Opcodes.ACC_STATIC & access) == 0) {
+            stubArgumentTypes.add(getStubType(Type.getObjectType(this.name)));
+        }
+        for (int i = 0; i < argumentTypes.length; i++) {
+            stubArgumentTypes.add(getStubType(argumentTypes[i]));
+        }
+        Type stubReturnType = getStubType(methodType.getReturnType());
+        org.objectweb.asm.commons.Method methodDesc = new org.objectweb.asm.commons.Method(name, stubReturnType, 
+                stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
+        if (name.equals("defineClass1")) {
+            System.out.println(methodDesc);
+        }
+        Method mirrorMethod = mirrorMethods.get(methodDesc);
         if (mirrorMethod != null) {
             generateStaticThunk(superVisitor, desc, mirrorMethod);
             
@@ -447,14 +470,27 @@ public class MirageClassGenerator extends ClassVisitor {
         return lvs;
     }
     
+    private Type getStubType(Type type) {
+        switch (type.getSort()) {
+        case Type.OBJECT:
+        case Type.ARRAY:
+            return mirageType;
+        default:
+            return type;
+        }
+    }
+
     public static void generateStaticThunk(MethodVisitor visitor, String desc, Method method) {
         Class<?>[] parameterClasses = method.getParameterTypes();
         visitor.visitCode();
         
         assert parameterClasses[0].equals(Class.class);
         ClassLoaderLiteralMirror.getClassLoaderLiteralClass(visitor);
-        for (int i = 1; i < parameterClasses.length; i++) {
-            visitor.visitVarInsn(Type.getType(parameterClasses[i]).getOpcode(Opcodes.ILOAD), i - 1);
+        int var = 0;
+        for (int param = 1; param < parameterClasses.length; param++) {
+            Type paramType = Type.getType(parameterClasses[param]);
+            visitor.visitVarInsn(paramType.getOpcode(Opcodes.ILOAD), var);
+            var += paramType.getSize();
         }
         
         Type returnType = Type.getType(method.getReturnType());
@@ -479,6 +515,11 @@ public class MirageClassGenerator extends ClassVisitor {
     
     @Override
     public void visitEnd() {
+        // Generate the dummy static field used to force initialization
+        if (!isInterface) {
+            super.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "initialized", Type.BOOLEAN_TYPE.getDescriptor(), null, false);
+        }
+        
         // Generate the constructor that takes a mirror instance as an Object parameter
         String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));
         if (name.equals(getMirageInternalClassName(Type.getInternalName(Throwable.class), true))) {

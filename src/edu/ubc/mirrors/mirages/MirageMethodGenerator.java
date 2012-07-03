@@ -81,7 +81,10 @@ public class MirageMethodGenerator extends InstructionAdapter {
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
         if (name.equals("toString") && desc.equals(Type.getMethodDescriptor(getMirageType(String.class)))) {
-            super.visitMethodInsn(opcode, OBJECT_TYPE.getInternalName(), name, Type.getMethodDescriptor(Type.getType(String.class)));
+            if (owner.equals(Type.getInternalName(Mirage.class))) {
+                owner = OBJECT_TYPE.getInternalName();
+            }
+            super.visitMethodInsn(opcode, owner, name, Type.getMethodDescriptor(Type.getType(String.class)));
             
             invokestatic(CLASS_LOADER_LITERAL_NAME,
                          "makeStringMirage",

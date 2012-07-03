@@ -18,6 +18,11 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class ClassStubs {
 
+    public static Mirage getName0(Class<?> classLoaderLiteral, Mirage mirage) {
+        String name = ((ClassMirror)mirage.getMirror()).getClassName();
+        return ObjectMirage.makeStringMirage(name, classLoaderLiteral);
+    }
+    
     public static boolean isInterface(Class<?> classLoaderLiteral, Mirage mirage) {
         return ((ClassMirror)mirage.getMirror()).isInterface();
     }

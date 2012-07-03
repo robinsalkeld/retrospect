@@ -142,9 +142,19 @@ public class ObjectMirage implements Mirage {
     }
     
     public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {
+        if (fieldName.equals("INTERPRETED_FRAMES")) {
+            int bp = 4;
+            bp++;
+        }
+        
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         String binaryName = className.replace('/', '.');
-        ClassMirror klass = loader.loadOriginalClassMirror(binaryName);
+        ClassHolograph klass = loader.loadOriginalClassMirror(binaryName);
+        
+        // Force initialization just as the VM would, in case there is
+        // a <clini> method that needs to be run.
+        MirageClassLoader.initializeClassMirror(klass);
+        
         try {
             return klass.getStaticField(fieldName);
         } catch (NoSuchFieldException e) {

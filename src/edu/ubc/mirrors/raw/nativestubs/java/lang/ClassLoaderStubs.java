@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
@@ -23,14 +24,21 @@ public class ClassLoaderStubs {
         return (Mirage)ObjectMirage.make(klass);
     }
     
-    public static Mirage defineClass1(Class<?> classLoaderLiteral, Mirage classLoader, Mirage name, ByteArrayMirage b, int off, int len,
+    // JDK 6 version
+    public static Mirage defineClass1(Class<?> classLoaderLiteral, Mirage classLoader, Mirage name, Mirage b, int off, int len,
             Mirage pd, Mirage source, boolean verify) {
+        return defineClass1(classLoaderLiteral, classLoader, name, b, off, len, pd, source);
+    }
+    
+    // JDK 7 version
+    public static Mirage defineClass1(Class<?> classLoaderLiteral, Mirage classLoader, Mirage name, Mirage b, int off, int len,
+            Mirage pd, Mirage source) {
         ClassMirrorLoader classLoaderMirror = (ClassMirrorLoader)classLoader.getMirror();
         String realName = ObjectMirage.getRealStringForMirage((ObjectMirage)name);
         InstanceMirror pdMirror = ((InstanceMirror)Reflection.getMirror(pd));
         InstanceMirror sourceMirror = ((InstanceMirror)Reflection.getMirror(source));
         
-        ClassMirror newClass = classLoaderMirror.defineClass1(realName, b, off, len, pdMirror, sourceMirror, verify);
+        ClassMirror newClass = classLoaderMirror.defineClass1(realName, (ByteArrayMirror)b, off, len, pdMirror, sourceMirror);
         return (Mirage)ObjectMirage.make(newClass);
     }
 }

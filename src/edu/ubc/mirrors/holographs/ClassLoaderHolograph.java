@@ -45,7 +45,7 @@ public class ClassLoaderHolograph extends WrappingClassMirrorLoader {
     
     @Override
     public ClassMirror defineClass1(String name, ByteArrayMirror b, int off, int len,
-            InstanceMirror pd, InstanceMirror source, boolean verify) {
+            InstanceMirror pd, InstanceMirror source) {
         
         if (findLoadedClassMirror(name) != null) {
             throw new IllegalArgumentException("Attempt to define already defined class: " + name);
@@ -81,6 +81,11 @@ public class ClassLoaderHolograph extends WrappingClassMirrorLoader {
             @Override
             public byte[] getBytecode() {
                 return realBytecode;
+            }
+            
+            @Override
+            public boolean initialized() {
+                return false;
             }
         };
         ClassHolograph newClassHolograph = (ClassHolograph)vm.getWrappedClassMirror(newClass);

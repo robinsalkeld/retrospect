@@ -64,7 +64,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         // apply etc.
         ClassMirror bytecodeClass = bytecodeVM.findBootstrapClassMirror(name);
         if (bytecodeClass != null) {
-            return new HeapDumpClassMirror(this, name);
+            return new HeapDumpClassMirror(this, null, bytecodeClass);
         } else {
             return null;
         }

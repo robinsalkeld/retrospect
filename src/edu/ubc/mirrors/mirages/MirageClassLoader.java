@@ -358,4 +358,17 @@ public class MirageClassLoader extends ClassLoader {
     public String toString() {
         return "MirageClassLoader: " + originalLoader;
     }
+
+    public static void initializeClassMirror(ClassHolograph klass) {
+        Class<?> mirageClass = klass.getMirageClass(true);
+        if (!mirageClass.isInterface()) {
+            try {
+                mirageClass.getField("initialized").set(null, true);
+            } catch (IllegalAccessException e) {
+                throw new InternalError();
+            } catch (NoSuchFieldException e) {
+                throw new InternalError();
+            }
+        }
+    }
 }

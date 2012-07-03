@@ -73,4 +73,10 @@ public class SystemStubs {
             ((ObjectArrayMirror)am).set(index, (ObjectMirror)o);
         }
     }
+    
+    public static long nanoTime(Class<?> classLoaderLiteral) {
+        // TODO-RS: I don't like this as a general rule, but it's called from 
+        // ClassLoader#defineClass() in JDK 7 to measure loading time...
+        return System.nanoTime();
+    }
 }

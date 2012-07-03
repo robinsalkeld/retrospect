@@ -25,7 +25,7 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 public class HeapDumpClassMirror implements ClassMirror {
 
     private final HeapDumpVirtualMachineMirror vm;
-    private final String className;
+    private final ClassMirror bytecodeMirror;
     // Will be null if this class was never actually loaded in the snapshot
     private final IClass klass;
     private final IClassLoader loader;
@@ -35,17 +35,17 @@ public class HeapDumpClassMirror implements ClassMirror {
         if (klass == null) {
             throw new NullPointerException();
         }
-        this.className = getClassName(klass);
         this.vm = vm;
         this.klass = klass;
+        this.bytecodeMirror = null;
         this.loader = getClassLoader(klass);
     }
     
-    public HeapDumpClassMirror(HeapDumpVirtualMachineMirror vm, String className) {
-        this.className = className;
+    public HeapDumpClassMirror(HeapDumpVirtualMachineMirror vm, IClassLoader loader, ClassMirror bytecodeMirror) {
+        this.bytecodeMirror = bytecodeMirror;
         this.vm = vm;
         this.klass = null;
-        this.loader = null;
+        this.loader = loader;
     }
     
     @Override
@@ -56,7 +56,7 @@ public class HeapDumpClassMirror implements ClassMirror {
         
         HeapDumpClassMirror other = (HeapDumpClassMirror)obj;
         if (klass == null) {
-            return className.equals(other.className) &&
+            return bytecodeMirror.equals(other.bytecodeMirror) &&
                    (loader == null ? other.loader == null : loader.equals(other.loader));
         } else {
             return klass.equals(other.klass);
@@ -66,7 +66,7 @@ public class HeapDumpClassMirror implements ClassMirror {
     @Override
     public int hashCode() {
         if (klass == null) {
-            return 11 + className.hashCode();
+            return 11 + bytecodeMirror.hashCode();
         } else {
             return 11 + klass.hashCode();
         }
@@ -132,6 +132,10 @@ public class HeapDumpClassMirror implements ClassMirror {
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
+        if (klass == null) {
+            return bytecodeMirror.getStaticField(name);
+        }
+        
         List<Field> fields = klass.getStaticFields();
         for (Field field : fields) {
             if (field.getName().equals(name)) {
@@ -233,7 +237,11 @@ public class HeapDumpClassMirror implements ClassMirror {
 
     @Override
     public String getClassName() {
-        return className;
+        if (klass == null) {
+            return bytecodeMirror.getClassName();
+        } else {
+            return getClassName(klass);
+        }
     }
 
     @Override
@@ -325,7 +333,16 @@ public class HeapDumpClassMirror implements ClassMirror {
     }
     
     @Override
+    public boolean initialized() {
+        if (klass == null) {
+            return bytecodeMirror.initialized();
+        } else {
+            return true;
+        }
+    }
+    
+    @Override
     public String toString() {
-        return getClass().getSimpleName() + ": " + (klass == null ? className : klass);
+        return getClass().getSimpleName() + ": " + (klass == null ? bytecodeMirror : klass);
     }
 }
