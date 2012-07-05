@@ -20,7 +20,7 @@ public class PrintOSGiBundles {
                 }
             }
         }
-        return builder;
+        return builder.toString();
     }
     
 }

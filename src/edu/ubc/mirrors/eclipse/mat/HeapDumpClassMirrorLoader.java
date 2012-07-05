@@ -37,12 +37,20 @@ public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements
     
     @Override
     public HeapDumpClassMirror findLoadedClassMirror(String name) {
-        IClass klass = loadedClasses.get(name);
-        if (klass != null) {
-            return new HeapDumpClassMirror(vm, klass);
-        } else {
-            return null;
-        }
+        ClassMirror bytecodeClass = vm.getBytecodeLoader(this).findLoadedClassMirror(name);
+        if (bytecodeClass != null) {
+            IClass klass = loadedClasses.get(name);
+            if (klass != null) {
+                return new HeapDumpClassMirror(vm, klass);
+            } else {
+                // If the class wasn't loaded already, imitate what the VM would have done to define it.
+                // TODO-RS: Not completely sure how incomplete this is. Class transformers may still
+                // apply etc.
+                return new HeapDumpClassMirror(vm, (IClassLoader)heapDumpObject, bytecodeClass);
+            }
+        } 
+
+        return null;
     }
     
 @Override

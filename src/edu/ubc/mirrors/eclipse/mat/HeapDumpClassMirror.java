@@ -37,8 +37,8 @@ public class HeapDumpClassMirror implements ClassMirror {
         }
         this.vm = vm;
         this.klass = klass;
-        this.bytecodeMirror = null;
         this.loader = getClassLoader(klass);
+        this.bytecodeMirror = vm.getBytecodeClassMirror(this);
     }
     
     public HeapDumpClassMirror(HeapDumpVirtualMachineMirror vm, IClassLoader loader, ClassMirror bytecodeMirror) {
@@ -92,7 +92,7 @@ public class HeapDumpClassMirror implements ClassMirror {
     
     @Override
     public byte[] getBytecode() {
-        return vm.getBytecodeClassMirror(this).getBytecode();
+        return bytecodeMirror.getBytecode();
     }
     
     public static String arrayElementDescriptor(String name) {
@@ -246,7 +246,7 @@ public class HeapDumpClassMirror implements ClassMirror {
 
     @Override
     public boolean isPrimitive() {
-        return vm.getBytecodeClassMirror(this).isPrimitive();
+        return bytecodeMirror.isPrimitive();
     }
 
     @Override
@@ -263,7 +263,7 @@ public class HeapDumpClassMirror implements ClassMirror {
     @Override
     public ClassMirror getSuperClassMirror() {
         if (klass == null) {
-            ClassMirror bytecodeClass = vm.getBytecodeClassMirror(this).getSuperClassMirror();
+            ClassMirror bytecodeClass = bytecodeMirror.getSuperClassMirror();
             return bytecodeClass == null ? null : vm.getClassMirrorForBytecodeClassMirror(bytecodeClass);
         } else {
             return klass.getSuperClass() == null ? null : new HeapDumpClassMirror(vm, klass.getSuperClass());
@@ -272,7 +272,7 @@ public class HeapDumpClassMirror implements ClassMirror {
 
     @Override
     public boolean isInterface() {
-        return vm.getBytecodeClassMirror(this).isInterface();
+        return bytecodeMirror.isInterface();
     }
 
     @Override
@@ -281,7 +281,7 @@ public class HeapDumpClassMirror implements ClassMirror {
         // implemented/extended interfaces. This makes it much more
         // difficult to figure out which exact classes they are in the presence
         // of multiple class loaders.
-        List<ClassMirror> bytecodeClasses = vm.getBytecodeClassMirror(this).getInterfaceMirrors();
+        List<ClassMirror> bytecodeClasses = bytecodeMirror.getInterfaceMirrors();
         List<ClassMirror> result = new ArrayList<ClassMirror>(bytecodeClasses.size());
         for (ClassMirror bytecodeClass : bytecodeClasses) {
             result.add(vm.getClassMirrorForBytecodeClassMirror(bytecodeClass));
@@ -291,7 +291,7 @@ public class HeapDumpClassMirror implements ClassMirror {
 
     @Override
     public Map<String, ClassMirror> getDeclaredFields() {
-        return vm.getBytecodeClassMirror(this).getDeclaredFields();
+        return bytecodeMirror.getDeclaredFields();
     }
 
     @Override

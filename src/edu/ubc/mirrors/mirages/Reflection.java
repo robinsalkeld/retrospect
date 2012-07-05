@@ -133,6 +133,10 @@ public class Reflection {
             return null;
         }
         
+        if (!mirror.getClassMirror().getClassName().equals(String.class.getName())) {
+            throw new IllegalArgumentException("Wrong class: " + mirror.getClassMirror());
+        }
+        
         try {
             CharArrayMirror valueMirror = (CharArrayMirror)mirror.getMemberField("value").get();
             char[] value = new char[valueMirror.length()];

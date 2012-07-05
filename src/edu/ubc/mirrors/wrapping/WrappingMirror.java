@@ -27,6 +27,11 @@ public class WrappingMirror implements ObjectMirror {
         return 47 * wrapped.hashCode();
     }
     
+    public ObjectMirror getWrapped() {
+        return wrapped;
+    }
+    
+    
     @Override
     public WrappingClassMirror getClassMirror() {
         return vm.getWrappedClassMirror(wrapped.getClassMirror());

@@ -206,7 +206,7 @@ public class ObjectMirage implements Mirage {
             return null;
         }
         
-        MirageClassLoader loader = (MirageClassLoader)c.getClassLoader();
+        MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(c.getName());
         ClassMirror originalMirror = loader.loadOriginalClassMirror(originalClassName);
         return loader.makeMirage(originalMirror);

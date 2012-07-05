@@ -193,6 +193,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
-        return getWrappedClassMirror(wrappedVM.getArrayClass(dimensions, elementClass));
+        ClassMirror unwrappedElementClass = (ClassMirror)unwrapMirror(elementClass);
+        return getWrappedClassMirror(wrappedVM.getArrayClass(dimensions, unwrappedElementClass));
     }
 }

@@ -60,11 +60,6 @@ public class MutableVirtualMachineMirror extends WrappingVirtualMachine {
     }
     
     @Override
-    protected ObjectMirror unwrapMirror(ObjectMirror mirror) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
     protected FieldMirror wrapFieldMirror(FieldMirror fieldMirror) {
         return new MutableFieldMirror(this, fieldMirror);
     }

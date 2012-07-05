@@ -65,9 +65,9 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         ClassMirror bytecodeClass = bytecodeVM.findBootstrapClassMirror(name);
         if (bytecodeClass != null) {
             return new HeapDumpClassMirror(this, null, bytecodeClass);
-        } else {
-            return null;
-        }
+        } 
+        
+        return null;
     }
     
     private final Map<IClassLoader, ClassMirrorLoader> bytecodeLoaders = 
@@ -105,15 +105,20 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         }
     }
     
+    public ClassMirrorLoader getBytecodeLoader(HeapDumpClassMirrorLoader loader) {
+        ClassMirrorLoader bytecodeLoader = bytecodeLoaders.get(loader.heapDumpObject);
+        if (bytecodeLoader == null) {
+            throw new IllegalArgumentException("No bytecode loader found for: " + loader);
+        }
+        return bytecodeLoader;
+    }
+    
     public ClassMirror getBytecodeClassMirror(HeapDumpClassMirror snapshotClass) {
         HeapDumpClassMirrorLoader snapshotLoader = snapshotClass.getLoader();
         if (snapshotLoader == null) {
             return bytecodeVM.findBootstrapClassMirror(snapshotClass.getClassName());
         } else {
-            ClassMirrorLoader bytecodeLoader = bytecodeLoaders.get(snapshotLoader.heapDumpObject);
-            if (bytecodeLoader == null) {
-                throw new IllegalArgumentException("No bytecode loader found for: " + snapshotLoader);
-            }
+            ClassMirrorLoader bytecodeLoader = getBytecodeLoader(snapshotClass.getLoader());
             // TODO-RS: Reflection.loadClassMirror() instead?
             return bytecodeLoader.findLoadedClassMirror(snapshotClass.getClassName());
         }

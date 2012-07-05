@@ -121,7 +121,7 @@ public class ArrayClassMirror implements ClassMirror {
 
     @Override
     public ClassMirror getSuperClassMirror() {
-        return Reflection.loadClassMirrorInternal(this, Object.class.getName());
+        return elementClassMirror.getVM().findBootstrapClassMirror(Object.class.getName());
     }
 
     @Override
@@ -132,8 +132,8 @@ public class ArrayClassMirror implements ClassMirror {
     @Override
     public List<ClassMirror> getInterfaceMirrors() {
         List<ClassMirror> result = new ArrayList<ClassMirror>(2);
-        result.add(Reflection.loadClassMirrorInternal(this, Cloneable.class.getName()));
-        result.add(Reflection.loadClassMirrorInternal(this, Serializable.class.getName()));
+        result.add(elementClassMirror.getVM().findBootstrapClassMirror(Cloneable.class.getName()));
+        result.add(elementClassMirror.getVM().findBootstrapClassMirror(Serializable.class.getName()));
         return result;
     }
     

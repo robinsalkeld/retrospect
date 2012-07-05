@@ -36,7 +36,11 @@ public class NativeClassMirrorLoader extends NativeInstanceMirror implements Cla
             // TODO-RS: Do we need to call the native findLoadedClass0() method directly?
             // Is this shortcut harmful?
             klass = Class.forName(name, false, classLoader);
-            return new NativeClassMirror(klass);
+            if (klass.getClassLoader() == classLoader) {
+                return new NativeClassMirror(klass);
+            } else {
+                return null;
+            }
         } catch (ClassNotFoundException e) {
             return null;
         }

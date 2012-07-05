@@ -169,7 +169,9 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     public Map<String, ClassMirror> getDeclaredFields() {
         Map<String, ClassMirror> fields = new HashMap<String, ClassMirror>();
         for (Field f : klass.getDeclaredFields()) {
-            fields.put(f.getName(), (ClassMirror)NativeInstanceMirror.makeMirror(f.getType()));
+            if (!Modifier.isStatic(f.getModifiers())) {
+                fields.put(f.getName(), (ClassMirror)NativeInstanceMirror.makeMirror(f.getType()));
+            }
         }
         return fields;
     }

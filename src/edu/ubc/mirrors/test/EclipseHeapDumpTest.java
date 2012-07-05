@@ -67,8 +67,8 @@ public class EclipseHeapDumpTest implements IApplication {
         ThreadMirror thread = holographVM.getThreads().get(0);
         for (InstanceMirror bundleRepository : bundleRepositoryClass.getInstances()) {
             // Invoke PrintOSGiBundles#print reflectively.
-            Object result = method.invoke(thread, null, bundleRepository);
-            System.out.println(result);
+            InstanceMirror result = (InstanceMirror)method.invoke(thread, null, bundleRepository);
+            System.out.println(Reflection.getRealStringForMirror(result));
         }
     }
     

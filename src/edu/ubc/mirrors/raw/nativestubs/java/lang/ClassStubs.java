@@ -35,6 +35,11 @@ public class ClassStubs {
         return ((ClassMirror)mirage.getMirror()).isArray();
     }
     
+    public static Mirage getComponentType(Class<?> classLoaderLiteral, Mirage mirage) {
+        ClassMirror result = ((ClassMirror)mirage.getMirror()).getComponentClassMirror();
+        return ObjectMirage.make(result);
+    }
+    
     public static Mirage getClassLoader0(Class<?> classLoaderLiteral, Mirage klass) {
         ClassMirror klassMirror = (ClassMirror)klass.getMirror();
         return (Mirage)ObjectMirage.make(klassMirror.getLoader());
