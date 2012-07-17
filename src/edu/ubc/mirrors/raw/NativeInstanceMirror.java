@@ -111,7 +111,7 @@ public class NativeInstanceMirror extends NativeObjectMirror implements Instance
         return new NativeClassMirror(object.getClass());
     }
     
-    static class NativeFieldMirror implements FieldMirror {
+    public static class NativeFieldMirror implements FieldMirror {
         
         private final Field field;
         private final Object object;

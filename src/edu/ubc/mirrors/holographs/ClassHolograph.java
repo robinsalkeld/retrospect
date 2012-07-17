@@ -44,13 +44,9 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-        Class<?>[] mirageParamTypes = new Class<?>[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            mirageParamTypes[i] = getMirageClass(paramTypes[i], false);
-        }
-        Class<?> mirageClass = getMirageClass(this, false);
-        Method method = mirageClass.getDeclaredMethod(name, mirageParamTypes);
-        return new MirageMethod(method);
+        // Just to check that the method exists.
+        super.getMethod(name, paramTypes);
+        return new MirageMethod(name, paramTypes);
     }
     
     @Override
@@ -116,24 +112,45 @@ public class ClassHolograph extends WrappingClassMirror {
         }
     }
     
-    private static class MirageMethod implements MethodMirror {
+    private class MirageMethod implements MethodMirror {
 
-        private final Method mirageClassMethod;
+        private final String name;
+        private final ClassMirror[] paramTypes;
         
-        public MirageMethod(Method method) {
-            this.mirageClassMethod = method;
+        private Method mirageClassMethod;
+        private boolean accessible = false;
+        
+        public MirageMethod(String name, ClassMirror[] paramTypes) {
+            this.name = name;
+            this.paramTypes = paramTypes;
+        }
+        
+        private void resolveMethod() {
+            Class<?>[] mirageParamTypes = new Class<?>[paramTypes.length];
+            for (int i = 0; i < paramTypes.length; i++) {
+                mirageParamTypes[i] = getMirageClass(paramTypes[i], false);
+            }
+            Class<?> mirageClass = getMirageClass(false);
+            try {
+                mirageClassMethod = mirageClass.getDeclaredMethod(name, mirageParamTypes);
+            } catch (NoSuchMethodException e) {
+                throw new NoSuchMethodError(name);
+            }
+            mirageClassMethod.setAccessible(accessible);
         }
         
         @Override
         public Object invoke(ThreadMirror thread, InstanceMirror obj, Object ... args) throws IllegalAccessException, InvocationTargetException {
-            Object[] mirageArgs = new Object[args.length];
-            for (int i = 0; i < args.length; i++) {
-                mirageArgs[i] = makeMirage(args[i]);
-            }
-            Object mirageObj = makeMirage(obj);
             ThreadMirror original = currentThreadMirror.get();
             currentThreadMirror.set(thread);
             try {
+                resolveMethod();
+                
+                Object[] mirageArgs = new Object[args.length];
+                for (int i = 0; i < args.length; i++) {
+                    mirageArgs[i] = makeMirage(args[i]);
+                }
+                Object mirageObj = makeMirage(obj);
                 Object result = mirageClassMethod.invoke(mirageObj, mirageArgs);
                 return unwrapMirage(result);
             } finally {
@@ -143,7 +160,11 @@ public class ClassHolograph extends WrappingClassMirror {
         
         @Override
         public void setAccessible(boolean flag) {
-            mirageClassMethod.setAccessible(flag);
+            if (mirageClassMethod != null) {
+                mirageClassMethod.setAccessible(flag);
+            } else {
+                accessible = flag;
+            }
         }
     }
     

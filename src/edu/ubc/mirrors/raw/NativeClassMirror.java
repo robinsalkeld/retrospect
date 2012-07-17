@@ -10,9 +10,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -24,6 +27,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeInstanceMirror.NativeFieldMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
@@ -32,6 +36,9 @@ import edu.ubc.mirrors.raw.nativestubs.java.lang.ThreadStubs;
 public class NativeClassMirror extends NativeInstanceMirror implements ClassMirror {
 
     private final Class<?> klass;
+    
+    private ClassMirror superclassMirror;
+    private List<ClassMirror> interfaceMirrors;
     
     public NativeClassMirror(Class<?> klass) {
         super(klass);
@@ -95,7 +102,10 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     
     public ClassMirror getSuperClassMirror() {
         Class<?> superclass = klass.getSuperclass();
-        return superclass != null ? findClassMirror(superclass) : null;
+        if (superclassMirror == null && superclass != null) {
+            superclassMirror = findClassMirror(superclass);
+        }
+        return superclassMirror;
     }
     
     public boolean isArray() {
@@ -108,6 +118,10 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
+        if (klass.equals(System.class) && name.equals("security")) {
+            return NativeSystemSecurityField.INSTANCE;
+        }
+        
         try {
             Field field = klass.getDeclaredField(name);
             if (Modifier.isStatic(field.getModifiers())) {
@@ -134,11 +148,13 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     
     @Override
     public List<ClassMirror> getInterfaceMirrors() {
-        List<ClassMirror> result = new ArrayList<ClassMirror>();
-        for (Class<?> i : klass.getInterfaces()) {
-            result.add(findClassMirror(i));
+        if (interfaceMirrors == null) {
+            interfaceMirrors = new ArrayList<ClassMirror>();
+            for (Class<?> i : klass.getInterfaces()) {
+                interfaceMirrors.add(findClassMirror(i));
+            }
         }
-        return result;
+        return Collections.unmodifiableList(interfaceMirrors);
     }
 
     @Override
@@ -182,7 +198,7 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
         for (int i = 0; i < paramTypes.length; i++) {
             nativeParamTypes[i] = getNativeClass(paramTypes[i]);
         }
-        Method nativeMethod = klass.getMethod(name, nativeParamTypes);
+        Method nativeMethod = klass.getDeclaredMethod(name, nativeParamTypes);
         return new NativeMethodMirror(nativeMethod);
     }
 
@@ -214,6 +230,15 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     private Class<?> getNativeClass(ClassMirror mirror) {
         if (mirror instanceof NativeClassMirror) {
             return ((NativeClassMirror)mirror).getKlass();
+        } else if (mirror instanceof ArrayClassMirror) {
+            ArrayClassMirror classMirror = (ArrayClassMirror)mirror;
+            Class<?> elementClass = getNativeClass(classMirror.getElementClassMirror());
+            try {
+                Type type = Reflection.typeForClassMirror(classMirror);
+                return Class.forName(type.getDescriptor(), false, elementClass.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                throw new InternalError();
+            }
         } else {
             throw new IllegalArgumentException("Native class mirror expected: " + mirror);
         }

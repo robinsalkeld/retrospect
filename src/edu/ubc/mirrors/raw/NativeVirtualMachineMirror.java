@@ -14,22 +14,39 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
 
     public static NativeVirtualMachineMirror INSTANCE = new NativeVirtualMachineMirror();
     
-    public ClassMirror findBootstrapClassMirror(String name) {
-        ClassLoader appClassLoader = ClassLoader.getSystemClassLoader();
-        Method nativeMethod;
+    private static final Method nativeMethod;
+    static {
         try {
             nativeMethod = ClassLoader.class.getDeclaredMethod("findBootstrapClass", String.class);
+            nativeMethod.setAccessible(true);
+        } catch (SecurityException e) {
+            throw new InternalError();
         } catch (NoSuchMethodException e) {
-            throw new NoSuchMethodError(e.getMessage());
+            throw new InternalError();
         }
-        nativeMethod.setAccessible(true);
+    }
+    
+    public ClassMirror findBootstrapClassMirror(String name) {
         try {
-            return (ClassMirror)NativeInstanceMirror.makeMirror((Class<?>)nativeMethod.invoke(appClassLoader, name));
-        } catch (IllegalAccessException e) {
-            throw new IllegalAccessError(e.getMessage());
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            // TODO-RS: Do we need to call the native findBootstrapClass() method directly?
+            // Is this shortcut harmful?
+            Class<?> klass = Class.forName(name, false, null);
+            if (klass.getClassLoader() == null) {
+                return new NativeClassMirror(klass);
+            } else {
+                return null;
+            }
+        } catch (ClassNotFoundException e) {
+            return null;
         }
+//        ClassLoader appClassLoader = ClassLoader.getSystemClassLoader();
+//        try {
+//            return (ClassMirror)NativeInstanceMirror.makeMirror((Class<?>)nativeMethod.invoke(appClassLoader, name));
+//        } catch (IllegalAccessException e) {
+//            throw new IllegalAccessError(e.getMessage());
+//        } catch (InvocationTargetException e) {
+//            throw new RuntimeException(e);
+//        }
     }
     
     

@@ -26,10 +26,12 @@ public class ArrayClassMirror implements ClassMirror {
 
     private final ClassMirror elementClassMirror;
     private final int dims;
+    private final Type arrayType;
     
     public ArrayClassMirror(int dims, ClassMirror elementClassMirror) {
         this.elementClassMirror = elementClassMirror;
         this.dims = dims;
+        this.arrayType = makeArrayType(dims, Reflection.typeForClassMirror(elementClassMirror));
     }
     
     @Override
@@ -37,35 +39,12 @@ public class ArrayClassMirror implements ClassMirror {
         return elementClassMirror.getVM();
     }
     
-    private Type getArrayType() {
-        return makeArrayType(dims, getType(elementClassMirror));
+    public ClassMirror getElementClassMirror() {
+        return elementClassMirror;
     }
     
-    private Type getType(ClassMirror classMirror) {
-        String name = classMirror.getClassName();
-        if (classMirror.isPrimitive()) {
-            if (name.equals("int")) {
-                return Type.INT_TYPE;
-            } else if (name.equals("void")) {
-                return Type.VOID_TYPE;
-            } else if (name.equals("boolean")) {
-                return Type.BOOLEAN_TYPE;
-            } else if (name.equals("byte")) {
-                return Type.BYTE_TYPE;
-            } else if (name.equals("char")) {
-                return Type.CHAR_TYPE;
-            } else if (name.equals("short")) {
-                return Type.SHORT_TYPE;
-            } else if (name.equals("double")) {
-                return Type.DOUBLE_TYPE;
-            } else if (name.equals("float")) {
-                return Type.FLOAT_TYPE;
-            } else /* if (name.equals("long")) */{
-                return Type.LONG_TYPE;
-            }
-        } else {
-            return Type.getObjectType(name.replace('.', '/'));
-        }
+    public Type getArrayType() {
+        return arrayType;
     }
     
     @Override
@@ -203,5 +182,9 @@ public class ArrayClassMirror implements ClassMirror {
     @Override
     public boolean initialized() {
         return true;
+    }
+
+    public int getDimensions() {
+        return dims;
     }
 }

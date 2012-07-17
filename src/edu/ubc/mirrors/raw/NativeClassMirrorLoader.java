@@ -31,11 +31,10 @@ public class NativeClassMirrorLoader extends NativeInstanceMirror implements Cla
     
     @Override
     public ClassMirror findLoadedClassMirror(String name) {
-        Class<?> klass;
         try {
             // TODO-RS: Do we need to call the native findLoadedClass0() method directly?
             // Is this shortcut harmful?
-            klass = Class.forName(name, false, classLoader);
+            Class<?> klass = Class.forName(name, false, classLoader);
             if (klass.getClassLoader() == classLoader) {
                 return new NativeClassMirror(klass);
             } else {

@@ -25,6 +25,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -32,6 +33,7 @@ import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
+import edu.ubc.mirrors.raw.nativestubs.java.lang.ThreadStubs;
 import edu.ubc.mirrors.test.ChainedClassLoader;
 
 public class Reflection {
@@ -94,10 +96,7 @@ public class Reflection {
     }
     
     
-    public static ClassMirror injectBytecode(VirtualMachineMirror vm, ClassMirrorLoader parent, ClassMirror newClass) {
-        // TODO-RS: Does this make sense?
-        ThreadMirror thread = vm.getThreads().get(0);
-        
+    public static ClassMirror injectBytecode(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader parent, ClassMirror newClass) {
         ClassMirror secureClassLoaderClass = vm.findBootstrapClassMirror(SecureClassLoader.class.getName());
         ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
         ConstructorMirror constructor = getConstructor(secureClassLoaderClass, classLoaderClass);
@@ -255,8 +254,7 @@ public class Reflection {
             ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
             MethodMirror method = getMethod(classLoaderClass, "loadClass", stringClass);
             
-            // TODO-RS: Does this make sense?
-            ThreadMirror thread = vm.getThreads().get(0);
+            ThreadMirror thread = ClassHolograph.currentThreadMirror.get();
             
             result = (ClassMirror)mirrorInvoke(thread, method, (InstanceMirror)originalLoader, makeString(vm, name));
         }
@@ -289,6 +287,35 @@ public class Reflection {
             return vm.getPrimitiveClass("double");
         } else {
             return Reflection.loadClassMirror(vm, loader, type.getClassName());
+        }
+    }
+    
+    public static Type typeForClassMirror(ClassMirror classMirror) {
+        String name = classMirror.getClassName();
+        if (classMirror.isPrimitive()) {
+            if (name.equals("int")) {
+                return Type.INT_TYPE;
+            } else if (name.equals("void")) {
+                return Type.VOID_TYPE;
+            } else if (name.equals("boolean")) {
+                return Type.BOOLEAN_TYPE;
+            } else if (name.equals("byte")) {
+                return Type.BYTE_TYPE;
+            } else if (name.equals("char")) {
+                return Type.CHAR_TYPE;
+            } else if (name.equals("short")) {
+                return Type.SHORT_TYPE;
+            } else if (name.equals("double")) {
+                return Type.DOUBLE_TYPE;
+            } else if (name.equals("float")) {
+                return Type.FLOAT_TYPE;
+            } else /* if (name.equals("long")) */{
+                return Type.LONG_TYPE;
+            }
+        } else if (classMirror.isArray()) {
+            return Type.getType(name);
+        } else {
+            return Type.getObjectType(name.replace('.', '/'));
         }
     }
     

@@ -18,6 +18,7 @@ import org.jruby.Ruby;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -69,7 +70,9 @@ public class HeapDumpTest2 implements IApplication {
     // Note we need a class loader that can see the classes in the JRuby API 
     // as well as our additional code (i.e. this class).
     ClassMirror rubyClass = holographVM.findAllClasses(Ruby.class.getName()).get(0);
-    ClassMirror printerClass = Reflection.injectBytecode(holographVM, rubyClass.getLoader(), new NativeClassMirror(JRubyStackTraces.class));
+    // TODO-RS: Does this make sense?
+    ThreadMirror thread = vm.getThreads().get(0);
+    ClassMirror printerClass = Reflection.injectBytecode(holographVM, thread, rubyClass.getLoader(), new NativeClassMirror(JRubyStackTraces.class));
 
     // For each class instance (in this case we only expect one)...
     List<InstanceMirror> rubies = rubyClass.getInstances();

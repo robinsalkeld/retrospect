@@ -6,10 +6,12 @@ import edu.ubc.mirrors.ObjectMirror;
 
 public class MutableObjectArrayMirror implements ObjectArrayMirror {
 
+    private final MutableVirtualMachineMirror vm;
     private final ObjectMirror[] mutableValues;
     private final ObjectArrayMirror immutableMirror;
     
     public MutableObjectArrayMirror(MutableVirtualMachineMirror vm, ObjectArrayMirror immutableMirror) {
+        this.vm = vm;
         this.immutableMirror = immutableMirror;
         this.mutableValues = new ObjectMirror[immutableMirror.length()];
         
@@ -25,7 +27,7 @@ public class MutableObjectArrayMirror implements ObjectArrayMirror {
 
     @Override
     public ClassMirror getClassMirror() {
-        return immutableMirror.getClassMirror();
+        return vm.getWrappedClassMirror(immutableMirror.getClassMirror());
     }
 
     @Override

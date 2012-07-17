@@ -1,11 +1,13 @@
 package edu.ubc.mirrors.raw;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -13,6 +15,7 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.Method;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.BoxingFieldMirror;
@@ -21,8 +24,8 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public abstract class BytecodeClassMirror implements ClassMirror {
@@ -83,6 +86,22 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
     }
 
+    private static class MethodPlaceholder implements MethodMirror {
+
+        @Override
+        public Object invoke(ThreadMirror thread, InstanceMirror obj,
+                Object... args) throws IllegalArgumentException,
+                IllegalAccessException, InvocationTargetException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setAccessible(boolean flag) {
+            throw new UnsupportedOperationException();
+        }
+        
+    }
+    
     private boolean resolved = false;
     
     private int access;
@@ -91,7 +110,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     private boolean isInterface;
     private Map<String, ClassMirror> memberFieldNames = new LinkedHashMap<String, ClassMirror>();
     private Map<String, ClassMirror> staticFields = new LinkedHashMap<String, ClassMirror>();
-    
+    private final Set<Method> methods = new HashSet<Method>();
     
     protected String className;
     
@@ -131,6 +150,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+            methods.add(new org.objectweb.asm.commons.Method(name, desc));
             return null;
         }
     }
@@ -227,11 +247,26 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     }
     
     @Override
-    public MethodMirror getMethod(String name, ClassMirror... paramTypes)
+    public MethodMirror getMethod(String name, ClassMirror... paramClasses)
             throws SecurityException, NoSuchMethodException {
-        
-        // Could create un-invocable methods, but no use for that yet.
-        throw new UnsupportedOperationException();
+        resolve();
+        for (Method m : methods) {
+            if (!m.getName().equals(name)) {
+                continue;
+            }
+            Type[] paramTypes = m.getArgumentTypes();
+            if (paramTypes.length != paramClasses.length) {
+                continue;
+            }
+            for (int i = 0; i < paramTypes.length; i++) {
+                if (!paramClasses[i].getClassName().equals(paramTypes[i].getClassName())) {
+                    continue;
+                }
+            }
+            return new MethodPlaceholder();
+        }
+
+        throw new NoSuchMethodException(name);
     }
     @Override
     public ConstructorMirror getConstructor(ClassMirror... paramTypes)

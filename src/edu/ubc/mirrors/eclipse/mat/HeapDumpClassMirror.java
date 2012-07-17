@@ -21,6 +21,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.raw.ArrayClassMirror;
 
 public class HeapDumpClassMirror implements ClassMirror {
 
@@ -69,6 +70,20 @@ public class HeapDumpClassMirror implements ClassMirror {
             return 11 + bytecodeMirror.hashCode();
         } else {
             return 11 + klass.hashCode();
+        }
+    }
+    
+    private ClassMirror getBytecodeMirror(ClassMirror klass) {
+        if (klass.isPrimitive()) {
+            return vm.getBytecodeVM().getPrimitiveClass(klass.getClassName());
+        } else if (klass instanceof HeapDumpClassMirror) {
+            return ((HeapDumpClassMirror)klass).bytecodeMirror;
+        } else if (klass instanceof ArrayClassMirror) {
+            ArrayClassMirror arrayClass = (ArrayClassMirror)klass;
+            ClassMirror elementBytecodeMirror = getBytecodeMirror(arrayClass.getElementClassMirror());
+            return new ArrayClassMirror(arrayClass.getDimensions(), elementBytecodeMirror);
+        } else {
+            throw new IllegalArgumentException(klass.toString());
         }
     }
     
@@ -235,13 +250,18 @@ public class HeapDumpClassMirror implements ClassMirror {
         return vm.findBootstrapClassMirror(Class.class.getName());
     }
 
+    private String className;
+    
     @Override
     public String getClassName() {
-        if (klass == null) {
-            return bytecodeMirror.getClassName();
-        } else {
-            return getClassName(klass);
+        if (className == null) {
+            if (klass == null) {
+                className = bytecodeMirror.getClassName();
+            } else {
+                className = getClassName(klass);
+            }
         }
+        return className;
     }
 
     @Override
@@ -297,7 +317,13 @@ public class HeapDumpClassMirror implements ClassMirror {
     @Override
     public MethodMirror getMethod(String name, ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
-        throw new UnsupportedOperationException();
+        
+        ClassMirror[] bytecodeParamTypes = new ClassMirror[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            bytecodeParamTypes[i] = getBytecodeMirror(paramTypes[i]);
+        }
+        
+        return bytecodeMirror.getMethod(name, bytecodeParamTypes);
     }
 
     @Override

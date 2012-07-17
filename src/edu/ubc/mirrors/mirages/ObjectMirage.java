@@ -152,7 +152,7 @@ public class ObjectMirage implements Mirage {
         ClassHolograph klass = loader.loadOriginalClassMirror(binaryName);
         
         // Force initialization just as the VM would, in case there is
-        // a <clini> method that needs to be run.
+        // a <clinit> method that needs to be run.
         MirageClassLoader.initializeClassMirror(klass);
         
         try {
