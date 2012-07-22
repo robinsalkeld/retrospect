@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.objectweb.asm.Type;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -31,13 +33,13 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
         
         // Note using null as the ClassMirrorLoader since the bootstrapLoader acts like the
         // VM's bootstrap loader, which is sometimes (and in this case) represented by null.
-        result = BytecodeClassMirrorLoader.loadBytecodeClassMirror(this, null, bootstrapLoader, name);
+        result = BytecodeClassMirrorLoader.loadBytecodeClassMirror(this, null, bootstrapLoader, Type.getObjectType(name.replace('.', '/')));
         bootstrapClasses.put(name, result);
         return result;
     }
     
     @Override
-    public List<ClassMirror> findAllClasses(String name) {
+    public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
         throw new UnsupportedOperationException(); 
     }    
     

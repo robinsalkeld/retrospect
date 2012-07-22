@@ -21,8 +21,11 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
+import edu.ubc.mirrors.raw.BytecodeClassMirrorLoader;
+import edu.ubc.mirrors.raw.BytecodeOnlyVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
+import edu.ubc.mirrors.test.Breakpoint;
 
 public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
 
@@ -89,9 +92,16 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     public void addNativeBytecodeLoaders(IClassLoader snapshotLoader, ClassLoader bytecodeLoader) {
-        setBytecodeVM(NativeVirtualMachineMirror.INSTANCE);
+//        BytecodeOnlyVirtualMachineMirror vm = new BytecodeOnlyVirtualMachineMirror(NativeVirtualMachineMirror.INSTANCE, null);
+        VirtualMachineMirror vm = NativeVirtualMachineMirror.INSTANCE;
+        setBytecodeVM(vm);
         
+        addNativeBytecodeLoadersHelper(vm, snapshotLoader, bytecodeLoader);
+    }
+    
+    public void addNativeBytecodeLoadersHelper(VirtualMachineMirror vm, IClassLoader snapshotLoader, ClassLoader bytecodeLoader) {
         addBytecodeLoader(snapshotLoader, (ClassMirrorLoader)NativeInstanceMirror.makeMirror(bytecodeLoader));
+//        addBytecodeLoader(snapshotLoader, new BytecodeClassMirrorLoader(vm, bytecodeLoader));
             
         IClassLoader parent;
         try {
@@ -100,12 +110,12 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
             throw new RuntimeException(e);
         }
         if (parent != null && parent != snapshotLoader) {
-            addNativeBytecodeLoaders(parent, bytecodeLoader.getParent());
+            addNativeBytecodeLoadersHelper(vm, parent, bytecodeLoader.getParent());
         }
         
         IClassLoader loaderLoader = HeapDumpClassMirror.getClassLoader(snapshotLoader.getClazz());
         if (loaderLoader != null) {
-            addNativeBytecodeLoaders(loaderLoader, bytecodeLoader.getClass().getClassLoader());
+            addNativeBytecodeLoadersHelper(vm, loaderLoader, bytecodeLoader.getClass().getClassLoader());
         }
     }
     
@@ -119,12 +129,15 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     
     public ClassMirror getBytecodeClassMirror(HeapDumpClassMirror snapshotClass) {
         HeapDumpClassMirrorLoader snapshotLoader = snapshotClass.getLoader();
+        ClassMirror result;
+        String className = snapshotClass.getClassName();
         if (snapshotLoader == null) {
-            return bytecodeVM.findBootstrapClassMirror(snapshotClass.getClassName());
+            result = bytecodeVM.findBootstrapClassMirror(className);
         } else {
-            ClassMirrorLoader bytecodeLoader = getBytecodeLoader(snapshotClass.getLoader());
-            return bytecodeLoader.findLoadedClassMirror(snapshotClass.getClassName());
+            ClassMirrorLoader bytecodeLoader = getBytecodeLoader(snapshotLoader);
+            result = bytecodeLoader.findLoadedClassMirror(className);
         }
+        return result;
     }
     
     public HeapDumpClassMirror getClassMirrorForBytecodeClassMirror(ClassMirror bytecodeClass) {
@@ -146,6 +159,13 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         if (object == null) {
             return null;
         }
+        if (object.getObjectId() == 0) {
+            // This is the fake ClassLoader MAT creates to represent the bootstrap loader.
+            // It's not a valid object in several ways (it claims to be an instance of the
+            // abstract class java.lang.ClassLoader, for one thing).
+            return null;
+        }
+        
         ObjectMirror mirror = mirrors.get(object);
         if (mirror != null) {
             return mirror;
@@ -158,10 +178,6 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         } else if (object.getClazz().getName().equals(Thread.class.getName())) {
             mirror = new HeapDumpThreadMirror(this, (IInstance)object);
         } else if (object instanceof IInstance) {
-            if (object.getClazz().getName().equals(Class.class.getName())) {
-                int whatthe = 4;
-                whatthe++;
-            }
             mirror = new HeapDumpInstanceMirror(this, (IInstance)object);
         } else if (object instanceof IPrimitiveArray) {
             mirror = new HeapDumpPrimitiveArrayMirror(this, (IPrimitiveArray)object);
@@ -176,10 +192,10 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     @Override
-    public List<ClassMirror> findAllClasses(String name) {
+    public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
         List<ClassMirror> result = new ArrayList<ClassMirror>();
         try {
-            for (IClass klass : snapshot.getClassesByName(name, false)) {
+            for (IClass klass : snapshot.getClassesByName(name, includeSubclasses)) {
                 result.add((ClassMirror)makeMirror(klass));
             }
         } catch (SnapshotException e) {

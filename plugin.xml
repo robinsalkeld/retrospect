@@ -37,4 +37,16 @@
          </run>
       </application>
    </extension>
+   <extension
+         id="tostringer"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="edu.ubc.mirrors.test.ToStringer">
+         </run>
+      </application>
+   </extension>
 </plugin>

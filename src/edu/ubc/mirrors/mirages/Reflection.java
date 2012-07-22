@@ -2,7 +2,6 @@ package edu.ubc.mirrors.mirages;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassName;
 
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.SecureClassLoader;
@@ -10,7 +9,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.mat.snapshot.model.IClassLoader;
+import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
 import org.objectweb.asm.Type;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.BundleReference;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.service.packageadmin.PackageAdmin;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
@@ -24,17 +32,18 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.raw.ArrayClassMirror;
+import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
+import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
-import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.ThreadStubs;
-import edu.ubc.mirrors.test.ChainedClassLoader;
+import edu.ubc.mirrors.test.EclipseHeapDumpTest;
 
 public class Reflection {
 
@@ -458,5 +467,77 @@ public class Reflection {
             result[i] = mirror.get(i);
         }
         return result;
+    }
+    
+    public static String toString(InstanceMirror mirror) {
+        VirtualMachineMirror vm = mirror.getClassMirror().getVM();
+        ClassMirror vmObjectClass = vm.findBootstrapClassMirror(Object.class.getName());
+        MethodMirror toStringMethod = getMethod(vmObjectClass, "toString");
+        InstanceMirror stringMirror = (InstanceMirror)mirrorInvoke(vm.getThreads().get(0), toStringMethod, mirror);
+        return getRealStringForMirror(stringMirror);
+    }
+    
+    public static void registerEquinoxBundleLoaders(VirtualMachineHolograph vm) {
+        Bundle thisBundle = FrameworkUtil.getBundle(Reflection.class);
+        try {
+            thisBundle.start();
+        } catch (BundleException e) {
+            throw new RuntimeException(e);
+        }
+        BundleContext context = thisBundle.getBundleContext(); 
+        PackageAdmin admin = context.getService(context.getServiceReference(PackageAdmin.class));
+        HeapDumpVirtualMachineMirror heapDumpVM = (HeapDumpVirtualMachineMirror)((MutableVirtualMachineMirror)vm.getWrappedVM()).getWrappedVM();
+        
+        ThreadMirror thread = vm.getThreads().get(0);
+        for (ClassMirror classLoaderClasses : vm.findAllClasses(DefaultClassLoader.class.getName(), true)) {
+            for (InstanceMirror instance : classLoaderClasses.getInstances()) {
+                ClassLoaderHolograph loader = (ClassLoaderHolograph)instance;
+                HeapDumpClassMirrorLoader heapDumpLoader = (HeapDumpClassMirrorLoader)((MutableClassMirrorLoader)loader.getWrapped()).getWrapped();
+                
+                InstanceMirror bundle = (InstanceMirror)invokeMethodHandle(thread, loader, new MethodHandle() {
+                    protected void methodCall() throws Throwable {
+                        ((BundleReference)null).getBundle();
+                    }
+                });
+                String symbolicName = getRealStringForMirror((InstanceMirror)invokeMethodHandle(thread, bundle, new MethodHandle() {
+                    protected void methodCall() throws Throwable {
+                        ((Bundle)null).getSymbolicName();
+                    }
+                }));
+                String version = toString((InstanceMirror)invokeMethodHandle(thread, bundle, new MethodHandle() {
+                    protected void methodCall() throws Throwable {
+                        ((Bundle)null).getVersion();
+                    }
+                }));
+                
+                Bundle[] localBundles = admin.getBundles(symbolicName, version);
+                if (localBundles == null || localBundles.length != 1) {
+                    throw new IllegalStateException("Could not find a unique bundle: " + symbolicName + " (" + version + ")");
+                }
+                heapDumpVM.addNativeBytecodeLoaders((IClassLoader)heapDumpLoader.getHeapDumpObject(), localBundles[0].adapt(BundleWiring.class).getClassLoader());
+            }
+        }
+    }
+    
+    public static Object invokeMethodHandle(ThreadMirror thread, InstanceMirror obj, MethodHandle m, Object ... args) {
+        ClassMirror klass = obj.getClassMirror();
+        VirtualMachineMirror vm = klass.getVM();
+        ClassMirror targetClass;
+        try {
+            targetClass = classMirrorForName(vm, m.getMethod().owner, false, klass.getLoader());
+        } catch (ClassNotFoundException e) {
+            throw new NoClassDefFoundError(e.getMessage());
+        }
+        Type[] paramTypes = Type.getArgumentTypes(m.getMethod().desc);
+        ClassMirror[] paramClasses = new ClassMirror[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            try {
+                paramClasses[i] = classMirrorForType(vm, paramTypes[i], false, klass.getLoader());
+            } catch (ClassNotFoundException e) {
+                throw new NoClassDefFoundError(e.getMessage());
+            }
+        }
+        MethodMirror method = getMethod(targetClass, m.getMethod().name, paramClasses);
+        return mirrorInvoke(thread, method, obj, args);
     }
 }

@@ -16,6 +16,7 @@ import org.eclipse.mat.util.ConsoleProgressListener;
 import org.eclipse.osgi.framework.internal.core.BundleRepository;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
+import org.osgi.framework.FrameworkUtil;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -47,7 +48,7 @@ public class EclipseHeapDumpTest implements IApplication {
         String snapshotPath = args[0];
         MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         
-        Bundle thisBundle = ((BundleReference)EclipseHeapDumpTest.class.getClassLoader()).getBundle();
+        Bundle thisBundle = FrameworkUtil.getBundle(EclipseHeapDumpTest.class);
         thisBundle.start();
         Bundle[] bundles = thisBundle.getBundleContext().getBundles();
         
@@ -80,7 +81,7 @@ public class EclipseHeapDumpTest implements IApplication {
         // Create a holograph VM
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(mutableVM);
         
-        ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName()).get(0);
+        ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);
         InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
         printBundlesFromRepository(bundleRepository);
     }

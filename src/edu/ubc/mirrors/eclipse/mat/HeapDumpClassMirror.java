@@ -232,7 +232,10 @@ public class HeapDumpClassMirror implements ClassMirror {
         try {
             for (int id : klass.getObjectIds()) {
                 IInstance object = (IInstance)klass.getSnapshot().getObject(id);
-                result.add((InstanceMirror)vm.makeMirror(object));
+                InstanceMirror mirror = (InstanceMirror)vm.makeMirror(object);
+                if (mirror != null) {
+                    result.add(mirror);
+                }
             }
         } catch (SnapshotException e) {
             throw new RuntimeException(e);

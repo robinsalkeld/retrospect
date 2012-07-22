@@ -142,11 +142,6 @@ public class ObjectMirage implements Mirage {
     }
     
     public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {
-        if (fieldName.equals("INTERPRETED_FRAMES")) {
-            int bp = 4;
-            bp++;
-        }
-        
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         String binaryName = className.replace('/', '.');
         ClassHolograph klass = loader.loadOriginalClassMirror(binaryName);

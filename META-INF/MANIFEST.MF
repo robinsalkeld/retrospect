@@ -24,9 +24,13 @@ Import-Package: com.ibm.icu.text;version="4.4.2.1",
  org.eclipse.mat.snapshot,
  org.eclipse.mat.snapshot.model,
  org.eclipse.mat.util,
+ org.eclipse.osgi.framework.adaptor,
  org.eclipse.osgi.framework.internal.core,
+ org.eclipse.osgi.internal.baseadaptor,
  org.osgi.framework;version="1.6.0",
- org.osgi.framework.launch;version="1.0.0"
+ org.osgi.framework.launch;version="1.0.0",
+ org.osgi.framework.wiring;version="1.0.0",
+ org.osgi.service.packageadmin;version="1.2.0"
 Service-Component: component.xml
 Export-Package: edu.ubc.mirrors,
  edu.ubc.mirrors.holographs,

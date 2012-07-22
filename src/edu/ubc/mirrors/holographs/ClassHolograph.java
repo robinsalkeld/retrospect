@@ -130,7 +130,7 @@ public class ClassHolograph extends WrappingClassMirror {
             for (int i = 0; i < paramTypes.length; i++) {
                 mirageParamTypes[i] = getMirageClass(paramTypes[i], false);
             }
-            Class<?> mirageClass = getMirageClass(false);
+            Class<?> mirageClass = getMirageClass(true);
             try {
                 mirageClassMethod = mirageClass.getDeclaredMethod(name, mirageParamTypes);
             } catch (NoSuchMethodException e) {
@@ -152,7 +152,12 @@ public class ClassHolograph extends WrappingClassMirror {
                 }
                 Object mirageObj = makeMirage(obj);
                 Object result = mirageClassMethod.invoke(mirageObj, mirageArgs);
-                return unwrapMirage(result);
+                // Account for the fact that toString() has to return a real String here
+                if (result instanceof String) {
+                    return Reflection.makeString(vm, (String)result);
+                } else {
+                    return unwrapMirage(result);
+                }
             } finally {
                 currentThreadMirror.set(original);
             }

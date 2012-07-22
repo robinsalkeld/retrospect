@@ -6,7 +6,7 @@ public interface VirtualMachineMirror {
 
     public ClassMirror findBootstrapClassMirror(String name);
     
-    public List<ClassMirror> findAllClasses(String name); 
+    public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses); 
     
     public List<ThreadMirror> getThreads();
     
