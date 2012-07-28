@@ -2,8 +2,11 @@ package edu.ubc.mirrors.mirages;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassName;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.SecureClassLoader;
 import java.util.Collection;
 import java.util.HashMap;
@@ -477,48 +480,6 @@ public class Reflection {
         return getRealStringForMirror(stringMirror);
     }
     
-    public static void registerEquinoxBundleLoaders(VirtualMachineHolograph vm) {
-        Bundle thisBundle = FrameworkUtil.getBundle(Reflection.class);
-        try {
-            thisBundle.start();
-        } catch (BundleException e) {
-            throw new RuntimeException(e);
-        }
-        BundleContext context = thisBundle.getBundleContext(); 
-        PackageAdmin admin = context.getService(context.getServiceReference(PackageAdmin.class));
-        HeapDumpVirtualMachineMirror heapDumpVM = (HeapDumpVirtualMachineMirror)((MutableVirtualMachineMirror)vm.getWrappedVM()).getWrappedVM();
-        
-        ThreadMirror thread = vm.getThreads().get(0);
-        for (ClassMirror classLoaderClasses : vm.findAllClasses(DefaultClassLoader.class.getName(), true)) {
-            for (InstanceMirror instance : classLoaderClasses.getInstances()) {
-                ClassLoaderHolograph loader = (ClassLoaderHolograph)instance;
-                HeapDumpClassMirrorLoader heapDumpLoader = (HeapDumpClassMirrorLoader)((MutableClassMirrorLoader)loader.getWrapped()).getWrapped();
-                
-                InstanceMirror bundle = (InstanceMirror)invokeMethodHandle(thread, loader, new MethodHandle() {
-                    protected void methodCall() throws Throwable {
-                        ((BundleReference)null).getBundle();
-                    }
-                });
-                String symbolicName = getRealStringForMirror((InstanceMirror)invokeMethodHandle(thread, bundle, new MethodHandle() {
-                    protected void methodCall() throws Throwable {
-                        ((Bundle)null).getSymbolicName();
-                    }
-                }));
-                String version = toString((InstanceMirror)invokeMethodHandle(thread, bundle, new MethodHandle() {
-                    protected void methodCall() throws Throwable {
-                        ((Bundle)null).getVersion();
-                    }
-                }));
-                
-                Bundle[] localBundles = admin.getBundles(symbolicName, version);
-                if (localBundles == null || localBundles.length != 1) {
-                    throw new IllegalStateException("Could not find a unique bundle: " + symbolicName + " (" + version + ")");
-                }
-                heapDumpVM.addNativeBytecodeLoaders((IClassLoader)heapDumpLoader.getHeapDumpObject(), localBundles[0].adapt(BundleWiring.class).getClassLoader());
-            }
-        }
-    }
-    
     public static Object invokeMethodHandle(ThreadMirror thread, InstanceMirror obj, MethodHandle m, Object ... args) {
         ClassMirror klass = obj.getClassMirror();
         VirtualMachineMirror vm = klass.getVM();
@@ -539,5 +500,35 @@ public class Reflection {
         }
         MethodMirror method = getMethod(targetClass, m.getMethod().name, paramClasses);
         return mirrorInvoke(thread, method, obj, args);
+    }
+    
+    public static URL[] getBootstrapPath() {
+        String path = (String)System.getProperties().get("sun.boot.class.path");
+        String[] paths = path.split(File.pathSeparator);
+        URL[] urls = new URL[paths.length];
+        for (int i = 0; i < paths.length; i++) {
+            try {
+                urls[i] = new File(paths[i]).toURL();
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return urls;
+    }
+    
+    public static Map<String, String> getStandardMappedFiles() {
+        Map<String, String> mappedFiles = new HashMap<String, String>();
+        
+        String javaHome = (String)System.getProperties().get("java.home");
+        mappedFiles.put(javaHome, javaHome);
+        
+        String eclipsePlugins = "/Library/Application Support/eclipse/plugins";
+        mappedFiles.put(eclipsePlugins, eclipsePlugins);
+        
+        return mappedFiles;
+    }
+
+    public static boolean isInstance(ClassMirror classMirror, ObjectMirror oMirror) {
+        return isAssignableFrom(classMirror, oMirror.getClassMirror());
     }
 }

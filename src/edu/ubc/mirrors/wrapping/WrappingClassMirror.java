@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.wrapping;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +91,11 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     
     @Override
     public Map<String, ClassMirror> getDeclaredFields() {
-        return wrapped.getDeclaredFields();
+        Map<String, ClassMirror> wrappedFields = new HashMap<String, ClassMirror>();
+        for (Map.Entry<String, ClassMirror> entry : wrapped.getDeclaredFields().entrySet()) {
+            wrappedFields.put(entry.getKey(), vm.getWrappedClassMirror(entry.getValue()));
+        }
+        return wrappedFields;
     }
     
     @Override

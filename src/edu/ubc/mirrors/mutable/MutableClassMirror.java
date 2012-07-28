@@ -1,7 +1,5 @@
 package edu.ubc.mirrors.mutable;
 
-import java.lang.reflect.Constructor;
-
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;

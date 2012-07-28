@@ -2,28 +2,19 @@ package edu.ubc.mirrors.mutable;
 
 import edu.ubc.mirrors.DoubleArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.wrapping.WrappingByteArrayMirror;
+import edu.ubc.mirrors.wrapping.WrappingDoubleArrayMirror;
 
-public class MutableDoubleArrayMirror implements DoubleArrayMirror {
+public class MutableDoubleArrayMirror extends WrappingDoubleArrayMirror {
 
-    private final DoubleArrayMirror immutableMirror;
     private final double[] values;
     
-    public MutableDoubleArrayMirror(DoubleArrayMirror immutableMirror) {
-        this.immutableMirror = immutableMirror;
+    public MutableDoubleArrayMirror(MutableVirtualMachineMirror vm, DoubleArrayMirror immutableMirror) {
+        super(vm, immutableMirror);
         this.values = new double[immutableMirror.length()];
         for (int i = 0; i < values.length; i++) {
             values[i] = immutableMirror.getDouble(i);
         }
-    }
-    
-    @Override
-    public ClassMirror getClassMirror() {
-        return immutableMirror.getClassMirror();
-    }
-
-    @Override
-    public int length() {
-        return immutableMirror.length();
     }
 
     @Override

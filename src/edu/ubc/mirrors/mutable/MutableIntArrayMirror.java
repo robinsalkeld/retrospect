@@ -2,28 +2,19 @@ package edu.ubc.mirrors.mutable;
 
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.wrapping.WrappingByteArrayMirror;
+import edu.ubc.mirrors.wrapping.WrappingIntArrayMirror;
 
-public class MutableIntArrayMirror implements IntArrayMirror {
+public class MutableIntArrayMirror extends WrappingIntArrayMirror {
 
-    private final IntArrayMirror immutableMirror;
     private final int[] values;
     
-    public MutableIntArrayMirror(IntArrayMirror immutableMirror) {
-        this.immutableMirror = immutableMirror;
+    public MutableIntArrayMirror(MutableVirtualMachineMirror vm, IntArrayMirror immutableMirror) {
+        super(vm, immutableMirror);
         this.values = new int[immutableMirror.length()];
         for (int i = 0; i < values.length; i++) {
             values[i] = immutableMirror.getInt(i);
         }
-    }
-    
-    @Override
-    public ClassMirror getClassMirror() {
-        return immutableMirror.getClassMirror();
-    }
-
-    @Override
-    public int length() {
-        return immutableMirror.length();
     }
 
     @Override

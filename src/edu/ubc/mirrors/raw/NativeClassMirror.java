@@ -172,15 +172,6 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
         return NativeInstanceMirror.getMemberFields(klass);
     }
 
-    public static Class<?> getNativeStubsClass(String name) {
-        String nativeStubsName = "edu.ubc.mirrors.raw.nativestubs." + name + "Stubs";
-        try {
-            return Class.forName(nativeStubsName);
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-    
     @Override
     public Map<String, ClassMirror> getDeclaredFields() {
         Map<String, ClassMirror> fields = new HashMap<String, ClassMirror>();

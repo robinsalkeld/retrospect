@@ -43,12 +43,22 @@ import edu.ubc.mirrors.mutable.MutableObjectArrayMirror;
 import edu.ubc.mirrors.mutable.MutableShortArrayMirror;
 import edu.ubc.mirrors.mutable.MutableThreadMirror;
 
-public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
+public abstract class WrappingVirtualMachine implements VirtualMachineMirror, VirtualMachineWrapperAware {
 
     protected final VirtualMachineMirror wrappedVM;
     
     public WrappingVirtualMachine(VirtualMachineMirror wrappedVM) {
         this.wrappedVM = wrappedVM;
+        if (wrappedVM instanceof VirtualMachineWrapperAware) {
+            ((VirtualMachineWrapperAware)wrappedVM).setWrapper(this);
+        }
+    }
+    
+    @Override
+    public void setWrapper(VirtualMachineMirror wrapper) {
+        if (wrappedVM instanceof VirtualMachineWrapperAware) {
+            ((VirtualMachineWrapperAware)wrappedVM).setWrapper(wrapper);
+        }
     }
     
     public VirtualMachineMirror getWrappedVM() {

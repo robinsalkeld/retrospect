@@ -250,23 +250,24 @@ public class ObjectMirage implements Mirage {
             InstanceMirror result = newInstanceMirror(classLoaderLiteral, mirror.getClassMirror().getClassName());
             for (FieldMirror field : instanceMirror.getMemberFields()) {
                 ClassMirror fieldType = field.getType();
+                String typeName = fieldType.getClassName();
                 try {
                     FieldMirror resultField = result.getMemberField(field.getName());
-                    if (fieldType.equals(Boolean.TYPE)) {
+                    if (typeName.equals(Boolean.TYPE.getName())) {
                         resultField.setBoolean(field.getBoolean());
-                    } else if (fieldType.equals(Byte.TYPE)) {
+                    } else if (typeName.equals(Byte.TYPE.getName())) {
                         resultField.setByte(field.getByte());
-                    } else if (fieldType.equals(Character.TYPE)) {
+                    } else if (typeName.equals(Character.TYPE.getName())) {
                         resultField.setChar(field.getChar());
-                    } else if (fieldType.equals(Short.TYPE)) {
+                    } else if (typeName.equals(Short.TYPE.getName())) {
                         resultField.setShort(field.getShort());
-                    } else if (fieldType.equals(Integer.TYPE)) {
+                    } else if (typeName.equals(Integer.TYPE.getName())) {
                         resultField.setInt(field.getInt());
-                    } else if (fieldType.equals(Long.TYPE)) {
+                    } else if (typeName.equals(Long.TYPE.getName())) {
                         resultField.setLong(field.getLong());
-                    } else if (fieldType.equals(Float.TYPE)) {
+                    } else if (typeName.equals(Float.TYPE.getName())) {
                         resultField.setFloat(field.getFloat());
-                    } else if (fieldType.equals(Double.TYPE)) {
+                    } else if (typeName.equals(Double.TYPE.getName())) {
                         resultField.setDouble(field.getDouble());
                     } else {
                         resultField.set(field.get());
@@ -281,6 +282,7 @@ public class ObjectMirage implements Mirage {
         } else if (mirror instanceof ArrayMirror) {
             ArrayMirror objectArrayMirror = (ArrayMirror)mirror;
             int length = objectArrayMirror.length();
+            
             String elementClassName = mirror.getClassMirror().getComponentClassMirror().getClassName();
             ArrayMirror result = newArrayMirror(classLoaderLiteral, Type.getObjectType(elementClassName).getDescriptor(), length);
             

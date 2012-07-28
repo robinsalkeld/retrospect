@@ -3,7 +3,7 @@ package edu.ubc.mirrors.wrapping;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpPrimitiveArrayMirror;
 
-public class WrappingMirror implements ObjectMirror {
+public class WrappingMirror implements ObjectMirror, WrapperAware {
 
     protected final WrappingVirtualMachine vm;
     protected final ObjectMirror wrapped;
@@ -11,6 +11,16 @@ public class WrappingMirror implements ObjectMirror {
     public WrappingMirror(WrappingVirtualMachine vm, ObjectMirror wrapped) {
         this.vm = vm;
         this.wrapped = wrapped;
+        if (wrapped instanceof WrapperAware) {
+            ((WrapperAware)wrapped).setWrapper(this);
+        }
+    }
+    
+    @Override
+    public void setWrapper(WrappingMirror mirror) {
+        if (wrapped instanceof WrapperAware) {
+            ((WrapperAware)wrapped).setWrapper(mirror);
+        }
     }
     
     @Override

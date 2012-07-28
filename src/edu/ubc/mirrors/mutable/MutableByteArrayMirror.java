@@ -2,30 +2,21 @@ package edu.ubc.mirrors.mutable;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.wrapping.WrappingBooleanArrayMirror;
+import edu.ubc.mirrors.wrapping.WrappingByteArrayMirror;
 
-public class MutableByteArrayMirror implements ByteArrayMirror {
+public class MutableByteArrayMirror extends WrappingByteArrayMirror {
 
-    private final ByteArrayMirror immutableMirror;
     private final byte[] values;
     
-    public MutableByteArrayMirror(ByteArrayMirror immutableMirror) {
-        this.immutableMirror = immutableMirror;
+    public MutableByteArrayMirror(MutableVirtualMachineMirror vm, ByteArrayMirror immutableMirror) {
+        super(vm, immutableMirror);
         this.values = new byte[immutableMirror.length()];
         for (int i = 0; i < values.length; i++) {
             values[i] = immutableMirror.getByte(i);
         }
     }
     
-    @Override
-    public ClassMirror getClassMirror() {
-        return immutableMirror.getClassMirror();
-    }
-
-    @Override
-    public int length() {
-        return immutableMirror.length();
-    }
-
     @Override
     public byte getByte(int index) throws ArrayIndexOutOfBoundsException {
         return values[index];

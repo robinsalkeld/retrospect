@@ -14,6 +14,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -23,6 +24,7 @@ import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeConstructorMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 import edu.ubc.mirrors.raw.NativeObjectMirror;
+import edu.ubc.mirrors.test.Breakpoint;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 import edu.ubc.mirrors.wrapping.WrappingFieldMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
@@ -33,6 +35,9 @@ public class ClassHolograph extends WrappingClassMirror {
     
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
+        if (wrapped instanceof HeapDumpClassMirror) {
+            Breakpoint.bp();
+        }
     }
     
     public ClassMirror getWrappedClassMirror() {
@@ -40,8 +45,115 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public Class<?> getNativeStubsClass() {
-        return NativeClassMirror.getNativeStubsClass(getClassName());
+        return getNativeStubsClass(getClassName());
     }
+    
+    public static Class<?> getNativeStubsClass(String name) {
+        String nativeStubsName = "edu.ubc.mirrors.raw.nativestubs." + name + "Stubs";
+        try {
+            return Class.forName(nativeStubsName);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+    
+    public static String getIllegalNativeMethodMessage(String owner, org.objectweb.asm.commons.Method method) {
+        if (owner.equals(Object.class.getName()) || owner.equals(Throwable.class.getName())) {
+            return "Shared superclass";
+        } else if (owner.startsWith("com.sun.java.swing.plaf.gtk")) { 
+            return "GUI";
+        } else if (owner.startsWith("com.sun.management")) {
+            return "System";
+        } else if (owner.startsWith("com.sun.media.sound")) {
+            return "Media";
+        } else if (owner.equals("sun.tracing.dtrace.JVM")) {
+            return "Management";
+        } else if (owner.startsWith("com.sun.demo.jvmti.hprof")) {
+            return "Management";
+        } else if (owner.startsWith("sun.management")) {
+            return "Management";
+        } else if (owner.startsWith("java.io")) {
+            return "IO";
+        } else if (owner.startsWith("java.nio")) {
+            return "IO";
+        } else if (owner.startsWith("sun.nio")) {
+            return "IO";
+        } else if (owner.startsWith("sun.print")) {
+            return "Printers";
+        } else if (owner.startsWith("sun.security.smartcardio")) {
+            return "Drivers";
+        } else if (owner.startsWith("sun.java2d")) {
+            return "Graphics";
+        } else if (owner.startsWith("com.apple.eawt")) {
+            return "GUI";
+        } else if (owner.startsWith("com.apple.eio")) {
+            return "IO";
+        } else if (owner.startsWith("com.sun.imageio.plugins.jpeg")) {
+            return "Graphics";
+        } else if (owner.startsWith("sun.dc.pr")) {
+            return "Graphics";
+        } else if (owner.startsWith("sun.font")) {
+            return "Graphics";
+        } else if (owner.startsWith("sun.awt")) {
+            return "GUI";
+        } else if (owner.startsWith("sun.lwawt")) {
+            return "GUI";
+        } else if (owner.startsWith("java.awt")) {
+            return "GUI";
+        } else if (owner.startsWith("apple.laf")) {
+            return "GUI";
+        } else if (owner.startsWith("com.apple.laf")) {
+            return "GUI";
+        } else if (owner.startsWith("sun.security")) {
+            return "Security";
+        } else if (owner.startsWith("java.net")) {
+            return "Network";
+        } else if (owner.startsWith("sun.net")) {
+            return "Network";
+        } else if (owner.startsWith("apple.applescript")) {
+            return "System";
+        } else if (owner.startsWith("apple.launcher")) {
+            return "System";
+        } else if (owner.startsWith("apple.security")) {
+            return "System";
+        } else if (owner.startsWith("sun.rmi")) {
+            return "Network";
+        } else if (owner.equals("java.lang.UNIXProcess")) {
+            return "System";
+        } else if (owner.equals("sun.misc.Perf")) {
+            return "System";
+        } else if (owner.equals("java.util.TimeZone")) {
+            return "System";
+        } else if (owner.equals("sun.misc.MessageUtils")) {
+            return "IO";
+        } else if (owner.startsWith("java.util.prefs")) {
+            // TODO-RS: May come up in read-only mapped fs
+            return "IO";
+        } else {
+            return null;
+        }
+    }
+    
+    public static String getMissingNativeMethodMessage(String owner, org.objectweb.asm.commons.Method method) {
+        if (owner.equals("sun.instrument.InstrumentationImpl")) {
+            return "Class loading reflection";
+        } else if (owner.equals("sun.misc.Unsafe")) {
+            // TODO-RS: Some of these should be illegal. Absolute address memory access if nothing else.
+            return "Direct memory-model reflection";
+        } else if (owner.equals("sun.misc.Unsafe")) {
+            // TODO-RS: Some of these should be illegal. Absolute address memory access if nothing else.
+            return "Direct memory-model reflection";
+        } else if (owner.equals("java.lang.reflect.Array")) {
+            return "Reflection";
+        } else if (owner.startsWith("java.util.zip")) {
+            return "Read-only mapped FS";
+        } else if (owner.equals("java.lang.StrictMath")) {
+            return "Math";
+        } else {
+            return null;
+        }
+    }
+        
     
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
         // Just to check that the method exists.

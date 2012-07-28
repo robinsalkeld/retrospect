@@ -2,6 +2,7 @@ package edu.ubc.mirrors.mirages;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipFile;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -28,6 +30,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
+import edu.ubc.mirrors.test.Breakpoint;
 
 public class MirageClassGenerator extends ClassVisitor {
 
@@ -85,18 +88,28 @@ public class MirageClassGenerator extends ClassVisitor {
     private String name;
     private String superName;
     
-    private final Map<org.objectweb.asm.commons.Method, Method> mirrorMethods = new HashMap<org.objectweb.asm.commons.Method, Method>();
+    private final Map<org.objectweb.asm.commons.Method, Method> mirrorMethods;
     
     public MirageClassGenerator(ClassHolograph classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
-        
+        if (classMirror.getClassName().equals(ZipFile.class.getName())) {
+            Breakpoint.bp();
+        }
         this.needsInitialization = !classMirror.initialized();
         Class<?> nativeStubsClass = classMirror.getNativeStubsClass();
+        mirrorMethods = indexStubMethods(nativeStubsClass);
+    }
+    
+    public static Map<org.objectweb.asm.commons.Method, Method> indexStubMethods(Class<?> nativeStubsClass) {
         if (nativeStubsClass != null) {
+            Map<org.objectweb.asm.commons.Method, Method> result = new HashMap<org.objectweb.asm.commons.Method, Method>();
             for (Method m : nativeStubsClass.getDeclaredMethods()) {
                 org.objectweb.asm.commons.Method method = org.objectweb.asm.commons.Method.getMethod(m);
-                mirrorMethods.put(method, m);
+                result.put(method, m);
             }
+            return result;
+        } else {
+            return Collections.emptyMap();
         }
     }
     
@@ -435,9 +448,6 @@ public class MirageClassGenerator extends ClassVisitor {
         Type stubReturnType = getStubType(methodType.getReturnType());
         org.objectweb.asm.commons.Method methodDesc = new org.objectweb.asm.commons.Method(name, stubReturnType, 
                 stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
-        if (name.equals("defineClass1")) {
-            System.out.println(methodDesc);
-        }
         Method mirrorMethod = mirrorMethods.get(methodDesc);
         if (mirrorMethod != null) {
             generateStaticThunk(superVisitor, desc, mirrorMethod);
@@ -464,7 +474,21 @@ public class MirageClassGenerator extends ClassVisitor {
         return lvs;
     }
     
-    private Type getStubType(Type type) {
+    public static Type getStubMethodType(String owner, int access, Type methodType) {
+        Type[] argumentTypes = methodType.getArgumentTypes();
+        List<Type> stubArgumentTypes = new ArrayList<Type>(argumentTypes.length + 1);
+        stubArgumentTypes.add(Type.getType(Class.class));
+        if ((Opcodes.ACC_STATIC & access) == 0) {
+            stubArgumentTypes.add(getStubType(Type.getObjectType(owner)));
+        }
+        for (int i = 0; i < argumentTypes.length; i++) {
+            stubArgumentTypes.add(getStubType(argumentTypes[i]));
+        }
+        Type stubReturnType = getStubType(methodType.getReturnType());
+        return Type.getMethodType(stubReturnType, stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
+    }
+    
+    private static Type getStubType(Type type) {
         switch (type.getSort()) {
         case Type.OBJECT:
         case Type.ARRAY:

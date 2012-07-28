@@ -3,6 +3,9 @@ package edu.ubc.mirrors.wrapping;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.test.Breakpoint;
 
 public class WrappingFieldMirror implements FieldMirror {
 
@@ -12,6 +15,9 @@ public class WrappingFieldMirror implements FieldMirror {
     protected WrappingFieldMirror(WrappingVirtualMachine vm, FieldMirror wrapped) {
         this.vm = vm;
         this.wrapped = wrapped;
+        if (vm instanceof VirtualMachineHolograph && wrapped.getType() instanceof HeapDumpClassMirror) {
+            Breakpoint.bp();
+        }
     }
     
     @Override

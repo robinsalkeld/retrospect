@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +15,7 @@ import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
+import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -20,25 +23,36 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.mirages.MethodHandle;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
-import edu.ubc.mirrors.raw.BytecodeClassMirrorLoader;
-import edu.ubc.mirrors.raw.BytecodeOnlyVirtualMachineMirror;
-import edu.ubc.mirrors.raw.NativeInstanceMirror;
+import edu.ubc.mirrors.raw.BytecodeClassMirror;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
-import edu.ubc.mirrors.test.Breakpoint;
+import edu.ubc.mirrors.wrapping.VirtualMachineWrapperAware;
+import edu.ubc.mirrors.wrapping.WrappingClassMirror;
+import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
-public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
+public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror, VirtualMachineWrapperAware {
 
     private final ISnapshot snapshot;
-    
-    private VirtualMachineMirror bytecodeVM;
     
     public HeapDumpVirtualMachineMirror(ISnapshot snapshot) {
         this.snapshot = snapshot;
     }
     
     private Map<String, HeapDumpClassMirror> bootstrapClasses;
-     
+    private VirtualMachineHolograph holographVM; 
+    
+    @Override
+    public void setWrapper(VirtualMachineMirror wrapper) {
+        if (wrapper instanceof VirtualMachineHolograph) {
+            holographVM = (VirtualMachineHolograph)wrapper;
+        }
+    }
+    
     private void initBootstrapClasses() {
         if (bootstrapClasses == null) {
             bootstrapClasses = new HashMap<String, HeapDumpClassMirror>();
@@ -65,93 +79,121 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         // If the class wasn't loaded already, imitate what the VM would have done to define it.
         // TODO-RS: Not completely sure how incomplete this is. Class transformers may still
         // apply etc.
-        ClassMirror bytecodeClass = bytecodeVM.findBootstrapClassMirror(name);
-        if (bytecodeClass != null) {
+        final byte[] bytecode = NativeClassMirror.getNativeBytecode(holographVM.getBootstrapBytecodeLoader(), name);
+        if (bytecode != null) {
+            ClassMirror bytecodeClass = new BytecodeClassMirror(name) {
+                @Override
+                public byte[] getBytecode() {
+                    return bytecode;
+                }
+                @Override
+                public VirtualMachineMirror getVM() {
+                    return HeapDumpVirtualMachineMirror.this;
+                }
+                @Override
+                public ClassMirrorLoader getLoader() {
+                    return null;
+                }
+                @Override
+                protected ClassMirror loadClassMirrorInternal(Type type) {
+                    try {
+                        ClassMirror holographClass = Reflection.classMirrorForType(holographVM, type, false, null);
+                        return getHeapDumpMirrorFromHolograph(holographClass);
+                    } catch (ClassNotFoundException e) {
+                        throw new NoClassDefFoundError(e.getMessage());
+                    }
+                }
+                @Override
+                public boolean initialized() {
+                    return false;
+                }
+            };
             return new HeapDumpClassMirror(this, null, bytecodeClass);
         } 
         
         return null;
     }
     
-    private final Map<IClassLoader, ClassMirrorLoader> bytecodeLoaders = 
-          new HashMap<IClassLoader, ClassMirrorLoader>();
-    private final Map<ClassMirrorLoader, IClassLoader> loadersForBytecodeLoaders = 
-          new HashMap<ClassMirrorLoader, IClassLoader>();
-      
-    public void addBytecodeLoader(IClassLoader snapshotLoader, ClassMirrorLoader bytecodeLoader) {
-        bytecodeLoaders.put(snapshotLoader, bytecodeLoader);
-        loadersForBytecodeLoaders.put(bytecodeLoader, snapshotLoader);
-    }
-    
-    public VirtualMachineMirror getBytecodeVM() {
-        return bytecodeVM;
-    }
-    
-    public void setBytecodeVM(VirtualMachineMirror vm) {
-        this.bytecodeVM = vm;
-    }
-    
-    public void addNativeBytecodeLoaders(IClassLoader snapshotLoader, ClassLoader bytecodeLoader) {
-//        BytecodeOnlyVirtualMachineMirror vm = new BytecodeOnlyVirtualMachineMirror(NativeVirtualMachineMirror.INSTANCE, null);
-        VirtualMachineMirror vm = NativeVirtualMachineMirror.INSTANCE;
-        setBytecodeVM(vm);
-        
-        addNativeBytecodeLoadersHelper(vm, snapshotLoader, bytecodeLoader);
-    }
-    
-    public void addNativeBytecodeLoadersHelper(VirtualMachineMirror vm, IClassLoader snapshotLoader, ClassLoader bytecodeLoader) {
-        addBytecodeLoader(snapshotLoader, (ClassMirrorLoader)NativeInstanceMirror.makeMirror(bytecodeLoader));
-//        addBytecodeLoader(snapshotLoader, new BytecodeClassMirrorLoader(vm, bytecodeLoader));
-            
-        IClassLoader parent;
-        try {
-            parent = (IClassLoader)snapshotLoader.resolveValue("parent");
-        } catch (SnapshotException e) {
-            throw new RuntimeException(e);
-        }
-        if (parent != null && parent != snapshotLoader) {
-            addNativeBytecodeLoadersHelper(vm, parent, bytecodeLoader.getParent());
-        }
-        
-        IClassLoader loaderLoader = HeapDumpClassMirror.getClassLoader(snapshotLoader.getClazz());
-        if (loaderLoader != null) {
-            addNativeBytecodeLoadersHelper(vm, loaderLoader, bytecodeLoader.getClass().getClassLoader());
-        }
-    }
-    
-    public ClassMirrorLoader getBytecodeLoader(HeapDumpClassMirrorLoader loader) {
-        ClassMirrorLoader bytecodeLoader = bytecodeLoaders.get(loader.heapDumpObject);
-        if (bytecodeLoader == null) {
-            throw new IllegalArgumentException("No bytecode loader found for: " + loader);
-        }
-        return bytecodeLoader;
-    }
-    
-    public ClassMirror getBytecodeClassMirror(HeapDumpClassMirror snapshotClass) {
-        HeapDumpClassMirrorLoader snapshotLoader = snapshotClass.getLoader();
-        ClassMirror result;
-        String className = snapshotClass.getClassName();
-        if (snapshotLoader == null) {
-            result = bytecodeVM.findBootstrapClassMirror(className);
-        } else {
-            ClassMirrorLoader bytecodeLoader = getBytecodeLoader(snapshotLoader);
-            result = bytecodeLoader.findLoadedClassMirror(className);
-        }
-        return result;
-    }
-    
-    public HeapDumpClassMirror getClassMirrorForBytecodeClassMirror(ClassMirror bytecodeClass) {
-        ClassMirrorLoader bytecodeLoader = bytecodeClass.getLoader();
-        if (bytecodeLoader == null) {
-            return findBootstrapClassMirror(bytecodeClass.getClassName());
-        } else {
-            IClassLoader snapshotLoader = loadersForBytecodeLoaders.get(bytecodeLoader);
-            if (snapshotLoader == null) {
-                throw new IllegalArgumentException("No snapshot loader found for: " + bytecodeLoader);
+    public ClassMirror getBytecodeClassMirror(final HeapDumpClassMirror snapshotClass) {
+        final ClassMirror holographClass = snapshotClass.getWrapper();
+        final VirtualMachineMirror holographVM = holographClass.getVM();
+        final ClassMirrorLoader holographLoader = holographClass.getLoader();
+        final byte[] bytecode = getBytecode(holographClass, snapshotClass);
+        return new BytecodeClassMirror(snapshotClass.getClassName()) {
+            @Override
+            public byte[] getBytecode() {
+                return bytecode;
             }
-            return new HeapDumpClassMirrorLoader(this, snapshotLoader).findLoadedClassMirror(bytecodeClass.getClassName());
-        }
+            @Override
+            public VirtualMachineMirror getVM() {
+                return HeapDumpVirtualMachineMirror.this;
+            }
+            @Override
+            public ClassMirrorLoader getLoader() {
+                return snapshotClass.getLoader();
+            }
+            @Override
+            protected ClassMirror loadClassMirrorInternal(Type type) {
+                try {
+                    ClassMirror holographClass = Reflection.classMirrorForType(holographVM, type, false, holographLoader);
+                    return getHeapDumpMirrorFromHolograph(holographClass);
+                } catch (ClassNotFoundException e) {
+                    throw new NoClassDefFoundError(e.getMessage());
+                }
+            }
+            
+            @Override
+            public boolean initialized() {
+                return false;
+            }
+        };
     }
+    
+    private ClassMirror getHeapDumpMirrorFromHolograph(ClassMirror holographClass) {
+        WrappingClassMirror middleWrapper = (WrappingClassMirror)((ClassHolograph)holographClass).getWrapped();
+        return (ClassMirror)middleWrapper.getWrapped();
+    }
+    
+    protected ClassMirror wrapClassMirror(HeapDumpClassMirror heapDumpClassMirror) {
+        WrappingVirtualMachine middle = (WrappingVirtualMachine)holographVM.getWrappedVM();
+        return holographVM.getWrappedClassMirror(middle.getWrappedClassMirror(heapDumpClassMirror));
+    }
+    
+    public byte[] getBytecode(ClassMirror holographClass, HeapDumpClassMirror snapshotClass) {
+        ClassMirrorLoader holographLoader = holographClass.getLoader();
+        if (holographLoader == null) {
+            return NativeClassMirror.getNativeBytecode(holographVM.getBootstrapBytecodeLoader(), snapshotClass.getClassName());
+        }
+        
+        VirtualMachineMirror holographVM = holographClass.getVM();
+        ThreadMirror firstThread = holographVM.getThreads().get(0);
+        
+        String className = snapshotClass.getClassName();
+        String resourceName = className.replace('.', '/') + ".class";
+        InstanceMirror resourceNameMirror = Reflection.makeString(holographVM, resourceName);
+        InstanceMirror stream = (InstanceMirror)Reflection.invokeMethodHandle(firstThread, holographLoader, new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((ClassLoader)null).getResourceAsStream((String)null);
+            }
+        }, resourceNameMirror);
+        if (stream == null) {
+            throw new InternalError("Couldn't load bytecode for heap dump class: " + snapshotClass);
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        MethodHandle readMethod = new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((InputStream)null).read();
+            }  
+        };
+        int b;
+        // TODO-RS: Could be a lot faster if I got clever and tricky...
+        while ((b = (Integer)Reflection.invokeMethodHandle(firstThread, stream, readMethod)) != -1) {
+            baos.write(b);
+        }
+        return baos.toByteArray();
+    }
+    
+    
     
     private static final Map<IObject, ObjectMirror> mirrors = new HashMap<IObject, ObjectMirror>();
     

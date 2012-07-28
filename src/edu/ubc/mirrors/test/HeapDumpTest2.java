@@ -55,12 +55,9 @@ public class HeapDumpTest2 implements IApplication {
           throws SnapshotException, ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 
     // Create an instance of the mirrors API backed by the snapshot
-    HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
-    ClassLoader rubyLoader = Ruby.class.getClassLoader();
-    BytecodeOnlyVirtualMachineMirror bytecodeVm = new BytecodeOnlyVirtualMachineMirror(NativeVirtualMachineMirror.INSTANCE, rubyLoader);
-    vm.setBytecodeVM(bytecodeVm);
-//    vm.addNativeBytecodeLoaders(classLoader, Ruby.class.getClassLoader());
-
+    HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot, 
+              Reflection.getStandardMappedFiles());
+      
     // Create a mutable layer on the object model.
     MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
     

@@ -4,7 +4,9 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -14,6 +16,7 @@ import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.util.ConsoleProgressListener;
 import org.eclipse.osgi.framework.internal.core.BundleRepository;
+import org.jruby.ext.ffi.StructLayout.MappedField;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.FrameworkUtil;
@@ -70,10 +73,8 @@ public class EclipseHeapDumpTest implements IApplication {
                 new ConsoleProgressListener(System.out));
         
         // Create an instance of the mirrors API backed by the snapshot
-        HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
-        IClass iClass = snapshot.getClassesByName(Bundle.class.getName(), true).iterator().next();
-        IClassLoader classLoader = (IClassLoader)snapshot.getObject(iClass.getClassLoaderId());
-        vm.addNativeBytecodeLoaders(classLoader, Bundle.class.getClassLoader());
+        HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot, 
+                Reflection.getStandardMappedFiles());
         
         // Create a mutable layer on the object model.
         MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);

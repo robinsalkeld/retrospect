@@ -1,31 +1,20 @@
 package edu.ubc.mirrors.mutable;
 
 import edu.ubc.mirrors.ShortArrayMirror;
-import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.wrapping.WrappingShortArrayMirror;
 
-public class MutableShortArrayMirror implements ShortArrayMirror {
+public class MutableShortArrayMirror extends WrappingShortArrayMirror {
 
-    private final ShortArrayMirror immutableMirror;
     private final short[] values;
     
-    public MutableShortArrayMirror(ShortArrayMirror immutableMirror) {
-        this.immutableMirror = immutableMirror;
+    public MutableShortArrayMirror(MutableVirtualMachineMirror vm, ShortArrayMirror immutableMirror) {
+        super(vm, immutableMirror);
         this.values = new short[immutableMirror.length()];
         for (int i = 0; i < values.length; i++) {
             values[i] = immutableMirror.getShort(i);
         }
     }
     
-    @Override
-    public ClassMirror getClassMirror() {
-        return immutableMirror.getClassMirror();
-    }
-
-    @Override
-    public int length() {
-        return immutableMirror.length();
-    }
-
     @Override
     public short getShort(int index) throws ArrayIndexOutOfBoundsException {
         return values[index];

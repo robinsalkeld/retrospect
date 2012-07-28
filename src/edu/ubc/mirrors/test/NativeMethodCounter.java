@@ -5,12 +5,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.commons.Method;
+import org.objectweb.asm.tree.MethodNode;
 
 public class NativeMethodCounter extends ClassVisitor {
 
@@ -20,7 +24,7 @@ public class NativeMethodCounter extends ClassVisitor {
 
     int nativeMethodCount = 0;
     String currentClass = null;
-    Map<String, List<String>> classesWithNativeMethods = new TreeMap<String, List<String>>();
+    SortedMap<String, Set<MethodNode>> classesWithNativeMethods = new TreeMap<String, Set<MethodNode>>();
     
     @Override
     public void visit(int version, int access, String name, String signature,
@@ -35,12 +39,12 @@ public class NativeMethodCounter extends ClassVisitor {
         
         if ((access & Opcodes.ACC_NATIVE) != 0) {
             nativeMethodCount++;
-            List<String> methods = classesWithNativeMethods.get(currentClass);
+            Set<MethodNode> methods = classesWithNativeMethods.get(currentClass);
             if (methods == null) {
-                methods = new ArrayList<String>();
+                methods = new HashSet<MethodNode>();
                 classesWithNativeMethods.put(currentClass, methods);
             }
-            methods.add(name);
+            methods.add(new MethodNode(access, name, desc, signature, exceptions));
         }
 
         return super.visitMethod(access, name, desc, signature, exceptions);

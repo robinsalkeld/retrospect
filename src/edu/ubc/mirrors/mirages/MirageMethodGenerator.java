@@ -239,7 +239,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             // of the mirror field on ObjectMirage.
             Object stackType = stackType(0);
             if (stackType == Opcodes.UNINITIALIZED_THIS) {
-                load(methodType.getArgumentTypes().length, instanceMirrorType);
+                load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
             } else {
                 invokeinterface(Type.getInternalName(Mirage.class), 
                                 "getMirror", 

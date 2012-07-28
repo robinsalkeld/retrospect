@@ -1,17 +1,16 @@
 package edu.ubc.mirrors.mutable;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.wrapping.WrappingObjectArrayMirror;
 
-public class MutableObjectArrayMirror implements ObjectArrayMirror {
+public class MutableObjectArrayMirror extends WrappingObjectArrayMirror {
 
-    private final MutableVirtualMachineMirror vm;
     private final ObjectMirror[] mutableValues;
     private final ObjectArrayMirror immutableMirror;
     
     public MutableObjectArrayMirror(MutableVirtualMachineMirror vm, ObjectArrayMirror immutableMirror) {
-        this.vm = vm;
+        super(vm, immutableMirror);
         this.immutableMirror = immutableMirror;
         this.mutableValues = new ObjectMirror[immutableMirror.length()];
         
@@ -20,16 +19,6 @@ public class MutableObjectArrayMirror implements ObjectArrayMirror {
         }
     }
     
-    @Override
-    public int length() {
-        return immutableMirror.length();
-    }
-
-    @Override
-    public ClassMirror getClassMirror() {
-        return vm.getWrappedClassMirror(immutableMirror.getClassMirror());
-    }
-
     @Override
     public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
         return mutableValues[index];

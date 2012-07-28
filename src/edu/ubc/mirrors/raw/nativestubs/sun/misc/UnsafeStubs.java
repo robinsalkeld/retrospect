@@ -99,4 +99,12 @@ public class UnsafeStubs {
             throw new InternalError();
         }
     }
+    
+    public static long getLong(Class<?> classLoaderLiteral, Mirage unsafe, long address) {
+        // TODO-RS: Need to figure this one out...
+        return 0;
+    }
+    public static void putLong(Class<?> classLoaderLiteral, Mirage unsafe, long address, long value) {
+        // TODO-RS: Need to figure this one out...
+    }
 }

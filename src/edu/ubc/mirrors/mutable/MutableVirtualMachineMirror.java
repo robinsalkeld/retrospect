@@ -28,21 +28,21 @@ public class MutableVirtualMachineMirror extends WrappingVirtualMachine {
         final String internalClassName = immutableMirror.getClassMirror().getClassName();
         
         if (internalClassName.equals("[Z")) {
-            return new MutableBooleanArrayMirror((BooleanArrayMirror)immutableMirror);
+            return new MutableBooleanArrayMirror(this, (BooleanArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[B")) {
-            return new MutableByteArrayMirror((ByteArrayMirror)immutableMirror);
+            return new MutableByteArrayMirror(this, (ByteArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[C")) {
-            return new MutableCharArrayMirror((CharArrayMirror)immutableMirror);
+            return new MutableCharArrayMirror(this, (CharArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[S")) {
-            return new MutableShortArrayMirror((ShortArrayMirror)immutableMirror);
+            return new MutableShortArrayMirror(this, (ShortArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[I")) {
-            return new MutableIntArrayMirror((IntArrayMirror)immutableMirror);
+            return new MutableIntArrayMirror(this, (IntArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[J")) {
-            return new MutableLongArrayMirror((LongArrayMirror)immutableMirror);
+            return new MutableLongArrayMirror(this, (LongArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[F")) {
-            return new MutableFloatArrayMirror((FloatArrayMirror)immutableMirror);
+            return new MutableFloatArrayMirror(this, (FloatArrayMirror)immutableMirror);
         } else if (internalClassName.equals("[D")) {
-            return new MutableDoubleArrayMirror((DoubleArrayMirror)immutableMirror);
+            return new MutableDoubleArrayMirror(this, (DoubleArrayMirror)immutableMirror);
         // TODO: fix - should check immutableMirror.getClassMirror().getClassName() instead!
         } else if (immutableMirror instanceof ClassMirror) {
             return new MutableClassMirror(this, (ClassMirror)immutableMirror);

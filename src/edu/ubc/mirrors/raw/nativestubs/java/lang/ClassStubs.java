@@ -9,6 +9,7 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -90,4 +91,15 @@ public class ClassStubs {
     public static Mirage getSuperclass(Class<?> classLoaderLiteral, Mirage klass) {
         return ObjectMirage.make(((ClassMirror)klass.getMirror()).getSuperClassMirror());
     }
+    
+    public static boolean isInstance(Class<?> classLoaderLiteral, Mirage klass, Mirage o) {
+        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+        ObjectMirror oMirror = o.getMirror();
+        return Reflection.isInstance(classMirror, oMirror);
+    }
+    
+    public static boolean isAssignableFrom(Class<?> classLoaderLiteral, Mirage thiz, Mirage other) {
+        return Reflection.isAssignableFrom((ClassMirror)thiz.getMirror(), (ClassMirror)other.getMirror());
+    }
+    
 }

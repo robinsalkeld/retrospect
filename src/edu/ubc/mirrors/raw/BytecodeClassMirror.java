@@ -20,6 +20,7 @@ import org.objectweb.asm.commons.Method;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.BoxingFieldMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -116,6 +117,29 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     
     public BytecodeClassMirror(String className) {
         this.className = className;
+    }
+    
+    @Override
+    public final boolean equals(Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+        
+        BytecodeClassMirror other = (BytecodeClassMirror)obj;
+        ClassMirrorLoader thisLoader = getLoader();
+        ClassMirrorLoader otherLoader = other.getLoader();
+        return className.equals(other.className) && 
+                (thisLoader == null ? otherLoader == null : thisLoader.equals(otherLoader));
+    }
+    
+    @Override
+    public final int hashCode() {
+        int hash = className.hashCode();
+        ClassMirrorLoader loader = getLoader();
+        if (loader != null) {
+            hash *= loader.hashCode();
+        }
+        return hash;
     }
 
     private class Visitor extends ClassVisitor {

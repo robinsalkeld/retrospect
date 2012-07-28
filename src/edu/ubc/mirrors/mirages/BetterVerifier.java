@@ -61,7 +61,8 @@ public class BetterVerifier extends SimpleVerifier {
     
     protected boolean isSubTypeOf(final BasicValue value, final BasicValue expected) {
         boolean result = super.isSubTypeOf(value, expected);
-        if (!result && value.getType().getSort() == Type.OBJECT && expected.getType().getSort() == Type.OBJECT) {
+        if (!result && (value.getType().getSort() == Type.OBJECT && expected.getType().getSort() == Type.OBJECT ||
+                value.getType().getSort() == Type.ARRAY && expected.getType().getSort() == Type.ARRAY)) {
             super.isSubTypeOf(value, expected);
         }
         return result;
