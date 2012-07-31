@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -14,6 +15,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
@@ -35,9 +37,6 @@ public class ClassHolograph extends WrappingClassMirror {
     
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
-        if (wrapped instanceof HeapDumpClassMirror) {
-            Breakpoint.bp();
-        }
     }
     
     public ClassMirror getWrappedClassMirror() {
@@ -129,6 +128,20 @@ public class ClassHolograph extends WrappingClassMirror {
         } else if (owner.startsWith("java.util.prefs")) {
             // TODO-RS: May come up in read-only mapped fs
             return "IO";
+        } else if (owner.startsWith("java.lang.invoke")) {
+            return "Java 7 Method Handles";
+        } else if (owner.startsWith("com.apple.concurrent")) {
+            return "System";
+        } else if (owner.startsWith("com.apple.jobjc")) {
+            return "System (???)";
+        } else if (owner.startsWith("oracle.jrockit.jfr")) {
+            return "Management";
+        } else if (owner.equals("java.lang.ClassLoader$NativeLibrary")) {
+            return "Native Libraries";
+        } else if (owner.equals("java.lang.System") && method.getName().equals("mapLibraryName")) {
+            return "Native Libraries";
+        } else if (owner.equals("java.lang,System") && method.getName().equals("registerNatives")) {
+            return "Class init";
         } else {
             return null;
         }
@@ -196,12 +209,14 @@ public class ClassHolograph extends WrappingClassMirror {
         return (ClassLoaderHolograph)super.getLoader();
     }
     
-    public static MirageClassLoader getMirageClassLoader(ClassHolograph classMirror) {
+    public static MirageClassLoader getMirageClassLoader(ClassMirror classMirror) {
         return getMirageClassLoader(classMirror.getVM(), classMirror.getLoader());
     }
     
-    public static MirageClassLoader getMirageClassLoader(VirtualMachineHolograph vm, ClassLoaderHolograph loader) {
-        return loader == null ? vm.getMirageClassLoader() : loader.getMirageClassLoader();
+    public static MirageClassLoader getMirageClassLoader(VirtualMachineMirror vm, ClassMirrorLoader loader) {
+        return loader == null ? 
+                ((VirtualMachineHolograph)vm).getMirageClassLoader() : 
+                    ((ClassLoaderHolograph)loader).getMirageClassLoader();
     }
     
     public MirageClassLoader getMirageClassLoader() {
@@ -209,19 +224,15 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public static Class<?> getMirageClass(ClassMirror classMirror, boolean impl) {
-        if (classMirror instanceof ClassHolograph) {
-            return ((ClassHolograph)classMirror).getMirageClass(impl);
-        } else {
-            throw new IllegalArgumentException();
+        try {
+            return getMirageClassLoader(classMirror).getMirageClass(classMirror, impl);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
     
     public Class<?> getMirageClass(boolean impl) {
-        try {
-            return getMirageClassLoader().getMirageClass(this, impl);
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(e.getMessage());
-        }
+        return getMirageClass(this, impl);
     }
     
     private class MirageMethod implements MethodMirror {
@@ -344,8 +355,7 @@ public class ClassHolograph extends WrappingClassMirror {
     public static Object makeMirage(Object mirror) {
         if (mirror instanceof ObjectMirror) {
             ObjectMirror objectMirror = (ObjectMirror)mirror;
-            ClassHolograph classMirror = (ClassHolograph)objectMirror.getClassMirror();
-            return getMirageClassLoader(classMirror.getVM(), classMirror.getLoader()).makeMirage(objectMirror);
+            return getMirageClassLoader(objectMirror.getClassMirror()).makeMirage(objectMirror);
         } else {
             return mirror;
         }

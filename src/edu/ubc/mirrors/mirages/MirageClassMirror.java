@@ -13,8 +13,8 @@ public class MirageClassMirror extends WrappingClassMirror {
         this.isImplementationClass = isImplementationClass;
     }
     
-    public ClassHolograph getOriginal() {
-        return (ClassHolograph)wrapped;
+    public ClassMirror getOriginal() {
+        return wrapped;
     }
     
     public boolean isImplementationClass() {
@@ -33,7 +33,7 @@ public class MirageClassMirror extends WrappingClassMirror {
     
     @Override
     public byte[] getBytecode() {
-        return getOriginal().getMirageClassLoader().getBytecode(this);
+        return ClassHolograph.getMirageClassLoader(getOriginal()).getBytecode(this);
     }
     
 }

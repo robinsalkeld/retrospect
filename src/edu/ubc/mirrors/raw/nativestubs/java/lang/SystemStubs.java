@@ -74,9 +74,15 @@ public class SystemStubs {
         }
     }
     
+    // TODO-RS: I don't like this as a general rule, but it's called from 
+    // ClassLoader#defineClass() in JDK 7 to measure loading time,
+    // and also seems necessary in the read-only mapped fs...
     public static long nanoTime(Class<?> classLoaderLiteral) {
-        // TODO-RS: I don't like this as a general rule, but it's called from 
-        // ClassLoader#defineClass() in JDK 7 to measure loading time...
         return System.nanoTime();
     }
+    
+    public static long currentTimeMillis(Class<?> classLoaderLiteral) {
+        return System.currentTimeMillis();
+    }
+    
 }

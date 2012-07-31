@@ -31,19 +31,13 @@ import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class HeapDumpTest2 implements IApplication {
 
-    public static void main(String[] args) throws SnapshotException, SecurityException, ClassNotFoundException, IOException, IllegalAccessException, NoSuchFieldException, IllegalArgumentException, NoSuchMethodException, InvocationTargetException {
+    public static void main(String[] args) throws Exception {
         String snapshotPath = args[0];
         
         MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
         
-        Charset.forName("ISO-8859-1");
-        
-        ClassLoader runtimeClassLoader = HeapDumpTest2.class.getClassLoader();
-//        URL java7classes = new URL("file:/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre/lib/rt.jar");
-//        ClassLoader runtimeClassLoader = new ChainedClassLoader(new SandboxedClassLoader(new URL[] {java7classes}), HeapDumpTest.class.getClassLoader());
-        
-     // Open memory snapshot and find the Bundle class
+        // Open memory snapshot and find the Bundle class
         ISnapshot snapshot = SnapshotFactory.openSnapshot(
                 new File(snapshotPath), 
                 Collections.<String, String>emptyMap(), 
@@ -51,36 +45,32 @@ public class HeapDumpTest2 implements IApplication {
         printJRubyThreadsFromSnapshot(snapshot);
     }
     
-  public static void printJRubyThreadsFromSnapshot(ISnapshot snapshot) 
-          throws SnapshotException, ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+  public static void printJRubyThreadsFromSnapshot(ISnapshot snapshot) throws Exception {
 
     // Create an instance of the mirrors API backed by the snapshot
-    HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot, 
-              Reflection.getStandardMappedFiles());
+    HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
       
     // Create a mutable layer on the object model.
     MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
     
     // Create a holograph VM
-    VirtualMachineHolograph holographVM = new VirtualMachineHolograph(mutableVM);
+    VirtualMachineHolograph holographVM = new VirtualMachineHolograph(mutableVM,
+            Reflection.getBootstrapPath(),
+            Reflection.getStandardMappedFiles());
     
-    // Note we need a class loader that can see the classes in the JRuby API 
-    // as well as our additional code (i.e. this class).
+    // Create a new class loader in the holograph VM and define more bytecode.
     ClassMirror rubyClass = holographVM.findAllClasses(Ruby.class.getName(), false).get(0);
-    // TODO-RS: Does this make sense?
     ThreadMirror thread = vm.getThreads().get(0);
-    ClassMirror printerClass = Reflection.injectBytecode(holographVM, thread, rubyClass.getLoader(), new NativeClassMirror(JRubyStackTraces.class));
+    ClassMirror printerClass = Reflection.injectBytecode(holographVM, thread, 
+            rubyClass.getLoader(), new NativeClassMirror(JRubyStackTraces.class));
  
     // For each class instance (in this case we only expect one)...
-    List<InstanceMirror> rubies = rubyClass.getInstances();
     MethodMirror method = printerClass.getMethod("printStackTraces", rubyClass);
-    for (InstanceMirror ruby : rubies) {
+    for (InstanceMirror ruby : rubyClass.getInstances()) {
       // Invoke JRubyStackTraces#printStackTraces reflectively.
-      long before = System.currentTimeMillis();
       Object result = method.invoke(holographVM.getThreads().get(0), null, ruby);
       String asString = Reflection.getRealStringForMirror((InstanceMirror)result);
       System.out.println(asString);
-      System.out.println(System.currentTimeMillis() - before);
     }
   }
 

@@ -1,7 +1,12 @@
 package edu.ubc.mirrors.eclipse.mat;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +29,10 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MethodHandle;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
@@ -150,8 +157,17 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror, Virtu
     }
     
     private ClassMirror getHeapDumpMirrorFromHolograph(ClassMirror holographClass) {
-        WrappingClassMirror middleWrapper = (WrappingClassMirror)((ClassHolograph)holographClass).getWrapped();
-        return (ClassMirror)middleWrapper.getWrapped();
+        if (holographClass.isArray()) {
+            return new ArrayClassMirror(1, getHeapDumpMirrorFromHolograph(holographClass.getComponentClassMirror()));
+        } else {
+            ObjectMirror wrapped = ((ClassHolograph)holographClass).getWrapped();
+            if (wrapped instanceof WrappingClassMirror) {
+                WrappingClassMirror middleWrapper = (WrappingClassMirror)wrapped;
+                return (ClassMirror)middleWrapper.getWrapped();
+            } else {
+                throw new NoClassDefFoundError(holographClass.getClassName());
+            }
+        }
     }
     
     protected ClassMirror wrapClassMirror(HeapDumpClassMirror heapDumpClassMirror) {
@@ -165,10 +181,24 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror, Virtu
             return NativeClassMirror.getNativeBytecode(holographVM.getBootstrapBytecodeLoader(), snapshotClass.getClassName());
         }
         
+        String className = snapshotClass.getClassName();
+        MirageClassLoader mirageLoader = ((ClassLoaderHolograph)holographLoader).getMirageClassLoader();
+        if (mirageLoader.myTraceDir != null) {
+            File file = mirageLoader.createClassFile(className.replace('.', '/') + ".original.class");
+            if (file.exists()) {
+                try {
+                    return NativeClassMirror.readFully(new FileInputStream(file));
+                } catch (Throwable e) {
+                    throw new RuntimeException("Error caught while using cached original class definition " + className, e);
+                }
+            }
+        }
+        
+        System.out.println("Fetching original bytecode for: " + snapshotClass.getClassName());
+        
         VirtualMachineMirror holographVM = holographClass.getVM();
         ThreadMirror firstThread = holographVM.getThreads().get(0);
         
-        String className = snapshotClass.getClassName();
         String resourceName = className.replace('.', '/') + ".class";
         InstanceMirror resourceNameMirror = Reflection.makeString(holographVM, resourceName);
         InstanceMirror stream = (InstanceMirror)Reflection.invokeMethodHandle(firstThread, holographLoader, new MethodHandle() {
@@ -190,7 +220,21 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror, Virtu
         while ((b = (Integer)Reflection.invokeMethodHandle(firstThread, stream, readMethod)) != -1) {
             baos.write(b);
         }
-        return baos.toByteArray();
+        byte[] result = baos.toByteArray();
+        
+        if (mirageLoader.myTraceDir != null) {
+            File file = mirageLoader.createClassFile(className.replace('.', '/') + ".original.class");
+            OutputStream classFile;
+            try {
+                classFile = new FileOutputStream(file);
+                classFile.write(result);
+                classFile.flush();
+                classFile.close();
+            } catch (IOException e) {
+                throw new RuntimeException();
+            }
+        }
+        return result;
     }
     
     
@@ -261,9 +305,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror, Virtu
     
     @Override
     public ClassMirror getPrimitiveClass(String name) {
-        // TODO-RS: Doesn't seem to be a way to get these, but this shouldn't be
-        // an issue unless we start explicitly checking for VM mismatches like the JDI does.
-        return NativeVirtualMachineMirror.INSTANCE.getPrimitiveClass(name);
+        return new NativeClassMirror(NativeVirtualMachineMirror.getNativePrimitiveClass(name), this);
     }
     
     @Override

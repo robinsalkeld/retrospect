@@ -57,7 +57,12 @@ public abstract class BoxingArrayMirror implements
     }
 
     public byte getByte(int index) throws ArrayIndexOutOfBoundsException {
-        return ((Byte)getBoxedValue(index)).byteValue();
+        Object value = getBoxedValue(index);
+        if (value instanceof Boolean) {
+            return ((Boolean)value).booleanValue() ? (byte)1 : 0;
+        } else {
+            return ((Byte)value).byteValue();
+        }   
     }
 
     public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {

@@ -2,6 +2,7 @@ package edu.ubc.mirrors.wrapping;
 
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpPrimitiveArrayMirror;
+import edu.ubc.mirrors.test.Breakpoint;
 
 public class WrappingMirror implements ObjectMirror, WrapperAware {
 
@@ -11,6 +12,9 @@ public class WrappingMirror implements ObjectMirror, WrapperAware {
     public WrappingMirror(WrappingVirtualMachine vm, ObjectMirror wrapped) {
         this.vm = vm;
         this.wrapped = wrapped;
+        if (wrapped != null && vm.getWrappedVM() != wrapped.getClassMirror().getVM()) {
+            throw new IllegalArgumentException();
+        }
         if (wrapped instanceof WrapperAware) {
             ((WrapperAware)wrapped).setWrapper(this);
         }

@@ -40,18 +40,35 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     private ClassMirror superclassMirror;
     private List<ClassMirror> interfaceMirrors;
     
+    private final VirtualMachineMirror vm;
+    
     public NativeClassMirror(Class<?> klass) {
         super(klass);
         this.klass = klass;
+        this.vm = NativeVirtualMachineMirror.INSTANCE;
+    }
+    
+    public NativeClassMirror(Class<?> klass, VirtualMachineMirror vm) {
+        super(klass);
+        this.klass = klass;
+        if (!klass.isPrimitive()) {
+            throw new IllegalArgumentException("This constructor is only for primitive classes");
+        }
+        this.vm = vm;
     }
     
     @Override
     public VirtualMachineMirror getVM() {
-        return NativeVirtualMachineMirror.INSTANCE;
+        return vm;
     }
     
     public Class<?> getKlass() {
         return klass;
+    }
+    
+    @Override
+    public ClassMirror getClassMirror() {
+        return vm.findBootstrapClassMirror(Class.class.getName());
     }
     
     public String getClassName() {

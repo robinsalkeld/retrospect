@@ -43,7 +43,7 @@ public class ObjectMirage implements Mirage {
     }
     
     private void register() {
-        MirageClassLoader loader = ClassHolograph.getMirageClassLoader((ClassHolograph)mirror.getClassMirror());
+        MirageClassLoader loader = ClassHolograph.getMirageClassLoader(mirror.getClassMirror());
         loader.registerMirage(this);
     }
     
@@ -144,7 +144,7 @@ public class ObjectMirage implements Mirage {
     public static FieldMirror getStaticField(Class<?> classLoaderLiteral, String className, String fieldName) throws NoSuchFieldException, ClassNotFoundException {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         String binaryName = className.replace('/', '.');
-        ClassHolograph klass = loader.loadOriginalClassMirror(binaryName);
+        ClassHolograph klass = (ClassHolograph)loader.loadOriginalClassMirror(binaryName);
         
         // Force initialization just as the VM would, in case there is
         // a <clinit> method that needs to be run.
@@ -283,8 +283,7 @@ public class ObjectMirage implements Mirage {
             ArrayMirror objectArrayMirror = (ArrayMirror)mirror;
             int length = objectArrayMirror.length();
             
-            String elementClassName = mirror.getClassMirror().getComponentClassMirror().getClassName();
-            ArrayMirror result = newArrayMirror(classLoaderLiteral, Type.getObjectType(elementClassName).getDescriptor(), length);
+            ArrayMirror result = mirror.getClassMirror().getComponentClassMirror().newArray(length);
             
             SystemStubs.arraycopyMirrors(objectArrayMirror, 0, result, 0, length);
             

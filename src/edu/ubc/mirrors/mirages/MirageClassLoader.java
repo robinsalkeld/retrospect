@@ -24,6 +24,7 @@ import org.objectweb.asm.util.TraceClassVisitor;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.DoubleArrayMirror;
 import edu.ubc.mirrors.FloatArrayMirror;
@@ -123,23 +124,23 @@ public class MirageClassLoader extends ClassLoader {
                 Throwable.class);
     }
     
-    public ClassHolograph loadOriginalClassMirror(String originalClassName) {
+    public ClassMirror loadOriginalClassMirror(String originalClassName) {
         try {
-            return (ClassHolograph)Reflection.classMirrorForName(vm, originalClassName, false, originalLoader);
+            return Reflection.classMirrorForName(vm, originalClassName, false, originalLoader);
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(originalClassName);
         }
     }
     
-    public ClassHolograph loadOriginalClassMirror(Type originalType) {
+    public ClassMirror loadOriginalClassMirror(Type originalType) {
         try {
-            return (ClassHolograph)Reflection.classMirrorForType(vm, originalType, false, originalLoader);
+            return Reflection.classMirrorForType(vm, originalType, false, originalLoader);
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(originalType.getInternalName());
         }
     }
     
-    public Class<?> getMirageClass(ClassHolograph classMirror, boolean impl) throws ClassNotFoundException {
+    public Class<?> getMirageClass(ClassMirror classMirror, boolean impl) throws ClassNotFoundException {
         if (classMirror.isPrimitive()) {
             return NativeVirtualMachineMirror.getNativePrimitiveClass(classMirror.getClassName());
         }
@@ -175,8 +176,8 @@ public class MirageClassLoader extends ClassLoader {
         
         if (name.startsWith("mirage")) {
             String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
-            ClassHolograph classMirror = loadOriginalClassMirror(originalClassName);
-            Class<?> c = classMirror.getMirageClass(MirageClassGenerator.isImplementationClass(name));
+            ClassMirror classMirror = loadOriginalClassMirror(originalClassName);
+            Class<?> c = ClassHolograph.getMirageClass(classMirror, MirageClassGenerator.isImplementationClass(name));
             if (resolve) {
                 resolveClass(c);
             }
@@ -317,7 +318,7 @@ public class MirageClassLoader extends ClassLoader {
         
         String internalName = mirageClassMirror.getClassName().replace('.', '/');
         
-        ClassHolograph original = mirageClassMirror.getOriginal();
+        ClassHolograph original = (ClassHolograph)mirageClassMirror.getOriginal();
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         if (debug) {

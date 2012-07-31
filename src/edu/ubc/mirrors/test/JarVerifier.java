@@ -29,13 +29,13 @@ import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 
 public class JarVerifier implements IApplication {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        String jarPath = args[0];
-
-        JarFile jar = new JarFile(jarPath);
+//        String jarPath = args[0];
+//
+//        JarFile jar = new JarFile(jarPath);
 //        ClassLoader thisLoader = JarVerifier.class.getClassLoader();
 //        MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
 //        MirageClassLoader mirageLoader = new MirageClassLoader(null, new NativeClassMirrorLoader(thisLoader));
-        new JarVerifier().verifyJar(null, jar);
+        new JarVerifier().verifyJars(null);
     }
     
     int unclassified = 0;
@@ -43,14 +43,21 @@ public class JarVerifier implements IApplication {
     int illegal = 0;
     int implemented = 0;
     
-    public void verifyJar(MirageClassLoader loader, JarFile jar) throws IOException {
+    public void verifyJars(MirageClassLoader loader) throws IOException {
+        String bootPath = (String)System.getProperties().get("sun.boot.class.path");
+        String[] paths = bootPath.split(File.pathSeparator);
         NativeMethodCounter counter = new NativeMethodCounter();
-        for (JarEntry entry : Collections.list(jar.entries())) {
-            String name = entry.getName();
-            if (name.endsWith(".class")) {
-                new ClassReader(jar.getInputStream(entry)).accept(counter, 0);
-//                String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
-//                if (testClass(loader, jar.getInputStream(entry), className)) good++;
+        for (String path : paths) {
+            if (new File(path).exists()) {
+                JarFile jarFile = new JarFile(path);
+                for (JarEntry entry : Collections.list(jarFile.entries())) {
+                    String name = entry.getName();
+                    if (name.endsWith(".class")) {
+                        new ClassReader(jarFile.getInputStream(entry)).accept(counter, 0);
+        //                String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
+        //                if (testClass(loader, jar.getInputStream(entry), className)) good++;
+                    }
+                }
             }
         }
         

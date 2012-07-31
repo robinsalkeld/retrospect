@@ -102,4 +102,7 @@ public class ClassStubs {
         return Reflection.isAssignableFrom((ClassMirror)thiz.getMirror(), (ClassMirror)other.getMirror());
     }
     
+    public static void setSigners(Class<?> classLoaderLiteral, Mirage thiz, Mirage signers) {
+        // TODO-RS
+    }
 }

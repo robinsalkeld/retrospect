@@ -92,9 +92,6 @@ public class MirageClassGenerator extends ClassVisitor {
     
     public MirageClassGenerator(ClassHolograph classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
-        if (classMirror.getClassName().equals(ZipFile.class.getName())) {
-            Breakpoint.bp();
-        }
         this.needsInitialization = !classMirror.initialized();
         Class<?> nativeStubsClass = classMirror.getNativeStubsClass();
         mirrorMethods = indexStubMethods(nativeStubsClass);
@@ -580,7 +577,7 @@ public class MirageClassGenerator extends ClassVisitor {
         super.visitEnd();
     }
 
-    public static byte[] generateArray(MirageClassLoader loader, ClassHolograph classMirror, boolean isInterface) {
+    public static byte[] generateArray(MirageClassLoader loader, ClassMirror classMirror, boolean isInterface) {
         String internalName = getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), !isInterface);
         
         Type originalType = Type.getObjectType(classMirror.getClassName().replace('.', '/'));
@@ -593,7 +590,7 @@ public class MirageClassGenerator extends ClassVisitor {
         int access = Opcodes.ACC_PUBLIC | (isInterface ? Opcodes.ACC_INTERFACE : 0);
         
         if (originalElementType.getSort() == Type.OBJECT || originalElementType.getSort() == Type.ARRAY) {
-            ClassHolograph elementClass = loader.loadOriginalClassMirror(originalElementType.getClassName());
+            ClassMirror elementClass = loader.loadOriginalClassMirror(originalElementType.getClassName());
             superClassMirror = elementClass.getSuperClassMirror();
             
             if (isInterface) {

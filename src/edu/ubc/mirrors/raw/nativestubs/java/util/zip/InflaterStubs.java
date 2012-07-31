@@ -73,17 +73,24 @@ public class InflaterStubs {
     }
     
     public static void reset(Class<?> classLoaderLiteral, long addr) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        resetMethod.invoke(null, addr);
+        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+        
+        Inflater hostInflater = vm.getHostInflator(addr);
+        long hostAddress = addressField.getLong(zsRefField.get(hostInflater));
+        
+        resetMethod.invoke(null, hostAddress);
     }
 
     public static int inflateBytes(Class<?> classLoaderLiteral, Mirage inflater, long addr, Mirage b, int off, int len) throws DataFormatException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
         MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
         
-        Inflater hostInflater = vm.inflaterByAddress.get(addr);
+        Inflater hostInflater = vm.getHostInflator(addr);
+        long hostAddress = addressField.getLong(zsRefField.get(hostInflater));
         
         // Transfer the relevant fields onto the host inflater
-        InstanceMirror inflatorMirror = (InstanceMirror)inflater.getMirror(); 
+        InstanceMirror inflatorMirror = (InstanceMirror)inflater.getMirror();
         ByteArrayMirror bufMirror = (ByteArrayMirror)inflatorMirror.getMemberField("buf").get();
         NativeByteArrayMirror nativeBufMirror = (NativeByteArrayMirror)Reflection.copyArray(NativeVirtualMachineMirror.INSTANCE, bufMirror);
         byte[] buf = (byte[])nativeBufMirror.getNativeObject();
@@ -100,7 +107,7 @@ public class InflaterStubs {
         NativeByteArrayMirror nativeBMirror = (NativeByteArrayMirror)Reflection.copyArray(NativeVirtualMachineMirror.INSTANCE, bMirror);
         byte[] nativeB = (byte[])nativeBMirror.getNativeObject();
         
-        int result = (Integer)inflateBytesMethod.invoke(hostInflater, addr, nativeB, off, len);
+        int result = (Integer)inflateBytesMethod.invoke(hostInflater, hostAddress, nativeB, off, len);
         
         // Transfer the relevant fields back onto the guest inflater
         inflatorMirror.getMemberField("off").setInt(offField.getInt(hostInflater));

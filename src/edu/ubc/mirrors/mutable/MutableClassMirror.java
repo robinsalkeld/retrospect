@@ -32,7 +32,8 @@ public class MutableClassMirror extends WrappingClassMirror {
     
     @Override
     public ArrayMirror newArray(int... dims) {
-        return new DirectArrayMirror(wrapped.getVM().getArrayClass(dims.length, wrapped), dims);
+        ClassMirror arrayClass = wrapped.getVM().getArrayClass(dims.length, wrapped);
+        return new DirectArrayMirror(vm.getWrappedClassMirror(arrayClass), dims);
     }
     
     public String toString() {

@@ -3,7 +3,10 @@ package edu.ubc.mirrors.test;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +24,8 @@ import org.eclipse.mat.util.ConsoleProgressListener;
 import org.eclipse.osgi.framework.internal.core.BundleRepository;
 import org.jruby.Ruby;
 import org.osgi.framework.Bundle;
+
+import sun.misc.Unsafe;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -43,6 +48,19 @@ public class ToStringer implements IApplication {
         
         MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
+        
+        Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        Unsafe unsafe = (Unsafe)unsafeField.get(null);
+        byte[] bytes = { 1, 2, 3, 4 };
+        System.out.println(unsafe.getInt(bytes, (long)16));
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        buffer.put(0, bytes[0]);
+        buffer.put(1, bytes[1]);
+        buffer.put(2, bytes[2]);
+        buffer.put(3, bytes[3]);     
+        System.out.println(buffer.getInt(0));
         
      // Open memory snapshot and find the Bundle class
         ISnapshot snapshot = SnapshotFactory.openSnapshot(

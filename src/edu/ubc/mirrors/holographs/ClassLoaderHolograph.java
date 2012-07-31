@@ -57,7 +57,7 @@ public class ClassLoaderHolograph extends WrappingClassMirrorLoader {
         ClassMirror newClass = new BytecodeClassMirror(name) {
             @Override
             public VirtualMachineMirror getVM() {
-                return vm;
+                return vm.getWrappedVM();
             }
             
             @Override
@@ -69,7 +69,7 @@ public class ClassLoaderHolograph extends WrappingClassMirrorLoader {
             protected ClassMirror loadClassMirrorInternal(Type type) {
                 ClassMirror classHolograph;
                 try {
-                    classHolograph = Reflection.classMirrorForType(ClassLoaderHolograph.this.vm, type, false, ClassLoaderHolograph.this);
+                    classHolograph = Reflection.classMirrorForType(vm, type, false, ClassLoaderHolograph.this);
                 } catch (ClassNotFoundException e) {
                     // TODO-RS: This is actually wrong - this error should be caught when
                     // defining the class and raised to the caller!

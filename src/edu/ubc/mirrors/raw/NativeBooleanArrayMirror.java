@@ -24,4 +24,12 @@ public class NativeBooleanArrayMirror extends NativeObjectMirror implements Bool
         array[index] = b;
     }
 
+    @Override
+    public byte getByte(int index) throws ArrayIndexOutOfBoundsException {
+        return getBoolean(index) ? (byte)1 : 0;
+    }
+    
+    public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {
+        setBoolean(index, b != 0);
+    };
 }

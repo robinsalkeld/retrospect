@@ -22,4 +22,9 @@ public class ThreadStubs {
         return (Mirage)ObjectMirage.make(mirror);
     }
     
+    public static boolean isInterrupted(Class<?> classLoaderLiteral, Mirage thread, boolean ClearInterrupted) {
+        // TODO-RS: How to implement this for a heap dump?
+        return false;
+    }
+    
 }

@@ -18,6 +18,7 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.stringType;
 import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
 
 import java.io.PrintStream;
+import java.util.zip.Inflater;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -36,6 +37,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.raw.NativeObjectArrayMirror;
+import edu.ubc.mirrors.raw.nativestubs.java.util.zip.InflaterStubs;
 
 public class MirageMethodGenerator extends InstructionAdapter {
 
@@ -512,6 +514,19 @@ public class MirageMethodGenerator extends InstructionAdapter {
     @Override
     public void visitCode() {
         super.visitCode();
+
+//        if (owner.equals(getMirageType(Inflater.class).getInternalName()) && name.equals("setInput")) {
+//            ClassLoaderLiteralMirror.getClassLoaderLiteralClass(this);
+//            load(0, Type.getObjectType(owner));
+//            visitFieldInsn(Opcodes.GETFIELD, owner, "zsRef", "Ljava/util/zip/ZStreamRef;");
+//            visitFieldInsn(Opcodes.GETFIELD, "java/util/zip/ZStreamRef", "address", "J");
+//            
+//            new MethodHandle() {
+//                protected void methodCall() throws Throwable {
+//                    InflaterStubs.setInputExecuted(null, 0);
+//                }
+//            }.invoke(this);
+//        }
         
         if (name.equals("<init>")) {
             lvs.newLocal(instanceMirrorType);

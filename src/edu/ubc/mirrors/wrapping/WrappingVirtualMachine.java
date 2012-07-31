@@ -42,6 +42,7 @@ import edu.ubc.mirrors.mutable.MutableLongArrayMirror;
 import edu.ubc.mirrors.mutable.MutableObjectArrayMirror;
 import edu.ubc.mirrors.mutable.MutableShortArrayMirror;
 import edu.ubc.mirrors.mutable.MutableThreadMirror;
+import edu.ubc.mirrors.raw.ArrayClassMirror;
 
 public abstract class WrappingVirtualMachine implements VirtualMachineMirror, VirtualMachineWrapperAware {
 
@@ -128,7 +129,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror, Vi
     }
     
     protected ObjectMirror unwrapMirror(ObjectMirror mirror) {
-        return mirror instanceof WrappingMirror ? ((WrappingMirror)mirror).wrapped : mirror;
+        return mirror == null ? null : ((WrappingMirror)mirror).wrapped;
     }
 
     public WrappingClassMirror getWrappedClassMirror(ClassMirror mirror) {
@@ -203,7 +204,6 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror, Vi
     
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
-        ClassMirror unwrappedElementClass = (ClassMirror)unwrapMirror(elementClass);
-        return getWrappedClassMirror(wrappedVM.getArrayClass(dimensions, unwrappedElementClass));
+        return new ArrayClassMirror(dimensions, elementClass);
     }
 }

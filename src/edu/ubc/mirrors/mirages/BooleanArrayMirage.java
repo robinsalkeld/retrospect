@@ -9,7 +9,7 @@ import edu.ubc.mirrors.ByteArrayMirror;
  * 
  * @author robinsalkeld
  */
-public class BooleanArrayMirage extends ArrayMirage implements BooleanArrayMirror, ByteArrayMirror {
+public class BooleanArrayMirage extends ArrayMirage implements BooleanArrayMirror {
 
     protected final BooleanArrayMirror mirror;
     

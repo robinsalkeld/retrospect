@@ -1,6 +1,6 @@
 package edu.ubc.mirrors;
 
-public interface BooleanArrayMirror extends ArrayMirror {
+public interface BooleanArrayMirror extends ByteArrayMirror {
 
     public boolean getBoolean(int index) throws ArrayIndexOutOfBoundsException;
     

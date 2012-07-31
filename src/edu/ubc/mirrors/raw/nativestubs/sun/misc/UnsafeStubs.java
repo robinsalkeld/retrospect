@@ -1,10 +1,15 @@
 package edu.ubc.mirrors.raw.nativestubs.sun.misc;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Map;
 
+import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mirages.Mirage;
@@ -25,6 +30,46 @@ public class UnsafeStubs {
         // TODO-RS: Need to be much more careful about this!
         ObjectMirror element = array.get((int)((offset - 16) / 4));
         return ObjectMirage.make(element);
+    }
+    
+    public static int getInt(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset) {
+        ArrayMirror array = (ArrayMirror)object.getMirror();
+        // TODO-RS: Need to be much more careful about this!
+        if (array instanceof IntArrayMirror) {
+            int index = (int)((offset - 16) / 4);
+            return ((IntArrayMirror)array).getInt(index);
+        } else if (array instanceof ByteArrayMirror) {
+            int index = (int)(offset - 16);
+            ByteArrayMirror bam = (ByteArrayMirror)array;
+            ByteBuffer buffer = ByteBuffer.allocate(4);
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            for (int i = 0; i < 4; i++) {
+                buffer.put(i, bam.getByte(index + i));
+            }
+            return buffer.getInt(0);
+        } else {
+            throw new InternalError();
+        }
+    }
+    
+    public static void putInt(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset, int value) {
+        ArrayMirror array = (ArrayMirror)object.getMirror();
+        // TODO-RS: Need to be much more careful about this!
+        if (array instanceof IntArrayMirror) {
+            int index = (int)((offset - 16) / 4);
+            ((IntArrayMirror)array).setInt(index, value);
+        } else if (array instanceof ByteArrayMirror) {
+            int index = (int)offset - 16;
+            ByteArrayMirror bam = (ByteArrayMirror)array;
+            ByteBuffer buffer = ByteBuffer.allocate(4);
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            buffer.putInt(0, value);
+            for (int i = 0; i < 4; i++) {
+                bam.setByte(index + i, buffer.get(i));
+            }
+        } else {
+            throw new InternalError();
+        }
     }
     
     public static void putOrderedObject(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset, Mirage element) throws IllegalAccessException, NoSuchFieldException {

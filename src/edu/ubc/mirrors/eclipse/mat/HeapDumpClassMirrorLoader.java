@@ -29,7 +29,7 @@ public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements
         
         try {
             for (IClass klass : heapDumpClassLoader.getDefinedClasses()) {
-                loadedClasses.put(klass.getName(), klass);
+                loadedClasses.put(HeapDumpClassMirror.getClassName(klass), klass);
             }
         } catch (SnapshotException e) {
             throw new InternalError();

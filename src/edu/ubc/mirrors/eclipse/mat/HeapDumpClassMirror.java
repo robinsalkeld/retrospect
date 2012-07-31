@@ -22,6 +22,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.wrapping.WrapperAware;
 import edu.ubc.mirrors.wrapping.WrappingMirror;
@@ -291,11 +292,16 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
         } else {
             String name = getClassName();
             if (name.startsWith("[")) {
-                String componentName = name.substring(2, name.length() - 1);
-                if (loader == null) {
-                    return vm.findBootstrapClassMirror(componentName);
+                Type componentType = Type.getType(name.substring(1).replace('.', '/'));
+                if (MirageClassGenerator.isRefType(componentType)) {
+                    String componentClassName = componentType.getInternalName().replace('/', '.');
+                    if (loader == null) {
+                        return vm.findBootstrapClassMirror(componentClassName);
+                    } else {
+                        return getLoader().findLoadedClassMirror(componentClassName);    
+                    }
                 } else {
-                    return getLoader().findLoadedClassMirror(componentName);    
+                    return vm.getPrimitiveClass(componentType.getClassName());
                 }
             } else {
                 return null;

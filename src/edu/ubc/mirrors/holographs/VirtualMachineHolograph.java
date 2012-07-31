@@ -1,13 +1,11 @@
 package edu.ubc.mirrors.holographs;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.JarFile;
 import java.util.zip.Inflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -22,7 +20,6 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.MirageVirtualMachine;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.test.Breakpoint;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class VirtualMachineHolograph extends WrappingVirtualMachine {
@@ -71,7 +68,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 } catch (NoSuchFieldException e) {
                     throw new RuntimeException(e);
                 }
-                zipPathsByAddress.put(address, new File(name));
+                if (name != null) {
+                    zipPathsByAddress.put(address, new File(name));
+                }
             }
         }
     }
@@ -91,6 +90,18 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             }
         }
         throw new IllegalArgumentException("Unmapped file path: " + mirrorFile);
+    }
+    
+    public Inflater getHostInflator(long address) {
+        Inflater hostInflater = inflaterByAddress.get(address);
+        if (hostInflater == null) {
+            // This is likely a pooled, empty inflater.
+            // TODO-RS: Need to actually guard against hitting this outside of the
+            // controlled read-only mapped file system.
+            hostInflater = new Inflater(true);
+            inflaterByAddress.put(address, hostInflater);
+        }
+        return hostInflater;
     }
     
     @Override
