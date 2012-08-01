@@ -1,5 +1,7 @@
 package edu.ubc.mirrors;
 
+import edu.ubc.mirrors.test.Breakpoint;
+
 public abstract class BoxingArrayMirror implements
                                           BooleanArrayMirror, ByteArrayMirror, CharArrayMirror, ShortArrayMirror,
                                           IntArrayMirror, LongArrayMirror, FloatArrayMirror, DoubleArrayMirror {
@@ -37,6 +39,9 @@ public abstract class BoxingArrayMirror implements
     }
 
     public void setInt(int index, int i) throws ArrayIndexOutOfBoundsException {
+        if (getClassMirror().getClassName().equals("[B")) {
+            Breakpoint.bp();
+        }
         setBoxedValue(index, Integer.valueOf(i));
     }
 

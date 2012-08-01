@@ -21,7 +21,7 @@ public abstract class BoxingFieldMirror implements FieldMirror {
 
     public short getShort() throws IllegalAccessException {
         Object value = getBoxedValue();
-        return value == null ? 0 : ((Byte)value).byteValue();
+        return value == null ? 0 : ((Short)value).byteValue();
     }
     
     public int getInt() throws IllegalAccessException {

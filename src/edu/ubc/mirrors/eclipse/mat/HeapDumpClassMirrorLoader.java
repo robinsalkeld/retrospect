@@ -12,16 +12,11 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.raw.BytecodeClassMirrorLoader;
-import edu.ubc.mirrors.wrapping.WrapperAware;
-import edu.ubc.mirrors.wrapping.WrappingMirror;
 
-public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements ClassMirrorLoader, WrapperAware {
+public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements ClassMirrorLoader {
 
     private final HeapDumpVirtualMachineMirror vm;
     private final Map<String, IClass> loadedClasses = new HashMap<String, IClass>();
-    
-    private ClassMirrorLoader wrapper;
     
     public HeapDumpClassMirrorLoader(HeapDumpVirtualMachineMirror vm, IClassLoader heapDumpClassLoader) {
         super(vm, heapDumpClassLoader);
@@ -50,19 +45,9 @@ public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements
         return null;
     }
     
-@Override
+    @Override
     public ClassMirror defineClass1(String name, ByteArrayMirror b, int off,
             int len, InstanceMirror pd, InstanceMirror source) {
         throw new UnsupportedOperationException();
-    }
-
-
-    @Override
-    public void setWrapper(WrappingMirror mirror) {
-        this.wrapper = (ClassMirrorLoader)mirror;
-    }
-    
-    public ClassMirrorLoader getWrapper() {
-        return wrapper;
     }
 }

@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mutable;
+package edu.ubc.mirrors.holographs;
 
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.wrapping.WrappingBooleanArrayMirror;
@@ -7,7 +7,7 @@ public class MutableBooleanArrayMirror extends WrappingBooleanArrayMirror {
 
     private final boolean[] values;
     
-    public MutableBooleanArrayMirror(MutableVirtualMachineMirror vm, BooleanArrayMirror immutableMirror) {
+    public MutableBooleanArrayMirror(VirtualMachineHolograph vm, BooleanArrayMirror immutableMirror) {
         super(vm, immutableMirror);
         this.values = new boolean[immutableMirror.length()];
         for (int i = 0; i < values.length; i++) {

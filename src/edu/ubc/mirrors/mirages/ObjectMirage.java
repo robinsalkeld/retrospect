@@ -30,6 +30,10 @@ public class ObjectMirage implements Mirage {
      * Constructor for calls to make() - the mirror instance is passed up the constructor chain.
      */
     public ObjectMirage(Object mirror) {
+        if (getClass().getName().equals("mirage.java.lang.Class") && !(mirror instanceof ClassMirror)) {
+            throw new IllegalArgumentException();
+        }
+        
         this.mirror = (ObjectMirror)mirror;
         register();
     }
@@ -38,8 +42,7 @@ public class ObjectMirage implements Mirage {
      * Constructor for translated new statements.
      */
     public ObjectMirage(InstanceMirror mirror) {
-        this.mirror = mirror;
-        register();
+        this((Object)mirror);
     }
     
     private void register() {

@@ -1,15 +1,13 @@
-package edu.ubc.mirrors.mutable;
+package edu.ubc.mirrors.holographs;
 
 import edu.ubc.mirrors.DoubleArrayMirror;
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.wrapping.WrappingByteArrayMirror;
 import edu.ubc.mirrors.wrapping.WrappingDoubleArrayMirror;
 
 public class MutableDoubleArrayMirror extends WrappingDoubleArrayMirror {
 
     private final double[] values;
     
-    public MutableDoubleArrayMirror(MutableVirtualMachineMirror vm, DoubleArrayMirror immutableMirror) {
+    public MutableDoubleArrayMirror(VirtualMachineHolograph vm, DoubleArrayMirror immutableMirror) {
         super(vm, immutableMirror);
         this.values = new double[immutableMirror.length()];
         for (int i = 0; i < values.length; i++) {

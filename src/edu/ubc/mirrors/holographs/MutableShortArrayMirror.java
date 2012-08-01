@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mutable;
+package edu.ubc.mirrors.holographs;
 
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.wrapping.WrappingShortArrayMirror;
@@ -7,7 +7,7 @@ public class MutableShortArrayMirror extends WrappingShortArrayMirror {
 
     private final short[] values;
     
-    public MutableShortArrayMirror(MutableVirtualMachineMirror vm, ShortArrayMirror immutableMirror) {
+    public MutableShortArrayMirror(VirtualMachineHolograph vm, ShortArrayMirror immutableMirror) {
         super(vm, immutableMirror);
         this.values = new short[immutableMirror.length()];
         for (int i = 0; i < values.length; i++) {

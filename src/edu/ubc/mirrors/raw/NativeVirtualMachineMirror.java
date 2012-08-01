@@ -77,6 +77,8 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
             return Float.TYPE;
         } else if (name.equals("double")) {
             return Double.TYPE;
+        } else if (name.equals("void")) {
+            return Void.TYPE;
         } else {
             throw new IllegalArgumentException(name);
         }

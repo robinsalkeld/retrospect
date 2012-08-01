@@ -1,15 +1,13 @@
-package edu.ubc.mirrors.mutable;
+package edu.ubc.mirrors.holographs;
 
 import edu.ubc.mirrors.ByteArrayMirror;
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.wrapping.WrappingBooleanArrayMirror;
 import edu.ubc.mirrors.wrapping.WrappingByteArrayMirror;
 
 public class MutableByteArrayMirror extends WrappingByteArrayMirror {
 
     private final byte[] values;
     
-    public MutableByteArrayMirror(MutableVirtualMachineMirror vm, ByteArrayMirror immutableMirror) {
+    public MutableByteArrayMirror(VirtualMachineHolograph vm, ByteArrayMirror immutableMirror) {
         super(vm, immutableMirror);
         this.values = new byte[immutableMirror.length()];
         for (int i = 0; i < values.length; i++) {

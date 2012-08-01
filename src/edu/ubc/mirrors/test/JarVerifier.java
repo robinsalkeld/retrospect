@@ -61,6 +61,8 @@ public class JarVerifier implements IApplication {
             }
         }
         
+        StringBuilder missingMethods = new StringBuilder();
+        StringBuilder unclassifiedMethods = new StringBuilder();
         for (Map.Entry<String, Set<MethodNode>> entry : counter.classesWithNativeMethods.entrySet()) {
             String fullName = entry.getKey().replace('/', '.');
             int lastDot = fullName.lastIndexOf('.');
@@ -90,18 +92,21 @@ public class JarVerifier implements IApplication {
                 if (message != null) {
                     classification = "Missing: " + message;
                     missing++;
+                    missingMethods.append(fullName + '#' + method.name + "\n");
                     continue;
                 }
                 
                 classification = "???????";
                 unclassified++;
-                System.out.println(packageName + ',' + className + ',' + method.name + ',' + classification);
+                unclassifiedMethods.append(fullName + '#' + method.name + "\n");
             }
         }
         System.out.println("Implemented: " + implemented);
         System.out.println("Missing: " + missing);
+        System.out.println(missingMethods);
         System.out.println("Illegal: " + illegal);
         System.out.println("Unclassified: " + unclassified);
+        System.out.println(unclassifiedMethods);
     }
     
     private static boolean testClass(MirageClassLoader loader, InputStream bytesIn, String className) {

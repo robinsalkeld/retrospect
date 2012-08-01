@@ -262,6 +262,11 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     @Override
+    public ClassMirrorLoader newRawClassLoaderInstance() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public ArrayMirror newArray(int size) {
         return (ArrayMirror)NativeInstanceMirror.makeMirror(Array.newInstance(klass, size));
     }

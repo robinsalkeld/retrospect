@@ -7,10 +7,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.equinox.app.IApplication;
@@ -18,28 +16,15 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
-import org.eclipse.mat.snapshot.model.IClass;
-import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.util.ConsoleProgressListener;
-import org.eclipse.osgi.framework.internal.core.BundleRepository;
-import org.jruby.Ruby;
-import org.osgi.framework.Bundle;
 
 import sun.misc.Unsafe;
-
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
-import edu.ubc.mirrors.raw.BytecodeOnlyVirtualMachineMirror;
-import edu.ubc.mirrors.raw.NativeClassMirror;
-import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class ToStringer implements IApplication {
 
@@ -74,9 +59,6 @@ public class ToStringer implements IApplication {
         // Create an instance of the mirrors API backed by the snapshot
         HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
         
-        // Create a mutable layer on the object model.
-        MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
-        
         // Create a holograph VM
         Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
 //        String launchFolder = "/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/Eclipse + holograph connector (java 7)";
@@ -91,7 +73,7 @@ public class ToStringer implements IApplication {
         mappedFiles.put(javaExtDir, javaExtDir);
         
         
-        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(mutableVM, 
+        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
                 Reflection.getBootstrapPath(),
                 mappedFiles);
         

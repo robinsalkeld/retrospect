@@ -34,11 +34,12 @@ public class UnsafeStubs {
     
     public static int getInt(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset) {
         ArrayMirror array = (ArrayMirror)object.getMirror();
-        // TODO-RS: Need to be much more careful about this!
-        if (array instanceof IntArrayMirror) {
+        // TODO-RS: Need to be more careful about offset calculations!
+        String className = array.getClassMirror().getClassName();
+        if (className.equals("[I")) {
             int index = (int)((offset - 16) / 4);
             return ((IntArrayMirror)array).getInt(index);
-        } else if (array instanceof ByteArrayMirror) {
+        } else if (className.equals("[B")) {
             int index = (int)(offset - 16);
             ByteArrayMirror bam = (ByteArrayMirror)array;
             ByteBuffer buffer = ByteBuffer.allocate(4);
@@ -55,10 +56,11 @@ public class UnsafeStubs {
     public static void putInt(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset, int value) {
         ArrayMirror array = (ArrayMirror)object.getMirror();
         // TODO-RS: Need to be much more careful about this!
-        if (array instanceof IntArrayMirror) {
+        String className = array.getClassMirror().getClassName();
+        if (className.equals("[I")) {
             int index = (int)((offset - 16) / 4);
             ((IntArrayMirror)array).setInt(index, value);
-        } else if (array instanceof ByteArrayMirror) {
+        } else if (className.equals("[B")) {
             int index = (int)offset - 16;
             ByteArrayMirror bam = (ByteArrayMirror)array;
             ByteBuffer buffer = ByteBuffer.allocate(4);

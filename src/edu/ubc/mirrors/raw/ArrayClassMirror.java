@@ -165,6 +165,11 @@ public class ArrayClassMirror implements ClassMirror {
     }
     
     @Override
+    public ClassMirrorLoader newRawClassLoaderInstance() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public ArrayMirror newArray(int size) {
         // TODO-RS: Semantics are defined perfectly well by java.lang.reflect.Array#newInstance,
         // but the holograms architecture won't call this.

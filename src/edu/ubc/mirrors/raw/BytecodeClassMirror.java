@@ -27,6 +27,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public abstract class BytecodeClassMirror implements ClassMirror {
@@ -257,7 +258,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        throw new UnsupportedOperationException();
+        return new ClassFieldMirror(this, name);
     }
 
     @Override
@@ -319,6 +320,11 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     
     @Override
     public InstanceMirror newRawInstance() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ClassMirrorLoader newRawClassLoaderInstance() {
         throw new UnsupportedOperationException();
     }
     

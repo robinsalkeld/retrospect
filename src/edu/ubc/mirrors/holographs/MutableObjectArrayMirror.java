@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mutable;
+package edu.ubc.mirrors.holographs;
 
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -9,7 +9,7 @@ public class MutableObjectArrayMirror extends WrappingObjectArrayMirror {
     private final ObjectMirror[] mutableValues;
     private final ObjectArrayMirror immutableMirror;
     
-    public MutableObjectArrayMirror(MutableVirtualMachineMirror vm, ObjectArrayMirror immutableMirror) {
+    public MutableObjectArrayMirror(VirtualMachineHolograph vm, ObjectArrayMirror immutableMirror) {
         super(vm, immutableMirror);
         this.immutableMirror = immutableMirror;
         this.mutableValues = new ObjectMirror[immutableMirror.length()];

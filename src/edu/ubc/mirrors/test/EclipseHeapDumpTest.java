@@ -2,24 +2,18 @@ package edu.ubc.mirrors.test;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.snapshot.model.IClass;
-import org.eclipse.mat.snapshot.model.IClassLoader;
+import org.eclipse.mat.snapshot.model.IInstance;
+import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 import org.eclipse.mat.util.ConsoleProgressListener;
 import org.eclipse.osgi.framework.internal.core.BundleRepository;
-import org.jruby.ext.ffi.StructLayout.MappedField;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleReference;
-import org.osgi.framework.FrameworkUtil;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -29,20 +23,11 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
-import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.MirageClassMirrorLoader;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
-import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
-import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
-import edu.ubc.mirrors.raw.NativeInstanceMirror;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
-import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class EclipseHeapDumpTest implements IApplication {
@@ -51,36 +36,43 @@ public class EclipseHeapDumpTest implements IApplication {
         String snapshotPath = args[0];
         MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         
-        Bundle thisBundle = FrameworkUtil.getBundle(EclipseHeapDumpTest.class);
-        thisBundle.start();
-        Bundle[] bundles = thisBundle.getBundleContext().getBundles();
-        
-        MutableVirtualMachineMirror mutableNativeVM = new MutableVirtualMachineMirror(NativeVirtualMachineMirror.INSTANCE);
-        VirtualMachineHolograph holographNativeVM = new VirtualMachineHolograph(mutableNativeVM);
-        ObjectMirror bundlesMirror = NativeInstanceMirror.makeMirror(bundles);
-        ObjectMirror holographBundlesMirror = getWrapped(holographNativeVM, bundlesMirror);
-        
-        ThreadMirror thread = (ThreadMirror)getWrapped(holographNativeVM, NativeInstanceMirror.makeMirror(Thread.currentThread()));
-        
-        long before = System.currentTimeMillis();
-        printBundles(thread, (ArrayMirror)holographBundlesMirror);
-        System.out.println(System.currentTimeMillis() - before);
+//        Bundle thisBundle = FrameworkUtil.getBundle(EclipseHeapDumpTest.class);
+//        thisBundle.start();
+//        Bundle[] bundles = thisBundle.getBundleContext().getBundles();
+//        
+//        VirtualMachineHolograph holographNativeVM = new VirtualMachineHolograph(NativeVirtualMachineMirror.INSTANCE);
+//        ObjectMirror bundlesMirror = NativeInstanceMirror.makeMirror(bundles);
+//        ObjectMirror holographBundlesMirror = getWrapped(holographNativeVM, bundlesMirror);
+//        
+//        ThreadMirror thread = (ThreadMirror)getWrapped(holographNativeVM, NativeInstanceMirror.makeMirror(Thread.currentThread()));
+//        
+//        long before = System.currentTimeMillis();
+//        printBundles(thread, (ArrayMirror)holographBundlesMirror);
+//        System.out.println(System.currentTimeMillis() - before);
         
         // Open memory snapshot and find the Bundle class
         ISnapshot snapshot = SnapshotFactory.openSnapshot(
                 new File(snapshotPath), 
                 Collections.<String, String>emptyMap(), 
                 new ConsoleProgressListener(System.out));
+
+//        for (int id : snapshot.getClassesByName("java.lang.Class", false).iterator().next().getObjectIds()) {
+//            IInstance instance = (IInstance) snapshot.getObject(id);
+//            IPrimitiveArray value = (IPrimitiveArray) instance.getField("name").getValue();
+//            if (value != null) {
+//                String name = value.getValueArray(instance.getField("offset").getValue(), instance.getField("length").getValue());
+//                IClass voidClassClass = snapshot.getClassesByName("java.lang.Void", false).iterator().next();
+//                
+//            }
+//        }
         
         // Create an instance of the mirrors API backed by the snapshot
-        HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot, 
-                Reflection.getStandardMappedFiles());
-        
-        // Create a mutable layer on the object model.
-        MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
+        HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
         
         // Create a holograph VM
-        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(mutableVM);
+        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
+                Reflection.getBootstrapPath(),
+                Reflection.getStandardMappedFiles());
         
         ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);
         InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
@@ -123,7 +115,6 @@ public class EclipseHeapDumpTest implements IApplication {
         ClassMirror printerClass = Reflection.injectBytecode(vm, thread, bundleRepositoryClass.getLoader(), 
                 new NativeClassMirror(PrintOSGiBundles.class));
         
-        // For each class instance (in this case we only expect one)...
         MethodMirror method = printerClass.getMethod("print", bundleRepositoryClass);
         
         // Invoke PrintOSGiBundles#print reflectively.

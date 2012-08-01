@@ -88,8 +88,8 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
             return vm.makeMirror(ref.getObject());
         } catch (SnapshotException e) {
             // For now...
-            return new NativeInstanceMirror("(interned string @ " + Long.toHexString(ref.getObjectAddress()) + ")");
-//            throw new RuntimeException(e);
+//            return new NativeInstanceMirror("(interned string @ " + Long.toHexString(ref.getObjectAddress()) + ")");
+            throw new RuntimeException(e);
         }
     }
     

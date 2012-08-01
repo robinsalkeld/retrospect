@@ -5,34 +5,33 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
-import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
+import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
+import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.raw.NativeClassMirror;
+import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.NativeConstructorMirror;
-import edu.ubc.mirrors.raw.NativeInstanceMirror;
-import edu.ubc.mirrors.raw.NativeObjectMirror;
-import edu.ubc.mirrors.test.Breakpoint;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
-import edu.ubc.mirrors.wrapping.WrappingFieldMirror;
-import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class ClassHolograph extends WrappingClassMirror {
 
+    private ClassMirror bytecodeMirror;
+    
     public static ThreadLocal<ThreadMirror> currentThreadMirror = new ThreadLocal<ThreadMirror>();
     
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
@@ -41,10 +40,6 @@ public class ClassHolograph extends WrappingClassMirror {
     
     public ClassMirror getWrappedClassMirror() {
         return wrapped;
-    }
-    
-    public Class<?> getNativeStubsClass() {
-        return getNativeStubsClass(getClassName());
     }
     
     public static Class<?> getNativeStubsClass(String name) {
@@ -168,9 +163,23 @@ public class ClassHolograph extends WrappingClassMirror {
     }
         
     
+    private ClassMirror getBytecodeMirror(ClassMirror klass) {
+        if (klass instanceof ClassHolograph) {
+            return ((ClassHolograph)klass).getBytecodeMirror();
+        } else {
+            return klass;
+        }
+    }
+
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
         // Just to check that the method exists.
-        super.getMethod(name, paramTypes);
+//        ClassMirror[] bytecodeParamTypes = new ClassMirror[paramTypes.length];
+//        for (int i = 0; i < paramTypes.length; i++) {
+//            bytecodeParamTypes[i] = getBytecodeMirror(paramTypes[i]);
+//        }
+//        
+//        getBytecodeMirror().getMethod(name, bytecodeParamTypes);
+
         return new MirageMethod(name, paramTypes);
     }
     
@@ -373,4 +382,79 @@ public class ClassHolograph extends WrappingClassMirror {
             return mirage;
         }
     }
+    
+    private ClassMirror getBytecodeMirror() {
+        if (bytecodeMirror == null) {
+            bytecodeMirror = getVM().getBytecodeClassMirror(this);
+        }
+        return bytecodeMirror;
+    }
+
+    @Override
+    public byte[] getBytecode() {
+        try {
+            return super.getBytecode();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMirror().getBytecode();
+        }
+    }
+    
+    @Override
+    public boolean isInterface() {
+        try {
+            return super.isInterface();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMirror().isInterface();
+        }
+    }
+
+    @Override
+    public List<ClassMirror> getInterfaceMirrors() {
+        try {
+            return super.getInterfaceMirrors();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMirror().getInterfaceMirrors();
+        }
+    }
+
+    @Override
+    public Map<String, ClassMirror> getDeclaredFields() {
+        try {
+            return super.getDeclaredFields();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMirror().getDeclaredFields();
+        }
+    }
+
+    @Override
+    public InstanceMirror newRawInstance() {
+        if (Reflection.isAssignableFrom(getVM().findBootstrapClassMirror(ClassLoader.class.getName()), this)) {
+            return newRawClassLoaderInstance();
+        } else {
+            return new FieldMapMirror(this);
+        }
+    }
+    
+    @Override
+    public ClassMirrorLoader newRawClassLoaderInstance() {
+        return vm.getWrappedClassLoaderMirror(new FieldMapClassMirrorLoader(this) {
+            @Override
+            public ClassMirror getClassMirror() {
+                return getWrappedClassMirror();
+            }
+        });
+    }
+    
+    @Override
+    public ArrayMirror newArray(int size) {
+        return newArray(new int[] {size});
+    }
+    
+    @Override
+    public ArrayMirror newArray(int... dims) {
+        ClassMirror arrayClass = wrapped.getVM().getArrayClass(dims.length, wrapped);
+        return new DirectArrayMirror(vm.getWrappedClassMirror(arrayClass), dims);
+    }
+    
+    
 }

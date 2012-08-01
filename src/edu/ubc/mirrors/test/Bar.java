@@ -11,6 +11,8 @@ public class Bar {
     
     private Map<String, String> map = new HashMap<String, String>();
     
+    private static final Class<?> VOID_TYPE = Void.TYPE;
+    
     public static void main(String[] args) throws InterruptedException {
         Thread deadThread = new Thread();
         

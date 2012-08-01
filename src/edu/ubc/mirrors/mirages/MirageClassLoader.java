@@ -318,7 +318,7 @@ public class MirageClassLoader extends ClassLoader {
         
         String internalName = mirageClassMirror.getClassName().replace('.', '/');
         
-        ClassHolograph original = (ClassHolograph)mirageClassMirror.getOriginal();
+        ClassMirror original = mirageClassMirror.getOriginal();
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         if (debug) {
@@ -346,7 +346,11 @@ public class MirageClassLoader extends ClassLoader {
             }
             ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
             ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), traceVisitor, true);
-            new ClassReader(mirageClassMirror.getOriginal().getBytecode()).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
+            byte[] bytecode = mirageClassMirror.getOriginal().getBytecode();
+            if (bytecode == null) {
+                mirageClassMirror.getOriginal().getBytecode();
+            }
+            new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
         }
         visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true);
         ClassReader reader = new ClassReader(original.getBytecode());

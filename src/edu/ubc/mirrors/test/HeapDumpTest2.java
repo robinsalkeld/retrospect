@@ -1,15 +1,13 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
@@ -22,12 +20,8 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
-import edu.ubc.mirrors.raw.BytecodeOnlyVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
-import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class HeapDumpTest2 implements IApplication {
 
@@ -50,13 +44,19 @@ public class HeapDumpTest2 implements IApplication {
     // Create an instance of the mirrors API backed by the snapshot
     HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
       
-    // Create a mutable layer on the object model.
-    MutableVirtualMachineMirror mutableVM = new MutableVirtualMachineMirror(vm);
-    
     // Create a holograph VM
-    VirtualMachineHolograph holographVM = new VirtualMachineHolograph(mutableVM,
-            Reflection.getBootstrapPath(),
-            Reflection.getStandardMappedFiles());
+    Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
+    String jrubyJar = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/lib/jruby.jar";
+    mappedFiles.put(jrubyJar, jrubyJar);
+    String javaExtDir = "/System/Library/Java/Extensions";
+    mappedFiles.put(javaExtDir, javaExtDir);
+  
+    List<URL> bootstrapPath = Reflection.getBootstrapPath();
+    bootstrapPath.add(new File(jrubyJar).toURL());
+    
+    VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
+            bootstrapPath,
+            mappedFiles);
     
     // Create a new class loader in the holograph VM and define more bytecode.
     ClassMirror rubyClass = holographVM.findAllClasses(Ruby.class.getName(), false).get(0);

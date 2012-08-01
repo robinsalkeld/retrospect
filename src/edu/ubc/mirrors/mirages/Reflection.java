@@ -8,20 +8,14 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.SecureClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.eclipse.mat.snapshot.model.IClassLoader;
-import org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader;
 import org.objectweb.asm.Type;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.BundleReference;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
@@ -35,18 +29,11 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirrorLoader;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
-import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
-import edu.ubc.mirrors.mutable.MutableVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
-import edu.ubc.mirrors.test.EclipseHeapDumpTest;
 
 public class Reflection {
 
@@ -502,7 +489,7 @@ public class Reflection {
         return mirrorInvoke(thread, method, obj, args);
     }
     
-    public static URL[] getBootstrapPath() {
+    public static List<URL> getBootstrapPath() {
         String path = (String)System.getProperties().get("sun.boot.class.path");
         String[] paths = path.split(File.pathSeparator);
         URL[] urls = new URL[paths.length];
@@ -513,7 +500,7 @@ public class Reflection {
                 throw new RuntimeException(e);
             }
         }
-        return urls;
+        return new ArrayList<URL>(Arrays.asList(urls));
     }
     
     public static Map<String, String> getStandardMappedFiles() {
@@ -524,6 +511,9 @@ public class Reflection {
         
         String eclipsePlugins = "/Library/Application Support/eclipse/plugins";
         mappedFiles.put(eclipsePlugins, eclipsePlugins);
+        
+        String extDir = "/System/Library/Java/Extensions/";
+        mappedFiles.put(extDir, extDir);
         
         return mappedFiles;
     }

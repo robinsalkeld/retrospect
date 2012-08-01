@@ -90,10 +90,10 @@ public class MirageClassGenerator extends ClassVisitor {
     
     private final Map<org.objectweb.asm.commons.Method, Method> mirrorMethods;
     
-    public MirageClassGenerator(ClassHolograph classMirror, ClassVisitor output) {
+    public MirageClassGenerator(ClassMirror classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
         this.needsInitialization = !classMirror.initialized();
-        Class<?> nativeStubsClass = classMirror.getNativeStubsClass();
+        Class<?> nativeStubsClass = ClassHolograph.getNativeStubsClass(classMirror.getClassName());
         mirrorMethods = indexStubMethods(nativeStubsClass);
     }
     

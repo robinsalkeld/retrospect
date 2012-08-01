@@ -58,7 +58,7 @@ public class FieldMapMirror implements InstanceMirror {
         return classMirror;
     }
     
-    private class MapEntryFieldMirror extends BoxingFieldMirror {
+    protected class MapEntryFieldMirror extends BoxingFieldMirror {
         private final ClassMirror type;
         private final String name;
 

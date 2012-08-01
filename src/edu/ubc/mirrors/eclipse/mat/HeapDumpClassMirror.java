@@ -11,31 +11,25 @@ import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.snapshot.model.IInstance;
+import org.eclipse.mat.snapshot.model.IObject;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
-import edu.ubc.mirrors.BoxingFieldMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
-import edu.ubc.mirrors.raw.ArrayClassMirror;
-import edu.ubc.mirrors.wrapping.WrapperAware;
-import edu.ubc.mirrors.wrapping.WrappingMirror;
 
-public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
+public class HeapDumpClassMirror implements ClassMirror {
 
     private final HeapDumpVirtualMachineMirror vm;
-    // Will be null if this class was never actually loaded in the snapshot
     private final IClass klass;
     private final IClassLoader loader;
-    
-    private ClassMirror wrapper;
-    private ClassMirror bytecodeMirror;
     
     public HeapDumpClassMirror(HeapDumpVirtualMachineMirror vm, IClass klass) {
         if (klass == null) {
@@ -46,13 +40,6 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
         this.loader = getClassLoader(klass);
     }
     
-    public HeapDumpClassMirror(HeapDumpVirtualMachineMirror vm, IClassLoader loader, ClassMirror bytecodeMirror) {
-        this.bytecodeMirror = bytecodeMirror;
-        this.vm = vm;
-        this.klass = null;
-        this.loader = loader;
-    }
-    
     @Override
     public boolean equals(Object obj) {
         if (obj == null || !getClass().equals(obj.getClass())) {
@@ -60,35 +47,12 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
         }
         
         HeapDumpClassMirror other = (HeapDumpClassMirror)obj;
-        if (klass == null) {
-            return getBytecodeMirror().equals(other.getBytecodeMirror()) &&
-                   (loader == null ? other.loader == null : loader.equals(other.loader));
-        } else {
-            return klass.equals(other.klass);
-        }
+        return klass.equals(other.klass);
     }
     
     @Override
     public int hashCode() {
-        if (klass == null) {
-            return 11 + getBytecodeMirror().hashCode();
-        } else {
-            return 11 + klass.hashCode();
-        }
-    }
-    
-    private ClassMirror getBytecodeMirror(ClassMirror klass) {
-        if (klass.isPrimitive()) {
-            return vm.getPrimitiveClass(klass.getClassName());
-        } else if (klass instanceof HeapDumpClassMirror) {
-            return ((HeapDumpClassMirror)klass).getBytecodeMirror();
-        } else if (klass instanceof ArrayClassMirror) {
-            ArrayClassMirror arrayClass = (ArrayClassMirror)klass;
-            ClassMirror elementBytecodeMirror = getBytecodeMirror(arrayClass.getElementClassMirror());
-            return new ArrayClassMirror(arrayClass.getDimensions(), elementBytecodeMirror);
-        } else {
-            throw new IllegalArgumentException(klass.toString());
-        }
+        return 11 + klass.hashCode();
     }
     
     public static IClassLoader getClassLoader(IClass klass) {
@@ -111,7 +75,7 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
     
     @Override
     public byte[] getBytecode() {
-        return getBytecodeMirror().getBytecode();
+        throw new UnsupportedOperationException();
     }
     
     public static String arrayElementDescriptor(String name) {
@@ -151,10 +115,6 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        if (klass == null) {
-            return getBytecodeMirror().getStaticField(name);
-        }
-        
         List<Field> fields = klass.getStaticFields();
         for (Field field : fields) {
             if (field.getName().equals(name)) {
@@ -166,60 +126,9 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
 
     @Override
     public FieldMirror getMemberField(final String name) throws NoSuchFieldException {
+        // The MAT model doesn't expose member fields for classes.
+        // All the fields on Class are caches though, so it's safe to start off null/0
         return new ClassFieldMirror(this, name);
-    }
-    
-    // The MAT model doesn't expose member fields for classes.
-    // All the fields on Class are caches though, so it's safe to start off null/0
-    private static class ClassFieldMirror extends BoxingFieldMirror {
-        private final HeapDumpClassMirror klass;
-        private final String name;
-        
-        public ClassFieldMirror(HeapDumpClassMirror klass, String name) {
-            this.klass = klass;
-            this.name = name;
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof ClassFieldMirror)) {
-                return false;
-            }
-            
-            ClassFieldMirror other = (ClassFieldMirror)obj;
-            return klass.equals(other.klass) && name.equals(other.name);
-        }
-        
-        @Override
-        public int hashCode() {
-            return klass.hashCode() * 32 + name.hashCode();
-        }
-        
-        @Override
-        public String getName() {
-            return name;
-        }
-        @Override
-        public ClassMirror getType() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-        @Override
-        public ObjectMirror get() throws IllegalAccessException {
-            return null;
-        }
-        @Override
-        public Object getBoxedValue() throws IllegalAccessException {
-            return null;
-        }
-        @Override
-        public void set(ObjectMirror o) throws IllegalAccessException {
-            throw new UnsupportedOperationException();
-        }
-        @Override
-        public void setBoxedValue(Object o) throws IllegalAccessException {
-            throw new UnsupportedOperationException();
-        }
     }
     
     @Override
@@ -235,7 +144,7 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
         List<InstanceMirror> result = new ArrayList<InstanceMirror>();
         try {
             for (int id : klass.getObjectIds()) {
-                IInstance object = (IInstance)klass.getSnapshot().getObject(id);
+                IObject object = (IObject)klass.getSnapshot().getObject(id);
                 InstanceMirror mirror = (InstanceMirror)vm.makeMirror(object);
                 if (mirror != null) {
                     result.add(mirror);
@@ -262,96 +171,68 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
     @Override
     public String getClassName() {
         if (className == null) {
-            if (klass == null) {
-                className = getBytecodeMirror().getClassName();
-            } else {
-                className = getClassName(klass);
-            }
+            className = getClassName(klass);
         }
         return className;
     }
 
     @Override
     public boolean isPrimitive() {
-        return getBytecodeMirror().isPrimitive();
+        // Primitive classes don't show up in the dump
+        return false;
     }
 
     @Override
     public boolean isArray() {
-        if (klass == null) {
-            return getBytecodeMirror().isArray();
-        } else {
-            return klass.isArrayType();
-        }
+        return klass.isArrayType();
     }
 
     @Override
     public ClassMirror getComponentClassMirror() {
-        if (klass == null) {
-            return getBytecodeMirror().getComponentClassMirror();
-        } else {
-            String name = getClassName();
-            if (name.startsWith("[")) {
-                Type componentType = Type.getType(name.substring(1).replace('.', '/'));
-                if (MirageClassGenerator.isRefType(componentType)) {
-                    String componentClassName = componentType.getInternalName().replace('/', '.');
-                    if (loader == null) {
-                        return vm.findBootstrapClassMirror(componentClassName);
-                    } else {
-                        return getLoader().findLoadedClassMirror(componentClassName);    
-                    }
+        String name = getClassName();
+        if (name.startsWith("[")) {
+            Type componentType = Type.getType(name.substring(1).replace('.', '/'));
+            if (MirageClassGenerator.isRefType(componentType)) {
+                String componentClassName = componentType.getInternalName().replace('/', '.');
+                if (loader == null) {
+                    return vm.findBootstrapClassMirror(componentClassName);
                 } else {
-                    return vm.getPrimitiveClass(componentType.getClassName());
+                    return getLoader().findLoadedClassMirror(componentClassName);    
                 }
             } else {
-                return null;
+                return vm.getPrimitiveClass(componentType.getClassName());
             }
+        } else {
+            return null;
         }
     }
 
     @Override
     public ClassMirror getSuperClassMirror() {
-        if (klass == null) {
-            return getBytecodeMirror().getSuperClassMirror();
-        } else {
-            return klass.getSuperClass() == null ? null : new HeapDumpClassMirror(vm, klass.getSuperClass());
-        }
+        return klass.getSuperClass() == null ? null : new HeapDumpClassMirror(vm, klass.getSuperClass());
     }
 
     @Override
     public boolean isInterface() {
-        return getBytecodeMirror().isInterface();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<ClassMirror> getInterfaceMirrors() {
-        return getBytecodeMirror().getInterfaceMirrors();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Map<String, ClassMirror> getDeclaredFields() {
-        return getBytecodeMirror().getDeclaredFields();
-    }
-
-    private ClassMirror getBytecodeMirror() {
-        if (bytecodeMirror == null) {
-            bytecodeMirror = vm.getBytecodeClassMirror(this);
-        }
-        return bytecodeMirror;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public MethodMirror getMethod(String name, ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
-        
-        ClassMirror[] bytecodeParamTypes = new ClassMirror[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            bytecodeParamTypes[i] = getBytecodeMirror(paramTypes[i]);
-        }
-        
-        return getBytecodeMirror().getMethod(name, bytecodeParamTypes);
+        throw new UnsupportedOperationException();
     }
-
+    
     @Override
     public ConstructorMirror getConstructor(ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
@@ -375,6 +256,11 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
     }
     
     @Override
+    public ClassMirrorLoader newRawClassLoaderInstance() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public ArrayMirror newArray(int size) {
         throw new UnsupportedOperationException();
     }
@@ -386,24 +272,11 @@ public class HeapDumpClassMirror implements ClassMirror, WrapperAware {
     
     @Override
     public boolean initialized() {
-        if (klass == null) {
-            return getBytecodeMirror().initialized();
-        } else {
-            return true;
-        }
+        return true;
     }
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ": " + (klass == null ? getBytecodeMirror() : klass);
-    }
-
-    @Override
-    public void setWrapper(WrappingMirror mirror) {
-        this.wrapper = (ClassMirror)mirror;
-    }
-    
-    public ClassMirror getWrapper() {
-        return wrapper;
+        return getClass().getSimpleName() + ": " + klass;
     }
 }

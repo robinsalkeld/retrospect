@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mutable;
+package edu.ubc.mirrors.holographs;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
@@ -6,13 +6,13 @@ import edu.ubc.mirrors.ObjectMirror;
 
 public class MutableFieldMirror implements FieldMirror {
 
-    private final MutableVirtualMachineMirror vm;
+    private final VirtualMachineHolograph vm;
     
     private final FieldMirror immutableFieldMirror;
     private Object newValue;
     private boolean initialized = false;
     
-    public MutableFieldMirror(MutableVirtualMachineMirror vm, FieldMirror immutableFieldMirror) {
+    public MutableFieldMirror(VirtualMachineHolograph vm, FieldMirror immutableFieldMirror) {
         this.vm = vm;
         this.immutableFieldMirror = immutableFieldMirror;
     }

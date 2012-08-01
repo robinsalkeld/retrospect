@@ -21,45 +21,14 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.mirages.BooleanArrayMirage;
-import edu.ubc.mirrors.mirages.ByteArrayMirage;
-import edu.ubc.mirrors.mirages.CharArrayMirage;
-import edu.ubc.mirrors.mirages.DoubleArrayMirage;
-import edu.ubc.mirrors.mirages.FloatArrayMirage;
-import edu.ubc.mirrors.mirages.IntArrayMirage;
-import edu.ubc.mirrors.mirages.LongArrayMirage;
-import edu.ubc.mirrors.mirages.ShortArrayMirage;
-import edu.ubc.mirrors.mutable.MutableBooleanArrayMirror;
-import edu.ubc.mirrors.mutable.MutableByteArrayMirror;
-import edu.ubc.mirrors.mutable.MutableCharArrayMirror;
-import edu.ubc.mirrors.mutable.MutableClassMirror;
-import edu.ubc.mirrors.mutable.MutableClassMirrorLoader;
-import edu.ubc.mirrors.mutable.MutableDoubleArrayMirror;
-import edu.ubc.mirrors.mutable.MutableFloatArrayMirror;
-import edu.ubc.mirrors.mutable.MutableInstanceMirror;
-import edu.ubc.mirrors.mutable.MutableIntArrayMirror;
-import edu.ubc.mirrors.mutable.MutableLongArrayMirror;
-import edu.ubc.mirrors.mutable.MutableObjectArrayMirror;
-import edu.ubc.mirrors.mutable.MutableShortArrayMirror;
-import edu.ubc.mirrors.mutable.MutableThreadMirror;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 
-public abstract class WrappingVirtualMachine implements VirtualMachineMirror, VirtualMachineWrapperAware {
+public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
 
     protected final VirtualMachineMirror wrappedVM;
     
     public WrappingVirtualMachine(VirtualMachineMirror wrappedVM) {
         this.wrappedVM = wrappedVM;
-        if (wrappedVM instanceof VirtualMachineWrapperAware) {
-            ((VirtualMachineWrapperAware)wrappedVM).setWrapper(this);
-        }
-    }
-    
-    @Override
-    public void setWrapper(VirtualMachineMirror wrapper) {
-        if (wrappedVM instanceof VirtualMachineWrapperAware) {
-            ((VirtualMachineWrapperAware)wrappedVM).setWrapper(wrapper);
-        }
     }
     
     public VirtualMachineMirror getWrappedVM() {
@@ -204,6 +173,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror, Vi
     
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
-        return new ArrayClassMirror(dimensions, elementClass);
+        ClassMirror unwrapedElementClass = (ClassMirror)unwrapMirror(elementClass);
+        return getWrappedClassMirror(wrappedVM.getArrayClass(dimensions, unwrapedElementClass));
     }
 }

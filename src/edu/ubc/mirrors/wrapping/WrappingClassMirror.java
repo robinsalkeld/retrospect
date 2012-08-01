@@ -150,6 +150,11 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
     
     @Override
+    public ClassMirrorLoader newRawClassLoaderInstance() {
+        return (ClassMirrorLoader)vm.getWrappedMirror(wrapped.newRawClassLoaderInstance());
+    }
+    
+    @Override
     public ArrayMirror newArray(int size) {
         return (ArrayMirror)vm.getWrappedMirror(wrapped.newArray(size));
     }
