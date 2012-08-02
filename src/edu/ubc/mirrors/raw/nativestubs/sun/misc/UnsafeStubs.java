@@ -14,6 +14,7 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
+import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassLoaderStubs;
 
 public class UnsafeStubs {
 
@@ -153,5 +154,12 @@ public class UnsafeStubs {
     }
     public static void putLong(Class<?> classLoaderLiteral, Mirage unsafe, long address, long value) {
         // TODO-RS: Need to figure this one out...
+    }
+    
+    public static Mirage defineClass(Class<?> classLoaderLiteral, Mirage unsafe, Mirage name, Mirage b, int off, int len,
+            Mirage classLoader, Mirage pd) {
+
+        // Not sure what the difference is between the Unsafe version and the usual ClassLoader.defineClass* methods
+        return ClassLoaderStubs.defineClass1(classLoaderLiteral, classLoader, name, b, off, len, pd, null);
     }
 }
