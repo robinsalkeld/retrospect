@@ -81,7 +81,7 @@ public class ToStringer implements IApplication {
         
         int numObjects = snapshot.getSnapshotInfo().getNumberOfObjects();
         System.out.println("numObjects: " + numObjects);
-        for (int id = 0; id < numObjects; id++) {
+        for (int id = 100; id < numObjects; id++) {
             IObject obj = snapshot.getObject(id);
             ObjectMirror mirror = vm.makeMirror(obj);
             if (mirror instanceof InstanceMirror) {
@@ -92,7 +92,7 @@ public class ToStringer implements IApplication {
                     System.out.println(Reflection.toString(holograph));
                 } catch (Exception e) {
                     System.out.println("Error on object #" + id + " (" + Long.toHexString(obj.getObjectAddress())  + ")");
-//                    throw e;
+                    throw e;
                 }
             }
         }

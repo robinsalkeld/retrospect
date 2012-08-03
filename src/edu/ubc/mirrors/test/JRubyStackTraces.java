@@ -17,17 +17,21 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 public class JRubyStackTraces {
 
-  public static String printStackTraces(Ruby runtime) {
-    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-    PrintStream out = new PrintStream(bytes);
-        
-    // Copied and modified from JRuby 
+  public static ByteArrayOutputStream redirectStdErr() {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      PrintStream ps = new PrintStream(baos);
+      System.setErr(ps);
+      return baos;
+  }
+    
+  public static void printStackTraces(Ruby runtime) {
+    // Copied verbatim from JRuby 
     // thread dump signal implementation
-    out.println("Ruby Thread Dump");
+    System.err.println("Ruby Thread Dump");
     final ThreadService threadService = runtime.getThreadService();
     RubyThread[] thrs = threadService.getActiveRubyThreads();
     for (RubyThread th : thrs) {
-      out.println("\n" + th);
+      System.err.println("\n" + th);
       RubyException exc = new RubyException(runtime, 
               runtime.getRuntimeError(), "");
       ThreadContext tc = threadService.getThreadContextForThread(th);
@@ -36,12 +40,10 @@ public class JRubyStackTraces {
         BacktraceElement[] rubyBacktrace = tc.createBacktrace2(0, false);
         exc.setBacktraceData(new BacktraceData(javaBacktrace, rubyBacktrace, 
                 false, false, Gather.NORMAL));
-        exc.printBacktrace(out);
+        exc.printBacktrace(System.err);
       } else {
-        out.println("    [no longer alive]");
+        System.err.println("    [no longer alive]");
       }
     }
-        
-    return new String(bytes.toByteArray());
   }
 }

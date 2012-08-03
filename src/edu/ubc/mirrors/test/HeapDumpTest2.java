@@ -60,17 +60,19 @@ public class HeapDumpTest2 implements IApplication {
     
     // Create a new class loader in the holograph VM and define more bytecode.
     ClassMirror rubyClass = holographVM.findAllClasses(Ruby.class.getName(), false).get(0);
-    ThreadMirror thread = vm.getThreads().get(0);
+    ThreadMirror thread = holographVM.getThreads().get(0);
     ClassMirror printerClass = Reflection.injectBytecode(holographVM, thread, 
             rubyClass.getLoader(), new NativeClassMirror(JRubyStackTraces.class));
  
+    // Redirect standard out
+    InstanceMirror baos = (InstanceMirror)printerClass.getMethod("redirectStdErr").invoke(thread, null);
+    
     // For each class instance (in this case we only expect one)...
     MethodMirror method = printerClass.getMethod("printStackTraces", rubyClass);
     for (InstanceMirror ruby : rubyClass.getInstances()) {
       // Invoke JRubyStackTraces#printStackTraces reflectively.
-      Object result = method.invoke(holographVM.getThreads().get(0), null, ruby);
-      String asString = Reflection.getRealStringForMirror((InstanceMirror)result);
-      System.out.println(asString);
+      method.invoke(thread, null, ruby);
+      System.out.println(Reflection.toString(baos));
     }
   }
 

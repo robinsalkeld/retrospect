@@ -3,6 +3,7 @@ package edu.ubc.mirrors.raw.nativestubs.java.lang;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.DoubleArrayMirror;
 import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.IntArrayMirror;
@@ -10,7 +11,9 @@ import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class SystemStubs {
 
@@ -74,9 +77,35 @@ public class SystemStubs {
         }
     }
     
+    public static void setIn0(Class<?> classLoaderLiteral, Mirage stream) throws IllegalAccessException, NoSuchFieldException {
+        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+        
+        ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+        systemClass.getStaticField("in").set(stream.getMirror());
+    }
+    
+    public static void setOut0(Class<?> classLoaderLiteral, Mirage stream) throws IllegalAccessException, NoSuchFieldException {
+        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+        
+        ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+        systemClass.getStaticField("out").set(stream.getMirror());
+    }
+    
+    public static void setErr0(Class<?> classLoaderLiteral, Mirage stream) throws IllegalAccessException, NoSuchFieldException {
+        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+        
+        ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+        systemClass.getStaticField("err").set(stream.getMirror());
+    }
+    
     // TODO-RS: I don't like this as a general rule, but it's called from 
     // ClassLoader#defineClass() in JDK 7 to measure loading time,
-    // and also seems necessary in the read-only mapped fs...
+    // and also seems necessary in the read-only mapped fs.
+    // It's probably actually okay, because this will just look like a very long
+    // system delay to the original process, which is fairly reasonable.
     public static long nanoTime(Class<?> classLoaderLiteral) {
         return System.nanoTime();
     }

@@ -1,11 +1,16 @@
 package edu.ubc.mirrors.holographs;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -24,7 +29,7 @@ import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.raw.ArrayClassMirror;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeConstructorMirror;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
@@ -33,6 +38,55 @@ public class ClassHolograph extends WrappingClassMirror {
     private ClassMirror bytecodeMirror;
     
     public static ThreadLocal<ThreadMirror> currentThreadMirror = new ThreadLocal<ThreadMirror>();
+    
+    public static class IllegalMethodPattern {
+        public final String className;
+        private final Pattern classNamePattern;
+        public final String methodName;
+        private final Pattern methodNamePattern;
+        public final String category;
+        
+        public IllegalMethodPattern(String line) {
+            String[] pieces = line.split(",");
+            className = pieces[0];
+            classNamePattern = getPattern(className);
+            methodName = pieces[1];
+            methodNamePattern = getPattern(methodName);
+            category = pieces[2];
+        }
+        
+        private Pattern getPattern(String pattern) {
+            if (pattern.isEmpty()) {
+                return Pattern.compile(".*");
+            } else {
+                return Pattern.compile(pattern.replace(".", "\\.").replace("$", "\\$").replace("*", ".*"));
+            }
+        }
+        
+        public boolean matches(String owner, org.objectweb.asm.commons.Method method) {
+            return classNamePattern.matcher(owner).matches() && methodNamePattern.matcher(method.getName()).matches();
+        }
+        
+        public String getCategory() {
+            return category;
+        }
+    }
+    
+    public static List<IllegalMethodPattern> illegalMethodPatterns = new ArrayList<IllegalMethodPattern>();
+    static {
+        InputStream in = ClassHolograph.class.getClassLoader().getResourceAsStream("edu/ubc/mirrors/holographs/IllegalNativeMethods.csv");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        
+        try {
+            // Skip the header
+            String line = reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                illegalMethodPatterns.add(new IllegalMethodPattern(line));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
@@ -52,94 +106,12 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public static String getIllegalNativeMethodMessage(String owner, org.objectweb.asm.commons.Method method) {
-        if (owner.equals(Object.class.getName()) || owner.equals(Throwable.class.getName())) {
-            return "Shared superclass";
-        } else if (owner.startsWith("com.sun.java.swing.plaf.gtk")) { 
-            return "GUI";
-        } else if (owner.startsWith("com.sun.management")) {
-            return "System";
-        } else if (owner.startsWith("com.sun.media.sound")) {
-            return "Media";
-        } else if (owner.equals("sun.tracing.dtrace.JVM")) {
-            return "Management";
-        } else if (owner.startsWith("com.sun.demo.jvmti.hprof")) {
-            return "Management";
-        } else if (owner.startsWith("sun.management")) {
-            return "Management";
-        } else if (owner.startsWith("java.io")) {
-            return "IO";
-        } else if (owner.startsWith("java.nio")) {
-            return "IO";
-        } else if (owner.startsWith("sun.nio")) {
-            return "IO";
-        } else if (owner.startsWith("sun.print")) {
-            return "Printers";
-        } else if (owner.startsWith("sun.security.smartcardio")) {
-            return "Drivers";
-        } else if (owner.startsWith("sun.java2d")) {
-            return "Graphics";
-        } else if (owner.startsWith("com.apple.eawt")) {
-            return "GUI";
-        } else if (owner.startsWith("com.apple.eio")) {
-            return "IO";
-        } else if (owner.startsWith("com.sun.imageio.plugins.jpeg")) {
-            return "Graphics";
-        } else if (owner.startsWith("sun.dc.pr")) {
-            return "Graphics";
-        } else if (owner.startsWith("sun.font")) {
-            return "Graphics";
-        } else if (owner.startsWith("sun.awt")) {
-            return "GUI";
-        } else if (owner.startsWith("sun.lwawt")) {
-            return "GUI";
-        } else if (owner.startsWith("java.awt")) {
-            return "GUI";
-        } else if (owner.startsWith("apple.laf")) {
-            return "GUI";
-        } else if (owner.startsWith("com.apple.laf")) {
-            return "GUI";
-        } else if (owner.startsWith("sun.security")) {
-            return "Security";
-        } else if (owner.startsWith("java.net")) {
-            return "Network";
-        } else if (owner.startsWith("sun.net")) {
-            return "Network";
-        } else if (owner.startsWith("apple.applescript")) {
-            return "System";
-        } else if (owner.startsWith("apple.launcher")) {
-            return "System";
-        } else if (owner.startsWith("apple.security")) {
-            return "System";
-        } else if (owner.startsWith("sun.rmi")) {
-            return "Network";
-        } else if (owner.equals("java.lang.UNIXProcess")) {
-            return "System";
-        } else if (owner.equals("sun.misc.Perf")) {
-            return "System";
-        } else if (owner.equals("java.util.TimeZone")) {
-            return "System";
-        } else if (owner.equals("sun.misc.MessageUtils")) {
-            return "IO";
-        } else if (owner.startsWith("java.util.prefs")) {
-            // TODO-RS: May come up in read-only mapped fs
-            return "IO";
-        } else if (owner.startsWith("java.lang.invoke")) {
-            return "Java 7 Method Handles";
-        } else if (owner.startsWith("com.apple.concurrent")) {
-            return "System";
-        } else if (owner.startsWith("com.apple.jobjc")) {
-            return "System (???)";
-        } else if (owner.startsWith("oracle.jrockit.jfr")) {
-            return "Management";
-        } else if (owner.equals("java.lang.ClassLoader$NativeLibrary")) {
-            return "Native Libraries";
-        } else if (owner.equals("java.lang.System") && method.getName().equals("mapLibraryName")) {
-            return "Native Libraries";
-        } else if (owner.equals("java.lang,System") && method.getName().equals("registerNatives")) {
-            return "Class init";
-        } else {
-            return null;
+        for (IllegalMethodPattern pattern : illegalMethodPatterns) {
+            if (pattern.matches(owner, method)) {
+                return pattern.category;
+            }
         }
+        return null;
     }
     
     public static String getMissingNativeMethodMessage(String owner, org.objectweb.asm.commons.Method method) {
