@@ -21,7 +21,6 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.raw.ArrayClassMirror;
 
 public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
 

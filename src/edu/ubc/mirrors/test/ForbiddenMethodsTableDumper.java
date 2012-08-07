@@ -17,7 +17,7 @@ public class ForbiddenMethodsTableDumper {
 
         out.append("\\begin{tabular}{ l | l | l }\n");
         out.append("Class & Method & Category \\\\ \\hline \\hline\n");
-        for (ClassHolograph.IllegalMethodPattern pattern : ClassHolograph.illegalMethodPatterns) {
+        for (ClassHolograph.MethodPattern pattern : ClassHolograph.illegalMethodPatterns) {
             String line = pattern.className + " & " + pattern.methodName + " & " + pattern.category + "\\\\ \\hline\n";
             out.append(line.replace("$", "\\$"));
         }

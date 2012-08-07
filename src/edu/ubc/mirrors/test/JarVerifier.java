@@ -14,36 +14,59 @@ import java.util.jar.JarFile;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.mat.SnapshotException;
+import org.eclipse.mat.snapshot.ISnapshot;
+import org.eclipse.mat.snapshot.SnapshotFactory;
+import org.eclipse.mat.util.ConsoleProgressListener;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.MirageClassMirrorLoader;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
+import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class JarVerifier implements IApplication {
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
-//        String jarPath = args[0];
-//
-//        JarFile jar = new JarFile(jarPath);
-//        ClassLoader thisLoader = JarVerifier.class.getClassLoader();
-//        MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
-//        MirageClassLoader mirageLoader = new MirageClassLoader(null, new NativeClassMirrorLoader(thisLoader));
-        new JarVerifier().verifyJars(null);
+    public static void main(String[] args) throws Exception {
+        String snapshotPath = args[0];
+        
+        ISnapshot snapshot = SnapshotFactory.openSnapshot(
+                new File(snapshotPath), 
+                Collections.<String, String>emptyMap(), 
+                new ConsoleProgressListener(System.out));
+        
+        // Create an instance of the mirrors API backed by the snapshot
+        HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
+        
+        // Create a holograph VM
+        Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
+        
+        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
+                Reflection.getBootstrapPath(),
+                mappedFiles);
+        
+        new JarVerifier().verifyJars(holographVM);
     }
     
+    int classes = 0;
+    int noBytecode = 0;
+    int errors = 0;
     int unclassified = 0;
     int missing = 0;
     int illegal = 0;
     int implemented = 0;
     
-    public void verifyJars(MirageClassLoader loader) throws IOException {
+    public void verifyJars(VirtualMachineHolograph vm) throws Exception {
         String bootPath = (String)System.getProperties().get("sun.boot.class.path");
         String[] paths = bootPath.split(File.pathSeparator);
         NativeMethodCounter counter = new NativeMethodCounter();
@@ -53,9 +76,26 @@ public class JarVerifier implements IApplication {
                 for (JarEntry entry : Collections.list(jarFile.entries())) {
                     String name = entry.getName();
                     if (name.endsWith(".class")) {
+                        classes++;
                         new ClassReader(jarFile.getInputStream(entry)).accept(counter, 0);
-        //                String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
-        //                if (testClass(loader, jar.getInputStream(entry), className)) good++;
+                        
+                        String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
+                        try {
+                            ClassMirror classMirror = vm.findBootstrapClassMirror(className);
+                            if (classMirror == null) {
+                                noBytecode++;
+                                continue;
+                            }
+                            MirageClassLoader loader = ClassHolograph.getMirageClassLoader(classMirror);
+                            loader.getMirageClass(classMirror, true);
+                        } catch (Exception e) {
+                            errors++;
+                            e.printStackTrace();
+                        }
+                        
+                        if (classes % 100 == 0) {
+                            System.out.println("Processed " + classes);
+                        }
                     }
                 }
             }
@@ -65,48 +105,45 @@ public class JarVerifier implements IApplication {
         StringBuilder unclassifiedMethods = new StringBuilder();
         for (Map.Entry<String, Set<MethodNode>> entry : counter.classesWithNativeMethods.entrySet()) {
             String fullName = entry.getKey().replace('/', '.');
-            int lastDot = fullName.lastIndexOf('.');
-            String packageName = fullName.substring(0, lastDot);
-            String className = fullName.substring(lastDot + 1);
             
             Class<?> stubsClass = ClassHolograph.getNativeStubsClass(fullName);
             Map<Method, java.lang.reflect.Method> stubsMethods = MirageClassGenerator.indexStubMethods(stubsClass);
             
             for (MethodNode method : entry.getValue()) {
                 Method stubMethod = new Method(method.name, MirageClassGenerator.getStubMethodType(fullName, method.access, Type.getType(method.desc)).getDescriptor());
-                String classification;
                 if (stubsMethods.containsKey(stubMethod)) {
-                    classification = "<Implemented>";
                     implemented++;
                     continue;
                 }
                 
                 String message = ClassHolograph.getIllegalNativeMethodMessage(fullName, stubMethod);
                 if (message != null) {
-                    classification = "Illegal: " + message;
                     illegal++;
                     continue;
                 }
                 
                 message = ClassHolograph.getMissingNativeMethodMessage(fullName, stubMethod);
                 if (message != null) {
-                    classification = "Missing: " + message;
                     missing++;
-                    missingMethods.append(fullName + '#' + method.name + "\n");
+                    missingMethods.append(fullName + '#' + method.name + method.desc + "\n");
                     continue;
                 }
                 
-                classification = "???????";
                 unclassified++;
-                unclassifiedMethods.append(fullName + '#' + method.name + "\n");
+                unclassifiedMethods.append(fullName + '#' + method.name + method.desc + "\n");
             }
         }
+        System.out.println("Classes: " + classes);
         System.out.println("Implemented: " + implemented);
         System.out.println("Missing: " + missing);
         System.out.println(missingMethods);
         System.out.println("Illegal: " + illegal);
         System.out.println("Unclassified: " + unclassified);
         System.out.println(unclassifiedMethods);
+        
+        System.out.println("No bytecode? " + noBytecode);
+        System.out.println("Errors: " + errors);
+        MirageClassLoader.printStats();
     }
     
     private static boolean testClass(MirageClassLoader loader, InputStream bytesIn, String className) {

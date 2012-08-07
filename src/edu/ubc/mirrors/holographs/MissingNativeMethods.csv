@@ -1,0 +1,27 @@
+Class,Method,Category
+sun.instrument.InstrumentationImpl,*,Class loading reflection
+sun.misc.Unsafe,*,Direct memory-model reflection
+java.lang.reflect.Array,*,Reflection
+java.util.zip.*,*,Read-only mapped FS
+java.lang.StrictMath,*,Math
+java.lang.Class,getInterfaces,Reflection
+java.lang.Class,getDeclaredClasses0,Reflection
+java.lang.Class,getDeclaredMethods0,Reflection
+java.lang.Class,getGenericSignature,Reflection
+java.lang.Class,getDeclaringClass,Reflection
+java.lang.Class,getRawAnnotations,Reflection
+java.lang.Class,getEnclosingMethod0,Reflection
+java.lang.Class,getDeclaredFields0,Reflection
+java.lang.Class,getPrimitiveClass,Reflection
+java.lang.ClassLoader,defineClass0,Reflection
+java.lang.ClassLoader,defineClass2,Reflection
+java.lang.ClassLoader,getCaller,Reflection
+java.lang.Runtime,runFinalization0,Tunnel
+java.lang.SecurityManager,*,Reflection
+java.lang.Shutdown,*,Sandboxed runtime
+java.lang.ref.Finalizer,invokeFinalizeMethod,Tunnel
+java.lang.reflect.Proxy,defineClass0,Reflection
+java.security.AccessController,*,Reflection
+java.sql.DriverManager,getCallerClassLoader,Reflection
+java.util.ResourceBundle,getClassContext,Reflection
+sun.reflect.NativeMethodAccessorImpl,invoke0,Reflection

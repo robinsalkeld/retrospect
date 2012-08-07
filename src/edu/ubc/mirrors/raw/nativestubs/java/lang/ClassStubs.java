@@ -105,4 +105,9 @@ public class ClassStubs {
     public static void setSigners(Class<?> classLoaderLiteral, Mirage thiz, Mirage signers) {
         // TODO-RS
     }
+    
+    public static boolean desiredAssertionStatus0(Class<?> classLoaderLiteral, Mirage klass) {
+        // TODO-RS
+        return false;
+    }
 }

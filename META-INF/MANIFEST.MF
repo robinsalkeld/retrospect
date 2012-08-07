@@ -22,6 +22,7 @@ Import-Package: com.ibm.icu.text;version="4.4.2.1",
  org.eclipse.mat.parser.io,
  org.eclipse.mat.parser.model,
  org.eclipse.mat.snapshot,
+ org.eclipse.mat.snapshot.extension,
  org.eclipse.mat.snapshot.model,
  org.eclipse.mat.util,
  org.eclipse.osgi.framework.adaptor,
@@ -33,8 +34,10 @@ Import-Package: com.ibm.icu.text;version="4.4.2.1",
  org.osgi.service.packageadmin;version="1.2.0"
 Service-Component: component.xml
 Export-Package: edu.ubc.mirrors,
+ edu.ubc.mirrors.eclipse.mat,
  edu.ubc.mirrors.holographs,
  edu.ubc.mirrors.mirages,
  edu.ubc.mirrors.test,
+ edu.ubc.mirrors.wrapping,
  org.objectweb.asm;version="4.0.0",
  org.objectweb.asm.tree;version="4.0.0"

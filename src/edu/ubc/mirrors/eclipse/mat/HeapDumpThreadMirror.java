@@ -38,8 +38,7 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
             
             frames = stack.getStackFrames();
         } catch (SnapshotException e) {
-//            throw new RuntimeException(e);
-            frames = new IStackFrame[0];
+            throw new RuntimeException(e);
         }
         
         ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());

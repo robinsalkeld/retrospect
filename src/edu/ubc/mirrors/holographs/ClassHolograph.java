@@ -24,6 +24,7 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapThreadMirror;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -39,14 +40,14 @@ public class ClassHolograph extends WrappingClassMirror {
     
     public static ThreadLocal<ThreadMirror> currentThreadMirror = new ThreadLocal<ThreadMirror>();
     
-    public static class IllegalMethodPattern {
+    public static class MethodPattern {
         public final String className;
         private final Pattern classNamePattern;
         public final String methodName;
         private final Pattern methodNamePattern;
         public final String category;
         
-        public IllegalMethodPattern(String line) {
+        public MethodPattern(String line) {
             String[] pieces = line.split(",");
             className = pieces[0];
             classNamePattern = getPattern(className);
@@ -72,7 +73,7 @@ public class ClassHolograph extends WrappingClassMirror {
         }
     }
     
-    public static List<IllegalMethodPattern> illegalMethodPatterns = new ArrayList<IllegalMethodPattern>();
+    public static List<MethodPattern> illegalMethodPatterns = new ArrayList<MethodPattern>();
     static {
         InputStream in = ClassHolograph.class.getClassLoader().getResourceAsStream("edu/ubc/mirrors/holographs/IllegalNativeMethods.csv");
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -81,7 +82,23 @@ public class ClassHolograph extends WrappingClassMirror {
             // Skip the header
             String line = reader.readLine();
             while ((line = reader.readLine()) != null) {
-                illegalMethodPatterns.add(new IllegalMethodPattern(line));
+                illegalMethodPatterns.add(new MethodPattern(line));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static List<MethodPattern> missingMethodPatterns = new ArrayList<MethodPattern>();
+    static {
+        InputStream in = ClassHolograph.class.getClassLoader().getResourceAsStream("edu/ubc/mirrors/holographs/MissingNativeMethods.csv");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        
+        try {
+            // Skip the header
+            String line = reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                missingMethodPatterns.add(new MethodPattern(line));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -106,7 +123,7 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public static String getIllegalNativeMethodMessage(String owner, org.objectweb.asm.commons.Method method) {
-        for (IllegalMethodPattern pattern : illegalMethodPatterns) {
+        for (MethodPattern pattern : illegalMethodPatterns) {
             if (pattern.matches(owner, method)) {
                 return pattern.category;
             }
@@ -115,34 +132,14 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public static String getMissingNativeMethodMessage(String owner, org.objectweb.asm.commons.Method method) {
-        if (owner.equals("sun.instrument.InstrumentationImpl")) {
-            return "Class loading reflection";
-        } else if (owner.equals("sun.misc.Unsafe")) {
-            // TODO-RS: Some of these should be illegal. Absolute address memory access if nothing else.
-            return "Direct memory-model reflection";
-        } else if (owner.equals("sun.misc.Unsafe")) {
-            // TODO-RS: Some of these should be illegal. Absolute address memory access if nothing else.
-            return "Direct memory-model reflection";
-        } else if (owner.equals("java.lang.reflect.Array")) {
-            return "Reflection";
-        } else if (owner.startsWith("java.util.zip")) {
-            return "Read-only mapped FS";
-        } else if (owner.equals("java.lang.StrictMath")) {
-            return "Math";
-        } else {
-            return null;
+        for (MethodPattern pattern : missingMethodPatterns) {
+            if (pattern.matches(owner, method)) {
+                return pattern.category;
+            }
         }
+        return null;
     }
         
-    
-    private ClassMirror getBytecodeMirror(ClassMirror klass) {
-        if (klass instanceof ClassHolograph) {
-            return ((ClassHolograph)klass).getBytecodeMirror();
-        } else {
-            return klass;
-        }
-    }
-
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
         // Just to check that the method exists.
 //        ClassMirror[] bytecodeParamTypes = new ClassMirror[paramTypes.length];
@@ -401,20 +398,17 @@ public class ClassHolograph extends WrappingClassMirror {
     @Override
     public InstanceMirror newRawInstance() {
         if (Reflection.isAssignableFrom(getVM().findBootstrapClassMirror(ClassLoader.class.getName()), this)) {
-            return newRawClassLoaderInstance();
+            return vm.getWrappedClassLoaderMirror(new FieldMapClassMirrorLoader(this) {
+                @Override
+                public ClassMirror getClassMirror() {
+                    return getWrappedClassMirror();
+                }
+            });
+        } else if (Reflection.isAssignableFrom(getVM().findBootstrapClassMirror(Thread.class.getName()), this)) {
+            return new FieldMapThreadMirror(this);
         } else {
             return new FieldMapMirror(this);
         }
-    }
-    
-    @Override
-    public ClassMirrorLoader newRawClassLoaderInstance() {
-        return vm.getWrappedClassLoaderMirror(new FieldMapClassMirrorLoader(this) {
-            @Override
-            public ClassMirror getClassMirror() {
-                return getWrappedClassMirror();
-            }
-        });
     }
     
     @Override

@@ -114,7 +114,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
             mirror = new HeapDumpClassMirror(this, (IClass)object);
         } else if (object instanceof IClassLoader) {
             mirror = new HeapDumpClassMirrorLoader(this, (IClassLoader)object);
-        } else if (object.getClazz().getName().equals(Thread.class.getName())) {
+        } else if (isThread(object)) {
             mirror = new HeapDumpThreadMirror(this, (IInstance)object);
         } else if (object instanceof IInstance) {
             mirror = new HeapDumpInstanceMirror(this, (IInstance)object);
@@ -128,6 +128,17 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         
         mirrors.put(object, mirror);
         return mirror;
+    }
+    
+    private boolean isThread(IObject object) {
+        IClass klass = object.getClazz();
+        while (klass != null) {
+            if (klass.getName().equals(Thread.class.getName())) {
+                return true;
+            }
+            klass = klass.getSuperClass();
+        }
+        return false;
     }
     
     @Override

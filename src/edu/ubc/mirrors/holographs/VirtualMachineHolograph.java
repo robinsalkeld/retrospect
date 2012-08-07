@@ -240,8 +240,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             }
         }
         
-        System.out.println("Fetching original bytecode for: " + holographClass.getClassName());
-        
+        if (MirageClassLoader.debug) {
+            System.out.println("Fetching original bytecode for: " + holographClass.getClassName());
+        }
         ThreadMirror firstThread = getThreads().get(0);
         
         String resourceName = className.replace('.', '/') + ".class";
@@ -271,7 +272,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         byte[] result = baos.toByteArray();
         
         if (mirageLoader.myTraceDir != null) {
-            System.out.println("Caching original bytecode for: " + holographClass.getClassName());
+            if (MirageClassLoader.debug) {
+                System.out.println("Caching original bytecode for: " + holographClass.getClassName());
+            }
             File file = mirageLoader.createClassFile(className.replace('.', '/') + ".original.class");
             OutputStream classFile;
             try {
