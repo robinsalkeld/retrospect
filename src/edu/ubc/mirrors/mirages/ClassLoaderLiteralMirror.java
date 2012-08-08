@@ -94,7 +94,8 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
 
         // makeStringMirage
 
-        desc = Type.getMethodDescriptor(Type.getType(Mirage.class), Type.getType(String.class));
+//        Type stringMirageType = MirageClassGenerator.getMirageType(Mirage.class);
+        desc = Type.getMethodDescriptor(mirageType, Type.getType(String.class));
         mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "makeStringMirage", desc, null, null);
         mv.visitCode();
         mv.visitVarInsn(Opcodes.ALOAD, 0);
@@ -109,6 +110,7 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
         
         OBJECT_MIRAGE_MAKE_STRING_MIRAGE.invoke(mv);
         
+//        mv.visitTypeInsn(Opcodes.CHECKCAST, stringMirageType.getInternalName());
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(3, 1);
         mv.visitEnd();

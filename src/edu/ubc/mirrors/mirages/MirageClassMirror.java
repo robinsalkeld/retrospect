@@ -27,11 +27,6 @@ public class MirageClassMirror extends WrappingClassMirror {
     }
     
     @Override
-    public MirageClassMirrorLoader getLoader() {
-        return (MirageClassMirrorLoader)super.getLoader();
-    }
-    
-    @Override
     public byte[] getBytecode() {
         return ClassHolograph.getMirageClassLoader(getOriginal()).getBytecode(this);
     }

@@ -45,6 +45,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type fieldMapMirrorType = Type.getType(FieldMapMirror.class);
     public static Type objectType = Type.getType(Object.class);
     public static Type stringType = Type.getType(String.class);
+    public static Type mirageStringType = getMirageType(String.class);
     public static Type classType = Type.getType(Class.class);
     public static Type stackTraceElementType = Type.getType(StackTraceElement.class);
     public static Type stackTraceType = Type.getType(StackTraceElement[].class);

@@ -12,8 +12,11 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassLoaderStubs;
 
 public class UnsafeStubs {
@@ -156,10 +159,22 @@ public class UnsafeStubs {
         // TODO-RS: Need to figure this one out...
     }
     
-    public static Mirage defineClass(Class<?> classLoaderLiteral, Mirage unsafe, Mirage name, Mirage b, int off, int len,
+    public static Mirage defineClass(Class<?> classLoaderLiteral, Mirage unsafe, Mirage internalName, Mirage b, int off, int len,
             Mirage classLoader, Mirage pd) {
 
-        // Not sure what the difference is between the Unsafe version and the usual ClassLoader.defineClass* methods
-        return ClassLoaderStubs.defineClass1(classLoaderLiteral, classLoader, name, b, off, len, pd, null);
+        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+        
+        String realInternalName = Reflection.getRealStringForMirror((InstanceMirror)internalName.getMirror());
+        String realClassName = realInternalName.replace('/', '.');
+        Mirage className = ObjectMirage.make(Reflection.makeString(vm, realClassName));
+        
+        return ClassLoaderStubs.defineClass1(classLoaderLiteral, classLoader, className, b, off, len, pd, null);
+    }
+    
+    public static Mirage allocateInstance(Class<?> classLoaderLiteral, Mirage unsafe, Mirage klass) {
+        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+        InstanceMirror result = classMirror.newRawInstance();
+        return ObjectMirage.make(result);
     }
 }

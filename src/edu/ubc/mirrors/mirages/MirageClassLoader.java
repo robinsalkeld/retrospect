@@ -11,7 +11,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -397,6 +396,16 @@ public class MirageClassLoader extends ClassLoader {
             new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
         }
         visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true);
+        if (myTraceDir != null) {
+            File txtFile = createClassFile(internalName + ".original.txt");
+            PrintWriter textFileWriter;
+            try {
+                textFileWriter = new PrintWriter(txtFile);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            visitor = new TraceClassVisitor(visitor, textFileWriter);
+        }
         ClassReader reader = new ClassReader(original.getBytecode());
         reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();
