@@ -43,7 +43,8 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
             try {
                 for (IClass c : snapshot.getClasses()) {
                     if (c.getClassLoaderId() == 0) {
-                        bootstrapClasses.put(c.getName(), new HeapDumpClassMirror(this, c));
+                        HeapDumpClassMirror classMirror = new HeapDumpClassMirror(this, c);
+                        bootstrapClasses.put(classMirror.getClassName(), classMirror);
                     }
                 }
             } catch (SnapshotException e) {

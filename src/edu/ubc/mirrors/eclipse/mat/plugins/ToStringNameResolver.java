@@ -14,7 +14,7 @@ public class ToStringNameResolver implements IClassSpecificNameResolver {
     @Override
     public String resolve(IObject object) throws SnapshotException {
         try {
-            return Reflection.toString((InstanceMirror)HolographVMRegistry.getMirror(object));
+            return Reflection.toString(HolographVMRegistry.getMirror(object));
         } catch (Throwable t) {
             System.out.println("Error on object #" + object.getObjectId());
             t.printStackTrace();

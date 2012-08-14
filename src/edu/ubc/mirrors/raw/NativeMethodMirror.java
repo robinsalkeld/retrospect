@@ -17,7 +17,7 @@ public class NativeMethodMirror implements MethodMirror {
     }
     
     @Override
-    public Object invoke(ThreadMirror thread, InstanceMirror obj, Object... args)
+    public Object invoke(ThreadMirror thread, ObjectMirror obj, Object... args)
             throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
 

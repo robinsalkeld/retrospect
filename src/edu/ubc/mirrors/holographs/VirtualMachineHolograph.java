@@ -38,6 +38,7 @@ import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.MirageVirtualMachine;
 import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
@@ -99,13 +100,13 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
     }
     
-    public File getMappedFile(InstanceMirror fileMirage) {
+    public File getMappedFile(InstanceMirror fileMirage, boolean errorOnUnmapped) {
         InstanceMirror pathMirror = (InstanceMirror)Reflection.getField(fileMirage, "path");
         String path = Reflection.getRealStringForMirror(pathMirror);
-        return getMappedFile(new File(path));
+        return getMappedFile(new File(path), errorOnUnmapped);
     }
     
-    public File getMappedFile(File mirrorFile) {
+    public File getMappedFile(File mirrorFile, boolean errorOnUnmapped) {
         String path = mirrorFile.getAbsolutePath();
         for (Map.Entry<String, String> entry : mappedFiles.entrySet()) {
             String key = entry.getKey();
@@ -113,7 +114,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 return new File(entry.getValue() + path.substring(key.length()));
             }
         }
-        throw new IllegalArgumentException("Unmapped file path: " + mirrorFile);
+        if (errorOnUnmapped) {
+            throw new IllegalArgumentException("Unmapped file path: " + mirrorFile);
+        } else {
+            return null;
+        }
     }
     
     public Inflater getHostInflator(long address) {
@@ -185,8 +190,15 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         return bootstrapBytecodeLoader;
     }
     
-    public ClassMirror getBytecodeClassMirror(final ClassHolograph holographClass) {
+    public ClassMirror getBytecodeClassMirror(final ClassMirror holographClass) {
         final ClassMirrorLoader holographLoader = holographClass.getLoader();
+        
+        if (holographClass.isPrimitive()) {
+            return holographClass;
+        } else if (holographClass.isArray()) {
+            return new ArrayClassMirror(1, getBytecodeClassMirror(holographClass.getComponentClassMirror()));
+        }
+        
         final byte[] bytecode = getBytecode(holographClass);
         return new BytecodeClassMirror(holographClass.getClassName()) {
             @Override
@@ -241,6 +253,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
         
         if (MirageClassLoader.debug) {
+            MirageClassLoader.printIndent();
             System.out.println("Fetching original bytecode for: " + holographClass.getClassName());
         }
         ThreadMirror firstThread = getThreads().get(0);
@@ -273,6 +286,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         
         if (mirageLoader.myTraceDir != null) {
             if (MirageClassLoader.debug) {
+                MirageClassLoader.printIndent();
                 System.out.println("Caching original bytecode for: " + holographClass.getClassName());
             }
             File file = mirageLoader.createClassFile(className.replace('.', '/') + ".original.class");

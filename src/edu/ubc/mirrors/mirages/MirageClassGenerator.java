@@ -397,6 +397,7 @@ public class MirageClassGenerator extends ClassVisitor {
         // Take off the native keyword if it's there - we're going to fill in an actual
         // method (even if it's a stub that throws an exception).
         int mirageAccess = ~Opcodes.ACC_NATIVE & access;
+        
         MethodVisitor superVisitor = super.visitMethod(mirageAccess, name, desc, signature, exceptions);
         
         if (this.name.equals(mirageThrowableType.getInternalName())) {
@@ -611,9 +612,10 @@ public class MirageClassGenerator extends ClassVisitor {
                 
                 Type nMinus1Type = makeArrayType(dims - 1, Type.getType(Object.class)); 
                 interfaces.add(getMirageType(nMinus1Type).getInternalName());
-            } else {
-                interfaces.add(getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), false));
             }
+        }
+        if (!isInterface) {
+            interfaces.add(getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), false));
         }
         
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);

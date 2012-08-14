@@ -116,7 +116,7 @@ public class ZipFileStubs {
         
         String realName = Reflection.getRealStringForMirror((InstanceMirror)name.getMirror());
         File guestFile = new File(realName);
-        File hostFile = vm.getMappedFile(guestFile);
+        File hostFile = vm.getMappedFile(guestFile, true);
         ZipFile zipFile = new JarFile(hostFile);
         long jzfile = getJzfile(zipFile);
         vm.zipFilesByAddress.put(jzfile, zipFile);
@@ -132,7 +132,7 @@ public class ZipFileStubs {
             if (path == null) {
                 throw new InternalError();
             }
-            File mappedPath = vm.getMappedFile(path);
+            File mappedPath = vm.getMappedFile(path, true);
             // Create a JarFile in case any of its native methods are invoked
             try {
                 hostZipFile = new JarFile(mappedPath);

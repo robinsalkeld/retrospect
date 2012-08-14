@@ -17,16 +17,16 @@ import edu.ubc.mirrors.mirages.Reflection;
 // emulate across platforms
 public class UnixFileSystemStubs {
 
-    private static File getMappedFile(Class<?> classLoaderLiteral, Mirage f) {
+    private static File getMappedFile(Class<?> classLoaderLiteral, Mirage f, boolean errorOnUnmapped) {
         MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
         
-        return vm.getMappedFile((InstanceMirror)f.getMirror());
+        return vm.getMappedFile((InstanceMirror)f.getMirror(), errorOnUnmapped);
     }
     
     public static long getLastModifiedTime(Class<?> classLoaderLiteral, Mirage fs, Mirage f) {
-        File mappedFile = getMappedFile(classLoaderLiteral, f);
-        return mappedFile.lastModified();
+        File mappedFile = getMappedFile(classLoaderLiteral, f, false);
+        return mappedFile != null ? mappedFile.lastModified() : 0;
     }
     
     public static Mirage canonicalize0(Class<?> classLoaderLiteral, Mirage fs, Mirage f) throws IOException {
@@ -39,8 +39,12 @@ public class UnixFileSystemStubs {
     }
     
     public static int getBooleanAttributes0(Class<?> classLoaderLiteral, Mirage fs, Mirage f) {
-        File mappedFile = getMappedFile(classLoaderLiteral, f);
+        File mappedFile = getMappedFile(classLoaderLiteral, f, false);
         int result = 0;
+        if (mappedFile == null) {
+            return result;
+        }
+        
         if (mappedFile.exists()) {
             result |= 0x01;
         }

@@ -137,18 +137,12 @@ public class HeapDumpClassMirror implements ClassMirror {
     }
 
     public List<InstanceMirror> getInstances() {
-        if (klass == null) {
-            return Collections.emptyList();
-        }
-        
         List<InstanceMirror> result = new ArrayList<InstanceMirror>();
         try {
-            for (int id : klass.getObjectIds()) {
-                IObject object = (IObject)klass.getSnapshot().getObject(id);
-                InstanceMirror mirror = (InstanceMirror)vm.makeMirror(object);
-                if (mirror != null) {
-                    result.add(mirror);
-                }
+            // TODO-RS: Handle interfaces as well
+            addDirectInstances(result, klass);
+            for (IClass subclass : klass.getAllSubclasses()) {
+                addDirectInstances(result, subclass);
             }
         } catch (SnapshotException e) {
             throw new RuntimeException(e);
@@ -156,6 +150,16 @@ public class HeapDumpClassMirror implements ClassMirror {
         return result;
     }
 
+    private void addDirectInstances(List<InstanceMirror> list, IClass klass) throws SnapshotException {
+        for (int id : klass.getObjectIds()) {
+            IObject object = (IObject)klass.getSnapshot().getObject(id);
+            InstanceMirror mirror = (InstanceMirror)vm.makeMirror(object);
+            if (mirror != null) {
+                list.add(mirror);
+            }
+        }
+    }
+    
     @Override
     public List<FieldMirror> getMemberFields() {
         throw new UnsupportedOperationException();
@@ -272,7 +276,8 @@ public class HeapDumpClassMirror implements ClassMirror {
     
     @Override
     public boolean initialized() {
-        return true;
+        // Unfortunately the model doesn't track this
+        throw new UnsupportedOperationException();
     }
     
     @Override

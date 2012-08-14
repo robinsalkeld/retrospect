@@ -18,7 +18,7 @@ public class WrappingMethodMirror implements MethodMirror {
     }
     
     @Override
-    public Object invoke(ThreadMirror thread, InstanceMirror obj, Object... args)
+    public Object invoke(ThreadMirror thread, ObjectMirror obj, Object... args)
             throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
 
@@ -26,7 +26,7 @@ public class WrappingMethodMirror implements MethodMirror {
         for (int i = 0; i < args.length; i++) {
             unwrappedArgs[i] = unwrappedValue(vm, args[i]);
         }
-        InstanceMirror unwrappedObj = (InstanceMirror)vm.unwrapMirror(obj);
+        ObjectMirror unwrappedObj = vm.unwrapMirror(obj);
         ThreadMirror unwrappedThread = (ThreadMirror)vm.unwrapMirror(thread);
         Object result = wrapped.invoke(unwrappedThread, unwrappedObj, unwrappedArgs);
         return getWrappedValue(vm, result);

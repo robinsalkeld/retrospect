@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.mirages.Stopwatch;
 import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
 
 public class ToStringer implements IApplication {
@@ -38,6 +40,11 @@ public class ToStringer implements IApplication {
         
         MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
+        
+        Method method = Package.class.getDeclaredMethod("getSystemPackage0", String.class);
+        method.setAccessible(true);
+        String result = (String)method.invoke(null, "java.lang.instrument");
+        
         
 //        Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
 //        unsafeField.setAccessible(true);
@@ -81,21 +88,51 @@ public class ToStringer implements IApplication {
         
         int numObjects = snapshot.getSnapshotInfo().getNumberOfObjects();
         System.out.println("numObjects: " + numObjects);
-        for (int id = 1056519; id < numObjects; id++) {
-            IObject obj = snapshot.getObject(id);
-            ObjectMirror mirror = vm.makeMirror(obj);
-            if (mirror instanceof InstanceMirror) {
-                InstanceMirror holograph = (InstanceMirror)holographVM.getWrappedMirror(mirror);
-                try {
-                    System.out.println("***");
-                    System.out.println(Reflection.toString(holograph.getClassMirror()));
-                    System.out.println(Reflection.toString(holograph));
-                } catch (Exception e) {
-                    System.out.println("Error on object #" + id + " (" + Long.toHexString(obj.getObjectAddress())  + ")");
-                    MirageClassLoader.printStats();
-                    throw e;
+        Stopwatch sw = new Stopwatch();
+        sw.start();
+//        int firstId = 1081932;
+        int firstId = 10364;
+        int id = firstId;
+        int count = 0;
+        int charCount = 0;
+        try {
+            for (; id < numObjects; id++) {
+                IObject obj = snapshot.getObject(id);
+                ObjectMirror mirror = vm.makeMirror(obj);
+                if (mirror != null) {
+                    ObjectMirror holograph = holographVM.getWrappedMirror(mirror);
+                    try {
+//                        System.out.println("***");
+//                        System.out.println(Reflection.toString(holograph
+//                                .getClassMirror()));
+//                        System.out.println(Reflection.toString(holograph));
+
+                        String s = Reflection.toString(holograph);
+                        charCount += s.length();
+                        
+                        count++;
+                        if (count % 25 == 0) {
+                            System.out.println(count);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Error on object #" + id + " ("
+                                + Long.toHexString(obj.getObjectAddress())
+                                + ")");
+                        
+                        throw e;
+                    }
                 }
             }
+        } finally {
+            long time = sw.stop();
+            System.out.println("Num objects toString-ed: " + count);
+            if (count != 0) {
+                System.out.println("Total time: " + time);
+                System.out.println("Average time per object: " + ((float)time) / count);
+                System.out.println("Average string length: " + ((float)charCount) / count);
+                System.out.println("Average time per character: " + ((float)time) / charCount);
+            }
+            MirageClassLoader.printStats();
         }
     }
 

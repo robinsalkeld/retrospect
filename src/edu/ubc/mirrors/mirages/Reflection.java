@@ -343,7 +343,7 @@ public class Reflection {
         }
     }
     
-    public static Object mirrorInvoke(ThreadMirror thread, MethodMirror method, InstanceMirror obj, Object... args) {
+    public static Object mirrorInvoke(ThreadMirror thread, MethodMirror method, ObjectMirror obj, Object... args) {
         try {
             return method.invoke(thread, obj, args);
         } catch (IllegalArgumentException e) {
@@ -460,7 +460,7 @@ public class Reflection {
         return result;
     }
     
-    public static String toString(InstanceMirror mirror) {
+    public static String toString(ObjectMirror mirror) {
         VirtualMachineMirror vm = mirror.getClassMirror().getVM();
         ClassMirror vmObjectClass = vm.findBootstrapClassMirror(Object.class.getName());
         MethodMirror toStringMethod = getMethod(vmObjectClass, "toString");
@@ -521,5 +521,33 @@ public class Reflection {
 
     public static boolean isInstance(ClassMirror classMirror, ObjectMirror oMirror) {
         return isAssignableFrom(classMirror, oMirror.getClassMirror());
+    }
+    
+    public static FieldMirror getStaticField(ClassMirror klass, String fieldName) throws NoSuchFieldException {
+        try {
+            return klass.getStaticField(fieldName);
+        } catch (NoSuchFieldException e) {
+            // Continue
+        }
+        
+        // TODO-RS: Check the spec on the ordering here
+        ClassMirror superclass = klass.getSuperClassMirror();
+        if (superclass != null) {
+            try {
+                return getStaticField(superclass, fieldName);
+            } catch (NoSuchFieldException e) {
+                // Ignore
+            }
+        }
+        
+        for (ClassMirror i : klass.getInterfaceMirrors()) {
+            try {
+                return getStaticField(i, fieldName);
+            } catch (NoSuchFieldException e) {
+                // Ignore
+            }
+        }
+        
+        throw new NoSuchFieldException(fieldName);
     }
 }

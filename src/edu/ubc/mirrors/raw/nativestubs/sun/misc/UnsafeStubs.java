@@ -94,6 +94,32 @@ public class UnsafeStubs {
         }
     }
     
+    public static long objectFieldOffset(Class<?> classLoaderLiteral, Mirage unsafe, Mirage field) {
+        InstanceMirror fieldMirror = (InstanceMirror)field.getMirror();
+        ClassMirror klass = (ClassMirror)Reflection.getField(fieldMirror, "clazz");
+        String fieldName = Reflection.getRealStringForMirror((InstanceMirror)Reflection.getField(fieldMirror, "name"));
+        long fieldOffset = 12;
+        for (Map.Entry<String, ClassMirror> entry : klass.getDeclaredFields().entrySet()) {
+            ClassMirror fieldType = entry.getValue();
+            if (fieldType.isPrimitive()) {
+                String name = fieldType.getClassName();
+                if (name.equals("int")) {
+                    fieldOffset += 4;
+                } else {
+                    throw new InternalError("Unsupported type: " + name);
+                }
+            } else {
+                fieldOffset += 4;
+            }
+            
+            if (fieldName.equals(entry.getKey())) {
+                return fieldOffset;
+            }
+        }
+        
+        throw new InternalError("wrong field name???");
+    }
+    
     private static String fieldForOffset(InstanceMirror instance, long offset) {
         ClassMirror klass = instance.getClassMirror();
         long fieldOffset = 12;

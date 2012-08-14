@@ -25,6 +25,17 @@ public class Stopwatch {
         return total;
     }
     
+    public long lap() {
+        if (!isRunning()) {
+            throw new IllegalStateException();
+        }
+        long now = System.currentTimeMillis();
+        long lap = now - lastStarted; 
+        total += lap;
+        lastStarted = now;
+        return lap;
+    }
+    
     public void reset() {
         lastStarted = -1;
         total = 0;

@@ -149,35 +149,7 @@ public class ObjectMirage implements Mirage {
         String binaryName = className.replace('/', '.');
         ClassHolograph klass = (ClassHolograph)loader.loadOriginalClassMirror(binaryName);
         
-        // Force initialization just as the VM would, in case there is
-        // a <clinit> method that needs to be run.
-        MirageClassLoader.initializeClassMirror(klass);
-        
-        try {
-            return klass.getStaticField(fieldName);
-        } catch (NoSuchFieldException e) {
-            // Continue
-        }
-        
-        // TODO-RS: Check the spec on the ordering here
-        ClassMirror superclass = klass.getSuperClassMirror();
-        if (superclass != null) {
-            try {
-                return superclass.getStaticField(fieldName);
-            } catch (NoSuchFieldException e) {
-                // Ignore
-            }
-        }
-        
-        for (ClassMirror i : klass.getInterfaceMirrors()) {
-            try {
-                return i.getStaticField(fieldName);
-            } catch (NoSuchFieldException e) {
-                // Ignore
-            }
-        }
-        
-        throw new NoSuchFieldException(fieldName);
+        return Reflection.getStaticField(klass, fieldName);
     }
     
     public static Mirage make(ObjectMirror mirror) {

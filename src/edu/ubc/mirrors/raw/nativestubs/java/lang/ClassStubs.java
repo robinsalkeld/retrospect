@@ -1,7 +1,10 @@
 package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -84,6 +87,33 @@ public class ClassStubs {
         return ObjectMirage.make(result);
     }
     
+    public static Mirage getDeclaredFields0(Class<?> classLoaderLiteral, Mirage klass, boolean publicOnly) {
+        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineMirror vm = callingLoader.getVM();
+        
+        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+        Map<String, ClassMirror> fields = classMirror.getDeclaredFields();
+        ClassMirror constructorClass = vm.findBootstrapClassMirror(Field.class.getName());
+        ObjectArrayMirror result = (ObjectArrayMirror)constructorClass.newArray(fields.size());
+        int i = 0;
+        for (Map.Entry<String, ClassMirror> entry : fields.entrySet()) {
+            InstanceMirror inst = constructorClass.newRawInstance();
+            
+            Reflection.setField(inst, "clazz", classMirror);
+            // The name must be interned according to spec
+            Reflection.setField(inst, "name", StringStubs.internMirror(Reflection.makeString(vm, entry.getKey())));
+            Reflection.setField(inst, "type", entry.getValue());
+            // TODO-RS: Might be time to finally fix the fields API...
+            Reflection.setField(inst, "slot", 0);
+            Reflection.setField(inst, "modifiers", Modifier.PUBLIC);
+            Reflection.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(new byte[0])));
+            Reflection.setField(inst, "signature", Reflection.makeString(vm, ""));
+            
+            result.set(i++, inst);
+        }
+        return ObjectMirage.make(result);
+    }
+    
     public static int getModifiers(Class<?> classLoaderLiteral, Mirage klass) {
         return ((ClassMirror)klass.getMirror()).getModifiers();
     }
@@ -110,4 +140,8 @@ public class ClassStubs {
         // TODO-RS
         return false;
     }
+    
+//    public static Mirage getPrimitiveClass(Class<?> classLoaderLiteral, Mirage name) {
+//        
+//    }
 }

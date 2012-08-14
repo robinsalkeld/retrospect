@@ -7,15 +7,27 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.security.Policy;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import org.objectweb.asm.Type;
+
+import sun.misc.VM;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -30,6 +42,9 @@ import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.raw.BytecodeClassMirror;
+import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticField;
+import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeConstructorMirror;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
@@ -232,6 +247,10 @@ public class ClassHolograph extends WrappingClassMirror {
                 mirageParamTypes[i] = getMirageClass(paramTypes[i], false);
             }
             Class<?> mirageClass = getMirageClass(true);
+            // Account for the fact that ObjectMirage is not actually the top of the type lattice
+            if (getClassName().equals(Object.class.getName())) {
+                mirageClass = Object.class;
+            }
             try {
                 mirageClassMethod = mirageClass.getDeclaredMethod(name, mirageParamTypes);
             } catch (NoSuchMethodException e) {
@@ -241,7 +260,7 @@ public class ClassHolograph extends WrappingClassMirror {
         }
         
         @Override
-        public Object invoke(ThreadMirror thread, InstanceMirror obj, Object ... args) throws IllegalAccessException, InvocationTargetException {
+        public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalAccessException, InvocationTargetException {
             ThreadMirror original = currentThreadMirror.get();
             currentThreadMirror.set(thread);
             try {
@@ -422,5 +441,123 @@ public class ClassHolograph extends WrappingClassMirror {
         return new DirectArrayMirror(vm.getWrappedClassMirror(arrayClass), dims);
     }
     
+    private Boolean initialized = null;
     
+    @Override
+    public boolean initialized() {
+        try {
+            return super.initialized();
+        } catch (UnsupportedOperationException e) {
+            if (initialized == null) {
+                if (isArray()) {
+                    initialized = true;
+                } else {
+                    initialized = inferInitialized();
+                }
+            }
+            return initialized;
+        }
+    }
+
+    private static final Set<String> idempotentClassInits = new HashSet<String>(Arrays.asList(
+            Modifier.class.getName(),
+            PatternSyntaxException.class.getName(),
+            "org.eclipse.osgi.internal.permadmin.EquinoxSecurityManager"));
+    
+    private boolean inferInitialized() {
+        BytecodeClassMirror bytecodeClassMirror = (BytecodeClassMirror)getBytecodeMirror();
+        
+        // TODO-RS: Make this pluggable
+        if (idempotentClassInits.contains(getClassName())) {
+            return false;
+        }
+        
+        // If there is no <clinit> method, then we don't care.
+        StaticsInfo classInitInfo = bytecodeClassMirror.classInitInfo();
+        if (classInitInfo == null) {
+            return true;
+        }
+        
+        // If the class has any instances the initialization must have run.
+        if (!getInstances().isEmpty()) {
+            return true;
+        }
+        
+        // Examine all the static fields in the class.
+        for (BytecodeClassMirror.StaticField bytecodeField : bytecodeClassMirror.getStaticFields().values()) {
+            try {
+                // Be sure to call the super version of getStaticField, because otherwise
+                // we will end up in infinite recursion!
+                FieldMirror heapdumpField = super.getStaticField(bytecodeField.getName());
+                
+                if (!hasDefaultValue(heapdumpField)) {
+                    // If there are any static, non-constant fields with non-null values,
+                    // then initialization must have occurred since it has to before
+                    // any static fields can be set.
+                    if (!isConstantField(bytecodeField)) {
+                        return true;
+                    }
+                } else {
+                    // If there are any static fields with null/0 values,
+                    // and the <clinit> method has the effect of setting non-default values,
+                    // then initialization must not have occurred.
+                    if (!classInitInfo.isDefault(heapdumpField.getName()).couldBeDefault()) {
+                        return false;
+                    }
+                }
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        // If we can't tell if it's been run but it has no side-effects, just run it.
+        if (!classInitInfo.mayHaveSideEffects()) {
+            return false;
+        }
+        
+        // If it touched any other classes that haven't yet been initialized, then
+        // this class must not be initialized.
+        for (String touchedClass : classInitInfo.touchedClasses()) {
+            ClassMirror touchedClassMirror = Reflection.loadClassMirrorInternal(this, touchedClass.replace('/', '.'));
+            if (!touchedClassMirror.initialized()) {
+                return false;
+            }
+        }
+        
+        throw new UnsupportedOperationException("Unable to infer initialization status of class: " + this);
+    }
+    
+    private boolean isConstantField(BytecodeClassMirror.StaticField field) {
+        try {
+            return field.getBoxedValue() != null;
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static boolean hasDefaultValue(FieldMirror field) throws IllegalAccessException {
+        Type type = Reflection.typeForClassMirror(field.getType());
+        switch (type.getSort()) {
+        case Type.BOOLEAN:      return field.getBoolean() == false;
+        case Type.BYTE:         return field.getByte() == 0;
+        case Type.SHORT:        return field.getShort() == 0;
+        case Type.CHAR:         return field.getChar() == 0;
+        case Type.INT:          return field.getInt() == 0;
+        case Type.LONG:         return field.getLong() == 0;
+        case Type.FLOAT:        return field.getFloat() == 0;
+        case Type.DOUBLE:       return field.getDouble() == 0;
+        default:                return field.get() == null;
+        }
+    }
+    
+    @Override
+    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
+        // Force initialization just as the VM would, in case there is
+        // a <clinit> method that needs to be run.
+        MirageClassLoader.initializeClassMirror(this);
+        
+        return super.getStaticField(name);
+    }
 }
