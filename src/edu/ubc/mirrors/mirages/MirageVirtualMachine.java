@@ -14,7 +14,7 @@ public class MirageVirtualMachine extends WrappingVirtualMachine {
     @Override
     protected ObjectMirror wrapMirror(ObjectMirror mirror) {
         if (mirror instanceof ClassMirror) {
-            return new MirageClassMirror(this, (ClassMirror)mirror, false);
+            return new MirageClassMirror(this, (ClassMirror)mirror, true);
         } else {
             return super.wrapMirror(mirror);
         }

@@ -16,6 +16,8 @@ import org.objectweb.asm.tree.analysis.Interpreter;
 
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
 /**
  * @author robinsalkeld
@@ -26,9 +28,11 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
     
     private Frame<FrameValue> currentFrame;
     
-    public FrameVerifier(VirtualMachineMirror vm, ClassMirrorLoader loader) {
+    public FrameVerifier(VirtualMachineMirror vm, ClassMirrorLoader loader, boolean mirages) {
         super(ASM4);
-        simplerVerifier = new BetterVerifier(vm, loader);
+        simplerVerifier = mirages ? 
+                new MirageVerifier((VirtualMachineHolograph)vm, (ClassLoaderHolograph)loader) : 
+                new BetterVerifier(vm, loader);
     }
     
     @Override

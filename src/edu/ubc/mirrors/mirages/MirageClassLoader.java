@@ -376,7 +376,7 @@ public class MirageClassLoader extends ClassLoader {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         if (preverify) {
-            visitor = new FrameAnalyzerAdaptor(mirageClassMirror.getVM(), mirageClassMirror.getLoader(), visitor, false);
+            visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, false, true);
         }
         if (myTraceDir != null) {
             File txtFile = createClassFile(internalName + ".txt");
@@ -399,14 +399,14 @@ public class MirageClassLoader extends ClassLoader {
                 throw new RuntimeException(e);
             }
             ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
-            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), traceVisitor, true);
+            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), traceVisitor, true, false);
             byte[] bytecode = mirageClassMirror.getOriginal().getBytecode();
             if (bytecode == null) {
                 mirageClassMirror.getOriginal().getBytecode();
             }
             new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
         }
-        visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true);
+        visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true, false);
         if (myTraceDir != null) {
             File txtFile = createClassFile(internalName + ".original.txt");
             PrintWriter textFileWriter;

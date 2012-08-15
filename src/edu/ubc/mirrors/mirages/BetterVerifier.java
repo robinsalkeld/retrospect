@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.makeArrayType;
+
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.SimpleVerifier;
@@ -11,14 +13,62 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 public class BetterVerifier extends SimpleVerifier {
     
     private final VirtualMachineMirror vm;
-    private final ClassMirrorLoader loader;
+    protected final ClassMirrorLoader loader;
     
     public BetterVerifier(VirtualMachineMirror vm, ClassMirrorLoader loader) {
         this.vm = vm;
         this.loader = loader;
     }
     
-    private ClassMirror getClassMirror(Type t) {
+    @Override
+    public BasicValue merge(final BasicValue v, final BasicValue w) {
+        if (!v.equals(w)) {
+            Type t = v.getType();
+            Type u = w.getType();
+            if (t != null
+                    && (t.getSort() == Type.OBJECT || t.getSort() == Type.ARRAY))
+            {
+                if (u != null
+                        && (u.getSort() == Type.OBJECT || u.getSort() == Type.ARRAY))
+                {
+                    if ("Lnull;".equals(t.getDescriptor())) {
+                        return w;
+                    }
+                    if ("Lnull;".equals(u.getDescriptor())) {
+                        return v;
+                    }
+                    if (isAssignableFrom(t, u)) {
+                        return v;
+                    }
+                    if (isAssignableFrom(u, t)) {
+                        return w;
+                    }
+                    
+                    if (t.getSort() == Type.ARRAY && u.getSort() == Type.ARRAY) {
+                        BasicValue vComp = new BasicValue(makeArrayType(t.getDimensions() - 1, t.getElementType()));
+                        BasicValue wComp = new BasicValue(makeArrayType(u.getDimensions() - 1, u.getElementType()));
+                        BasicValue mergedComp = merge(vComp, wComp);
+                        Type mergedCompType = mergedComp.getType();
+                        return new BasicValue(makeArrayType(1, mergedCompType));
+                    }
+                    
+                    do {
+                        if (t == null || isInterface(t)) {
+                            return BasicValue.REFERENCE_VALUE;
+                        }
+                        t = getSuperClass(t);
+                        if (isAssignableFrom(t, u)) {
+                            return newValue(t);
+                        }
+                    } while (true);
+                }
+            }
+            return BasicValue.UNINITIALIZED_VALUE;
+        }
+        return v;
+    }
+    
+    protected ClassMirror getClassMirror(Type t) {
         try {
             String className;
             if (t.getSort() == Type.ARRAY) {

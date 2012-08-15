@@ -91,12 +91,16 @@ public class ToStringer implements IApplication {
         Stopwatch sw = new Stopwatch();
         sw.start();
 //        int firstId = 1081932;
-        int firstId = 10364;
-        int id = firstId;
+        int firstId = 16952;
         int count = 0;
         int charCount = 0;
         try {
-            for (; id < numObjects; id++) {
+            for (int id = firstId; id < numObjects; id++) {
+                // Method too large!
+                if (id == 10363) {
+                    continue;
+                }
+                
                 IObject obj = snapshot.getObject(id);
                 ObjectMirror mirror = vm.makeMirror(obj);
                 if (mirror != null) {

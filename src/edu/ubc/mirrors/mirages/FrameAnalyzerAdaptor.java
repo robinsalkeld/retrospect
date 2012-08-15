@@ -28,13 +28,15 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     private final VirtualMachineMirror vm;
     private final ClassMirrorLoader loader;
     private final boolean insertFrames;
+    private final boolean mirages;
     private Type thisType = null;
     
-    public FrameAnalyzerAdaptor(VirtualMachineMirror vm, ClassMirrorLoader loader, ClassVisitor cv, boolean insertFrames) {
+    public FrameAnalyzerAdaptor(VirtualMachineMirror vm, ClassMirrorLoader loader, ClassVisitor cv, boolean insertFrames, boolean mirages) {
         super(Opcodes.ASM4, cv);
         this.vm = vm;
         this.loader = loader;
         this.insertFrames = insertFrames;
+        this.mirages = mirages;
     }
 
     @Override
@@ -95,7 +97,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         final MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         final Map<Label, LabelNode> labelNodes = new HashMap<Label, LabelNode>();
-        final FrameVerifier verifier = new FrameVerifier(vm, loader);
+        final FrameVerifier verifier = new FrameVerifier(vm, loader, mirages);
         
         MethodNode analyzer = new MethodNode(access, name, desc, null, null) {
             @Override
