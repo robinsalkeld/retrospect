@@ -518,7 +518,7 @@ public class MirageClassGenerator extends ClassVisitor {
             visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getReturnType(desc).getInternalName());
         }
         visitor.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
-        visitor.visitMaxs(parameterClasses.length + 1, parameterClasses.length + 1);
+        visitor.visitMaxs(var + 1, var + 1);
         visitor.visitEnd();
     }
     
