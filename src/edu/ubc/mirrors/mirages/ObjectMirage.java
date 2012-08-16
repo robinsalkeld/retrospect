@@ -267,4 +267,11 @@ public class ObjectMirage implements Mirage {
             throw new UnsupportedOperationException("Not yet implemented");
         }
     }
+    
+    public static Throwable throwableAsMirage(VirtualMachineMirror vm, Throwable t) {
+        ClassMirror klass = vm.findBootstrapClassMirror(t.getClass().getName());
+        InstanceMirror throwableMirror = klass.newRawInstance();
+        Reflection.setField(throwableMirror, "detailMessage", Reflection.makeString(vm, t.getMessage()));
+        return (Throwable)ObjectMirage.make(throwableMirror);
+    }
 }

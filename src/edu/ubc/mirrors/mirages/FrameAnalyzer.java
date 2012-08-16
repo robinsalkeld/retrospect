@@ -59,7 +59,8 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
         if (successor == insn + 1 && 
                 (currentInsn == null || 
                 (currentInsn.getOpcode() != Opcodes.TABLESWITCH &&
-                 currentInsn.getOpcode() != Opcodes.LOOKUPSWITCH))) {
+                 currentInsn.getOpcode() != Opcodes.LOOKUPSWITCH && 
+                 currentInsn.getOpcode() != Opcodes.GOTO))) {
             stepIn[successor] = true;
         } else {
             jumpIn[successor] = true;

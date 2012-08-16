@@ -20,4 +20,22 @@ public class DoubleArrayMirage extends ArrayMirage implements DoubleArrayMirror 
     public void setDouble(int index, double b) throws ArrayIndexOutOfBoundsException {
         mirror.setDouble(index, b);
     }
+    
+    public static double getMirage(DoubleArrayMirror mirror, int index) throws Throwable {
+        try {
+            return mirror.getDouble(index);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw throwableAsMirage(mirror.getClassMirror().getVM(), e);
+        }
+    }
+    
+    public static void setMirage(DoubleArrayMirror mirror, int index, double d) throws Throwable {
+        try {
+            mirror.setDouble(index, d);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw throwableAsMirage(mirror.getClassMirror().getVM(), e);
+        } catch (ArrayStoreException e) {
+            throw throwableAsMirage(mirror.getClassMirror().getVM(), e);
+        }
+    }
 }

@@ -91,13 +91,17 @@ public class ToStringer implements IApplication {
         Stopwatch sw = new Stopwatch();
         sw.start();
 //        int firstId = 1081932;
-        int firstId = 16952;
+        int firstId = 21818;
         int count = 0;
         int charCount = 0;
         try {
             for (int id = firstId; id < numObjects; id++) {
                 // Method too large!
                 if (id == 10363) {
+                    continue;
+                }
+                // index out of bounds within hprof reader?
+                if (id == 21817) {
                     continue;
                 }
                 

@@ -41,6 +41,7 @@ import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
+import edu.ubc.mirrors.test.Breakpoint;
 
 public class MirageClassLoader extends ClassLoader {
     public static String traceClass = null;

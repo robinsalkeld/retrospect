@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.ObjectMirage.throwableAsMirage;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -29,5 +30,23 @@ public class ObjectArrayMirage extends ObjectMirage implements ObjectArrayMirror
 
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
         arrayMirror.set(index, o);
+    }
+    
+    public static Mirage getMirage(ObjectArrayMirror mirror, int index) throws Throwable {
+        try {
+            return ObjectMirage.make(mirror.get(index));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw throwableAsMirage(mirror.getClassMirror().getVM(), e);
+        }
+    }
+    
+    public static void setMirage(ObjectArrayMirror mirror, int index, Mirage m) throws Throwable {
+        try {
+            mirror.set(index, ObjectMirage.getMirror(m));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw throwableAsMirage(mirror.getClassMirror().getVM(), e);
+        } catch (ArrayStoreException e) {
+            throw throwableAsMirage(mirror.getClassMirror().getVM(), e);
+        }
     }
 }
