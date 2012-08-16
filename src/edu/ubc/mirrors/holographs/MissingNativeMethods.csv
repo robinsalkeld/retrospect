@@ -25,3 +25,4 @@ java.security.AccessController,*,Reflection
 java.sql.DriverManager,getCallerClassLoader,Reflection
 java.util.ResourceBundle,getClassContext,Reflection
 sun.reflect.NativeMethodAccessorImpl,invoke0,Reflection
+sun.reflect.ConstantPool,*,Reflection

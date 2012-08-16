@@ -52,3 +52,5 @@ sun.misc.NativeSignalHandler,*,System
 sun.misc.Signal,*,System
 sun.misc.VM,initialize,Core Class Initialization
 java.util.concurrent.atomic.AtomicLong,VMSupportsCS8,Core Class Initialization
+com.sun.java.util.jar.pack.NativeUnpack,*,IO
+java.lang.Compiler,*,JIT Compilation

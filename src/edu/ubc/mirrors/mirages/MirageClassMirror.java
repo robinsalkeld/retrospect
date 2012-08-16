@@ -43,13 +43,32 @@ public class MirageClassMirror extends WrappingClassMirror {
         return ClassHolograph.getMirageClassLoader(getOriginal()).getBytecode(this);
     }
     
+    public static ClassMirror getFrameworkClassMirror(String className) {
+        try {
+            return new NativeClassMirror(Class.forName(className, false, MirageClassMirror.class.getClassLoader()));
+        } catch (ClassNotFoundException e) {
+            NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
+            error.initCause(e);
+            throw error;
+        }
+    }
+    
     @Override
     public ClassMirror getSuperClassMirror() {
         if (getOriginal().getClassName().equals(Throwable.class.getName())) {
             return new NativeClassMirror(Throwable.class);
         }
         ClassMirror original = wrapped.getSuperClassMirror();
-        return original == null ? null : new MirageClassMirror(vm, original, true);
+        if (original == null) {
+            return null;
+        }
+        
+        
+        MirageClassMirror mirageMirror = new MirageClassMirror(vm, original, true);
+        if (mirageMirror.getClassName().startsWith("edu.ubc.mirrors")) {
+            return getFrameworkClassMirror(mirageMirror.getClassName());
+        }
+        return mirageMirror;
     }
     
 }

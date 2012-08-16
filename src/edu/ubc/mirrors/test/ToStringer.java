@@ -90,21 +90,11 @@ public class ToStringer implements IApplication {
         System.out.println("numObjects: " + numObjects);
         Stopwatch sw = new Stopwatch();
         sw.start();
-//        int firstId = 1081932;
-        int firstId = 21818;
+        int firstId = 37625;
         int count = 0;
         int charCount = 0;
         try {
             for (int id = firstId; id < numObjects; id++) {
-                // Method too large!
-                if (id == 10363) {
-                    continue;
-                }
-                // index out of bounds within hprof reader?
-                if (id == 21817) {
-                    continue;
-                }
-                
                 IObject obj = snapshot.getObject(id);
                 ObjectMirror mirror = vm.makeMirror(obj);
                 if (mirror != null) {
@@ -120,14 +110,13 @@ public class ToStringer implements IApplication {
                         
                         count++;
                         if (count % 25 == 0) {
-                            System.out.println(count);
+                            System.out.println(count + ": " + s);
                         }
                     } catch (Exception e) {
                         System.out.println("Error on object #" + id + " ("
                                 + Long.toHexString(obj.getObjectAddress())
                                 + ")");
-                        
-                        throw e;
+                        e.printStackTrace();
                     }
                 }
             }

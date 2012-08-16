@@ -48,8 +48,10 @@ public class BetterVerifier extends SimpleVerifier {
                         BasicValue vComp = new BasicValue(makeArrayType(t.getDimensions() - 1, t.getElementType()));
                         BasicValue wComp = new BasicValue(makeArrayType(u.getDimensions() - 1, u.getElementType()));
                         BasicValue mergedComp = merge(vComp, wComp);
-                        Type mergedCompType = mergedComp.getType();
-                        return new BasicValue(makeArrayType(1, mergedCompType));
+                        if (!mergedComp.equals(BasicValue.UNINITIALIZED_VALUE)) {
+                            Type mergedCompType = mergedComp.getType();
+                            return new BasicValue(makeArrayType(1, mergedCompType));
+                        }
                     }
                     
                     do {

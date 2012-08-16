@@ -462,7 +462,13 @@ public class ClassHolograph extends WrappingClassMirror {
     private static final Set<String> idempotentClassInits = new HashSet<String>(Arrays.asList(
             Modifier.class.getName(),
             PatternSyntaxException.class.getName(),
-            "org.eclipse.osgi.internal.permadmin.EquinoxSecurityManager"));
+            "org.eclipse.osgi.internal.permadmin.EquinoxSecurityManager",
+            "java.lang.invoke.MethodHandleNatives",
+            "sun.reflect.UnsafeStaticFieldAccessorImpl",
+            // Hits illegal native methods anyway - this makes the classes untouchable
+            "sun.nio.ch.NativeThread",
+            "sun.reflect.ConstantPool",
+            "java.lang.Compiler"));
     
     private boolean inferInitialized() {
         BytecodeClassMirror bytecodeClassMirror = (BytecodeClassMirror)getBytecodeMirror();

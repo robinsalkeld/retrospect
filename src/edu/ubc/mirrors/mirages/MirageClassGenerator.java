@@ -39,6 +39,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type arrayMirrorType = Type.getType(ArrayMirror.class);
     public static Type objectArrayMirrorType = Type.getType(ObjectArrayMirror.class);
     public static Type objectMirageType = Type.getType(ObjectMirage.class);
+    public static Type instanceMirageType = Type.getType(InstanceMirage.class);
     public static Type mirageType = Type.getType(Mirage.class);
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeInstanceMirror.class);

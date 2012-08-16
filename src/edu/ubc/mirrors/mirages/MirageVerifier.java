@@ -24,14 +24,8 @@ public class MirageVerifier extends BetterVerifier {
         }
         String className = t.getClassName();
         String tPackage = className.substring(0, className.lastIndexOf('.'));
-        if (tPackage.equals("edu.ubc.mirrors") || className.equals(Throwable.class.getName())) {
-            try {
-                return new NativeClassMirror(Class.forName(className, false, MirageVerifier.class.getClassLoader()));
-            } catch (ClassNotFoundException e) {
-                NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
-                error.initCause(e);
-                throw error;
-            }
+        if (tPackage.equals("edu.ubc.mirrors") || tPackage.equals("edu.ubc.mirrors.mirages") || className.equals(Throwable.class.getName())) {
+            return MirageClassMirror.getFrameworkClassMirror(className);
         }
         Type originalType = MirageClassGenerator.getOriginalType(t);
         boolean isImplementation = MirageClassGenerator.isImplementationClass(className);

@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.raw;
 
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapStringMirror;
+import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public abstract class BytecodeClassMirror implements ClassMirror {
@@ -347,6 +350,9 @@ public abstract class BytecodeClassMirror implements ClassMirror {
             case Opcodes.DCONST_1:
             case Opcodes.LDC:
             case Opcodes.NEW:
+            case Opcodes.NEWARRAY:
+            case Opcodes.ANEWARRAY:
+            case Opcodes.MULTIANEWARRAY:
                 return IsDefault.NO;
             case Opcodes.BIPUSH:
             case Opcodes.SIPUSH:
@@ -358,7 +364,8 @@ public abstract class BytecodeClassMirror implements ClassMirror {
                 // Could do inter-class analysis but let's keep this simple for now.
                 return IsDefault.MAYBE;
             default:
-                throw new IllegalArgumentException();
+                // Default to conservative value.
+                return IsDefault.MAYBE;
             }
         }
         
@@ -382,7 +389,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
                     frame.statics.putStatic(fieldInsnNode.name, value.isDefaultValue);
                 }
             }
-            return DefaultTrackingValue.fromBasicValue(betterVerifier.unaryOperation(insn, value.getBasicValue()));
+            return DefaultTrackingValue.fromBasicValue(betterVerifier.unaryOperation(insn, value.getBasicValue()), isDefault(insn));
         }
 
         @Override
@@ -448,6 +455,10 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         
         public static DefaultTrackingValue fromBasicValue(BasicValue value) {
             return value == null ? null : new DefaultTrackingValue(value);
+        }
+        
+        public static DefaultTrackingValue fromBasicValue(BasicValue value, IsDefault isDefault) {
+            return value == null ? null : new DefaultTrackingValue(value, isDefault);
         }
         
         @Override
@@ -607,8 +618,12 @@ public abstract class BytecodeClassMirror implements ClassMirror {
             case Opcodes.INVOKESPECIAL:
             case Opcodes.INVOKESTATIC:
             case Opcodes.INVOKEVIRTUAL:
-                statics.mayHaveSideEffects = true;
                 MethodInsnNode methodInsnNode = (MethodInsnNode)insn;
+                // Class.desiredAssertionStatus() is automatically inserted into any class with assertions,
+                // and is known to be side-effect free.
+                if (!(methodInsnNode.owner.equals(classType.getInternalName()) && methodInsnNode.name.equals("desiredAssertionStatus"))) {
+                    statics.mayHaveSideEffects = true;
+                }
                 if (!methodInsnNode.owner.equals(internalClassName)) {
                     statics.touchClass(methodInsnNode.owner);
                 }
