@@ -131,9 +131,12 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
             } else {
                 if (jumpIn[i] || !stepIn[i]) {
                     Frame<FrameValue> frame = frames[i];
-                    FrameNode frameNode = toFrameNode(frame);
-                    m.instructions.insertBefore(insnNode, frameNode);
-                    newFrames.add(newFrame(frame));
+                    // Unreachable code will have null frames
+                    if (frame != null) {
+                        FrameNode frameNode = toFrameNode(frame);
+                        m.instructions.insertBefore(insnNode, frameNode);
+                        newFrames.add(newFrame(frame));
+                    }
                 }
                 newFrames.add(frames[i]);
             }

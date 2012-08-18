@@ -16,6 +16,10 @@ java.lang.Class,getPrimitiveClass,Reflection
 java.lang.ClassLoader,defineClass0,Reflection
 java.lang.ClassLoader,defineClass2,Reflection
 java.lang.ClassLoader,getCaller,Reflection
+java.lang.Class,getSigners,*
+java.lang.Class,setProtectionDomain0,*
+java.lang.Class,getProtectionDomain0,*
+java.lang.Class,getConstantPool,*
 java.lang.Runtime,runFinalization0,Tunnel
 java.lang.SecurityManager,*,Reflection
 java.lang.Shutdown,*,Sandboxed runtime
@@ -26,3 +30,5 @@ java.sql.DriverManager,getCallerClassLoader,Reflection
 java.util.ResourceBundle,getClassContext,Reflection
 sun.reflect.NativeMethodAccessorImpl,invoke0,Reflection
 sun.reflect.ConstantPool,*,Reflection
+java.lang.Thread,*,Reflection
+java.lang.Package,*,Reflection

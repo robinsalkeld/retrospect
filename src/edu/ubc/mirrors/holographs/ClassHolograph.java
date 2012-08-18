@@ -468,7 +468,10 @@ public class ClassHolograph extends WrappingClassMirror {
             // Hits illegal native methods anyway - this makes the classes untouchable
             "sun.nio.ch.NativeThread",
             "sun.reflect.ConstantPool",
-            "java.lang.Compiler"));
+            "java.lang.Compiler",
+            "org.eclipse.swt.internal.cocoa.CGRect",
+            // This one would be solved via inter-class analysis
+            "org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor"));
     
     private boolean inferInitialized() {
         BytecodeClassMirror bytecodeClassMirror = (BytecodeClassMirror)getBytecodeMirror();

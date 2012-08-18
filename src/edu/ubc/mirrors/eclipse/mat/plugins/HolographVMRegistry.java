@@ -8,9 +8,11 @@ import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
 
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpObjectMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.wrapping.WrappingMirror;
 
 public class HolographVMRegistry {
 
@@ -40,6 +42,10 @@ public class HolographVMRegistry {
             mirrors.put(object, mirror);
         }
         return mirror;
+    }
+
+    public static IObject fromMirror(ObjectMirror element) {
+        return ((HeapDumpObjectMirror)((WrappingMirror)element).getWrapped()).getHeapDumpObject();
     }
     
 }

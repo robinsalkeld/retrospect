@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyException;
+import org.jruby.RubyModule;
 import org.jruby.RubyThread;
 import org.jruby.internal.runtime.ThreadService;
 import org.jruby.runtime.ThreadContext;
@@ -45,5 +46,13 @@ public class JRubyStackTraces {
         System.err.println("    [no longer alive]");
       }
     }
+  }
+  
+  public static boolean isModuleOrphaned(RubyModule module) {
+      Ruby runtime = module.getRuntime();
+      RubyModule rootNamespace = runtime.getObject();
+      String moduleName = module.getName();
+      IRubyObject moduleAtModuleName = rootNamespace.getConstant(moduleName);
+      return moduleAtModuleName != module;
   }
 }

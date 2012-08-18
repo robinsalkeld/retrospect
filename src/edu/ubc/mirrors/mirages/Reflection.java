@@ -468,9 +468,10 @@ public class Reflection {
         return getRealStringForMirror(stringMirror);
     }
     
-    public static Object invokeMethodHandle(ThreadMirror thread, InstanceMirror obj, MethodHandle m, Object ... args) {
+    public static Object invokeMethodHandle(ObjectMirror obj, MethodHandle m, Object ... args) {
         ClassMirror klass = obj.getClassMirror();
         VirtualMachineMirror vm = klass.getVM();
+        ThreadMirror thread = vm.getThreads().get(0);
         ClassMirror targetClass;
         try {
             targetClass = classMirrorForName(vm, m.getMethod().owner, false, klass.getLoader());

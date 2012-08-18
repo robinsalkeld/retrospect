@@ -1,0 +1,751 @@
+Task: Reopening parsed heap dump file
+[.........]
+25: [C@2bf9bcc6
+50: IBM1140
+75: ebcdic-cp-yu
+100: euctw=x-EUC-TW
+125: /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre/lib/ext/localedata.jar
+150: -13
+175: Atlantic Daylight Time
+200: Dumont-d'Urville Time
+225: Europe/Oslo
+250: [Export-Package: javax.annotation.processing; version="0.0.0"]
+275: [Ljava.lang.Object;@1a88fdaf
+300: user.language=en
+325: http://xml.org/sax/features/namespace-prefixes=false
+350: .RSA
+375: [C@5cde2dcb
+400: SHA1-Digest
+425: [C@1b0e512e
+450: [C@150a7a57
+475: 4oh4k9Odrd/kzUeXZxeHocu7aWk=
+500: org/osgi/framework/CapabilityPermission$Properties.class
+525: java.util.jar.Attributes@ec06696a
+550: [C@108a3c74
+575: org/eclipse/osgi/framework/internal/core/Framework.class
+600: [C@c40fc1c
+625: [C@61bdbb58
+650: java.lang.Object@7116e8cf
+675: Import-Package: org.osgi.service.url; version="1.0.0"
+700: org.eclipse.cdt.managedbuilder.internal.ui.actions
+725: Export-Package: org.eclipse.core.internal.runtime; version="0.0.0"
+750: Export-Package: org.eclipse.cdt.managedbuilder.gnu.cygwin; version="0.0.0"
+775: org.eclipse.debug.internal.ui.views.memory.renderings
+800: Require-Bundle: org.eclipse.ui.workbench.texteditor; bundle-version="[3.4.0,4.0.0)"
+825: Require-Bundle: org.eclipse.ui.editors; bundle-version="[3.4.0,4.0.0)"
+850: 2.9.1
+875: 4.0.0
+900: [3.2.0,4.0.0)
+925: Require-Bundle: org.eclipse.core.resources; bundle-version="0.0.0"
+950: [Ljava.lang.Object;@5ab69598
+975: org.eclipse.core.internal.databinding.property.list=[Export-Package: org.eclipse.core.internal.databinding.property.list; version="0.0.0"]
+1000: osgi.wiring.package
+1025: org.eclipse.mylyn.context.core
+1050: [Ljava.lang.String;@7b92174d
+1075: [Ljava.lang.String;@fa4b83c
+1100: java.lang.Object@4d66ea88
+1125: osgi.wiring.bundle
+1150: org/eclipse/osgi/internal/composite/CompositeServiceTracker.class=java.util.jar.Attributes@192ae86d
+1175: osgi.wiring.package
+1200: [Lorg.eclipse.osgi.internal.module.ResolverExport;@49705ef8
+1225: [2.0.0,3.0.0)
+1250: [Export-Package: org.eclipse.jdt.internal.ui.wizards.buildpaths; version="0.0.0"]
+1275: [Ljava.lang.Object;@7d3e0d35
+1300: java.lang.Object@a2edf7a
+1325: 1.1.0
+1350: java.lang.Object@722feb6d
+1375: [C@3f37333a
+1400: [Lorg.eclipse.osgi.internal.module.GenericConstraint;@702e5cc5
+1425: 3.1.200.v20100505
+1450: org.eclipse.jdt.debug.ui=[[org.eclipse.jdt.debug.ui_3.6.0.v20110512]]
+1475: [C@240ea62f
+1500: Require-Bundle: org.eclipse.debug.core; bundle-version="[3.5.0,4.0.0)"
+1525: [Lorg.eclipse.osgi.framework.internal.core.AbstractBundle;@58b938ee
+1550: org.eclipse.jdt.core,org.eclipse.jdt.ui,org.eclipse.jdt.junit.core,org.eclipse.jdt.debug.ui,org.eclipse.jdt.debug,org.eclipse.jdt.groovy.core
+1575: reference:file:/Library/Application Support/eclipse/plugins/org.eclipse.emf.ecore.change_2.7.0.v20110408-2116.jar
+1600: [C@2bc5e5b2
+1625: {SHA1-Digest=ssIo68ZjK8ewIcGGyWoDKIwuI6g=}
+1650: {SHA1-Digest=/wd3BkdHC5LtQSeKw36nZ64s1fw=}
+1675: Jzq+RHCk+JRhdbsjcq9JXdl3Sog=
+1700: sun.security.rsa.SunRsaSign
+1725: [C@19472a
+1750: org.eclipse.osgi.framework.internal.core.PackageAdminImpl@4a58a79a
+1775: [C@63b1fb31
+1800: java.lang.Object@7cf90960
+1825: Decorator_description=Shows Git specific information on resources in projects under version control.
+1850: [I@71ff4bcd
+1875: [C@18a7c039
+1900: additions
+1925: team.main/group1
+1950: [C@d1d5265
+1975: defaultValue
+2000: [C@5b781e9
+2025: org.eclipse.cdt.core.ScannerInfoProvider
+2050: [Ljava.lang.String;@7a9495fd
+2075: true
+2100: org.eclipse.core.internal.registry.ConfigurationElement@28986156
+2125: org.eclipse.cdt.debug.internal.ui.actions.LoadSymbolsForAllActionDelegate
+2150: org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector
+2175: org.eclipse.cdt.codan.core.categories.CodeStyle
+2200: [Ljava.lang.String;@63d63048
+2225: [Ljava.lang.String;@301df04b
+2250: [I@401955dd
+2275: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@33709db4
+2300: org.eclipse.ajdt.mylyn.ui[54]
+2325: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@626e91de
+2350: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@4f7259be
+2375: OSGI-INF/bundleGroup.xml
+2400: ForceReturn.label
+2425: org.eclipse.m2e.scm_1.0.0.20110607-2117 [251]
+2450: Netscape
+2475: [C@7cf6fe60
+2500: command.nextView.description=Switch to the next view
+2525: org.apache.commons.digester.parser
+2550: [Ljava.util.Hashtable$Entry;@3a6d47
+2575: [C@1792554c
+2600: [C@564729f2
+2625: [C@594ec69f
+2650: [C@5e8327f9
+2675: org.eclipse.osgi.framework.internal.core.ManifestLocalization@5640755a
+2700: osgi.wiring.package=[org.eclipse.osgi.service.resolver.StateWire@1cb5adc6, org.eclipse.osgi.service.resolver.StateWire@54b86e48, org.eclipse.osgi.service.resolver.StateWire@4b483c14, org.eclipse.osgi.service.resolver.StateWire@198cd215, org.eclipse.osgi.service.resolver.StateWire@78a48f79]
+2725: Label Decorations
+2750: Allows grouping others filters with the AND logical preposition
+2775: ActionDefinition.nextSibling.description=Go to Next Sibling
+2800: ShowAnnotationAction.name=Show Annotation
+2825: 1.0
+2850: [C@62fafb85
+2875: 1.1.0
+2900: [C@5e61943d
+2925: _ERROR_REMOVE_LOCAL_SIMPLETYPE=Remove local simple type from extension
+2950: [C@66ade2aa
+2975: CopyUrlCommand.label
+3000: Export-Package: org.eclipse.ui.browser; version="0.0.0"
+3025: [C@48cd8468
+3050: ActionDefinition.selectPrevious.name
+3075: org.eclipse.wst.xsd.ui
+3100: Export-Package: org.eclipse.wst.sse.core.internal.provisional; version="0.0.0"
+3125: org.eclipse.wst.xml.ui
+3150: [Ljava.lang.Object;@3da213d6
+3175: /Library/Application Support/eclipse/plugins/org.eclipse.ui.intro.universal_3.2.500.v20110510
+3200: java.lang.Object@74fa87aa
+3225: Export-Package: org.eclipse.ui.internal.navigator.extensions; version="0.0.0"
+3250: [C@73534b8f
+3275: java.lang.Object@f822912
+3300: [C@63cf70a8
+3325: [Lorg.eclipse.osgi.service.resolver.GenericDescription;@2ed272bc
+3350: java.lang.Object@7335b2c8
+3375: Swing Designer Databinding Support
+3400: [Ljava.lang.Object;@2f6c0511
+3425: java.lang.Object@5717cc6d
+3450: 2.9.0
+3475: Import-Package: javax.servlet.http; version="0.0.0"
+3500: [C@581202be
+3525: [Ljava.lang.Object;@357090ed
+3550: org.eclipse.osgi.service.resolver.StateWire@6b9e83e6
+3575: org.eclipse.osgi.service.resolver.StateWire@2afb7d58
+3600: [Ljava.lang.Object;@2cf0ba58
+3625: [Ljava.lang.String;@250d135a
+3650: 4.8.2
+3675: [Lorg.eclipse.osgi.internal.module.BundleConstraint;@180627f5
+3700: org.jruby.compiler.ir
+3725: [Lorg.eclipse.equinox.service.weaving.Supplementer;@2e15235c
+3750: [org.eclipse.osgi.service.resolver.StateWire@61daffa5, org.eclipse.osgi.service.resolver.StateWire@45cdab2b, org.eclipse.osgi.service.resolver.StateWire@6766a28a, org.eclipse.osgi.service.resolver.StateWire@499cc5a0, org.eclipse.osgi.service.resolver.StateWire@fecadbb, org.eclipse.osgi.service.resolver.StateWire@6d4347e7, org.eclipse.osgi.service.resolver.StateWire@1b8fba97, org.eclipse.osgi.service.resolver.StateWire@137ab985, org.eclipse.osgi.service.resolver.StateWire@4fa99a5b, org.eclipse.osgi.service.resolver.StateWire@7019901e, org.eclipse.osgi.service.resolver.StateWire@3e299a92]
+3775: [C@5ec9abb9
+3800: [C@64724c9b
+3825: osgi.wiring.package; bundle-symbolic-name="org.eclipse.jdt.ui"; osgi.wiring.package="org.eclipse.jdt.internal.ui.packageview"; bundle-version:Version="3.7.0.v20110531-1200"; version:Version="0.0.0"
+3850: osgi.wiring.package
+3875: [Lorg.eclipse.osgi.internal.module.VersionSupplier;@2bcf3b52
+3900: Require-Bundle: org.eclipse.wst.xml.core; bundle-version="[1.1.500,1.2.0)"
+3925: Export-Package: org.eclipse.team.svn.ui.operation; version="0.0.0"
+3950: [Lorg.eclipse.osgi.internal.module.VersionSupplier;@6d3f0e0
+3975: =org.eclipse.osgi.framework.internal.core.ManifestLocalization$LocalizationResourceBundle@721d5ac3
+4000: osgi.wiring.package; bundle-symbolic-name="org.eclipse.mylyn.wikitext.ui"; osgi.wiring.package="org.eclipse.mylyn.internal.wikitext.ui.editor.outline"; bundle-version:Version="1.5.0.v20110608-1400"; version:Version="0.0.0"
+4025: java.lang.Object@2c462168
+4050: org.eclipse.ui.internal.registry=[Export-Package: org.eclipse.ui.internal.registry; version="0.0.0"]
+4075: org.eclipse.wb.internal.swing.databinding.model.beans=[Export-Package: org.eclipse.wb.internal.swing.databinding.model.beans; version="0.0.0"]
+4100: 0.5.46
+4125: org.eclipse.search.internal.ui.text=[Export-Package: org.eclipse.search.internal.ui.text; version="0.0.0"]
+4150: org.hamcrest.core=[Lorg.eclipse.osgi.framework.internal.core.AbstractBundle;@1e19449c
+4175: Bundle-Vendor.0
+4200: [C@75cf7ac1
+4225: InterestDecrementAction.label=Remove from Context
+4250: ContextUiPreferencePage.name
+4275: .
+4300: true
+4325: [C@54ffc7bc
+4350: [Ljava.lang.String;@6d77b6aa
+4375: [Lorg.eclipse.osgi.internal.module.VersionSupplier;@22d7cecb
+4400: errorParsers
+4425: org.eclipse.core.internal.registry.ConfigurationElement@76868a0d
+4450: null -> org.eclipse.ui.intro.configExtension
+4475: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@6c37a3ed
+4500: [C@d4ee1a2
+4525: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@626bd18a
+4550: setJvm
+4575: org.eclipse.core.internal.registry.ConfigurationElement@708aa744
+4600: java.lang.ref.Finalizer@65e6d432
+4625: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@19de471a
+4650: [Lorg.eclipse.osgi.service.resolver.ExportPackageDescription;@1df0df4b
+4675: run
+4700: [C@73ba4b88
+4725: {}
+4750: [I@1c2de474
+4775: [C@5016204a
+4800: [I@3d8bb8c9
+4825: Qdelete...
+4850: [C@16871b17
+4875: [Ljava.lang.String;@220d8c5d
+4900: [Ljava.lang.String;@6db79a52
+4925: [I@57ff3706
+4950: [Ljava.lang.String;@3b9f9935
+4975: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@147e2f18
+5000: [I@2c76f448
+5025: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@6435130a
+5050: [C@6a41ad35
+5075: org.eclipse.jdt.core.IType
+5100: [C@55d0815
+5125: [C@3e5001a3
+5150: [C@2dbf9515
+5175: org.apache.lucene.queryParser.complexPhrase=[Export-Package: org.apache.lucene.queryParser.complexPhrase; version="2.9.1"]
+5200: org.eclipse.core.internal.registry.ConfigurationElement@4cce20ed
+5225: [C@9eb6cf5
+5250: org.eclipse.core.internal.registry.ConfigurationElement@783df03
+5275: [Ljava.lang.String;@1e35fbcd
+5300: RubyNKF$MimeConverter.class
+5325: Ruby.class
+5350: [C@624b14fe
+5375: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@4a468ff
+5400: _
+5425: [C@6d5e0167
+5450: org.eclipse.core.internal.registry.ConfigurationElement@2c5b4763
+5475: [Ljava.lang.String;@190cb545
+5500: [Ljava.lang.String;@3b53466b
+5525: org.eclipse.core.internal.registry.ConfigurationElement@15caae77
+5550: [Ljava.lang.String;@4b2fd5f2
+5575: [Ljava.lang.String;@24f8a462
+5600: projectmarker
+5625: [C@40448b17
+5650: [C@394aba3e
+5675: org.eclipse.wst.dtd.core.dtdsource.source.editorActions
+5700: [C@6cdca475
+5725: miscGroup
+5750: [C@5d649e2b
+5775: org.eclipse.ui.actionSetPartAssociations
+5800: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@71d6d6f5
+5825: [C@3d5c63f2
+5850: [I@7e9c903f
+5875: [Ljava.lang.String;@1ad2fdd5
+5900: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@7ac905d
+5925: $nl$/icons/full/eview16/tasks_tsk.gif
+5950: [C@7af227c1
+5975: [C@2e379b9
+6000: [Ljava.lang.String;@447b222a
+6025: [Ljava.lang.String;@fa9d766
+6050: true
+6075: preferences.xml
+6100: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@3c7e0b5a
+6125: [C@449112c8
+6150: [C@7072f5d9
+6175: org.eclipse.team.svn.mylyn.MylynReporterFactory
+6200: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@74f47a38
+6225: org.eclipse.sdk.capabilities
+6250: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@d92be3
+6275: [C@6cb2c228
+6300: org.eclipse.core.internal.registry.ConfigurationElement@70bddbd2
+6325: [I@776d8305
+6350: org.eclipse.mylyn.internal.wikitext.confluence.validation.ConfluenceReferenceValidationRule
+6375: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@63c146d9
+6400: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@6b47d1b6
+6425: org.eclipse.core.internal.registry.ReferenceMap$SoftRef@5ea21f94
+6450: COLOR_LIST_BACKGROUND
+6475: [Ljava.lang.Object;@7276b645
+6500: ParameterizedCommand(Command(org.eclipse.ant.ui.toggleMarkOccurrences,Toggle Ant Mark Occurrences,
+		Toggles mark occurrences in Ant editors,
+		Category(org.eclipse.jdt.ui.category.source,Source,Java Source Actions,true),
+		,
+		,,true),null)
+6525: SHIFT+F5
+6550: Command(org.eclipse.ui.edit.text.copyLineUp,Duplicate Lines,
+		Duplicates the selected lines and leaves the selection unchanged,
+		Category(org.eclipse.ui.category.textEditor,Text Editing,Text Editing Commands,true),
+		LegacyHandlerWrapper(ActionHandler(action=org.eclipse.ui.texteditor.MoveLinesAction@42ef696d)),
+		,,true)
+6575: REUSE_DIRTY_EDITORS
+6600: 250,251,197
+6625: icons/full/obj16/warn_tsk.gif
+6650: a DataTreeNode(testStringScanStress.rb) with 0 children.
+6675: 4221
+6700: [C@396a4d4a
+6725: org.eclipse.core.internal.resources.MarkerInfo@3ea7fa4e
+6750: tc_gm.rb
+6775: org.eclipse.core.internal.resources.ResourceInfo@2195f37e
+6800: a DataTreeNode(tc_eql.rb) with 0 children.
+6825: [C@b10e23e
+6850: [Ljava.util.HashMap$Entry;@49df2428
+6875: logger
+6900: [C@36d9fd45
+6925: [Lorg.eclipse.osgi.internal.module.VersionSupplier;@191eedf1
+6950: [Lorg.eclipse.osgi.internal.module.VersionSupplier;@2cf6cfae
+6975: 16777788
+7000: Sort the view by C Element Parent Name
+7025: en_US
+7050: HALF_EVEN
+7075: org.eclipse.core.internal.resources.MarkerAttributeMap@233ed59
+7100: 35026
+7125: 16777747
+7150: [C@435350ea
+7175: null -> org.eclipse.ui.commands
+7200: [C@310d6e5
+7225: [C@7bbcb353
+7250: org.eclipse.debug.core.launchConfigurationTypes
+7275: 4415
+7300: 130
+7325: 46736
+7350: 15
+7375: [I@659ebfa1
+7400: evaluationGroup
+7425: org.eclipse.core.internal.registry.ConfigurationElement@4ff804f3
+7450: org.eclipse.core.internal.resources.MarkerInfo@4305b511
+7475: a DataTreeNode(MappedType.java) with 0 children.
+7500: [C@178a7f48
+7525: org.eclipse.swt.graphics
+Error on object #410912 (7e1a397b0)
+java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+	at edu.ubc.mirrors.mirages.Reflection.mirrorInvoke(Reflection.java:356)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:467)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:132)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:176)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.reflect.InvocationTargetException
+	at sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.ClassHolograph$MirageMethod.invoke(ClassHolograph.java:274)
+	at edu.ubc.mirrors.mirages.Reflection.mirrorInvoke(Reflection.java:348)
+	... 16 more
+Caused by: java.lang.IllegalArgumentException
+	at edu.ubc.mirrors.wrapping.WrappingMirror.<init>(WrappingMirror.java:16)
+	at edu.ubc.mirrors.wrapping.WrappingInstanceMirror.<init>(WrappingInstanceMirror.java:13)
+	at edu.ubc.mirrors.holographs.InstanceHolograph.<init>(InstanceHolograph.java:10)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.wrapMirror(VirtualMachineHolograph.java:165)
+	at edu.ubc.mirrors.wrapping.WrappingVirtualMachine.getWrappedMirror(WrappingVirtualMachine.java:54)
+	at edu.ubc.mirrors.holographs.MutableFieldMirror.get(MutableFieldMirror.java:33)
+	at edu.ubc.mirrors.mirages.InstanceMirage.getField(InstanceMirage.java:19)
+	at mirage.java.lang.Class.getName(Class.java:569)
+	at mirage.java.lang.reflect.Field.getTypeName(Field.java:1008)
+	at mirage.java.lang.reflect.Field.toString(Field.java:287)
+	... 21 more
+7550: 130
+java.lang.RuntimeException: java.lang.reflect.InvocationTargetExceptionError on object #411423 (7e1a429e0)
+
+	at edu.ubc.mirrors.mirages.Reflection.mirrorInvoke(Reflection.java:356)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:467)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:132)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:176)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.reflect.InvocationTargetException
+	at sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.ClassHolograph$MirageMethod.invoke(ClassHolograph.java:274)
+	at edu.ubc.mirrors.mirages.Reflection.mirrorInvoke(Reflection.java:348)
+	... 16 more
+Caused by: java.lang.IllegalArgumentException
+	at edu.ubc.mirrors.wrapping.WrappingMirror.<init>(WrappingMirror.java:16)
+	at edu.ubc.mirrors.wrapping.WrappingInstanceMirror.<init>(WrappingInstanceMirror.java:13)
+	at edu.ubc.mirrors.holographs.InstanceHolograph.<init>(InstanceHolograph.java:10)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.wrapMirror(VirtualMachineHolograph.java:165)
+	at edu.ubc.mirrors.wrapping.WrappingVirtualMachine.getWrappedMirror(WrappingVirtualMachine.java:54)
+	at edu.ubc.mirrors.holographs.MutableFieldMirror.get(MutableFieldMirror.java:33)
+	at edu.ubc.mirrors.mirages.InstanceMirage.getField(InstanceMirage.java:19)
+	at mirage.java.lang.Class.getName(Class.java:569)
+	at mirage.java.lang.reflect.Field.getTypeName(Field.java:1008)
+	at mirage.java.lang.reflect.Field.toString(Field.java:287)
+	... 21 more
+7575: [I@2f59e493
+7600: FIXME: except perhaps when we use class_eval, module_eval, or instance_eval??
+7625: org.eclipse.ui.internal.registry.Category@309c12e4
+7650: org.eclipse.core.internal.resources.MarkerInfo@31b639e8
+7675: {Themes.badNesting=Cannot have nested themes., Colors.badDefault=Only one of value or defaultMapping may be set., Fonts.badDefault=Only one or neither of value or defaultMapping may be set., Gradients.badGradientValue=Value must be present., Colors.badFactory=Could not create color factory., Data.badData=Name and value must be present for data elements., Gradients.badPercentage=Percentage must be a positive integer.}
+7700: [Ljava.lang.Object;@7b8236f4
+7725: icons/full/etool16/save_edit.gif
+7750: [C@7b19971d
+7775: org.eclipse.core.internal.resources.MarkerAttributeMap@233ed59
+7800: [Ljava.lang.Object;@5d8aeee2
+7825: [Ljava.lang.Object;@5e961fa9
+7850: org.eclipse.core.runtime.ListenerList@2e1639dd
+7875: org.eclipse.core.internal.expressions.WithExpression@c6dd7ccd
+7900: {0}, {1}
+7925: [Ljava.lang.Object;@6d46e619
+7950: [Ljava.lang.Object;@4f16d7cf
+7975: a DataTreeNode(httpresponse) with 7 children.
+8000: org.eclipse.core.internal.resources.ResourceInfo@247d0911
+8025: PublicField.java
+8050: [C@6bc7eb78
+8075: IMG_TOOL_DELETE=URLImageDescriptor(bundleentry://346.fwk1862362278/icons/full/etool16/delete_edit.gif)
+8100: org.eclipse.core.internal.resources.ResourceInfo@58862a45
+8125: [Lorg.eclipse.osgi.framework.util.KeyedElement;@6c463211
+8150: [C@442ce644
+8175: do_OPTIONS-i.yaml
+8200: [C@5654ee57
+8225: a DataTreeNode(start-i.yaml) with 0 children.
+8250: org.eclipse.core.internal.resources.ResourceInfo@66422ebe
+8275: a DataTreeNode(each-i.yaml) with 0 children.
+8300: [C@4a335509
+8325: org.eclipse.core.internal.resources.ResourceInfo@4457b0f1
+8350: a DataTreeNode(exception2obj-i.yaml) with 0 children.
+8375: org.eclipse.core.internal.resources.ResourceInfo@55fb709c
+8400: org.eclipse.core.internal.resources.ResourceInfo@39b158f3
+8425: workspaceDescription
+8450: org.eclipse.core.internal.resources.ResourceInfo@5d5760c2
+8475: org.eclipse.core.internal.resources.ResourceInfo@bb41be6
+8500: sun.nio.cs.UTF_8$Encoder@4c76a7fc
+8525: [C@1d55f8b0
+8550: org.eclipse.ui.editors.documentProviders
+8575: AndExpression(ViewerContributionExpression(org.eclipse.mylyn.tasks.ui.views.tasks,null,org.eclipse.ui.internal.WorkbenchWindow@6998d6a8),WorkbenchWindowExpression(org.eclipse.ui.internal.WorkbenchWindow@6998d6a8))
+8600: [Ljava.lang.Object;@7af325f5
+8625: AndExpression(ViewerContributionExpression(org.eclipse.debug.ui.ExpressionView,null,org.eclipse.ui.internal.WorkbenchWindow@6998d6a8),WorkbenchWindowExpression(org.eclipse.ui.internal.WorkbenchWindow@6998d6a8))
+8650: cdesc-UID.yaml
+8675: a DataTreeNode(symlink-i.yaml) with 0 children.
+8700: ParameterizedCommand(Command(AUTOGEN:::org.eclipse.debug.ui.memoryView.toolbar/org.eclipse.debug.ui.switchMemoryBlock,Switch Memory Monitor,
+		Switch Memory Monitor,
+		Category(org.eclipse.core.commands.categories.autogenerated,Uncategorized,Commands that were either auto-generated or have no category,true),
+		,
+		,,true),null)
+8725: a DataTreeNode(SMTPError) with 1 children.
+8750: [Lorg.eclipse.core.internal.dtree.AbstractDataTreeNode;@4a99196b
+8775: a DataTreeNode(storlines-i.yaml) with 0 children.
+8800: [C@6295c8f6
+8825: a DataTreeNode(proc-i.yaml) with 0 children.
+8850: org.eclipse.core.internal.resources.ResourceInfo@19a3a667
+8875: cdesc-Abort.yaml
+8900: org.eclipse.ui.SelectionEnabler@c3a3ab7e
+8925: org.eclipse.ui.internal.ActionExpression@be8b92d6
+8950: [ActionSetExpression(org.eclipse.team.svn.ui.action.shortcuts,org.eclipse.ui.internal.WorkbenchWindow@6998d6a8), WorkbenchWindowExpression(org.eclipse.ui.internal.WorkbenchWindow@6998d6a8)]
+8975: org.eclipse.core.runtime.ListenerList@6d1545c3
+9000: HandlerActivation(commandId=AUTOGEN:::org.eclipse.mylyn.tasks.ui.navigation.additions/org.eclipse.mylyn.tasks.ui.navigate.task.history,
+	handler=ActionDelegateHandlerProxy(null,org.eclipse.mylyn.internal.tasks.ui.actions.ActivateTaskHistoryDropDownAction),
+	expression=AndExpression(ActionSetExpression(org.eclipse.mylyn.tasks.ui.navigation.additions,org.eclipse.ui.internal.WorkbenchWindow@6998d6a8),WorkbenchWindowExpression(org.eclipse.ui.internal.WorkbenchWindow@6998d6a8)),sourcePriority=16640)
+9025: org.eclipse.ui.internal.services.EvaluationReference@772ca4b
+9050: HandlerActivation(commandId=org.eclipse.egit.ui.team.Pull,
+	handler=org.eclipse.egit.ui.internal.repository.tree.command.PullCommand,
+	expression=org.eclipse.core.internal.expressions.AndExpression@7bf736aa,sourcePriority=1073741824)=java.lang.Object@1742efcf
+9075: AUTOGEN:::org.eclipse.jdt.debug.JavaBreakpointActions/org.eclipse.jdt.debug.ui.actions.BreakpointHitCount=HandlerActivation(commandId=AUTOGEN:::org.eclipse.jdt.debug.JavaBreakpointActions/org.eclipse.jdt.debug.ui.actions.BreakpointHitCount,
+	handler=ActionDelegateHandlerProxy(null,org.eclipse.jdt.internal.debug.ui.actions.BreakpointHitCountAction),
+	expression=AndExpression(org.eclipse.ui.internal.menus.LegacyActionPersistence$ObjectClassExpression@233059cc,WorkbenchWindowExpression(org.eclipse.ui.internal.WorkbenchWindow@6998d6a8)),sourcePriority=-2147467264)
+9100: /icons/obj16/fetch.gif
+9125: {}
+9150: menu:org.eclipse.ui.main.menu?before=window
+9175: [C@5faeb660
+9200: org.eclipse.core.internal.registry.ConfigurationElement@3905f3a3
+9225: a DataTreeNode(writable_real%3f-i.yaml) with 0 children.
+9250: cdesc-ExtServ.yaml
+9275: org.eclipse.core.internal.resources.ResourceInfo@364e26f8
+9300: [C@537ebe12
+9325: a DataTreeNode(ext_conf_builder.rb) with 0 children.
+9350: org.eclipse.core.internal.resources.ResourceInfo@1e97769a
+9375: [C@4a9e7794
+9400: color.rb
+9425: meta_method.rb
+9450: [C@75fe46b8
+9475: a DataTreeNode(regin) with 12 children.
+9500: org.eclipse.core.internal.resources.ResourceInfo@731134fe
+9525: [C@650938f
+9550: a DataTreeNode(gemfile.5.txt) with 0 children.
+9575: a DataTreeNode(anonymous.rb) with 0 children.
+9600: [C@73d1b47c
+9625: all_country_zone_identifiers-c.yaml
+9650: [C@3b05b1e7
+9675: cdesc-InlineModule0.yaml
+9700: a DataTreeNode(File) with 1 children.
+9725: [Lorg.eclipse.core.internal.dtree.AbstractDataTreeNode;@54239a5e
+9750: [C@558fcc84
+9775: org.eclipse.core.internal.resources.ResourceInfo@662c049
+9800: cdesc-ObsMboxList1.yaml
+9825: com.sun.org.apache.xerces.internal.impl.dv.dtd.DTDDVFactoryImpl@4d09cb9c
+9850: destinations-i.yaml
+9875: org.eclipse.core.internal.resources.ResourceInfo@45273c06
+9900: org.eclipse.core.internal.resources.ResourceInfo@c195db
+9925: a DataTreeNode(Sandbox) with 1 children.
+9950: [C@7f431c43
+9975: org.eclipse.core.internal.resources.ResourceInfo@c23c697
+10000: selectedTabId
+10025: [C@2fa73fa8
+10050: cdesc-Multibyte.yaml
+10075: org.eclipse.core.internal.resources.ResourceInfo@2c155822
+10100: a DataTreeNode(from_xml-i.yaml) with 0 children.
+10125: org.eclipse.core.internal.resources.ResourceInfo@67f54ad5
+10150: org.eclipse.core.internal.resources.ResourceInfo@6c3d933
+10175: org.eclipse.core.internal.resources.ResourceInfo@6570a11
+10200: a DataTreeNode(date_select-i.yaml) with 0 children.
+10225: [C@48a05eaa
+10250: org.eclipse.core.internal.resources.ResourceInfo@2b9aef6b
+10275: a DataTreeNode(version.rb) with 0 children.
+10300: [C@7b175e33
+10325: [Lorg.eclipse.core.internal.dtree.AbstractDataTreeNode;@5aad810e
+10350: []
+10375: M000061.html
+10400: M000197.html
+10425: M000367.html
+10450: a DataTreeNode(SelectorFactory.class) with 0 children.
+10475: Ruby19Parser$96.class
+10500: DefaultRubyParser$44.class
+10525: ObjectProxyCache$Segment.class
+10550: JavaMethod$JavaMethodZeroOrOneOrTwoOrThreeBlock.class
+10575: org.eclipse.core.internal.resources.ResourceInfo@324211c3
+10600: java.util.concurrent.ConcurrentHashMap$HashEntry@266d196a
+10625: ActionDelegateHandlerProxy(null,org.eclipse.search.internal.ui.OpenSearchDialogAction)=open_search_dialog_action_context
+10650: [C@2fea9322
+10675: org.eclipse.core.internal.resources.ResourceInfo@15719275
+10700: org.eclipse.m2e.core.ui.command.openPom=Command(org.eclipse.m2e.core.ui.command.openPom,Open Maven POM,
+		,
+		Category(org.eclipse.ui.category.navigate,Navigate,null,true),
+		,
+		,,true)
+10725: [C@1ecfb535
+10750: AUTOGEN:::org.eclipse.jdt.debug.ui.FilteredJavaVariableActions/org.eclipse.jdt.debug.ui.actions.OpenVariableConcreteTypeHierarchy=Command(AUTOGEN:::org.eclipse.jdt.debug.ui.FilteredJavaVariableActions/org.eclipse.jdt.debug.ui.actions.OpenVariableConcreteTypeHierarchy,Open Actual Type Hierarchy,
+		Open the Variable's Actual Implementation Type Hierarchy,
+		Category(org.eclipse.core.commands.categories.autogenerated,Uncategorized,Commands that were either auto-generated or have no category,true),
+		,
+		,,true)
+10775: Command(AUTOGEN:::org.eclipse.debug.WatchExpressionActions/org.eclipse.debug.ui.watchExpressionActions.ReevaluateWatchExpression,Reevaluate Watch Expression,
+		Reevaluate the watch expression in the selected stack frame,
+		Category(org.eclipse.core.commands.categories.autogenerated,Uncategorized,Commands that were either auto-generated or have no category,true),
+		,
+		,,true)=java.lang.Object@6f35883
+10800: org.eclipse.ui.internal.services.EvaluationReference@4a012c1a=java.lang.Object@6f35883
+10825: [org.eclipse.ui.internal.services.EvaluationReference@6cb57c44]
+10850: org.eclipse.core.internal.resources.ResourceInfo@67ff95ef
+10875: [Lorg.eclipse.core.internal.dtree.AbstractDataTreeNode;@75332d40
+10900: org.eclipse.core.internal.resources.ResourceInfo@51faa420
+10925: org.eclipse.ui.internal.services.EvaluationReference@4d35997=java.lang.Object@6f35883
+10950: [org.eclipse.ui.internal.services.EvaluationReference@5e86e455]
+10975: org.eclipse.ui.internal.services.EvaluationReference@7e49f9a9=java.lang.Object@6f35883
+11000: org.eclipse.core.internal.resources.ResourceInfo@63f134c3
+11025: Binding(CTRL+SHIFT+SPACE,
+	,
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.ui.contexts.dialogAndWindow,zh,,system)
+11050: a DataTreeNode(WindowsFFI.class) with 0 children.
+11075: HandlerActivation(commandId=org.eclipse.team.svn.ui.command.TagCommand,
+	handler=ActionDelegateHandlerProxy(null,org.eclipse.team.svn.ui.action.local.TagAction),
+	expression=AndExpression(ActionSetExpression(org.eclipse.team.svn.ui.action.shortcuts,org.eclipse.ui.internal.WorkbenchWindow@6998d6a8),WorkbenchWindowExpression(org.eclipse.ui.internal.WorkbenchWindow@6998d6a8)),sourcePriority=16640)=java.lang.Object@6f35883
+11100: HandlerActivation(commandId=AUTOGEN:::org.eclipse.debug.ui.memoryView.toolbar/org.eclipse.debug.ui.PinMemoryBlockAction,
+	handler=ActionDelegateHandlerProxy(null,org.eclipse.debug.internal.ui.views.memory.PinMemoryBlockAction),
+	expression=AndExpression(LegacyViewContributionExpression(org.eclipse.debug.ui.MemoryView,org.eclipse.ui.internal.WorkbenchWindow@6998d6a8),WorkbenchWindowExpression(org.eclipse.ui.internal.WorkbenchWindow@6998d6a8)),sourcePriority=4210688)=HandlerActivation(commandId=AUTOGEN:::org.eclipse.debug.ui.memoryView.toolbar/org.eclipse.debug.ui.PinMemoryBlockAction,
+	handler=ActionDelegateHandlerProxy(null,org.eclipse.debug.internal.ui.views.memory.PinMemoryBlockAction),
+	expression=AndExpression(LegacyViewContributionExpression(org.eclipse.debug.ui.MemoryView,org.eclipse.ui.internal.WorkbenchWindow@6998d6a8),WorkbenchWindowExpression(org.eclipse.ui.internal.WorkbenchWindow@6998d6a8)),sourcePriority=4210688)
+11125: AUTOGEN:::org.eclipse.team.svn.ui.ResourceContributions/org.eclipse.team.svn.ui.action.local.CreatePatchAction
+11150: AUTOGEN:::org.eclipse.debug.ui.variablesView.toolbar/org.eclipse.cdt.debug.internal.ui.actions.RemoveGlobalsActionDelegate=AUTOGEN:::org.eclipse.debug.ui.variablesView.toolbar/org.eclipse.cdt.debug.internal.ui.actions.RemoveGlobalsActionDelegate
+11175: org.eclipse.core.internal.resources.MarkerTypeDefinitionCache$MarkerTypeDefinition@6f3be00e
+11200: [C@4eb331b5
+11225: org.eclipse.core.internal.resources.ResourceInfo@39d0b90c
+11250: org.eclipse.core.internal.resources.ResourceInfo@71944cf6
+11275: org.eclipse.core.internal.resources.ResourceInfo@58d502da
+11300: [C@672d8112
+11325: [C@e592e81
+11350: [C@44fa3c3c
+11375: RubyClass$i$0$0$allocate.class
+11400: [C@4f9f6e8a
+11425: a DataTreeNode(StackBasedVariableCompiler.class) with 0 children.
+11450: org.eclipse.core.internal.resources.ResourceInfo@55f4602
+11475: org.eclipse.core.internal.resources.ResourceInfo@5c995c03
+11500: org.eclipse.core.internal.resources.ResourceInfo@62933bf8
+11525: a DataTreeNode(JavaClass$i$0$0$canonical_name.class) with 0 children.
+11550: a DataTreeNode(Ruby19Parser$216.class) with 0 children.
+11575: org.eclipse.osgi.service.resolver.StateWire@1dd17e32
+11600: {osgi.wiring.bundle=[org.eclipse.osgi.service.resolver.StateWire@155daa7e, org.eclipse.osgi.service.resolver.StateWire@2ce755d6, org.eclipse.osgi.service.resolver.StateWire@15f6cbd8, org.eclipse.osgi.service.resolver.StateWire@6d05036d]}
+11625: [C@6834be64
+11650: ActionDefinition.restart.name=Restart
+11675: [C@7d189571
+11700: [C@28866b80
+11725: _UI_EClass_eReferences_feature=EReferences
+11750: [Ljava.lang.String;@2e12362f
+11775: [C@68b485c5
+11800: [I@7a79e24e
+11825: org.eclipse.equinox.p2.internal.repository.tools.Repo2Runnable
+11850: [C@1bf06b7e
+11875: org.eclipse.core.internal.registry.ConfigurationElement@1ce3a39c
+11900: org.eclipse.core.resources.ant.RefreshLocalTask
+11925: sun.nio.cs.UTF_8$Encoder@68b239b1
+11950: http.protocol.credential-charset
+11975: org.eclipse.jface.text.Line@34d44f7d
+12000: org.eclipse.jface.text.Line@2698b115
+12025: util
+12050: [id="org.eclipse.search.searchActionSet", itemType="typeToolBarContribution", x="128", y="22"]
+12075: Exception occurred initializing source locator.
+12100: org.eclipse.ui.internal.WorkbenchPartReference$2@1efce8da
+12125: org.eclipse.osgi.framework.internal.protocol.bundleentry.Handler@3fd2448
+12150: [C@4e00cec9
+12175: [Lorg.eclipse.ui.texteditor.spelling.SpellingEngineDescriptor;@37331bca
+12200: [C@4bc7213b
+12225: [C@62d633a7
+12250: icons/full/elcl16/edtsrclkup_co.gif
+12275: java_default_strikethrough
+12300: org.eclipse.swt.custom.CTabFolder$3@3e13cbe6
+12325: org.eclipse.osgi.framework.internal.protocol.bundleentry.Handler@4ed5bc6c
+12350: java.lang.Object@2fc303dc=RGB {255, 0, 128}
+12375: org.eclipse.jdt.ui.error
+12400: /icons/full/ovr16/maxlevel_co.gif
+12425: java.lang.Object@2fc303dc=RGB {254, 155, 0}
+12450: org.eclipse.ui.texteditor.AnnotationPreference@43dad77e
+12475: 226.fwk1862362278
+12500: [C@1b083dc5
+12525: [C@2ead3b8c
+12550: [C@27e67a18
+12575: org.apache.xerces; bundle-version="2.9.0.v201101211617"
+12600: [C@219d17a8
+12625: org.eclipse.mylyn.internal.context.ui -> null
+12650: org.eclipse.jdt.core.javaClass
+12675: "Java Software Code Signing"
+12700: [Lorg.eclipse.core.runtime.IPath;@1392f0b6
+12725: [hashCode=2022962867] floorKey
+12750: org.eclipse.jdt.core.formatter.alignment_for_arguments_in_explicit_constructor_call
+12775: org.eclipse.jdt.core.compiler.problem.assertIdentifier
+12800: [Ljava.lang.String;@1015fb77
+12825: [Ljava.lang.String;@273b7d9d
+12850: Profile the selected resource or active editor
+12875: icons/full/dlcl16/lock_co.gif
+12900: IMG_ELCL_COLLAPSE_ALL
+12925: class org.eclipse.jface.text.source.DefaultCharacterPairMatcher$CharPairs
+12950: Invalid URL reference. Double quote the reference or use the href syntax
+12975: {0} (constant type)
+13000: [C@7c3ffc9c
+13025: [C@4a33f86e
+13050: [C@74085ca6
+13075: [Ljava.util.concurrent.ConcurrentHashMap$HashEntry;@53458b68
+13100: QTreeMap;
+13125: leftOf(Entry<K,V>) (not open) [in TreeMap [in TreeMap.class [in java.util [in /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre/lib/rt.jar]]]]=[Lorg.eclipse.jdt.core.SourceRange;@5eb02c82
+13150: [C@36b0491a
+13175: key
+13200: org.eclipse.jdt.core.compiler.problem.missingJavadocCommentsVisibility=public
+13225: [C@3c658c93
+13250: ParentNode$1
+13275: [Ljava.lang.Object;@20617809
+13300: [C@6746c99e
+13325: [C@33935e1d
+13350: UnixPrintJob$1
+13375: AOMEntry
+13400: [C@12ad3969
+13425: AbstractList$1
+13450: [C@70191f43
+13475: [Ljava.lang.Object;@2c2dc05b
+13500: JvmRTBootClassPathTableMetaImpl$JvmRTBootClassPathTableCache
+13525: NameAttributes
+13550: java.lang.ref.SoftReference@67d626d7
+13575: [C@451020e
+13600: WildcardMode
+13625: X11GraphicsConfig$XDBECapabilities
+13650: [[],true,org.eclipse.wst.xml.ui/org.eclipse.wst.xml.ui.newXMLFile]
+13675: [Ljava.lang.String;@66c2bfbc
+13700: CurrencyNames_en_US
+13725: ObjectFactory
+13750: JTextComponent$AccessibleJTextComponent$3
+13775: XMLSchemaDescription
+13800: [DOMLocator, DOMResult, DOMSource]
+13825: [C@734c9914
+13850: [C@2437cd8b
+13875: [C@89e22fd
+13900: [C@1c2bced8
+13925: [C@475ae7e8
+13950: [C@b211bae
+13975: org.eclipse.core.internal.registry.ExtensionHandle@4fba={org.eclipse.ui.internal.registry.PerspectiveDescriptor@19bc48ec, }
+14000: [Ljava.lang.Object;@5dd1be2f
+14025: [C@36ba4cf4
+14050: ORBImpl$2
+14075: JOptionPane$AccessibleJOptionPane
+14100: [C@69aca8cd
+14125: NotFoundHolder
+14150: XMLUtils.class (not open) [in java.util [in /Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre/lib/rt.jar]]
+14175: [C@7b41bc52
+14200: [Ljava.lang.Object;@1c130068
+14225: semanticHighlighting.typeArgument.enabled
+14250: org.eclipse.ui.preferences.ScopedPreferenceStore$1@77e7a932
+14275: [org.eclipse.core.commands.contexts.ContextManager@30325bc7]
+14300: toolbar:org.eclipse.ui.workbench.file=[]
+14325: 1.0.0.v20110519-7A4FD3DiVOManmZvpLOsnBhnPQM3
+14350: MethodDeclaration=MethodDeclaration
+14375: org.eclipse.equinox.util=1.0.300.v20110502
+14400: providedCapabilities.exists(x | x.name == $0 && x.namespace == $1 && x.version >= $2 && x.version < $3)
+14425: org.eclipse.equinox.p2.description=%description
+14450: [Ljava.lang.Object;@50b6fe83
+14475: setProgramProperty(propName:equinox.use.ds, propValue:true);
+14500: providedCapabilities.exists(x | x.name == $0 && x.namespace == $1 && x.version >= $2 && x.version < $3)
+14525: 2.1.0.v20110502-1955
+14550: providedCapabilities.exists(x | x.name == $0 && x.namespace == $1)
+14575: package org.eclipse.equinox.p2.metadata.expression [2.0.0.,3.0.0.)
+14600: java.lang.ref.Finalizer@f68fa57
+14625: 1.0.0.
+14650: handled=true
+14675: [Ljava.lang.Object;@56cd39c4
+14700: [Ljava.lang.Object;@786fdf5b
+14725: URLImageDescriptor(bundleentry://116.fwk1862362278/icons/full/elcl16/stepover_co.gif)=org.eclipse.jface.resource.AbstractResourceManager$RefCount@65e53237
+14750: package org.eclipse.equinox.internal.simpleconfigurator 0.0.0
+14775: org.eclipse.equinox.http.registry [1.1.100.v20110502]
+14800: org.eclipse.equinox.p2.localization/df_LT/1.0.0.
+14825: java.package/org.eclipse.jdt.internal.junit.runner/0.0.0
+14850: 2.1.100.v201103021400
+14875: org.eclipse.equinox.internal.p2.metadata.UpdateDescriptor@dcec7a9
+14900: org.eclipse.equinox.internal.p2.metadata.License@60c5d92b
+14925: providedCapabilities.exists(x | x.name == $0 && x.namespace == $1 && x.version >= $2 && x.version < $3)
+14950: osgi.bundle,org.eclipse.mylyn.commons.identity,0.8.0.v20110608-1400
+14975: providedCapabilities.exists(x | x.name == $0 && x.namespace == $1 && x.version >= $2 && x.version < $3)
+Num objects toString-ed: 14998
+Errors: 2
+Total time: 282798
+Average time per object: 18.855715
+Max time per object: 129303
+Objects taking more than 1/2 second: 
+[7e0001418: 1417, 
+7e0012980: 693, 
+7e00a9998: 1175, 
+7e00ccc28: 2471, 
+7e043d000: 1423, 
+7e16c26a8: 554, 
+7e16c6cd0: 693, 
+7e16d9c80: 1463, 
+7e1803150: 563, 
+7e187f900: 524, 
+7e1c2db00: 2197, 
+7e1dbf368: 2241, 
+7e1eed1c0: 582, 
+7e1f069f0: 908, 
+7e25f8540: 129303, 
+7e25fe940: 860, 
+7e310b468: 2276, 
+7e3122040: 915, 
+7e332dfd8: 21554, 
+7e34ce338: 547, 
+7f5634c98: 645, 
+7f58d98c8: 792, 
+7f5c5be48: 628, 
+7f5c695c0: 1212]
+Average string length: 129.83444
+Average time per character: 0.14522891
+Max time per character: 128.81818
+Count: 0
+Total: 0

@@ -13,10 +13,6 @@ public aspect JRubyOrphanedCode {
         RubyModule rootNamespace = runtime.getObject();
         String moduleName = definingModule.getName();
         IRubyObject moduleNameConstantValue = rootNamespace.getConstant(moduleName);
-        if (moduleNameConstantValue != definingModule) {
-            System.out.println(
-                    "Called method " + method.getName() + 
-                    " on orphaned copy of class/module " + moduleName);
-        }
+        return moduleNameConstantValue != definingModule;
     }
 }

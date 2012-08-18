@@ -256,11 +256,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             MirageClassLoader.printIndent();
             System.out.println("Fetching original bytecode for: " + holographClass.getClassName());
         }
-        ThreadMirror firstThread = getThreads().get(0);
         
         String resourceName = className.replace('.', '/') + ".class";
         InstanceMirror resourceNameMirror = Reflection.makeString(this, resourceName);
-        InstanceMirror stream = (InstanceMirror)Reflection.invokeMethodHandle(firstThread, holographLoader, new MethodHandle() {
+        InstanceMirror stream = (InstanceMirror)Reflection.invokeMethodHandle(holographLoader, new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((ClassLoader)null).getResourceAsStream((String)null);
             }
@@ -278,7 +277,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ByteArrayMirror remoteBuffer = (ByteArrayMirror)getPrimitiveClass("byte").newArray(4096);
         int read;
-        while ((read = (Integer)Reflection.invokeMethodHandle(firstThread, stream, readMethod, remoteBuffer, 0, remoteBuffer.length())) != -1) {
+        while ((read = (Integer)Reflection.invokeMethodHandle(stream, readMethod, remoteBuffer, 0, remoteBuffer.length())) != -1) {
             SystemStubs.arraycopyMirrors(remoteBuffer, 0, localBufferMirror, 0, remoteBuffer.length());
             baos.write(localBuffer, 0, read);
         }

@@ -13,6 +13,9 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.util.ConsoleProgressListener;
 import org.eclipse.osgi.framework.internal.core.BundleRepository;
+import org.jruby.Ruby;
+import org.jruby.RubyModule;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.osgi.framework.Bundle;
 
 import edu.ubc.mirrors.BooleanArrayMirror;
@@ -36,11 +39,11 @@ public class OopslaPaperExamples {
 
 // Looking up a property using a heap dump model 
 public String getPropertyMeta(
-        IObject serviceInstance, 
+        IObject service, 
         String key) {
     
     IObject propertiesObject = 
-            (IObject) serviceInstance.resolveValue("properties");
+            (IObject) service.resolveValue("properties");
     
     String[] keys = null;
     String[] values = null;
@@ -69,12 +72,26 @@ public String getPropertyMeta(
 
 // Looking up a property using base code 
 public String getPropertyBase(
-        ServiceRegistrationImpl serviceInstance, 
+        ServiceRegistrationImpl service, 
         String key) {
 
     return serviceInstance.getProperties().get(key);
 }
 
+// Looking up a property using hologram code 
+public String getPropertyHologram(
+        IObject service, 
+        String key) {
+
+    ObjectMirror serviceMirror = 
+            HologramUtils.getHologram(service);
+    ObjectMirror keyMirror = 
+            HologramUtils.makeString(serviceMirror, key);
+    ObjectMirror value = HologramUtils.invokeMethod(
+            serviceMirror, "getPropertyBase", keyMirror);
+    
+    return HologramUtils.stringFromStringMirror(value);
+}
 
 public static void arraycopy(Mirror src, int srcPos, 
                              Mirror dest, int destPos, int length) {
@@ -104,16 +121,11 @@ private static void setArrayElement(Mirror am, int index, Object o) {
 }
 
     
-public static String toString(IInstance heapDumpObject) {
-    // Create a holograph from the Eclipse MAT IInstance object
-    InstanceMirror mirror = new HeapDumpHolograph(heapDumpObject);
-    
-    // Invoke the toString() method on the holograph
-    ClassMirror objectClass = mirror.getClassMirror()
-            .getLoader().loadClassMirror("java.lang.Object");
-    MethodMirror method = objectClass.getMethod("toString");
-    Mirror stringMirror = toStringMethod.invoke(mirror);
-    
-    // Create a new String with the same contents as the result.
-    return Reflection.stringFromStringMirror(stringMirror);
+public static boolean isModuleOrphaned(RubyModule module) {
+    RubyModule definingModule = method.getImplementationClass();
+    Ruby runtime = definingModule.getRuntime();
+    RubyModule rootNamespace = runtime.getObject();
+    String moduleName = definingModule.getName();
+    IRubyObject moduleNameConstantValue = rootNamespace.getConstant(moduleName);
+    return moduleNameConstantValue != definingModule;
 }

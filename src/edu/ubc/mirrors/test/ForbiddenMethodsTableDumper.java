@@ -13,12 +13,14 @@ public class ForbiddenMethodsTableDumper {
     public static void main(String[] args) throws IOException {
         String outputPath = args[0];
         
+        
+        
         Writer out = new OutputStreamWriter(new FileOutputStream(outputPath));
 
         out.append("\\begin{tabular}{ l | l | l }\n");
-        out.append("Class & Method & Category \\\\ \\hline \\hline\n");
+        out.append("Category & Class & Method \\\\ \\hline \\hline\n");
         for (ClassHolograph.MethodPattern pattern : ClassHolograph.illegalMethodPatterns) {
-            String line = pattern.className + " & " + pattern.methodName + " & " + pattern.category + "\\\\ \\hline\n";
+            String line = pattern.category + " & " + pattern.methodName + " & " + pattern.className + "\\\\ \\hline\n";
             out.append(line.replace("$", "\\$"));
         }
         out.append("\\end{tabular}");

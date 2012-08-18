@@ -12,6 +12,7 @@ import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
 import org.jruby.Ruby;
+import org.jruby.RubyModule;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -56,20 +57,20 @@ public class HeapDumpTest2 implements IApplication {
             mappedFiles);
     
     // Create a new class loader in the holograph VM and define more bytecode.
-    ClassMirror rubyClass = holographVM.findAllClasses(Ruby.class.getName(), false).get(0);
+    ClassMirror rubyModuleClass = holographVM.findAllClasses(RubyModule.class.getName(), false).get(0);
     ThreadMirror thread = holographVM.getThreads().get(0);
     ClassMirror printerClass = Reflection.injectBytecode(holographVM, thread, 
-            rubyClass.getLoader(), new NativeClassMirror(JRubyStackTraces.class));
+            rubyModuleClass.getLoader(), new NativeClassMirror(JRubyStackTraces.class));
  
     // Redirect standard out
-    InstanceMirror baos = (InstanceMirror)printerClass.getMethod("redirectStdErr").invoke(thread, null);
+//    InstanceMirror baos = (InstanceMirror)printerClass.getMethod("redirectStdErr").invoke(thread, null);
     
     // For each class instance (in this case we only expect one)...
-    MethodMirror method = printerClass.getMethod("printStackTraces", rubyClass);
-    for (InstanceMirror ruby : rubyClass.getInstances()) {
+    MethodMirror method = printerClass.getMethod("isModuleOrphaned", rubyModuleClass);
+    for (InstanceMirror ruby : rubyModuleClass.getInstances()) {
       // Invoke JRubyStackTraces#printStackTraces reflectively.
-      method.invoke(thread, null, ruby);
-      System.out.println(Reflection.toString(baos));
+      boolean result = (Boolean)method.invoke(thread, null, ruby);
+      System.out.println(result);
     }
   }
 

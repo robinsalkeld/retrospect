@@ -55,4 +55,16 @@
             impl="edu.ubc.mirrors.eclipse.mat.plugins.ToStringNameResolver">
       </resolver>
    </extension>
+   <extension
+         point="org.eclipse.mat.report.query">
+      <query
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.CollectionValuesQuery">
+      </query>
+   </extension>
+   <extension
+         point="org.eclipse.mat.report.query">
+      <query
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.HashEntriesQuery">
+      </query>
+   </extension>
 </plugin>
