@@ -31,7 +31,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     
     public JDIClassMirror(JDIVirtualMachineMirror vm, ClassObjectReference t) {
         super(vm, t);
-        this.refType = t.referenceType();
+        this.refType = t.reflectedType();
     }
 
     @Override

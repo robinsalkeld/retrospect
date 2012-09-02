@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.jdi;
 
+import static edu.ubc.mirrors.mirages.Reflection.checkNull;
+
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteValue;
 import com.sun.jdi.CharValue;
@@ -14,6 +16,7 @@ import com.sun.jdi.ShortValue;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 
 public class JDIMemberFieldMirror implements FieldMirror {
 
@@ -22,9 +25,9 @@ public class JDIMemberFieldMirror implements FieldMirror {
     private final ObjectReference obj;
     
     public JDIMemberFieldMirror(JDIVirtualMachineMirror vm, Field field, ObjectReference obj) {
-        this.vm = vm;
-        this.field = field;
-        this.obj = obj;
+        this.vm = checkNull(vm);
+        this.field = checkNull(field);
+        this.obj = checkNull(obj);
     }
 
     @Override

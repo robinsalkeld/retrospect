@@ -19,6 +19,9 @@ public class JDIInstanceMirror extends JDIObjectMirror implements InstanceMirror
     @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
         Field f = mirror.referenceType().fieldByName(name);
+        if (f == null) {
+            throw new NoSuchFieldException(name);
+        }
         return new JDIMemberFieldMirror(vm, f, mirror);
     }
 

@@ -33,4 +33,9 @@ public class JDIObjectMirror implements ObjectMirror {
     public ClassMirror getClassMirror() {
         return vm.makeClassMirror(mirror.referenceType().classObject());
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + mirror;
+    }
 }

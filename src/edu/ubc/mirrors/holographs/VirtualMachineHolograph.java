@@ -74,6 +74,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         // Start a thread dedicated to debugging, so the debugger has something to
         // execute mirror interface methods on without messing up the rest of the VM.
         this.debuggingThread = new HolographDebuggingThread("HolographDebuggingThread");
+        this.debuggingThread.setDaemon(true);
         this.debuggingThread.start();
         
         collectZipFiles();

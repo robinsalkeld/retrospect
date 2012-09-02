@@ -31,6 +31,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
@@ -566,5 +567,12 @@ public class Reflection {
         }
         
         throw new NoSuchFieldException(fieldName);
+    }
+
+    public static <T> T checkNull(T t) {
+        if (t == null) {
+            throw new NullPointerException();
+        }
+        return t;
     }
 }
