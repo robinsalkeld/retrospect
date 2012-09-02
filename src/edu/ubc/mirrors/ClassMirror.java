@@ -42,8 +42,6 @@ public interface ClassMirror extends InstanceMirror {
     
     public abstract InstanceMirror newRawInstance();
     
-    public abstract ClassMirrorLoader newRawClassLoaderInstance();
-    
     public abstract ArrayMirror newArray(int size);
     
     public abstract ArrayMirror newArray(int... dims);

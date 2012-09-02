@@ -491,6 +491,22 @@ public class Reflection {
         return mirrorInvoke(thread, method, obj, args);
     }
     
+    public static Object invokeStaticMethodHandle(ClassMirror targetClass, MethodHandle m, Object ... args) {
+        VirtualMachineMirror vm = targetClass.getVM();
+        ThreadMirror thread = vm.getThreads().get(0);
+        Type[] paramTypes = Type.getArgumentTypes(m.getMethod().desc);
+        ClassMirror[] paramClasses = new ClassMirror[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            try {
+                paramClasses[i] = classMirrorForType(vm, paramTypes[i], false, targetClass.getLoader());
+            } catch (ClassNotFoundException e) {
+                throw new NoClassDefFoundError(e.getMessage());
+            }
+        }
+        MethodMirror method = getMethod(targetClass, m.getMethod().name, paramClasses);
+        return mirrorInvoke(thread, method, null, args);
+    }
+    
     public static List<URL> getBootstrapPath() {
         String path = (String)System.getProperties().get("sun.boot.class.path");
         String[] paths = path.split(File.pathSeparator);

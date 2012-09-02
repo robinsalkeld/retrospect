@@ -314,11 +314,6 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
     }
     
     @Override
-    public ClassMirrorLoader newRawClassLoaderInstance() {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
     public ArrayMirror newArray(int size) {
         throw new UnsupportedOperationException();
     }

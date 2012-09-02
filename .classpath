@@ -10,5 +10,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/hat"/>
 	<classpathentry kind="lib" path="/JRuby/dist/jruby-complete-1.6.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Library/Application Support/eclipse/plugins/com.chronon.sb.browser.recordercontainer_2.5.2.354/libs/recorder-2.5.2.354.jar"/>
+	<classpathentry kind="lib" path="/Library/Application Support/eclipse/plugins/org.aspectj.weaver_1.6.12.20110613132200/aspectjweaver.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

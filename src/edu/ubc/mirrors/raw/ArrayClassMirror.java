@@ -107,12 +107,16 @@ public class ArrayClassMirror implements ClassMirror {
         return false;
     }
 
+    public static List<ClassMirror> getInterfaceMirrorsForArrays(VirtualMachineMirror vm) {
+        List<ClassMirror> result = new ArrayList<ClassMirror>(2);
+        result.add(vm.findBootstrapClassMirror(Cloneable.class.getName()));
+        result.add(vm.findBootstrapClassMirror(Serializable.class.getName()));
+        return result;
+    }
+    
     @Override
     public List<ClassMirror> getInterfaceMirrors() {
-        List<ClassMirror> result = new ArrayList<ClassMirror>(2);
-        result.add(elementClassMirror.getVM().findBootstrapClassMirror(Cloneable.class.getName()));
-        result.add(elementClassMirror.getVM().findBootstrapClassMirror(Serializable.class.getName()));
-        return result;
+        return getInterfaceMirrorsForArrays(elementClassMirror.getVM());
     }
     
     @Override
@@ -161,11 +165,6 @@ public class ArrayClassMirror implements ClassMirror {
     
     @Override
     public InstanceMirror newRawInstance() {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public ClassMirrorLoader newRawClassLoaderInstance() {
         throw new UnsupportedOperationException();
     }
     

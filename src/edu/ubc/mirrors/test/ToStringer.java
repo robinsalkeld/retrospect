@@ -96,17 +96,17 @@ public class ToStringer implements IApplication {
                 Reflection.getBootstrapPath(),
                 mappedFiles);
         
-        int id2 = snapshot.mapAddressToId(0x7e332dfd8l);
-        IObject obj2 = snapshot.getObject(id2);
-        ObjectMirror mirror2 = vm.makeMirror(obj2);
-        ObjectMirror holograph2 = holographVM.getWrappedMirror(mirror2);
-        
-        System.out.println("***");
-        System.out.println(Reflection.toString(holograph2
-                .getClassMirror()));
-        System.out.println(Reflection.toString(holograph2));
-
-        System.exit(0);
+//        int id2 = snapshot.mapAddressToId(0x7e332dfd8l);
+//        IObject obj2 = snapshot.getObject(id2);
+//        ObjectMirror mirror2 = vm.makeMirror(obj2);
+//        ObjectMirror holograph2 = holographVM.getWrappedMirror(mirror2);
+//        
+//        System.out.println("***");
+//        System.out.println(Reflection.toString(holograph2
+//                .getClassMirror()));
+//        System.out.println(Reflection.toString(holograph2));
+//
+//        System.exit(0);
         
         
         int numObjects = snapshot.getSnapshotInfo().getNumberOfObjects();

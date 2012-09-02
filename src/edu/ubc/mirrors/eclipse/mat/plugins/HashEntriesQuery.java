@@ -126,9 +126,9 @@ public class HashEntriesQuery implements IQuery
 			case 0:
 				return Reflection.toString(entry.collection);
 			case 1:
-				return entry.getKey();
+				return Reflection.toString(entry.getKey());
 			case 2:
-			        return entry.getValue();
+			        return Reflection.toString(entry.getValue());
 			}
 
 			return null;
