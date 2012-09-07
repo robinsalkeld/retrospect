@@ -45,6 +45,11 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
 
     @Override
+    public byte[] getRawAnnotations() {
+        return wrapped.getRawAnnotations();
+    }
+    
+    @Override
     public boolean isArray() {
         return wrapped.isArray();
     }

@@ -291,6 +291,30 @@ public class ClassHolograph extends WrappingClassMirror {
                 accessible = flag;
             }
         }
+
+        @Override
+        public String getName() {
+            return mirageClassMethod.getName();
+        }
+
+        @Override
+        public List<ClassMirror> getParameterTypes() {
+            List<ClassMirror> result = new ArrayList<ClassMirror>(mirageClassMethod.getParameterTypes().length);
+            for (Class<?> klass : mirageClassMethod.getParameterTypes()) {
+                result.add(getOriginalClassMirror(klass));
+            }
+            return result;
+        }
+
+        @Override
+        public ClassMirror getReturnType() {
+            return getOriginalClassMirror(mirageClassMethod.getReturnType());
+        }
+
+//        @Override
+//        public Object getDefaultValue() {
+//            return unwrapMirage(mirageClassMethod.getDefaultValue());
+//        }
     }
     
     private class MirageConstructor extends NativeConstructorMirror implements ConstructorMirror {

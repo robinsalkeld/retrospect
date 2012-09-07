@@ -78,6 +78,11 @@ public class HeapDumpClassMirror implements ClassMirror {
         throw new UnsupportedOperationException();
     }
     
+    @Override
+    public byte[] getRawAnnotations() {
+        throw new UnsupportedOperationException();
+    }
+    
     public static String arrayElementDescriptor(String name) {
         if (name.equals("boolean")) {
             return "Z";

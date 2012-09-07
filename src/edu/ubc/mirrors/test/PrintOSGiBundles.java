@@ -1,12 +1,14 @@
 package edu.ubc.mirrors.test;
 
 import java.io.IOException;
-import java.util.List;
 
+import org.aspectj.lang.annotation.Aspect;
 import org.eclipse.osgi.framework.internal.core.BundleRepository;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceReference;
 
+
+@Aspect
 public class PrintOSGiBundles {
 
     public static String printBundles(Bundle[] bundles) {

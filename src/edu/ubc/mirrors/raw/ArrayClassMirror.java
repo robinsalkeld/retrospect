@@ -190,4 +190,10 @@ public class ArrayClassMirror implements ClassMirror {
     public int getDimensions() {
         return dims;
     }
+    
+    @Override
+    public byte[] getRawAnnotations() {
+        // TODO-RS: Hope this is right...
+        return new byte[0];
+    }
 }

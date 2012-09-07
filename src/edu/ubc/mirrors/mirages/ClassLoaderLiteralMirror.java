@@ -332,4 +332,9 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
     public boolean initialized() {
         return true;
     }
+    
+    @Override
+    public byte[] getRawAnnotations() {
+        return new byte[0];
+    }
 }

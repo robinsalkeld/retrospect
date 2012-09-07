@@ -1,9 +1,11 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 
+import org.aspectj.lang.annotation.Aspect;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.mat.snapshot.ISnapshot;
@@ -20,11 +22,13 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
@@ -114,6 +118,14 @@ public class EclipseHeapDumpTest implements IApplication {
         ThreadMirror thread = vm.getThreads().get(0);
         ClassMirror printerClass = Reflection.injectBytecode(vm, thread, bundleRepositoryClass.getLoader(), 
                 new NativeClassMirror(PrintOSGiBundles.class));
+        
+        Aspect a = PrintOSGiBundles.class.getAnnotation(Aspect.class);
+        
+        ObjectArrayMirror annotationsMirror = (ObjectArrayMirror)Reflection.invokeMethodHandle(printerClass, new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((Class<?>)null).getAnnotations();
+            }
+        });
         
         MethodMirror method = printerClass.getMethod("print", bundleRepositoryClass);
         

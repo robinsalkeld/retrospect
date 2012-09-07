@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
@@ -18,6 +19,8 @@ import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.raw.ConstantPoolReader;
+import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class ClassStubs {
@@ -141,7 +144,18 @@ public class ClassStubs {
         return false;
     }
     
-//    public static Mirage getPrimitiveClass(Class<?> classLoaderLiteral, Mirage name) {
-//        
-//    }
+    public static Mirage getRawAnnotations(Class<?> classLoaderLiteral, Mirage klass) {
+        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+        byte[] bytes = classMirror.getRawAnnotations();
+        ByteArrayMirror result = (ByteArrayMirror)Reflection.copyArray(classMirror.getVM(), new NativeByteArrayMirror(bytes));
+        return ObjectMirage.make(result);
+    }
+    
+    public static Mirage getConstantPool(Class<?> classLoaderLiteral, Mirage klass) {
+        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+        ConstantPoolReader reader = new ConstantPoolReader(classMirror);
+        InstanceMirror result = classMirror.getVM().findBootstrapClassMirror("sun.reflect.ConstantPool").newRawInstance();
+        Reflection.setField(result, "constantPoolOop", reader);
+        return ObjectMirage.make(result);
+    }
 }

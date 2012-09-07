@@ -277,6 +277,12 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     @Override
+    public byte[] getRawAnnotations() {
+        // TODO-RS: For now...
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + klass;
     }

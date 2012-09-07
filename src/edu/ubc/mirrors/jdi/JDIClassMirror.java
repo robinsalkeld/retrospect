@@ -55,6 +55,11 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
+    public byte[] getRawAnnotations() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public boolean isPrimitive() {
         throw new UnsupportedOperationException();
     }

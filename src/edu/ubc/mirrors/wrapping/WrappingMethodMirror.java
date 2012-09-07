@@ -1,7 +1,9 @@
 package edu.ubc.mirrors.wrapping;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -51,5 +53,20 @@ public class WrappingMethodMirror implements MethodMirror {
     @Override
     public void setAccessible(boolean flag) {
         wrapped.setAccessible(flag);
+    }
+
+    @Override
+    public String getName() {
+        return wrapped.getName();
+    }
+
+    @Override
+    public List<ClassMirror> getParameterTypes() {
+        return vm.getWrappedClassMirrorList(wrapped.getParameterTypes());
+    }
+
+    @Override
+    public ClassMirror getReturnType() {
+        return vm.getWrappedClassMirror(wrapped.getReturnType());
     }
 }

@@ -4,7 +4,6 @@
 	<classpathentry exported="true" kind="lib" path="lib/hat.jar" sourcepath="/hat"/>
 	<classpathentry exported="true" kind="lib" path="lib/bcel-5.2.jar" sourcepath="/Users/robinsalkeld/Documents/UBC/Code/bcel-5.2-src/src"/>
 	<classpathentry exported="true" kind="lib" path="bin/"/>
-	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/asm-debug-all-4.0.jar" sourcepath="src.zip"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hat"/>
@@ -12,5 +11,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/Library/Application Support/eclipse/plugins/com.chronon.sb.browser.recordercontainer_2.5.2.354/libs/recorder-2.5.2.354.jar"/>
 	<classpathentry kind="lib" path="/Library/Application Support/eclipse/plugins/org.aspectj.weaver_1.6.12.20110613132200/aspectjweaver.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/abc"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

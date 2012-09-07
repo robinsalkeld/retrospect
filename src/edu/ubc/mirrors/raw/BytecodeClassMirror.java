@@ -12,11 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.RawAnnotationsWriter;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
@@ -119,8 +121,14 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
     }
 
-    private static class MethodPlaceholder implements MethodMirror {
+    private class BytecodeMethodMirror implements MethodMirror {
 
+        private final Method method;
+        
+        public BytecodeMethodMirror(Method method) {
+            this.method = method;
+        }
+        
         @Override
         public Object invoke(ThreadMirror thread, ObjectMirror obj,
                 Object... args) throws IllegalArgumentException,
@@ -132,7 +140,25 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         public void setAccessible(boolean flag) {
             throw new UnsupportedOperationException();
         }
-        
+
+        @Override
+        public String getName() {
+            return method.getName();
+        }
+
+        @Override
+        public List<ClassMirror> getParameterTypes() {
+            List<ClassMirror> result = new ArrayList<ClassMirror>();
+            for (Type parameterType : method.getArgumentTypes()) {
+                result.add(loadClassMirrorInternal(parameterType));
+            }
+            return result;
+        }
+
+        @Override
+        public ClassMirror getReturnType() {
+            return loadClassMirrorInternal(method.getReturnType());
+        }
     }
     
     private boolean resolved = false;
@@ -144,11 +170,13 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     private Map<String, ClassMirror> memberFieldNames = new LinkedHashMap<String, ClassMirror>();
     private Map<String, StaticField> staticFields = new LinkedHashMap<String, StaticField>();
     private final Set<Method> methods = new HashSet<Method>();
+    private byte[] rawAnnotations;
     
     private StaticsInfo staticInitInfo;
     
     protected String className;
     private final String internalClassName;
+
     
     public BytecodeClassMirror(String className) {
         this.className = className;
@@ -195,6 +223,11 @@ public abstract class BytecodeClassMirror implements ClassMirror {
             for (String i : interfaces) {
                 interfaceNodes.add(loadClassMirrorInternal(Type.getObjectType(i)));
             }
+        }
+        
+        @Override
+        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+            return annotationsWriter.visitAnnotation(desc, visible);
         }
         
         @Override
@@ -248,6 +281,11 @@ public abstract class BytecodeClassMirror implements ClassMirror {
                 return new JSRInlinerAdapter(analyzer, access, name, desc, signature, exceptions);
             }
             return null;
+        }
+        
+        @Override
+        public void visitEnd() {
+            rawAnnotations = annotationsWriter.toByteArray();
         }
     }
     
@@ -649,12 +687,16 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         }
     }
     
+    private RawAnnotationsWriter annotationsWriter;
+    
     private void resolve() {
         if (resolved) {
             return;
         }
         
-        new ClassReader(getBytecode()).accept(new BytecodeClassVisitor(), 0);
+        ClassReader reader = new ClassReader(getBytecode());
+        annotationsWriter = new RawAnnotationsWriter(reader);
+        reader.accept(new BytecodeClassVisitor(), 0);
         
         resolved = true;
     }
@@ -753,7 +795,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
                     continue;
                 }
             }
-            return new MethodPlaceholder();
+            return new BytecodeMethodMirror(m);
         }
 
         throw new NoSuchMethodException(name);
@@ -796,6 +838,12 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     @Override
     public ArrayMirror newArray(int... dims) {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public byte[] getRawAnnotations() {
+        resolve();
+        return rawAnnotations;
     }
     
     @Override

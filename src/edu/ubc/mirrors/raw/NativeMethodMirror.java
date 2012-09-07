@@ -2,7 +2,10 @@ package edu.ubc.mirrors.raw;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -53,5 +56,24 @@ public class NativeMethodMirror implements MethodMirror {
     @Override
     public void setAccessible(boolean flag) {
         nativeMethod.setAccessible(flag);
+    }
+
+    @Override
+    public String getName() {
+        return nativeMethod.getName();
+    }
+
+    @Override
+    public List<ClassMirror> getParameterTypes() {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (Class<?> klass : nativeMethod.getParameterTypes()) {
+            result.add(new NativeClassMirror(klass));
+        }
+        return result;
+    }
+
+    @Override
+    public ClassMirror getReturnType() {
+        return new NativeClassMirror(nativeMethod.getReturnType());
     }
 }

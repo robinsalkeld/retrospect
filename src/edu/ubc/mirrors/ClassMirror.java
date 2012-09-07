@@ -16,35 +16,40 @@ public interface ClassMirror extends InstanceMirror {
     
     public abstract boolean isPrimitive();
     
-    public abstract boolean isArray();
+    public boolean isArray();
     
-    public abstract ClassMirror getComponentClassMirror();
+    public ClassMirror getComponentClassMirror();
     
-    public abstract ClassMirror getSuperClassMirror();
+    public ClassMirror getSuperClassMirror();
     
-    public abstract boolean isInterface();
+    public boolean isInterface();
     
-    public abstract List<ClassMirror> getInterfaceMirrors();
+    public List<ClassMirror> getInterfaceMirrors();
     
-    public abstract Map<String, ClassMirror> getDeclaredFields();
+    public Map<String, ClassMirror> getDeclaredFields();
     
-    public abstract FieldMirror getStaticField(String name) throws NoSuchFieldException;
+    public FieldMirror getStaticField(String name) throws NoSuchFieldException;
     
-    public abstract List<InstanceMirror> getInstances();
+    public List<InstanceMirror> getInstances();
 
-    public abstract MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
+    public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
 
-    public abstract ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
+    public ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
     
-    public abstract List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly);
+    public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly);
     
-    public abstract int getModifiers();
+    public int getModifiers();
     
-    public abstract InstanceMirror newRawInstance();
+    public InstanceMirror newRawInstance();
     
-    public abstract ArrayMirror newArray(int size);
+    public ArrayMirror newArray(int size);
     
-    public abstract ArrayMirror newArray(int... dims);
+    public ArrayMirror newArray(int... dims);
     
-    public abstract boolean initialized();
+    public boolean initialized();
+    
+    // It would feel more natural to return the parsed annotations (i.e. InstanceMirrors)
+    // but this works better since the annotations are parsed and instantiated in normal Java code
+    // rather than in the VM itself.
+    public byte[] getRawAnnotations(); 
 }
