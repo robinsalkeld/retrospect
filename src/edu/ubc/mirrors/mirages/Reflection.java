@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,6 +116,24 @@ public class Reflection {
         ObjectMirror bytecodeInVM = copyArray(vm, new NativeByteArrayMirror(bytecode));
         
         return (ClassMirror)mirrorInvoke(thread, defineClassMethod, newLoader, name, bytecodeInVM, 0, bytecode.length);
+    }
+    
+    public static ClassMirrorLoader newURLClassLoader(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader parent, URL[] urls) {
+        ClassMirror urlClass = vm.findBootstrapClassMirror(URL.class.getName());
+        ConstructorMirror urlConstructor = getConstructor(urlClass, vm.findBootstrapClassMirror(String.class.getName()));
+        
+        ObjectArrayMirror urlsMirror = (ObjectArrayMirror)urlClass.newArray(urls.length);
+        ClassMirror urlArrayClass = urlsMirror.getClassMirror();
+        for (int i = 0; i < urls.length; i++) {
+            InstanceMirror url = (InstanceMirror)newInstance(urlConstructor, makeString(vm, urls[i].toString()));
+            urlsMirror.set(i, url);
+        }
+        
+        ClassMirror urlClassLoaderClass = vm.findBootstrapClassMirror(URLClassLoader.class.getName());
+        ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
+        ConstructorMirror constructor = getConstructor(urlClassLoaderClass, classLoaderClass, urlArrayClass);
+        
+        return (ClassMirrorLoader)newInstance(constructor, parent, urlsMirror);
     }
     
     public static InstanceMirror makeString(VirtualMachineMirror vm, String value) {
@@ -574,5 +593,12 @@ public class Reflection {
             throw new NullPointerException();
         }
         return t;
+    }
+    
+    public static InstanceMirror newStackTraceElement(VirtualMachineMirror vm, String declaringClass, String methodName, String fileName, int lineNumber) {
+        ClassMirror steClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
+        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
+        ConstructorMirror constructor = getConstructor(steClass, stringClass, stringClass, stringClass, vm.getPrimitiveClass("int"));
+        return newInstance(constructor, makeString(vm, declaringClass), makeString(vm, methodName), makeString(vm, fileName), lineNumber);
     }
 }

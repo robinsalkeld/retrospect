@@ -61,7 +61,8 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     
     @Override
     public boolean isPrimitive() {
-        throw new UnsupportedOperationException();
+        // TODO-RS: There seems to be no way to get at the primitive classes
+        return false;
     }
 
     @Override
@@ -76,7 +77,15 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public ClassMirror getSuperClassMirror() {
-        throw new UnsupportedOperationException();
+        if (refType instanceof ClassType) {
+            return vm.makeClassMirror(((ClassType)refType).superclass());
+        } else if (refType instanceof InterfaceType) {
+            return null;
+        } else if (refType instanceof ArrayType) {
+            return vm.findBootstrapClassMirror(Object.class.getName());
+        } else {
+            throw new IllegalStateException("Unrecognized ReferenceType class: " + refType);
+        }
     }
 
     @Override

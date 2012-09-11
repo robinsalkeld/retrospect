@@ -13,4 +13,8 @@ public interface MethodMirror {
     public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
     
     public void setAccessible(boolean flag);
+    
+    public byte[] getRawAnnotations();
+    public byte[] getRawParameterAnnotations();
+    public byte[] getRawAnnotationDefault();
 }

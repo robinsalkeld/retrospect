@@ -121,11 +121,11 @@ public class EclipseHeapDumpTest implements IApplication {
         
         Aspect a = PrintOSGiBundles.class.getAnnotation(Aspect.class);
         
-        ObjectArrayMirror annotationsMirror = (ObjectArrayMirror)Reflection.invokeMethodHandle(printerClass, new MethodHandle() {
-            protected void methodCall() throws Throwable {
-                ((Class<?>)null).getAnnotations();
-            }
-        });
+//        ObjectArrayMirror annotationsMirror = (ObjectArrayMirror)Reflection.invokeMethodHandle(printerClass, new MethodHandle() {
+//            protected void methodCall() throws Throwable {
+//                ((Class<?>)null).getAnnotations();
+//            }
+//        });
         
         MethodMirror method = printerClass.getMethod("print", bundleRepositoryClass);
         

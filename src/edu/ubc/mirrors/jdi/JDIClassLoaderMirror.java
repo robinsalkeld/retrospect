@@ -27,7 +27,7 @@ public class JDIClassLoaderMirror extends JDIInstanceMirror implements ClassMirr
 
     @Override
     public ClassMirror findLoadedClassMirror(String name) {
-        return (ClassMirror)vm.makeMirror(loadedClasses.get(name));
+        return vm.makeClassMirror(loadedClasses.get(name));
     }
 
     @Override

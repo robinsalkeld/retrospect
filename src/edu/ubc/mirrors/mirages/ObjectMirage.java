@@ -157,7 +157,7 @@ public class ObjectMirage implements Mirage {
             return null;
         }
         
-        MirageClassLoader loader = ClassHolograph.getMirageClassLoader((ClassHolograph)mirror.getClassMirror());
+        MirageClassLoader loader = ClassHolograph.getMirageClassLoader(mirror.getClassMirror());
         return loader.makeMirage(mirror);
     }
     

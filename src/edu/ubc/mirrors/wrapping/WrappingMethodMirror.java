@@ -12,7 +12,7 @@ import edu.ubc.mirrors.ThreadMirror;
 public class WrappingMethodMirror implements MethodMirror {
 
     private final WrappingVirtualMachine vm;
-    private final MethodMirror wrapped;
+    protected final MethodMirror wrapped;
     
     public WrappingMethodMirror(WrappingVirtualMachine vm, MethodMirror wrapped) {
         this.vm = vm;
@@ -68,5 +68,20 @@ public class WrappingMethodMirror implements MethodMirror {
     @Override
     public ClassMirror getReturnType() {
         return vm.getWrappedClassMirror(wrapped.getReturnType());
+    }
+    
+    @Override
+    public byte[] getRawAnnotations() {
+        return wrapped.getRawAnnotations();
+    }
+
+    @Override
+    public byte[] getRawParameterAnnotations() {
+        return wrapped.getRawParameterAnnotations();
+    }
+
+    @Override
+    public byte[] getRawAnnotationDefault() {
+        return wrapped.getRawAnnotationDefault();
     }
 }

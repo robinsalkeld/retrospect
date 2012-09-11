@@ -48,6 +48,8 @@ import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeConstructorMirror;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
+import edu.ubc.mirrors.wrapping.WrappingMethodMirror;
+import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class ClassHolograph extends WrappingClassMirror {
 
@@ -156,15 +158,13 @@ public class ClassHolograph extends WrappingClassMirror {
     }
         
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-        // Just to check that the method exists.
-//        ClassMirror[] bytecodeParamTypes = new ClassMirror[paramTypes.length];
-//        for (int i = 0; i < paramTypes.length; i++) {
-//            bytecodeParamTypes[i] = getBytecodeMirror(paramTypes[i]);
-//        }
-//        
-//        getBytecodeMirror().getMethod(name, bytecodeParamTypes);
-
-        return new MirageMethod(name, paramTypes);
+        MethodMirror original;
+        try {
+            original = super.getMethod(name, paramTypes);
+        } catch (UnsupportedOperationException e) {
+            original = getBytecodeMirror().getMethod(name, paramTypes);
+        }
+        return new MirageMethod(original);
     }
     
     @Override
@@ -230,21 +230,19 @@ public class ClassHolograph extends WrappingClassMirror {
     
     private class MirageMethod implements MethodMirror {
 
-        private final String name;
-        private final ClassMirror[] paramTypes;
-        
+        private MethodMirror wrapped;
         private Method mirageClassMethod;
         private boolean accessible = false;
         
-        public MirageMethod(String name, ClassMirror[] paramTypes) {
-            this.name = name;
-            this.paramTypes = paramTypes;
+        public MirageMethod(MethodMirror wrapped) {
+            this.wrapped = wrapped;
         }
-        
+
         private void resolveMethod() {
-            Class<?>[] mirageParamTypes = new Class<?>[paramTypes.length];
-            for (int i = 0; i < paramTypes.length; i++) {
-                mirageParamTypes[i] = getMirageClass(paramTypes[i], false);
+            List<ClassMirror> paramTypes = getParameterTypes();
+            Class<?>[] mirageParamTypes = new Class<?>[paramTypes.size()];
+            for (int i = 0; i < mirageParamTypes.length; i++) {
+                mirageParamTypes[i] = getMirageClass(paramTypes.get(i), false);
             }
             Class<?> mirageClass = getMirageClass(true);
             // Account for the fact that ObjectMirage is not actually the top of the type lattice
@@ -252,9 +250,9 @@ public class ClassHolograph extends WrappingClassMirror {
                 mirageClass = Object.class;
             }
             try {
-                mirageClassMethod = mirageClass.getDeclaredMethod(name, mirageParamTypes);
+                mirageClassMethod = mirageClass.getDeclaredMethod(getName(), mirageParamTypes);
             } catch (NoSuchMethodException e) {
-                throw new NoSuchMethodError(name);
+                throw new NoSuchMethodError(getName());
             }
             mirageClassMethod.setAccessible(accessible);
         }
@@ -278,8 +276,28 @@ public class ClassHolograph extends WrappingClassMirror {
                 } else {
                     return unwrapMirage(result);
                 }
+            } catch (InvocationTargetException e) {
+                cleanStackTrace(e);
+                throw e;
             } finally {
                 currentThreadMirror.set(original);
+            }
+        }
+        
+        private void cleanStackTrace(Throwable t) {
+            StackTraceElement[] stackTrace = t.getStackTrace();
+            for (int i = 0; i < stackTrace.length; i++) {
+                stackTrace[i] = new StackTraceElement(
+                        MirageClassGenerator.getOriginalBinaryClassName(stackTrace[i].getClassName()),
+                        stackTrace[i].getMethodName(),
+                        stackTrace[i].getFileName(),
+                        stackTrace[i].getLineNumber());
+            }
+            t.setStackTrace(stackTrace);
+            
+            Throwable cause = t.getCause();
+            if (cause != null && cause != t) {
+                cleanStackTrace(cause);
             }
         }
         
@@ -291,30 +309,36 @@ public class ClassHolograph extends WrappingClassMirror {
                 accessible = flag;
             }
         }
+        
+        @Override
+        public List<ClassMirror> getParameterTypes() {
+            return wrapped.getParameterTypes();
+        }
+        
+        @Override
+        public ClassMirror getReturnType() {
+            return wrapped.getReturnType();
+        }
 
         @Override
         public String getName() {
-            return mirageClassMethod.getName();
+            return wrapped.getName();
         }
 
         @Override
-        public List<ClassMirror> getParameterTypes() {
-            List<ClassMirror> result = new ArrayList<ClassMirror>(mirageClassMethod.getParameterTypes().length);
-            for (Class<?> klass : mirageClassMethod.getParameterTypes()) {
-                result.add(getOriginalClassMirror(klass));
-            }
-            return result;
+        public byte[] getRawAnnotations() {
+            return wrapped.getRawAnnotations();
         }
 
         @Override
-        public ClassMirror getReturnType() {
-            return getOriginalClassMirror(mirageClassMethod.getReturnType());
+        public byte[] getRawParameterAnnotations() {
+            return wrapped.getRawParameterAnnotations();
         }
 
-//        @Override
-//        public Object getDefaultValue() {
-//            return unwrapMirage(mirageClassMethod.getDefaultValue());
-//        }
+        @Override
+        public byte[] getRawAnnotationDefault() {
+            return wrapped.getRawAnnotationDefault();
+        }
     }
     
     private class MirageConstructor extends NativeConstructorMirror implements ConstructorMirror {
@@ -397,7 +421,11 @@ public class ClassHolograph extends WrappingClassMirror {
     
     private ClassMirror getBytecodeMirror() {
         if (bytecodeMirror == null) {
-            bytecodeMirror = getVM().getBytecodeClassMirror(this);
+            if (wrapped instanceof DefinedClassMirror) {
+                throw new IllegalStateException();
+            } else {
+                bytecodeMirror = getVM().getBytecodeClassMirror(this);
+            }
         }
         return bytecodeMirror;
     }

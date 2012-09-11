@@ -76,4 +76,23 @@ public class NativeMethodMirror implements MethodMirror {
     public ClassMirror getReturnType() {
         return new NativeClassMirror(nativeMethod.getReturnType());
     }
+
+    @Override
+    public byte[] getRawAnnotations() {
+        // TODO For now
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] getRawParameterAnnotations() {
+        // TODO For now
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] getRawAnnotationDefault() {
+        // TODO For now
+        throw new UnsupportedOperationException();
+    }
+    
 }

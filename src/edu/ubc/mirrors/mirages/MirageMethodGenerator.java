@@ -1,29 +1,22 @@
 package edu.ubc.mirrors.mirages;
 
-import static edu.ubc.mirrors.mirages.ClassLoaderLiteralMirror.getClassLoaderLiteralClass;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.arrayMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageInternalClassName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalInternalClassName;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getPrimitiveArrayMirageInternalName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getPrimitiveArrayMirrorInternalName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getSortName;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.makeArrayType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirageType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.stringType;
 import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
 
-import java.io.PrintStream;
-import java.util.zip.Inflater;
-
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -36,11 +29,6 @@ import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapMirror;
-import edu.ubc.mirrors.raw.NativeObjectArrayMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.util.zip.InflaterStubs;
-import edu.ubc.mirrors.test.Breakpoint;
 
 public class MirageMethodGenerator extends InstructionAdapter {
 
@@ -66,10 +54,6 @@ public class MirageMethodGenerator extends InstructionAdapter {
         this.isGetStackTrace = isGetStackTrace;
         
         activeMethod = name + desc;
-        
-        if (this.owner.equals("mirage/java/lang/Integer") && name.equals("getChars")) {
-            Breakpoint.bp();
-        }
     }
 
     @Override

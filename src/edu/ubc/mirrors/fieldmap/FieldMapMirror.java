@@ -125,7 +125,7 @@ public class FieldMapMirror implements InstanceMirror {
     }
     
     public void toString(StringBuilder sb, int maxDepth) {
-        sb.append(getClass().getSimpleName() + "@" + System.identityHashCode(this) + "(");
+        sb.append(getClass().getSimpleName() + "[" + classMirror.getClassName() + "]@" + System.identityHashCode(this) + "(");
         if (maxDepth == 0) {
             sb.append("...");
         } else {

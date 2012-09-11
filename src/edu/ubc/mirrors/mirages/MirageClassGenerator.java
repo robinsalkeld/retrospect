@@ -370,6 +370,11 @@ public class MirageClassGenerator extends ClassVisitor {
             return null;
         }
         
+    // TODO-RS: Remove me - avoiding a race condition in ZipFileInflaterInputStream...
+    if (name.equals("finalize")) {
+        return null;
+    }
+        
         if (name.equals("<init>")) {
             // Add the implicit mirror argument
             desc = addMirrorParam(desc);
@@ -421,7 +426,7 @@ public class MirageClassGenerator extends ClassVisitor {
                                                                     Type.getMethodDescriptor(stackTraceType));
                 superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, objectMirageType.getInternalName(), 
                                                                     "cleanAndSetStackTrace", 
-                                                                    Type.getMethodDescriptor(stackTraceType, mirageType, stackTraceType));
+                                                                    Type.getMethodDescriptor(mirageType, mirageType, stackTraceType));
                 superVisitor.visitTypeInsn(Opcodes.CHECKCAST, getMirageType(stackTraceType).getInternalName());
                 superVisitor.visitInsn(Opcodes.ARETURN);
                 superVisitor.visitMaxs(2, 1);

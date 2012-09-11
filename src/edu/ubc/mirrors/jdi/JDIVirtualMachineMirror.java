@@ -1,22 +1,33 @@
 package edu.ubc.mirrors.jdi;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.jdi.Bootstrap;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.Mirror;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.Type;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.VirtualMachineManager;
+import com.sun.jdi.connect.Connector;
+import com.sun.jdi.connect.Connector.IntegerArgument;
+import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+import com.sun.tools.jdi.SocketAttachingConnector;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.raw.ArrayClassMirror;
+import edu.ubc.mirrors.raw.NativeClassMirror;
+import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 
@@ -26,6 +37,24 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     
     public JDIVirtualMachineMirror(VirtualMachine vm) {
         this.vm = vm;
+    }
+    
+    public static VirtualMachineMirror connectOnPort(int port) throws IOException, IllegalConnectorArgumentsException {
+        VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
+        List<Connector> connectors = vmm.allConnectors();
+        SocketAttachingConnector c = null;
+        for (Connector connector : connectors) {
+            if (connector instanceof SocketAttachingConnector) {
+                c = (SocketAttachingConnector)connector;
+                break;
+            }
+        }
+        
+        Map connectorArgs = c.defaultArguments();
+        ((IntegerArgument)connectorArgs.get("port")).setValue(port);
+        VirtualMachine vm = c.attach(connectorArgs);
+        
+        return new JDIVirtualMachineMirror(vm);
     }
     
     @Override
@@ -56,7 +85,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         return threads;
     }
 
-    public ObjectMirror makeMirror(Mirror t) {
+    public ObjectMirror makeMirror(ObjectReference t) {
         if (t == null) {
             return null;
         }
@@ -71,6 +100,8 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
             result = new JDIClassMirror(this, (ClassObjectReference)t);
         } else if (t instanceof ClassLoaderReference) {
             result = new JDIClassLoaderMirror(this, (ClassLoaderReference)t);
+        } else if (t instanceof ThreadReference) {
+            result = new JDIThreadMirror(this, (ThreadReference)t);
         } else if (t instanceof ObjectReference) {
             result = new JDIObjectMirror(this, (ObjectReference)t);
         } else {
@@ -82,8 +113,18 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         return result;
     }
 
-    public ClassMirror makeClassMirror(Mirror r) {
+    public ClassMirror makeClassMirror(ObjectReference r) {
         return (ClassMirror)makeMirror(r);
+    }
+    
+    public ClassMirror makeClassMirror(Type t) {
+        if (t == null) {
+            return null;
+        } else if (t instanceof ReferenceType) {
+            return (ClassMirror)makeMirror(((ReferenceType)t).classObject());
+        } else {
+            return getPrimitiveClass(t.name());
+        }
     }
     
     public List<ClassMirror> makeClassMirrorList(List<? extends ReferenceType> refTypes) {
@@ -96,14 +137,12 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public ClassMirror getPrimitiveClass(String name) {
-        // TODO Auto-generated method stub
-        return null;
+        return new NativeClassMirror(NativeVirtualMachineMirror.getNativePrimitiveClass(name), this);
     }
 
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
-        // TODO Auto-generated method stub
-        return null;
+        return new ArrayClassMirror(dimensions, elementClass);
     }
     
 }

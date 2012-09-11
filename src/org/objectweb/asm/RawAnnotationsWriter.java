@@ -5,10 +5,10 @@ public class RawAnnotationsWriter extends ClassVisitor {
     private final ClassWriter writer;
     private AnnotationWriter anns;
     
-    public RawAnnotationsWriter(ClassReader reader) {
+    public RawAnnotationsWriter(ClassWriter writer) {
         super(Opcodes.ASM4);
-        // The reader is provided so the constant pool will be pre-populated
-        this.writer = new ClassWriter(reader, Opcodes.ASM4); 
+        // The writer is provided so the constant pool will be pre-populated
+        this.writer = writer; 
     }
 
     @Override
@@ -20,21 +20,8 @@ public class RawAnnotationsWriter extends ClassVisitor {
         return av;
     }
     
-    public byte[] toByteArray() {
-        ByteVector out = new ByteVector() {
-            boolean first = true;
-            @Override
-            public ByteVector putInt(int i) {
-                // Skip the first int, which is the total size of
-                // the annotations and isn't included in this format.
-                if (first) {
-                    first = false;
-                } else {
-                    super.putInt(i);
-                }
-                return this;
-            }
-        };
+    public byte[] rawAnnotations() {
+        ByteVector out = new AttributeContentByteVector();
         if (anns == null) {
             out.putShort(0);
         } else {

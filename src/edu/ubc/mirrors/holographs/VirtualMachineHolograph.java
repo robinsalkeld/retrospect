@@ -278,7 +278,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ByteArrayMirror remoteBuffer = (ByteArrayMirror)getPrimitiveClass("byte").newArray(4096);
         int read;
+        InstanceMirror verifierStream = (InstanceMirror)Reflection.getField(stream, "in");
+        InstanceMirror inflaterStream = (InstanceMirror)Reflection.getField(verifierStream, "is");
         while ((read = (Integer)Reflection.invokeMethodHandle(stream, readMethod, remoteBuffer, 0, remoteBuffer.length())) != -1) {
+//            System.out.println(inflaterStream);
             SystemStubs.arraycopyMirrors(remoteBuffer, 0, localBufferMirror, 0, remoteBuffer.length());
             baos.write(localBuffer, 0, read);
         }
