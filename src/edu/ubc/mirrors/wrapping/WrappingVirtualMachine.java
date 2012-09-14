@@ -39,6 +39,12 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return (ClassMirror)getWrappedMirror(wrappedVM.findBootstrapClassMirror(name));
     }
 
+    @Override
+    public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
+        ByteArrayMirror unwrappedB = (ByteArrayMirror)unwrapMirror(b);
+        return getWrappedClassMirror(wrappedVM.defineBootstrapClass(name, unwrappedB, off, len));
+    }
+    
     private final Map<ObjectMirror, ObjectMirror> wrappedMirrors = new HashMap<ObjectMirror, ObjectMirror>();
     
     public ObjectMirror getWrappedMirror(ObjectMirror mirror) {

@@ -94,5 +94,35 @@ public class NativeMethodMirror implements MethodMirror {
         // TODO For now
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public ClassMirror getDeclaringClass() {
+        // TODO For now
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getSlot() {
+        // TODO For now
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getModifiers() {
+        // TODO For now
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<ClassMirror> getExceptionTypes() {
+        // TODO For now
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getSignature() {
+        // TODO For now
+        throw new UnsupportedOperationException();
+    }
     
 }

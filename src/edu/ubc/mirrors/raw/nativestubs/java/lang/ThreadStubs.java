@@ -10,6 +10,9 @@ public class ThreadStubs {
     
     public static Mirage currentThread(Class<?> classLoaderLiteral) {
         ThreadMirror mirror = ClassHolograph.currentThreadMirror.get();
+        if (mirror == null) {
+            throw new IllegalStateException("Hologram execution without a current thread!");
+        }
         return (Mirage)ObjectMirage.make(mirror);
     }
     

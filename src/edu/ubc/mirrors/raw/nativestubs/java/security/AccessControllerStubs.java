@@ -28,4 +28,9 @@ public class AccessControllerStubs {
             }
         });
     }
+    
+    public static Mirage getStackAccessControlContext(Class<?> classLoaderLiteral) {
+        // TODO-RS: Not correct in general, but adequate for now
+        return null;
+    }
 }

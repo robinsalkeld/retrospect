@@ -145,6 +145,16 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
     
     @Override
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
+        List<MethodMirror> originals = wrapped.getDeclaredMethods(publicOnly);
+        List<MethodMirror> result = new ArrayList<MethodMirror>(originals.size());
+        for (MethodMirror original : originals) {
+            result.add(new WrappingMethodMirror(vm, original));
+        }
+        return result;
+    }
+    
+    @Override
     public int getModifiers() {
         return wrapped.getModifiers();
     }

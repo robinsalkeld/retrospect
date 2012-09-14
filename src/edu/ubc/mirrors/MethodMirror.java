@@ -5,9 +5,17 @@ import java.util.List;
 
 public interface MethodMirror {
     
-    String getName();
-    List<ClassMirror> getParameterTypes();
-    ClassMirror getReturnType();
+    public ClassMirror getDeclaringClass();
+    
+    public int getSlot();
+    
+    public int getModifiers();
+    
+    public String getName();
+    public List<ClassMirror> getParameterTypes();
+    public List<ClassMirror> getExceptionTypes();
+    public ClassMirror getReturnType();
+    public String getSignature();
     
     // TODO-RS: Should we have a different InvocationTargetException that has a mirror as a cause instead?
     public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;

@@ -19,6 +19,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class ArrayClassMirror implements ClassMirror {
@@ -47,12 +48,17 @@ public class ArrayClassMirror implements ClassMirror {
     }
     
     @Override
-    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        throw new NoSuchFieldException(name);
+    public FieldMirror getMemberField(final String name) throws NoSuchFieldException {
+        return new ClassFieldMirror(this, name);
     }
 
     @Override
     public List<FieldMirror> getMemberFields() {
+        return Collections.emptyList();
+    }
+    
+    @Override
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
         return Collections.emptyList();
     }
     

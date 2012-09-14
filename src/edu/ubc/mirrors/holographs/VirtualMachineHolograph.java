@@ -57,7 +57,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     private final ClassLoader bootstrapBytecodeLoader;
     private final Map<String, ClassHolograph> dynamicallyDefinedClasses =
             new HashMap<String, ClassHolograph>();
-      
+    
+    public Map<Integer, FileInputStream> fileInputStreams = new HashMap<Integer, FileInputStream>();
+    
     public Map<Long, ZipFile> zipFilesByAddress = new HashMap<Long, ZipFile>();
     public Map<Long, File> zipPathsByAddress = new HashMap<Long, File>();
     public Map<List<Long>, ZipEntry> zipEntriesByAddresses = new HashMap<List<Long>, ZipEntry>();
@@ -330,5 +332,21 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         } 
         
         return null;
+    }
+    
+    @Override
+    public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
+        
+        if (findBootstrapClassMirror(name) != null) {
+            throw new IllegalArgumentException("Attempt to define already defined class: " + name);
+        }
+        
+        final byte[] realBytecode = new byte[len];
+        SystemStubs.arraycopyMirrors(b, off, new NativeByteArrayMirror(realBytecode), 0, len);
+        
+        ClassMirror newClass = new DefinedClassMirror(this, null, name, realBytecode);
+        ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(newClass);
+        dynamicallyDefinedClasses.put(name, newClassHolograph);
+        return newClassHolograph;
     }
 }

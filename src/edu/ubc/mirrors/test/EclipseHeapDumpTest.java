@@ -3,7 +3,9 @@ package edu.ubc.mirrors.test;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.Collections;
+import java.util.Map;
 
 import org.aspectj.lang.annotation.Aspect;
 import org.eclipse.equinox.app.IApplication;
@@ -27,6 +29,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -60,27 +63,42 @@ public class EclipseHeapDumpTest implements IApplication {
                 Collections.<String, String>emptyMap(), 
                 new ConsoleProgressListener(System.out));
 
-//        for (int id : snapshot.getClassesByName("java.lang.Class", false).iterator().next().getObjectIds()) {
-//            IInstance instance = (IInstance) snapshot.getObject(id);
-//            IPrimitiveArray value = (IPrimitiveArray) instance.getField("name").getValue();
-//            if (value != null) {
-//                String name = value.getValueArray(instance.getField("offset").getValue(), instance.getField("length").getValue());
-//                IClass voidClassClass = snapshot.getClassesByName("java.lang.Void", false).iterator().next();
-//                
-//            }
-//        }
-        
         // Create an instance of the mirrors API backed by the snapshot
         HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
         
         // Create a holograph VM
+        File binDir = new File("/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
+        File aspectJRuntimeJar = new File("/Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar");
+        Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
+        mappedFiles.put(binDir.getAbsolutePath(), binDir.getAbsolutePath());
+        mappedFiles.put(aspectJRuntimeJar.getAbsolutePath(), aspectJRuntimeJar.getAbsolutePath());
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
                 Reflection.getBootstrapPath(),
-                Reflection.getStandardMappedFiles());
+                mappedFiles);
         
-        ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);
-        InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
-        printBundlesFromRepository(bundleRepository);
+        URL urlPath = binDir.toURI().toURL();
+        URL urlAspectJRTPath = aspectJRuntimeJar.toURI().toURL();
+        ThreadMirror thread = holographVM.getThreads().get(0);
+        ClassMirrorLoader loader = Reflection.newURLClassLoader(holographVM, thread, null, new URL[] {urlPath, urlAspectJRTPath});
+        
+        ObjectMirror r = (ObjectMirror)Reflection.invokeMethodHandle(loader, new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((ClassLoader)null).getResource(null);
+            }
+        }, Reflection.makeString(holographVM, "tracing/version3/TraceMyClasses.class"));
+        
+        ClassHolograph.currentThreadMirror.set(thread);
+        ClassMirror aspect = Reflection.classMirrorForName(holographVM, "tracing.version3.TraceMyClasses", true, loader);
+        Reflection.invokeMethodHandle(aspect, new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((Class<?>)null).getAnnotation(null);
+            }
+        }, Reflection.classMirrorForName(holographVM, Aspect.class.getName(), true, loader));
+        ClassHolograph.currentThreadMirror.set(null);
+        
+//        ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);
+//        InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
+//        printBundlesFromRepository(bundleRepository);
     }
     
     public static ObjectMirror getWrapped(VirtualMachineMirror vm, ObjectMirror o) {

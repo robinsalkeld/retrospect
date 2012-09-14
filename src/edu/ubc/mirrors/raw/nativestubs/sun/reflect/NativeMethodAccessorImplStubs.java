@@ -3,29 +3,31 @@ package edu.ubc.mirrors.raw.nativestubs.sun.reflect;
 import java.lang.reflect.InvocationTargetException;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 
-public class NativeConstructorAccessorImplStubs {
+public class NativeMethodAccessorImplStubs {
 
-    public static Mirage newInstance0(Class<?> classLoaderLiteral, Mirage constructor, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        InstanceMirror cons = (InstanceMirror)constructor.getMirror();
+    public static Mirage invoke0(Class<?> classLoaderLiteral, Mirage method, Mirage target, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        InstanceMirror m = (InstanceMirror)method.getMirror();
         
-        ClassMirror declaringClass = (ClassMirror)Reflection.getField(cons, "clazz");
-        ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)Reflection.getField(cons, "parameterTypes");
+        ClassMirror declaringClass = (ClassMirror)Reflection.getField(m, "clazz");
+        String name = Reflection.getRealStringForMirror((InstanceMirror)Reflection.getField(m, "name"));
+        ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)Reflection.getField(m, "parameterTypes");
         ClassMirror[] parameterTypes = new ClassMirror[parameterTypesMirror.length()];
         for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = (ClassMirror)parameterTypesMirror.get(i);
+            parameterTypes[i++] = (ClassMirror)parameterTypesMirror.get(i);
         }
 
-        ConstructorMirror consMirror;
+        MethodMirror methodMirror;
         try {
-            consMirror = declaringClass.getConstructor(parameterTypes);
+            methodMirror = declaringClass.getMethod(name, parameterTypes);
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         }
@@ -37,7 +39,8 @@ public class NativeConstructorAccessorImplStubs {
                 argsArray[i] = argsMirror.get(i);
             }
         }
-        return ObjectMirage.make(consMirror.newInstance(ClassHolograph.currentThreadMirror.get(), argsArray));
+        Object result = methodMirror.invoke(ClassHolograph.currentThreadMirror.get(), ObjectMirage.getMirror(target), argsArray);
+        return ObjectMirage.make((ObjectMirror)result);
     }
     
 }

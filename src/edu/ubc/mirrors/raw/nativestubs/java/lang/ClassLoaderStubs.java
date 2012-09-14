@@ -33,6 +33,7 @@ public class ClassLoaderStubs {
     // JDK 7 version
     public static Mirage defineClass1(Class<?> classLoaderLiteral, Mirage classLoader, Mirage name, Mirage b, int off, int len,
             Mirage pd, Mirage source) {
+        
         ClassMirrorLoader classLoaderMirror = (ClassMirrorLoader)classLoader.getMirror();
         String realName = ObjectMirage.getRealStringForMirage((ObjectMirage)name);
         InstanceMirror pdMirror = ((InstanceMirror)Reflection.getMirror(pd));

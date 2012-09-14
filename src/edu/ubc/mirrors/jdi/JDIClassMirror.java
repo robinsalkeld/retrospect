@@ -153,6 +153,11 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public ConstructorMirror getConstructor(ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
         throw new UnsupportedOperationException();

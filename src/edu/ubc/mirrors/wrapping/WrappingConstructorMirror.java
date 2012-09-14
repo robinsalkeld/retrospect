@@ -6,6 +6,7 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingConstructorMirror implements ConstructorMirror {
 
@@ -18,15 +19,16 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     }
     
     @Override
-    public InstanceMirror newInstance(Object... args)
+    public InstanceMirror newInstance(ThreadMirror thread, Object... args)
             throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException, InstantiationException {
 
         Object[] unwrappedArgs = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
-            unwrappedArgs[i] = WrappingMethodMirror.getWrappedValue(vm, args[i]);
+            unwrappedArgs[i] = WrappingMethodMirror.unwrappedValue(vm, args[i]);
         }
-        InstanceMirror result = wrapped.newInstance(unwrappedArgs);
+        ThreadMirror unwrappedThread = (ThreadMirror)WrappingMethodMirror.unwrappedValue(vm, thread);
+        InstanceMirror result = wrapped.newInstance(unwrappedThread, unwrappedArgs);
         return (InstanceMirror)vm.getWrappedMirror(result);
     }
     

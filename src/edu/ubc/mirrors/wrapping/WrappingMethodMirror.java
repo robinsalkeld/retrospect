@@ -84,4 +84,30 @@ public class WrappingMethodMirror implements MethodMirror {
     public byte[] getRawAnnotationDefault() {
         return wrapped.getRawAnnotationDefault();
     }
+
+    @Override
+    public ClassMirror getDeclaringClass() {
+        return vm.getWrappedClassMirror(wrapped.getDeclaringClass());
+    }
+
+    @Override
+    public int getSlot() {
+        return wrapped.getSlot();
+    }
+
+    @Override
+    public int getModifiers() {
+        return wrapped.getModifiers();
+    }
+
+    @Override
+    public List<ClassMirror> getExceptionTypes() {
+        return vm.getWrappedClassMirrorList(wrapped.getExceptionTypes());
+    }
+
+    @Override
+    public String getSignature() {
+        // TODO-RS: Probably need to parse and re-build this too
+        return wrapped.getSignature();
+    }
 }

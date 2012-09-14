@@ -4,12 +4,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class NativeConstructorMirror extends NativeInstanceMirror implements ConstructorMirror {
 
@@ -26,9 +26,13 @@ public class NativeConstructorMirror extends NativeInstanceMirror implements Con
     }
     
     @Override
-    public InstanceMirror newInstance(Object... args)
+    public InstanceMirror newInstance(ThreadMirror thread, Object... args)
             throws InstantiationException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
+        
+        if (!thread.equals(NativeInstanceMirror.makeMirror(Thread.currentThread()))) {
+            throw new IllegalThreadStateException("The native VM can only invoke methods on the current thread");
+        }
         
         Object[] nativeArgs = new Object[args.length];
         for (int i = 0; i < args.length; i++) {

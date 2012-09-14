@@ -252,6 +252,11 @@ public class HeapDumpClassMirror implements ClassMirror {
     public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
+        throw new UnsupportedOperationException();
+    }
     
     @Override
     public int getModifiers() {

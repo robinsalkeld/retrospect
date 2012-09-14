@@ -231,6 +231,16 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     @Override
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
+        Method[] nativeMethods = publicOnly ? klass.getMethods() : klass.getDeclaredMethods();
+        List<MethodMirror> result = new ArrayList<MethodMirror>();
+        for (Method nativeMethod : nativeMethods) {
+            result.add(new NativeMethodMirror(nativeMethod));
+        }
+        return result;
+    }
+    
+    @Override
     public int getModifiers() {
         return klass.getModifiers();
     }

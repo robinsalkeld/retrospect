@@ -47,7 +47,7 @@ public class JDIThreadMirror extends JDIInstanceMirror implements ThreadMirror {
         } catch (AbsentInformationException e) {
             sourceName = "<Source Unknown>";
         }
-        return Reflection.newStackTraceElement(vm, 
+        return Reflection.newStackTraceElement(vm, this,
                 location.method().declaringType().name(), 
                 location.method().name(), 
                 sourceName, 

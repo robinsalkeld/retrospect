@@ -1,12 +1,14 @@
 package org.objectweb.asm;
 
+import java.util.Arrays;
+
 public class RawMethodAnnotationsWriter extends MethodVisitor {
 
     private final ClassWriter cw;
     private final MethodWriter writer;
     private AnnotationWriter anns;
     private AnnotationWriter[] panns;
-    private ByteVector annd = new ByteVector();
+    private ByteVector annd;
     
     public RawMethodAnnotationsWriter(int parameters, ClassVisitor classWriter, MethodVisitor writer) {
         super(Opcodes.ASM4);
@@ -35,6 +37,7 @@ public class RawMethodAnnotationsWriter extends MethodVisitor {
     
     @Override
     public AnnotationVisitor visitAnnotationDefault() {
+        this.annd = new ByteVector();
         return new AnnotationWriter(cw, false, annd, null, 0);
     }
     
@@ -45,17 +48,21 @@ public class RawMethodAnnotationsWriter extends MethodVisitor {
         } else {
             anns.put(out);
         }
-        return out.data;
+        return Arrays.copyOf(out.data, out.length);
     }
     
     public byte[] rawParameterAnnotations() {
         ByteVector out = new AttributeContentByteVector();
         AnnotationWriter.put(panns, 0, out);
-        return out.data;
+        return Arrays.copyOf(out.data, out.length);
     }
     
     public byte[] rawAnnotationDefault() {
-        return annd.data;
+        if (annd == null) {
+            return null;
+        } else {
+            return Arrays.copyOf(annd.data, annd.length);
+        }
     }
 }
 

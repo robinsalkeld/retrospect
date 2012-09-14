@@ -21,6 +21,7 @@ import com.sun.jdi.connect.Connector.IntegerArgument;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.tools.jdi.SocketAttachingConnector;
 
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -28,6 +29,7 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
+import edu.ubc.mirrors.raw.PrimitiveClassMirror;
 
 public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 
@@ -67,6 +69,11 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         return null;
     }
 
+    @Override
+    public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
+        throw new UnsupportedOperationException();
+    }
+    
     @Override
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
         List<ClassMirror> classes = new ArrayList<ClassMirror>();
@@ -137,7 +144,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public ClassMirror getPrimitiveClass(String name) {
-        return new NativeClassMirror(NativeVirtualMachineMirror.getNativePrimitiveClass(name), this);
+        return new PrimitiveClassMirror(this, name);
     }
 
     @Override

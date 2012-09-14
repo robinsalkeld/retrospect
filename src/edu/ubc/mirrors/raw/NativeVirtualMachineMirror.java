@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -49,6 +50,10 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
 //        }
     }
     
+    @Override
+    public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
+        throw new UnsupportedOperationException();
+    }
     
     @Override
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {

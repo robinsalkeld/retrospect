@@ -294,6 +294,11 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
     }
     
     @Override
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public Map<String, ClassMirror> getDeclaredFields() {
         return Collections.emptyMap();
     }

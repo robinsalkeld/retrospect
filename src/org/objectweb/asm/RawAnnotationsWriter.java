@@ -1,5 +1,7 @@
 package org.objectweb.asm;
 
+import java.util.Arrays;
+
 public class RawAnnotationsWriter extends ClassVisitor {
 
     private final ClassWriter writer;
@@ -27,6 +29,6 @@ public class RawAnnotationsWriter extends ClassVisitor {
         } else {
             anns.put(out);
         }
-        return out.data;
+        return Arrays.copyOf(out.data, out.length);
     }
 }

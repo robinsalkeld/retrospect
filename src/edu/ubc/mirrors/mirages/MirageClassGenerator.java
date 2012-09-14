@@ -422,11 +422,17 @@ public class MirageClassGenerator extends ClassVisitor {
                 superVisitor.visitCode();
                 superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
                 superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-                superVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "getStackTrace", 
-                                                                    Type.getMethodDescriptor(stackTraceType));
-                superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, objectMirageType.getInternalName(), 
-                                                                    "cleanAndSetStackTrace", 
-                                                                    Type.getMethodDescriptor(mirageType, mirageType, stackTraceType));
+                new MethodHandle() {
+                    protected void methodCall() throws Throwable {
+                        ((Throwable)null).getStackTrace();
+                    }
+                }.invoke(superVisitor);
+                new MethodHandle() {
+                    protected void methodCall() throws Throwable {
+                        ObjectMirage.cleanAndSetStackTrace(null, null);
+                    }                    
+                }.invoke(superVisitor);
+
                 superVisitor.visitTypeInsn(Opcodes.CHECKCAST, getMirageType(stackTraceType).getInternalName());
                 superVisitor.visitInsn(Opcodes.ARETURN);
                 superVisitor.visitMaxs(2, 1);

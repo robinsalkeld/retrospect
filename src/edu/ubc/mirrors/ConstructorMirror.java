@@ -22,7 +22,7 @@ public interface ConstructorMirror {
     public byte[] getParameterAnnotations();
     
     // TODO-RS: Should we have a different InvocationTargetException that has a mirror as a cause instead?
-    public InstanceMirror newInstance(Object ... args)
+    public InstanceMirror newInstance(ThreadMirror thread, Object ... args)
             throws InstantiationException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException;
 }

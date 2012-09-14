@@ -16,6 +16,7 @@ import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 import org.eclipse.mat.snapshot.model.ObjectReference;
 
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -24,6 +25,7 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
+import edu.ubc.mirrors.raw.PrimitiveClassMirror;
 
 public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
 
@@ -79,7 +81,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
                     break;
                 }
             }
-            ClassMirror mirror = new NativeClassMirror(NativeVirtualMachineMirror.getNativePrimitiveClass(typeName), this);
+            ClassMirror mirror = new PrimitiveClassMirror(this, typeName);
             primitiveClasses.put(typeName, mirror);
             mirrors.put(primitiveInstance, mirror);
         } catch (SnapshotException e) {
@@ -93,6 +95,11 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         return bootstrapClasses.get(name);
     }
 
+    @Override
+    public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
+        throw new UnsupportedOperationException();
+    }
+    
     private static final Map<IObject, ObjectMirror> mirrors = new HashMap<IObject, ObjectMirror>();
     
     public ObjectMirror makeMirror(IObject object) {

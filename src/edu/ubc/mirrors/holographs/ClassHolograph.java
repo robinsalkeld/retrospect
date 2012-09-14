@@ -8,10 +8,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +18,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.objectweb.asm.Type;
-
-import sun.misc.VM;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -43,13 +39,9 @@ import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
-import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticField;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
-import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeConstructorMirror;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
-import edu.ubc.mirrors.wrapping.WrappingMethodMirror;
-import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class ClassHolograph extends WrappingClassMirror {
 
@@ -284,23 +276,6 @@ public class ClassHolograph extends WrappingClassMirror {
             }
         }
         
-        private void cleanStackTrace(Throwable t) {
-            StackTraceElement[] stackTrace = t.getStackTrace();
-            for (int i = 0; i < stackTrace.length; i++) {
-                stackTrace[i] = new StackTraceElement(
-                        MirageClassGenerator.getOriginalBinaryClassName(stackTrace[i].getClassName()),
-                        stackTrace[i].getMethodName(),
-                        stackTrace[i].getFileName(),
-                        stackTrace[i].getLineNumber());
-            }
-            t.setStackTrace(stackTrace);
-            
-            Throwable cause = t.getCause();
-            if (cause != null && cause != t) {
-                cleanStackTrace(cause);
-            }
-        }
-        
         @Override
         public void setAccessible(boolean flag) {
             if (mirageClassMethod != null) {
@@ -339,6 +314,48 @@ public class ClassHolograph extends WrappingClassMirror {
         public byte[] getRawAnnotationDefault() {
             return wrapped.getRawAnnotationDefault();
         }
+        
+        @Override
+        public ClassMirror getDeclaringClass() {
+            return wrapped.getDeclaringClass();
+        }
+
+        @Override
+        public int getSlot() {
+            return wrapped.getSlot();
+        }
+
+        @Override
+        public int getModifiers() {
+            return wrapped.getModifiers();
+        }
+
+        @Override
+        public List<ClassMirror> getExceptionTypes() {
+            return wrapped.getExceptionTypes();
+        }
+
+        @Override
+        public String getSignature() {
+            return wrapped.getSignature();
+        }
+    }
+    
+    private static void cleanStackTrace(Throwable t) {
+        StackTraceElement[] stackTrace = t.getStackTrace();
+        for (int i = 0; i < stackTrace.length; i++) {
+            stackTrace[i] = new StackTraceElement(
+                    MirageClassGenerator.getOriginalBinaryClassName(stackTrace[i].getClassName()),
+                    stackTrace[i].getMethodName(),
+                    stackTrace[i].getFileName(),
+                    stackTrace[i].getLineNumber());
+        }
+        t.setStackTrace(stackTrace);
+        
+        Throwable cause = t.getCause();
+        if (cause != null && cause != t) {
+            cleanStackTrace(cause);
+        }
     }
     
     private class MirageConstructor extends NativeConstructorMirror implements ConstructorMirror {
@@ -352,20 +369,28 @@ public class ClassHolograph extends WrappingClassMirror {
         }
         
         @Override
-        public InstanceMirror newInstance(Object... args)
+        public InstanceMirror newInstance(ThreadMirror thread, Object... args)
                 throws InstantiationException, IllegalAccessException,
                 IllegalArgumentException, InvocationTargetException {
-
-            // Add the extra implicit mirror parameter
-            Class<?> classLoaderLiteral = mirageClassConstructor.getDeclaringClass();
-            InstanceMirror mirror = ObjectMirage.newInstanceMirror(classLoaderLiteral, classLoaderLiteral.getName().replace('/', '.'));
-            Object[] mirageArgs = new Object[args.length + 1];
-            for (int i = 0; i < args.length; i++) {
-                mirageArgs[i] = makeMirage(args[i]);
+            ThreadMirror original = currentThreadMirror.get();
+            currentThreadMirror.set(thread);
+            try {
+                // Add the extra implicit mirror parameter
+                Class<?> classLoaderLiteral = mirageClassConstructor.getDeclaringClass();
+                InstanceMirror mirror = ObjectMirage.newInstanceMirror(classLoaderLiteral, classLoaderLiteral.getName().replace('/', '.'));
+                Object[] mirageArgs = new Object[args.length + 1];
+                for (int i = 0; i < args.length; i++) {
+                    mirageArgs[i] = makeMirage(args[i]);
+                }
+                mirageArgs[args.length] = mirror;
+                Object result = mirageClassConstructor.newInstance(mirageArgs);
+                return (InstanceMirror)unwrapMirage(result);
+            } catch (InvocationTargetException e) {
+                cleanStackTrace(e);
+                throw e;
+            } finally {
+                currentThreadMirror.set(original);
             }
-            mirageArgs[args.length] = mirror;
-            Object result = mirageClassConstructor.newInstance(mirageArgs);
-            return (InstanceMirror)unwrapMirage(result);
         }
         
         @Override
@@ -463,6 +488,15 @@ public class ClassHolograph extends WrappingClassMirror {
             return super.getDeclaredFields();
         } catch (UnsupportedOperationException e) {
             return getBytecodeMirror().getDeclaredFields();
+        }
+    }
+
+    @Override
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
+        try {
+            return super.getDeclaredMethods(publicOnly);
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMirror().getDeclaredMethods(publicOnly);
         }
     }
 
@@ -621,4 +655,12 @@ public class ClassHolograph extends WrappingClassMirror {
         
         return super.getStaticField(name);
     }
+    
+    public byte[] getRawAnnotations() {
+        try {
+            return super.getRawAnnotations(); 
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMirror().getRawAnnotations();
+        }
+    };
 }

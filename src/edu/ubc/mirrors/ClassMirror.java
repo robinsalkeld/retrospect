@@ -38,6 +38,8 @@ public interface ClassMirror extends InstanceMirror {
     
     public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly);
     
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly); 
+ 
     public int getModifiers();
     
     public InstanceMirror newRawInstance();
@@ -51,5 +53,5 @@ public interface ClassMirror extends InstanceMirror {
     // It would feel more natural to return the parsed annotations (i.e. InstanceMirrors)
     // but this works better since the annotations are parsed and instantiated in normal Java code
     // rather than in the VM itself.
-    public byte[] getRawAnnotations(); 
+    public byte[] getRawAnnotations();
 }

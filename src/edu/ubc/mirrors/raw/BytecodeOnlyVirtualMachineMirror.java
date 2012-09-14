@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -36,6 +37,11 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
         result = BytecodeClassMirrorLoader.loadBytecodeClassMirror(this, null, bootstrapLoader, Type.getObjectType(name.replace('.', '/')));
         bootstrapClasses.put(name, result);
         return result;
+    }
+    
+    @Override
+    public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
+        throw new UnsupportedOperationException(); 
     }
     
     @Override

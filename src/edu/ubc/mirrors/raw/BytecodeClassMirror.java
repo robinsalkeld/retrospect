@@ -23,7 +23,6 @@ import org.objectweb.asm.RawAnnotationsWriter;
 import org.objectweb.asm.RawMethodAnnotationsWriter;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
-import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
@@ -53,14 +52,16 @@ import edu.ubc.mirrors.mirages.Reflection;
 
 public abstract class BytecodeClassMirror implements ClassMirror {
 
-    public class StaticField extends BoxingFieldMirror {
+    public static class StaticField extends BoxingFieldMirror {
 
+        private final BytecodeClassMirror klass;
         private final String name;
         private final ClassMirror type;
         private final int access;
         private final Object value;
         
-        public StaticField(int access, String name, ClassMirror type, Object value) {
+        public StaticField(BytecodeClassMirror klass, int access, String name, ClassMirror type, Object value) {
+            this.klass = klass;
             this.access = access;
             this.name = name;
             this.type = type;
@@ -73,7 +74,8 @@ public abstract class BytecodeClassMirror implements ClassMirror {
                 return false;
             }
             
-            return name.equals(((StaticField)obj).name);
+            StaticField other = (StaticField)obj;
+            return klass.equals(other.klass) && name.equals(other.name);
         }
         
         @Override
@@ -98,7 +100,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
             }
             
             // Value must be string
-            return new FieldMapStringMirror(getVM(), (String)value);
+            return new FieldMapStringMirror(klass.getVM(), (String)value);
         }
 
         @Override
@@ -124,13 +126,15 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
     private class BytecodeMethodMirror implements MethodMirror {
 
-        private final Method method;
+        private final MethodNode method;
+        private final int slot;
         private final byte[] rawAnnotations;
         private final byte[] rawParameterAnnotations;
         private final byte[] rawAnnotationDefault;
         
-        public BytecodeMethodMirror(Method method, RawMethodAnnotationsWriter annotations) {
+        public BytecodeMethodMirror(MethodNode method, int slot, RawMethodAnnotationsWriter annotations) {
             this.method = method;
+            this.slot = slot;
             this.rawAnnotations = annotations.rawAnnotations();
             this.rawParameterAnnotations = annotations.rawParameterAnnotations();
             this.rawAnnotationDefault = annotations.rawAnnotationDefault();
@@ -150,13 +154,13 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
         @Override
         public String getName() {
-            return method.getName();
+            return method.name;
         }
 
         @Override
         public List<ClassMirror> getParameterTypes() {
             List<ClassMirror> result = new ArrayList<ClassMirror>();
-            for (Type parameterType : method.getArgumentTypes()) {
+            for (Type parameterType : Type.getArgumentTypes(method.desc)) {
                 result.add(loadClassMirrorInternal(parameterType));
             }
             return result;
@@ -164,7 +168,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
         @Override
         public ClassMirror getReturnType() {
-            return loadClassMirrorInternal(method.getReturnType());
+            return loadClassMirrorInternal(Type.getReturnType(method.desc));
         }
         
         @Override
@@ -181,6 +185,40 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         public byte[] getRawAnnotationDefault() {
             return rawAnnotationDefault;
         }
+
+        @Override
+        public ClassMirror getDeclaringClass() {
+            return BytecodeClassMirror.this;
+        }
+
+        @Override
+        public int getSlot() {
+            return slot;
+        }
+
+        @Override
+        public int getModifiers() {
+            return method.access;
+        }
+
+        @Override
+        public List<ClassMirror> getExceptionTypes() {
+            List<ClassMirror> result = new ArrayList<ClassMirror>();
+            for (String exception : method.exceptions) {
+                result.add(loadClassMirrorInternal(Type.getObjectType(exception)));
+            }
+            return result;
+        }
+
+        @Override
+        public String getSignature() {
+            return method.signature;
+        }
+        
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + ": " + method.name;
+        }
     }
     
     private boolean resolved = false;
@@ -191,7 +229,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     private boolean isInterface;
     private Map<String, ClassMirror> memberFieldNames = new LinkedHashMap<String, ClassMirror>();
     private Map<String, StaticField> staticFields = new LinkedHashMap<String, StaticField>();
-    private final Set<BytecodeMethodMirror> methods = new HashSet<BytecodeMethodMirror>();
+    private final List<MethodMirror> methods = new ArrayList<MethodMirror>();
     private byte[] rawAnnotations;
     
     private StaticsInfo staticInitInfo;
@@ -230,11 +268,14 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
     private class BytecodeClassVisitor extends ClassVisitor {
 
+        private ClassWriter classWriter;
         private RawAnnotationsWriter annotationsWriter;
+        private int methodSlot = 0;
         
         public BytecodeClassVisitor(ClassReader reader) {
             super(Opcodes.ASM4);
-            this.annotationsWriter = new RawAnnotationsWriter(new ClassWriter(reader, Opcodes.ASM4));
+            this.classWriter = new ClassWriter(reader, Opcodes.ASM4);
+            this.annotationsWriter = new RawAnnotationsWriter(classWriter);
         }
         
         @Override
@@ -260,7 +301,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
             if ((Opcodes.ACC_STATIC & access) == 0) {
                 memberFieldNames.put(name, loadClassMirrorInternal(Type.getType(desc)));
             } else {
-                StaticField field = new StaticField(access, name, loadClassMirrorInternal(Type.getType(desc)), value);
+                StaticField field = new StaticField(BytecodeClassMirror.this, access, name, loadClassMirrorInternal(Type.getType(desc)), value);
                 staticFields.put(name, field);
             }
             return null;
@@ -303,11 +344,12 @@ public abstract class BytecodeClassMirror implements ClassMirror {
                 
                 // Inline subroutines since other pieces of the pipeline can't handle them
                 return new JSRInlinerAdapter(analyzer, access, name, desc, signature, exceptions);
+            } else if (name.equals("<init>")) {
+                // TODO-RS: Constructors
+                return null;
+            } else {
+                return new BytecodeMethodVisitor(new MethodNode(access, name, desc, signature, exceptions), methodSlot++, classWriter, classWriter.visitMethod(access, name, desc, signature, exceptions));
             }
-            
-            
-            
-            return null;
         }
         
         @Override
@@ -318,13 +360,15 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     
     private class BytecodeMethodVisitor extends MethodVisitor {
 
-        private final Method method;
+        private final MethodNode method;
+        private final int slot;
         private final RawMethodAnnotationsWriter annotationsWriter;
         
-        public BytecodeMethodVisitor(Method method, ClassVisitor classWriter, MethodVisitor methodWriter) {
+        public BytecodeMethodVisitor(MethodNode method, int slot, ClassVisitor classWriter, MethodVisitor methodWriter) {
             super(Opcodes.ASM4);
             this.method = method;
-            this.annotationsWriter = new RawMethodAnnotationsWriter(method.getArgumentTypes().length, classWriter, methodWriter);
+            this.slot = slot;
+            this.annotationsWriter = new RawMethodAnnotationsWriter(Type.getArgumentTypes(method.desc).length, classWriter, methodWriter);
         }
         
         @Override
@@ -344,8 +388,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         
         @Override
         public void visitEnd() {
-            methods.add(new BytecodeMethodMirror(method, annotationsWriter));
-            
+            methods.add(new BytecodeMethodMirror(method, slot, annotationsWriter));
         }
     }
     
@@ -869,6 +912,12 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
         // Could create un-invocable methods, but no use for that yet.
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
+        resolve();
+        return methods;
     }
     
     @Override

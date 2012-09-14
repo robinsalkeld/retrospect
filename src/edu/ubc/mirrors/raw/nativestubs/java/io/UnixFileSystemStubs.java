@@ -2,9 +2,6 @@ package edu.ubc.mirrors.raw.nativestubs.java.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-
-import sun.management.FileSystem;
 
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
@@ -58,5 +55,10 @@ public class UnixFileSystemStubs {
             result |= 0x08;
         }
         return result;
+    }
+    
+    public static long getLength(Class<?> classLoaderLiteral, Mirage fs, Mirage f) {
+        File mappedFile = getMappedFile(classLoaderLiteral, f, false);
+        return mappedFile.length();
     }
 }

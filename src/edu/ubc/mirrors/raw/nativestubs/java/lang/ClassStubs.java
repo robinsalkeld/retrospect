@@ -2,6 +2,7 @@ package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -90,6 +92,36 @@ public class ClassStubs {
         return ObjectMirage.make(result);
     }
     
+    public static Mirage getDeclaredMethods0(Class<?> classLoaderLiteral, Mirage klass, boolean publicOnly) {
+        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineMirror vm = callingLoader.getVM();
+        
+        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+        List<MethodMirror> methods = classMirror.getDeclaredMethods(publicOnly);
+        ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
+        ClassMirror methodClass = vm.findBootstrapClassMirror(Method.class.getName());
+        ObjectArrayMirror result = (ObjectArrayMirror)methodClass.newArray(methods.size());
+        int i = 0;
+        for (MethodMirror m : methods) {
+            InstanceMirror inst = methodClass.newRawInstance();
+            
+            Reflection.setField(inst, "clazz", m.getDeclaringClass());
+            Reflection.setField(inst, "name", StringStubs.internMirror(Reflection.makeString(vm, m.getName())));
+            Reflection.setField(inst, "slot", m.getSlot());
+            Reflection.setField(inst, "modifiers", m.getModifiers());
+            Reflection.setField(inst, "parameterTypes", Reflection.toArray(classClass, m.getParameterTypes()));
+            Reflection.setField(inst, "returnType", m.getReturnType());
+            Reflection.setField(inst, "exceptionTypes", Reflection.toArray(classClass, m.getExceptionTypes()));
+            Reflection.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(m.getRawAnnotations())));
+            Reflection.setField(inst, "parameterAnnotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(m.getRawParameterAnnotations())));
+            Reflection.setField(inst, "annotationDefault", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(m.getRawAnnotationDefault())));
+            Reflection.setField(inst, "signature", Reflection.makeString(vm, m.getSignature()));
+            
+            result.set(i++, inst);
+        }
+        return ObjectMirage.make(result);
+    }
+    
     public static Mirage getDeclaredFields0(Class<?> classLoaderLiteral, Mirage klass, boolean publicOnly) {
         MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         VirtualMachineMirror vm = callingLoader.getVM();
@@ -123,6 +155,15 @@ public class ClassStubs {
     
     public static Mirage getSuperclass(Class<?> classLoaderLiteral, Mirage klass) {
         return ObjectMirage.make(((ClassMirror)klass.getMirror()).getSuperClassMirror());
+    }
+    
+    public static Mirage getInterfaces(Class<?> classLoaderLiteral, Mirage klass) {
+        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineMirror vm = callingLoader.getVM();
+        
+        List<ClassMirror> interfaces = ((ClassMirror)klass.getMirror()).getInterfaceMirrors();
+        ObjectArrayMirror result = Reflection.toArray(vm.findBootstrapClassMirror(Class.class.getName()), interfaces);
+        return ObjectMirage.make(result);
     }
     
     public static boolean isInstance(Class<?> classLoaderLiteral, Mirage klass, Mirage o) {

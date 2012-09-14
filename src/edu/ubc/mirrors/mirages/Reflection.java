@@ -103,7 +103,7 @@ public class Reflection {
         ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
         ConstructorMirror constructor = getConstructor(secureClassLoaderClass, classLoaderClass);
         
-        ClassMirrorLoader newLoader = (ClassMirrorLoader)newInstance(constructor, parent);
+        ClassMirrorLoader newLoader = (ClassMirrorLoader)newInstance(constructor, thread, parent);
         
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
         ClassMirror byteArrayClass = loadClassMirrorInternal(vm, null, "[B");
@@ -125,15 +125,15 @@ public class Reflection {
         ObjectArrayMirror urlsMirror = (ObjectArrayMirror)urlClass.newArray(urls.length);
         ClassMirror urlArrayClass = urlsMirror.getClassMirror();
         for (int i = 0; i < urls.length; i++) {
-            InstanceMirror url = (InstanceMirror)newInstance(urlConstructor, makeString(vm, urls[i].toString()));
+            InstanceMirror url = (InstanceMirror)newInstance(urlConstructor, thread, makeString(vm, urls[i].toString()));
             urlsMirror.set(i, url);
         }
         
         ClassMirror urlClassLoaderClass = vm.findBootstrapClassMirror(URLClassLoader.class.getName());
         ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
-        ConstructorMirror constructor = getConstructor(urlClassLoaderClass, classLoaderClass, urlArrayClass);
+        ConstructorMirror constructor = getConstructor(urlClassLoaderClass, urlArrayClass, classLoaderClass);
         
-        return (ClassMirrorLoader)newInstance(constructor, parent, urlsMirror);
+        return (ClassMirrorLoader)newInstance(constructor, thread, urlsMirror, parent);
     }
     
     public static InstanceMirror makeString(VirtualMachineMirror vm, String value) {
@@ -144,7 +144,7 @@ public class Reflection {
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
         ObjectMirror chars = copyArray(vm, new NativeCharArrayMirror(value.toCharArray()));
         ConstructorMirror constructor = getConstructor(stringClass, chars.getClassMirror());
-        return newInstance(constructor, chars);
+        return newInstance(constructor, vm.getThreads().get(0), chars);
     }
     
     public static String getRealStringForMirror(InstanceMirror mirror) {
@@ -305,6 +305,8 @@ public class Reflection {
             return vm.getPrimitiveClass("float");
         } else if (type.equals(Type.DOUBLE_TYPE)) {
             return vm.getPrimitiveClass("double");
+        } else if (type.equals(Type.VOID_TYPE)) {
+            return vm.getPrimitiveClass("void");
         } else {
             return Reflection.loadClassMirror(vm, loader, type.getClassName());
         }
@@ -377,9 +379,9 @@ public class Reflection {
         }
     }
     
-    public static InstanceMirror newInstance(ConstructorMirror constructor, Object... args) {
+    public static InstanceMirror newInstance(ConstructorMirror constructor, ThreadMirror thread, Object... args) {
         try {
-            return constructor.newInstance(args);
+            return constructor.newInstance(thread, args);
         } catch (IllegalAccessException e) {
             IllegalAccessError error = new IllegalAccessError(e.getMessage());
             error.initCause(e);
@@ -595,10 +597,10 @@ public class Reflection {
         return t;
     }
     
-    public static InstanceMirror newStackTraceElement(VirtualMachineMirror vm, String declaringClass, String methodName, String fileName, int lineNumber) {
+    public static InstanceMirror newStackTraceElement(VirtualMachineMirror vm, ThreadMirror thread, String declaringClass, String methodName, String fileName, int lineNumber) {
         ClassMirror steClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
         ConstructorMirror constructor = getConstructor(steClass, stringClass, stringClass, stringClass, vm.getPrimitiveClass("int"));
-        return newInstance(constructor, makeString(vm, declaringClass), makeString(vm, methodName), makeString(vm, fileName), lineNumber);
+        return newInstance(constructor, thread, makeString(vm, declaringClass), makeString(vm, methodName), makeString(vm, fileName), lineNumber);
     }
 }
