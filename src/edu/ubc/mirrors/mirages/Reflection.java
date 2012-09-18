@@ -2,7 +2,6 @@ package edu.ubc.mirrors.mirages;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassName;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,8 +30,8 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapStringMirror;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
@@ -141,10 +140,7 @@ public class Reflection {
             return null;
         }
         
-        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
-        ObjectMirror chars = copyArray(vm, new NativeCharArrayMirror(value.toCharArray()));
-        ConstructorMirror constructor = getConstructor(stringClass, chars.getClassMirror());
-        return newInstance(constructor, vm.getThreads().get(0), chars);
+        return new FieldMapStringMirror(vm, value);
     }
     
     public static String getRealStringForMirror(InstanceMirror mirror) {
@@ -274,7 +270,7 @@ public class Reflection {
             ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
             MethodMirror method = getMethod(classLoaderClass, "loadClass", stringClass);
             
-            ThreadMirror thread = ClassHolograph.currentThreadMirror.get();
+            ThreadMirror thread = ThreadHolograph.currentThreadMirror();
             
             result = (ClassMirror)mirrorInvoke(thread, method, (InstanceMirror)originalLoader, makeString(vm, name));
         }

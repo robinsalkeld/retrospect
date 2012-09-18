@@ -7,6 +7,8 @@ import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
+import org.aspectj.lang.annotation.Aspect;
+
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -60,7 +62,10 @@ public class ClassStubs {
         
         String realName = Reflection.getRealStringForMirror((InstanceMirror)name.getMirror()); 
         ClassMirrorLoader loaderMirror = loader == null ? null : (ClassMirrorLoader)loader.getMirror();
-        
+        if (realName.equals(Aspect.class.getName())) {
+            int bp = 4;
+            bp++;
+        }
         ClassMirror klassMirror = Reflection.classMirrorForName(vm, realName, resolve, loaderMirror);
         return (Mirage)ObjectMirage.make(klassMirror);
     }

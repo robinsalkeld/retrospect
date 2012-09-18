@@ -2,17 +2,14 @@ package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 
 public class ThreadStubs {
     
     public static Mirage currentThread(Class<?> classLoaderLiteral) {
-        ThreadMirror mirror = ClassHolograph.currentThreadMirror.get();
-        if (mirror == null) {
-            throw new IllegalStateException("Hologram execution without a current thread!");
-        }
+        ThreadMirror mirror = ThreadHolograph.currentThreadMirror();
         return (Mirage)ObjectMirage.make(mirror);
     }
     

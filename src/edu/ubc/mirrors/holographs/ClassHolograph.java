@@ -47,8 +47,6 @@ public class ClassHolograph extends WrappingClassMirror {
 
     private ClassMirror bytecodeMirror;
     
-    public static ThreadLocal<ThreadMirror> currentThreadMirror = new ThreadLocal<ThreadMirror>();
-    
     public static class MethodPattern {
         public final String className;
         private final Pattern classNamePattern;
@@ -251,8 +249,12 @@ public class ClassHolograph extends WrappingClassMirror {
         
         @Override
         public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalAccessException, InvocationTargetException {
-            ThreadMirror original = currentThreadMirror.get();
-            currentThreadMirror.set(thread);
+            if (thread == null || obj == null) {
+                throw new NullPointerException();
+            }
+            
+            ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
+            threadHolograph.enterHologramExecution();
             try {
                 resolveMethod();
                 
@@ -272,7 +274,7 @@ public class ClassHolograph extends WrappingClassMirror {
                 cleanStackTrace(e);
                 throw e;
             } finally {
-                currentThreadMirror.set(original);
+                threadHolograph.enterHologramExecution();
             }
         }
         
@@ -372,8 +374,8 @@ public class ClassHolograph extends WrappingClassMirror {
         public InstanceMirror newInstance(ThreadMirror thread, Object... args)
                 throws InstantiationException, IllegalAccessException,
                 IllegalArgumentException, InvocationTargetException {
-            ThreadMirror original = currentThreadMirror.get();
-            currentThreadMirror.set(thread);
+            ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
+            threadHolograph.enterHologramExecution();
             try {
                 // Add the extra implicit mirror parameter
                 Class<?> classLoaderLiteral = mirageClassConstructor.getDeclaringClass();
@@ -389,7 +391,7 @@ public class ClassHolograph extends WrappingClassMirror {
                 cleanStackTrace(e);
                 throw e;
             } finally {
-                currentThreadMirror.set(original);
+                threadHolograph.exitHologramExecution();
             }
         }
         

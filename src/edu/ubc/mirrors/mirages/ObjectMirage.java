@@ -13,8 +13,8 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
-import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 /**
@@ -148,12 +148,7 @@ public class ObjectMirage implements Mirage {
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         String binaryName = className.replace('/', '.');
         ClassHolograph klass = (ClassHolograph)loader.loadOriginalClassMirror(binaryName);
-        FieldMirror result = Reflection.getStaticField(klass, fieldName);
-        if (className.equals("$Proxy1")) {
-            int bp = 4;
-            bp++;
-        }
-        return result;
+        return Reflection.getStaticField(klass, fieldName);
     }
     
     public static Mirage make(ObjectMirror mirror) {
@@ -207,7 +202,7 @@ public class ObjectMirage implements Mirage {
             InstanceMirror methodName = Reflection.makeString(vm, e.getMethodName());
             InstanceMirror fieldName = Reflection.makeString(vm, e.getFileName());
             int lineNumber = e.getLineNumber();
-            InstanceMirror mapped = Reflection.newInstance(constructor, ClassHolograph.currentThreadMirror.get(), className, methodName, fieldName, lineNumber);
+            InstanceMirror mapped = Reflection.newInstance(constructor, ThreadHolograph.currentThreadMirror(), className, methodName, fieldName, lineNumber);
             correctedTrace.set(i, mapped);
         }
         InstanceMirror mirror = (InstanceMirror)throwable.getMirror();

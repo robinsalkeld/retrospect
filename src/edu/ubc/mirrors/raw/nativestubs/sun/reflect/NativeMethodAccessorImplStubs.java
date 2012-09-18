@@ -8,6 +8,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
@@ -39,7 +40,7 @@ public class NativeMethodAccessorImplStubs {
                 argsArray[i] = argsMirror.get(i);
             }
         }
-        Object result = methodMirror.invoke(ClassHolograph.currentThreadMirror.get(), ObjectMirage.getMirror(target), argsArray);
+        Object result = methodMirror.invoke(ThreadHolograph.currentThreadMirror(), ObjectMirage.getMirror(target), argsArray);
         return ObjectMirage.make((ObjectMirror)result);
     }
     
