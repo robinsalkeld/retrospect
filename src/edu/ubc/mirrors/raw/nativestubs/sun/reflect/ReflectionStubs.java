@@ -8,6 +8,7 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
@@ -32,6 +33,7 @@ public class ReflectionStubs {
                 depth--;
             }
             nativeDepth++;
+            klass = sun.reflect.Reflection.getCallerClass(nativeDepth);
         }
         
         // Off the top of the holographic stack, so refer to the original stack.
@@ -44,7 +46,7 @@ public class ReflectionStubs {
             return null;
         }
         InstanceMirror frame = (InstanceMirror)stack.get(frameIndex);
-        String className = Reflection.getRealStringForMirror((InstanceMirror)Reflection.getField(frame, "declaringClass"));
+        String className = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(frame, "declaringClass"));
         MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         VirtualMachineMirror vm = callingLoader.getVM();
         List<ClassMirror> matchingClasses = vm.findAllClasses(className, false);

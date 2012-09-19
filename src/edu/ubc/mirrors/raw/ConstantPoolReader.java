@@ -11,6 +11,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.mirages.Reflection;
 
 
@@ -42,7 +43,7 @@ public class ConstantPoolReader implements InstanceMirror {
 
     public ClassMirror getClassAt(int index) {
         String name = reader.readClass(reader.getItem(index), buf);
-        return Reflection.loadClassMirrorInternal(klass, name);
+        return HolographInternalUtils.loadClassMirrorInternal(klass, name);
     }
     
     public InstanceMirror getStringAt(int index) {

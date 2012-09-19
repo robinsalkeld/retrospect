@@ -1,24 +1,30 @@
-package edu.ubc.mirrors.eclipse.mat;
+package edu.ubc.mirrors.fieldmap;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapStringMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 
-public class HeapDumpStackTraceElement extends FieldMapMirror {
+public class FieldMapStackTraceElementMirror extends FieldMapMirror {
 
-    private final VirtualMachineMirror vm;
-    
     private final ClassMirror stringClass;
     private final ClassMirror intClass;
      
-    public HeapDumpStackTraceElement(HeapDumpVirtualMachineMirror vm) {
+    public FieldMapStackTraceElementMirror(VirtualMachineMirror vm, String declaringClass, String methodName, String fileName, int line) {
         super(vm.findBootstrapClassMirror(StackTraceElement.class.getName()));
-        this.vm = vm;
         this.stringClass = vm.findBootstrapClassMirror(String.class.getName());
         this.intClass = vm.getPrimitiveClass("int");
+        
+        try {
+            getMemberField("declaringClass").set(Reflection.makeString(vm, declaringClass));
+            getMemberField("methodName").set(Reflection.makeString(vm, methodName));
+            getMemberField("fileName").set(Reflection.makeString(vm, fileName));
+            getMemberField("lineNumber").setInt(line);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     @Override
@@ -30,9 +36,5 @@ public class HeapDumpStackTraceElement extends FieldMapMirror {
         } else {
             throw new NoSuchFieldException(name);
         }
-    }
-
-    public InstanceMirror makeString(String s) {
-        return s == null ? null : new FieldMapStringMirror(vm, s);
     }
 }

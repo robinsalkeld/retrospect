@@ -6,18 +6,18 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class NativeConstructorAccessorImplStubs {
 
     public static Mirage newInstance0(Class<?> classLoaderLiteral, Mirage constructor, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
         InstanceMirror cons = (InstanceMirror)constructor.getMirror();
         
-        ClassMirror declaringClass = (ClassMirror)Reflection.getField(cons, "clazz");
-        ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)Reflection.getField(cons, "parameterTypes");
+        ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(cons, "clazz");
+        ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)HolographInternalUtils.getField(cons, "parameterTypes");
         ClassMirror[] parameterTypes = new ClassMirror[parameterTypesMirror.length()];
         for (int i = 0; i < parameterTypes.length; i++) {
             parameterTypes[i] = (ClassMirror)parameterTypesMirror.get(i);

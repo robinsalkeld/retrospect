@@ -12,6 +12,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapStackTraceElementMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class JDIThreadMirror extends JDIInstanceMirror implements ThreadMirror {
@@ -47,7 +48,7 @@ public class JDIThreadMirror extends JDIInstanceMirror implements ThreadMirror {
         } catch (AbsentInformationException e) {
             sourceName = "<Source Unknown>";
         }
-        return Reflection.newStackTraceElement(vm, this,
+        return new FieldMapStackTraceElementMirror(vm,
                 location.method().declaringType().name(), 
                 location.method().name(), 
                 sourceName, 

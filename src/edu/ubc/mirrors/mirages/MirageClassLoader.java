@@ -37,6 +37,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
@@ -85,10 +86,6 @@ public class MirageClassLoader extends ClassLoader {
     
     public ClassMirrorLoader getOriginalClassMirrorLoader() {
         return originalLoader;
-    }
-    
-    public MirageClassMirrorLoader getMirageClassMirrorLoader() {
-        return mirageClassMirrorLoader;
     }
     
     public static final String CLASS_LOADER_LITERAL_NAME = "edu/ubc/mirrors/ClassLoaderLiteral";
@@ -150,7 +147,7 @@ public class MirageClassLoader extends ClassLoader {
     
     public ClassMirror loadOriginalClassMirror(String originalClassName) {
         try {
-            return Reflection.classMirrorForName(vm, originalClassName, false, originalLoader);
+            return Reflection.classMirrorForName(vm, ThreadHolograph.currentThreadMirror(), originalClassName, false, originalLoader);
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(originalClassName);
         }
@@ -158,7 +155,7 @@ public class MirageClassLoader extends ClassLoader {
     
     public ClassMirror loadOriginalClassMirror(Type originalType) {
         try {
-            return Reflection.classMirrorForType(vm, originalType, false, originalLoader);
+            return Reflection.classMirrorForType(vm, ThreadHolograph.currentThreadMirror(), originalType, false, originalLoader);
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(originalType.getInternalName());
         }

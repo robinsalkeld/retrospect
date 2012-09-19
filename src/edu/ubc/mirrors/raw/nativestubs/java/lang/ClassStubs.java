@@ -19,6 +19,8 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.HolographInternalUtils;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
@@ -62,11 +64,7 @@ public class ClassStubs {
         
         String realName = Reflection.getRealStringForMirror((InstanceMirror)name.getMirror()); 
         ClassMirrorLoader loaderMirror = loader == null ? null : (ClassMirrorLoader)loader.getMirror();
-        if (realName.equals(Aspect.class.getName())) {
-            int bp = 4;
-            bp++;
-        }
-        ClassMirror klassMirror = Reflection.classMirrorForName(vm, realName, resolve, loaderMirror);
+        ClassMirror klassMirror = Reflection.classMirrorForName(vm, ThreadHolograph.currentThreadMirror(), realName, resolve, loaderMirror);
         return (Mirage)ObjectMirage.make(klassMirror);
     }
     
@@ -83,14 +81,14 @@ public class ClassStubs {
         for (ConstructorMirror c : constructors) {
             InstanceMirror inst = constructorClass.newRawInstance();
             
-            Reflection.setField(inst, "clazz", c.getDeclaringClass());
-            Reflection.setField(inst, "slot", c.getSlot());
-            Reflection.setField(inst, "modifiers", c.getModifiers());
-            Reflection.setField(inst, "parameterTypes", Reflection.toArray(classClass, c.getParameterTypes()));
-            Reflection.setField(inst, "exceptionTypes", Reflection.toArray(classClass, c.getExceptionTypes()));
-            Reflection.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(c.getAnnotations())));
-            Reflection.setField(inst, "parameterAnnotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(c.getParameterAnnotations())));
-            Reflection.setField(inst, "signature", Reflection.makeString(vm, c.getSignature()));
+            HolographInternalUtils.setField(inst, "clazz", c.getDeclaringClass());
+            HolographInternalUtils.setField(inst, "slot", c.getSlot());
+            HolographInternalUtils.setField(inst, "modifiers", c.getModifiers());
+            HolographInternalUtils.setField(inst, "parameterTypes", Reflection.toArray(classClass, c.getParameterTypes()));
+            HolographInternalUtils.setField(inst, "exceptionTypes", Reflection.toArray(classClass, c.getExceptionTypes()));
+            HolographInternalUtils.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(c.getAnnotations())));
+            HolographInternalUtils.setField(inst, "parameterAnnotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(c.getParameterAnnotations())));
+            HolographInternalUtils.setField(inst, "signature", Reflection.makeString(vm, c.getSignature()));
             
             result.set(i++, inst);
         }
@@ -110,17 +108,17 @@ public class ClassStubs {
         for (MethodMirror m : methods) {
             InstanceMirror inst = methodClass.newRawInstance();
             
-            Reflection.setField(inst, "clazz", m.getDeclaringClass());
-            Reflection.setField(inst, "name", StringStubs.internMirror(Reflection.makeString(vm, m.getName())));
-            Reflection.setField(inst, "slot", m.getSlot());
-            Reflection.setField(inst, "modifiers", m.getModifiers());
-            Reflection.setField(inst, "parameterTypes", Reflection.toArray(classClass, m.getParameterTypes()));
-            Reflection.setField(inst, "returnType", m.getReturnType());
-            Reflection.setField(inst, "exceptionTypes", Reflection.toArray(classClass, m.getExceptionTypes()));
-            Reflection.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(m.getRawAnnotations())));
-            Reflection.setField(inst, "parameterAnnotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(m.getRawParameterAnnotations())));
-            Reflection.setField(inst, "annotationDefault", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(m.getRawAnnotationDefault())));
-            Reflection.setField(inst, "signature", Reflection.makeString(vm, m.getSignature()));
+            HolographInternalUtils.setField(inst, "clazz", m.getDeclaringClass());
+            HolographInternalUtils.setField(inst, "name", StringStubs.internMirror(Reflection.makeString(vm, m.getName())));
+            HolographInternalUtils.setField(inst, "slot", m.getSlot());
+            HolographInternalUtils.setField(inst, "modifiers", m.getModifiers());
+            HolographInternalUtils.setField(inst, "parameterTypes", Reflection.toArray(classClass, m.getParameterTypes()));
+            HolographInternalUtils.setField(inst, "returnType", m.getReturnType());
+            HolographInternalUtils.setField(inst, "exceptionTypes", Reflection.toArray(classClass, m.getExceptionTypes()));
+            HolographInternalUtils.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(m.getRawAnnotations())));
+            HolographInternalUtils.setField(inst, "parameterAnnotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(m.getRawParameterAnnotations())));
+            HolographInternalUtils.setField(inst, "annotationDefault", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(m.getRawAnnotationDefault())));
+            HolographInternalUtils.setField(inst, "signature", Reflection.makeString(vm, m.getSignature()));
             
             result.set(i++, inst);
         }
@@ -139,15 +137,15 @@ public class ClassStubs {
         for (Map.Entry<String, ClassMirror> entry : fields.entrySet()) {
             InstanceMirror inst = constructorClass.newRawInstance();
             
-            Reflection.setField(inst, "clazz", classMirror);
+            HolographInternalUtils.setField(inst, "clazz", classMirror);
             // The name must be interned according to spec
-            Reflection.setField(inst, "name", StringStubs.internMirror(Reflection.makeString(vm, entry.getKey())));
-            Reflection.setField(inst, "type", entry.getValue());
+            HolographInternalUtils.setField(inst, "name", StringStubs.internMirror(Reflection.makeString(vm, entry.getKey())));
+            HolographInternalUtils.setField(inst, "type", entry.getValue());
             // TODO-RS: Might be time to finally fix the fields API...
-            Reflection.setField(inst, "slot", 0);
-            Reflection.setField(inst, "modifiers", Modifier.PUBLIC);
-            Reflection.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(new byte[0])));
-            Reflection.setField(inst, "signature", Reflection.makeString(vm, ""));
+            HolographInternalUtils.setField(inst, "slot", 0);
+            HolographInternalUtils.setField(inst, "modifiers", Modifier.PUBLIC);
+            HolographInternalUtils.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(new byte[0])));
+            HolographInternalUtils.setField(inst, "signature", Reflection.makeString(vm, ""));
             
             result.set(i++, inst);
         }
@@ -201,7 +199,7 @@ public class ClassStubs {
         ClassMirror classMirror = (ClassMirror)klass.getMirror();
         ConstantPoolReader reader = new ConstantPoolReader(classMirror);
         InstanceMirror result = classMirror.getVM().findBootstrapClassMirror("sun.reflect.ConstantPool").newRawInstance();
-        Reflection.setField(result, "constantPoolOop", reader);
+        HolographInternalUtils.setField(result, "constantPoolOop", reader);
         return ObjectMirage.make(result);
     }
 }

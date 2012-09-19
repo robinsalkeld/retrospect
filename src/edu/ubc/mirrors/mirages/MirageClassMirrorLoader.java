@@ -26,7 +26,7 @@ public class MirageClassMirrorLoader extends WrappingClassMirrorLoader {
             String originalClassName = getOriginalBinaryClassName(name);
             ClassMirror original;
             try {
-                original = Reflection.loadClassMirror(vm, wrappedLoader, originalClassName);
+                original = Reflection.loadClassMirror(vm, vm.getThreads().get(0), wrappedLoader, originalClassName);
             } catch (ClassNotFoundException e) {
                 throw new NoClassDefFoundError(e.getMessage());
             }

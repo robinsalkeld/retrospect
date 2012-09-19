@@ -13,6 +13,7 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
@@ -193,7 +194,7 @@ public class ObjectMirage implements Mirage {
         ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
         ClassMirror intClass = vm.getPrimitiveClass("int");
-        ConstructorMirror constructor = Reflection.getConstructor(stackTraceElementClass, stringClass, stringClass, stringClass, intClass);
+        ConstructorMirror constructor = HolographInternalUtils.getConstructor(stackTraceElementClass, stringClass, stringClass, stringClass, intClass);
                 
         ObjectArrayMirror correctedTrace = (ObjectArrayMirror)stackTraceElementClass.newArray(nativeTrace.length);
         for (int i = 0; i < nativeTrace.length; i++) {
@@ -202,11 +203,11 @@ public class ObjectMirage implements Mirage {
             InstanceMirror methodName = Reflection.makeString(vm, e.getMethodName());
             InstanceMirror fieldName = Reflection.makeString(vm, e.getFileName());
             int lineNumber = e.getLineNumber();
-            InstanceMirror mapped = Reflection.newInstance(constructor, ThreadHolograph.currentThreadMirror(), className, methodName, fieldName, lineNumber);
+            InstanceMirror mapped = HolographInternalUtils.newInstance(constructor, ThreadHolograph.currentThreadMirror(), className, methodName, fieldName, lineNumber);
             correctedTrace.set(i, mapped);
         }
         InstanceMirror mirror = (InstanceMirror)throwable.getMirror();
-        Reflection.setField(mirror, "stackTrace", correctedTrace);
+        HolographInternalUtils.setField(mirror, "stackTrace", correctedTrace);
         return make(correctedTrace);
     }
     
@@ -270,7 +271,7 @@ public class ObjectMirage implements Mirage {
     public static Throwable throwableAsMirage(VirtualMachineMirror vm, Throwable t) {
         ClassMirror klass = vm.findBootstrapClassMirror(t.getClass().getName());
         InstanceMirror throwableMirror = klass.newRawInstance();
-        Reflection.setField(throwableMirror, "detailMessage", Reflection.makeString(vm, t.getMessage()));
+        HolographInternalUtils.setField(throwableMirror, "detailMessage", Reflection.makeString(vm, t.getMessage()));
         return (Throwable)ObjectMirage.make(throwableMirror);
     }
 }

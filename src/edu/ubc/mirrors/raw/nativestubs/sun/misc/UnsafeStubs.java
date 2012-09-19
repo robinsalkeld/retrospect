@@ -12,6 +12,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -96,8 +97,8 @@ public class UnsafeStubs {
     
     public static long objectFieldOffset(Class<?> classLoaderLiteral, Mirage unsafe, Mirage field) {
         InstanceMirror fieldMirror = (InstanceMirror)field.getMirror();
-        ClassMirror klass = (ClassMirror)Reflection.getField(fieldMirror, "clazz");
-        String fieldName = Reflection.getRealStringForMirror((InstanceMirror)Reflection.getField(fieldMirror, "name"));
+        ClassMirror klass = (ClassMirror)HolographInternalUtils.getField(fieldMirror, "clazz");
+        String fieldName = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(fieldMirror, "name"));
         long fieldOffset = 12;
         for (Map.Entry<String, ClassMirror> entry : klass.getDeclaredFields().entrySet()) {
             ClassMirror fieldType = entry.getValue();

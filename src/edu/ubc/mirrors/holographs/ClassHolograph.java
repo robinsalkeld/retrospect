@@ -249,7 +249,7 @@ public class ClassHolograph extends WrappingClassMirror {
         
         @Override
         public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalAccessException, InvocationTargetException {
-            if (thread == null || obj == null) {
+            if (thread == null) {
                 throw new NullPointerException();
             }
             
@@ -617,7 +617,7 @@ public class ClassHolograph extends WrappingClassMirror {
         // If it touched any other classes that haven't yet been initialized, then
         // this class must not be initialized.
         for (String touchedClass : classInitInfo.touchedClasses()) {
-            ClassMirror touchedClassMirror = Reflection.loadClassMirrorInternal(this, touchedClass.replace('/', '.'));
+            ClassMirror touchedClassMirror = HolographInternalUtils.loadClassMirrorInternal(this, touchedClass.replace('/', '.'));
             if (!touchedClassMirror.initialized()) {
                 return false;
             }

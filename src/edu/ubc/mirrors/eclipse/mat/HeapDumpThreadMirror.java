@@ -14,6 +14,7 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapStackTraceElementMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
@@ -54,18 +55,7 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
                 String lineTxt = m.group(4);
                 int line = (lineTxt != null ? Integer.parseInt(lineTxt) : -1);
                 
-                HeapDumpStackTraceElement ste = new HeapDumpStackTraceElement(vm);
-                try {
-                    ste.getMemberField("declaringClass").set(ste.makeString(className));
-                    ste.getMemberField("methodName").set(ste.makeString(methodName));
-                    ste.getMemberField("fileName").set(ste.makeString(fileName));
-                    ste.getMemberField("lineNumber").setInt(line);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                } catch (NoSuchFieldException e) {
-                    throw new RuntimeException(e);
-                }
-                
+                FieldMapStackTraceElementMirror ste = new FieldMapStackTraceElementMirror(vm, className, methodName, fileName, line);
                 trace.set(i, ste);
             } else {
                 throw new RuntimeException("Unexpected frame text format: " + text);

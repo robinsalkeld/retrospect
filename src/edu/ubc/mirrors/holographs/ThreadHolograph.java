@@ -8,6 +8,7 @@ import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 public class ThreadHolograph extends WrappingThreadMirror {
 
     private Thread runningThread = null;
+    private int runningThreadCount = 0;
     private static ThreadLocal<ThreadMirror> currentThreadMirror = new ThreadLocal<ThreadMirror>();
     
     public ThreadHolograph(WrappingVirtualMachine vm, ThreadMirror wrappedThread) {
@@ -15,10 +16,11 @@ public class ThreadHolograph extends WrappingThreadMirror {
     }
 
     public void enterHologramExecution() {
-        if (runningThread != null) {
+        if (runningThread != null && runningThread != Thread.currentThread()) {
             throw new IllegalStateException();
         }
         runningThread = Thread.currentThread();
+        runningThreadCount++;
         currentThreadMirror.set(this);
     }
     
@@ -34,8 +36,10 @@ public class ThreadHolograph extends WrappingThreadMirror {
         if (runningThread != Thread.currentThread()) {
             throw new IllegalStateException();
         }
-        runningThread = null;
-        currentThreadMirror.set(null);
+        if (--runningThreadCount == 0) {
+            runningThread = null;
+            currentThreadMirror.set(null);
+        }
     }
     
     @Override

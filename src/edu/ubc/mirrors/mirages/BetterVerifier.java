@@ -9,6 +9,7 @@ import org.objectweb.asm.tree.analysis.SimpleVerifier;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 
 public class BetterVerifier extends SimpleVerifier {
     
@@ -78,7 +79,7 @@ public class BetterVerifier extends SimpleVerifier {
             } else {
                 className = t.getClassName();
             }
-            return Reflection.classMirrorForName(vm, className, false, loader);
+            return Reflection.classMirrorForName(vm, vm.getThreads().get(0), className, false, loader);
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);

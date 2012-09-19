@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -21,7 +22,7 @@ public class FileInputStreamStubs {
         VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
         
         InstanceMirror fisMirror = (InstanceMirror)fis.getMirror();
-        InstanceMirror fdMirror = (InstanceMirror)Reflection.getField(fisMirror, "fd");
+        InstanceMirror fdMirror = (InstanceMirror)HolographInternalUtils.getField(fisMirror, "fd");
         int fd = fdMirror.getMemberField("fd").getInt();
         
         String realName = Reflection.getRealStringForMirror((InstanceMirror)name.getMirror());
@@ -36,7 +37,7 @@ public class FileInputStreamStubs {
         VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
         
         InstanceMirror fisMirror = (InstanceMirror)fis.getMirror();
-        InstanceMirror fdMirror = (InstanceMirror)Reflection.getField(fisMirror, "fd");
+        InstanceMirror fdMirror = (InstanceMirror)HolographInternalUtils.getField(fisMirror, "fd");
         int fd = fdMirror.getMemberField("fd").getInt();
         
         return vm.fileInputStreams.get(fd);

@@ -1,23 +1,20 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.annotation.Pointcut;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
-import org.eclipse.mat.snapshot.model.IClass;
-import org.eclipse.mat.snapshot.model.IInstance;
-import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 import org.eclipse.mat.util.ConsoleProgressListener;
-import org.eclipse.osgi.framework.internal.core.BundleRepository;
 import org.osgi.framework.Bundle;
 
 import edu.ubc.mirrors.ArrayMirror;
@@ -30,7 +27,6 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
-import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MethodHandle;
@@ -83,25 +79,33 @@ public class EclipseHeapDumpTest implements IApplication {
         ThreadMirror thread = holographVM.getThreads().get(0);
         ClassMirrorLoader loader = Reflection.newURLClassLoader(holographVM, thread, null, new URL[] {urlPath, urlAspectJRTPath});
         
-//        ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
-//        threadHolograph.enterHologramExecution();
-        ClassMirror aspect = Reflection.classMirrorForName(holographVM, "tracing.version3.TraceMyClasses", true, loader);
+        ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
+        threadHolograph.enterHologramExecution();
+        ClassMirror aspect = Reflection.classMirrorForName(holographVM, thread, "tracing.version3.TraceMyClasses", true, loader);
         ObjectArrayMirror methods = (ObjectArrayMirror)Reflection.invokeMethodHandle(aspect, new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((Class<?>)null).getDeclaredMethods();
             }
         });
-        ObjectMirror beforeClass = Reflection.classMirrorForName(holographVM, Before.class.getName(), true, loader);
+        ObjectMirror pointcutClass = Reflection.classMirrorForName(holographVM, thread, Pointcut.class.getName(), true, loader);
         int n = methods.length();
         for (int i = 0; i < n; i++) {
             ObjectMirror method = methods.get(i);
-            ObjectMirror advice = (ObjectMirror)Reflection.invokeMethodHandle(method, new MethodHandle() {
+            ObjectMirror annot = (ObjectMirror)Reflection.invokeMethodHandle(method, new MethodHandle() {
                 protected void methodCall() throws Throwable {
-                    ((Class<?>)null).getAnnotation(null);
+                    ((Method)null).getAnnotation(null);
                 }
-            }, beforeClass);
+            }, pointcutClass);
+            if (annot != null) {
+                String pointcut = Reflection.getRealStringForMirror((InstanceMirror)Reflection.invokeMethodHandle(annot, new MethodHandle() {
+                    protected void methodCall() throws Throwable {
+                        ((Pointcut)null).value();
+                    }
+                }));
+                System.out.println(pointcut);
+            }
         }
-//        threadHolograph.exitHologramExecution();
+        threadHolograph.exitHologramExecution();
         
 //        ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);
 //        InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);

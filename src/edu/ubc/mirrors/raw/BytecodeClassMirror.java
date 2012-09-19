@@ -48,6 +48,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapStringMirror;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public abstract class BytecodeClassMirror implements ClassMirror {
@@ -784,7 +785,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     
     protected ClassMirror loadClassMirrorInternal(Type type) {
         try {
-            return Reflection.classMirrorForType(getVM(), type, false, getLoader());
+            return Reflection.classMirrorForType(getVM(), ThreadHolograph.currentThreadMirror(), type, false, getLoader());
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(e.getMessage());
         }

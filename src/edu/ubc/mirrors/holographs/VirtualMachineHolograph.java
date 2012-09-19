@@ -104,7 +104,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     public File getMappedFile(InstanceMirror fileMirage, boolean errorOnUnmapped) {
-        InstanceMirror pathMirror = (InstanceMirror)Reflection.getField(fileMirage, "path");
+        InstanceMirror pathMirror = (InstanceMirror)HolographInternalUtils.getField(fileMirage, "path");
         String path = Reflection.getRealStringForMirror(pathMirror);
         return getMappedFile(new File(path), errorOnUnmapped);
     }
@@ -219,7 +219,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             @Override
             protected ClassMirror loadClassMirrorInternal(Type type) {
                 try {
-                    return Reflection.classMirrorForType(VirtualMachineHolograph.this, type, false, holographLoader);
+                    return Reflection.classMirrorForType(VirtualMachineHolograph.this, ThreadHolograph.currentThreadMirror(), type, false, holographLoader);
                 } catch (ClassNotFoundException e) {
                     throw new NoClassDefFoundError(e.getMessage());
                 }
@@ -280,8 +280,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ByteArrayMirror remoteBuffer = (ByteArrayMirror)getPrimitiveClass("byte").newArray(4096);
         int read;
-        InstanceMirror verifierStream = (InstanceMirror)Reflection.getField(stream, "in");
-        InstanceMirror inflaterStream = (InstanceMirror)Reflection.getField(verifierStream, "is");
+        InstanceMirror verifierStream = (InstanceMirror)HolographInternalUtils.getField(stream, "in");
+        InstanceMirror inflaterStream = (InstanceMirror)HolographInternalUtils.getField(verifierStream, "is");
         while ((read = (Integer)Reflection.invokeMethodHandle(stream, readMethod, remoteBuffer, 0, remoteBuffer.length())) != -1) {
 //            System.out.println(inflaterStream);
             SystemStubs.arraycopyMirrors(remoteBuffer, 0, localBufferMirror, 0, remoteBuffer.length());

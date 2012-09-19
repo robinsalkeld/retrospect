@@ -36,7 +36,7 @@ public class DefinedClassMirror extends BytecodeClassMirror {
     protected ClassMirror loadClassMirrorInternal(Type type) {
         ClassMirror classHolograph;
         try {
-            classHolograph = Reflection.classMirrorForType(vm, type, false, loader);
+            classHolograph = Reflection.classMirrorForType(vm, ThreadHolograph.currentThreadMirror(), type, false, loader);
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(e.getMessage());
         }

@@ -25,7 +25,7 @@ public class DebuggingTest {
         URL urlPath = binDir.toURI().toURL();
         ThreadMirror thread = vm.getThreads().get(0);
         ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath});
-        ClassMirror klass = Reflection.classMirrorForName(vm, "tracing.version3.TraceMyClasses", true, loader);
+        ClassMirror klass = Reflection.classMirrorForName(vm, vm.getThreads().get(0), "tracing.version3.TraceMyClasses", true, loader);
 //        for (Method method : klass.getMethods()) {
 //            for (Annotation a : method.getAnnotations()) {
 //                System.out.println(a);

@@ -24,6 +24,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.HolographInternalUtils;
 
 public class ClassLoaderLiteralMirror implements ClassMirror {
 
@@ -242,7 +243,7 @@ public class ClassLoaderLiteralMirror implements ClassMirror {
 
     @Override
     public ClassMirror getSuperClassMirror() {
-        return Reflection.loadClassMirrorInternal(this, Object.class.getName());
+        return HolographInternalUtils.loadClassMirrorInternal(this, Object.class.getName());
     }
 
     @Override
