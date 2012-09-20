@@ -24,6 +24,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
+import edu.ubc.mirrors.mirages.Reflection;
 
 public class HeapDumpClassMirror implements ClassMirror {
 
@@ -83,38 +84,10 @@ public class HeapDumpClassMirror implements ClassMirror {
         throw new UnsupportedOperationException();
     }
     
-    public static String arrayElementDescriptor(String name) {
-        if (name.equals("boolean")) {
-            return "Z";
-        } else if (name.equals("byte")) {
-            return "B";
-        } else if (name.equals("char")) {
-            return "C";
-        } else if (name.equals("short")) {
-            return "S";
-        } else if (name.equals("int")) {
-            return "I";
-        } else if (name.equals("long")) {
-            return "J";
-        } else if (name.equals("float")) {
-            return "F";
-        } else if (name.equals("double")) {
-            return "D";
-        } else {
-            return "L" + name + ";";
-        }
-    }
-    
     public static String getClassName(IClass klass) {
         String name = klass.getName();
         if (name.endsWith("[]")) {
-            String elementName = name;
-            String dimsString = "";
-            while (elementName.endsWith("[]")) {
-                elementName = elementName.substring(0, elementName.length() - 2);
-                dimsString += "[";
-            }
-            name = dimsString + arrayElementDescriptor(elementName);
+            name = Reflection.arrayClassName(name);
         }
         return name;
     }

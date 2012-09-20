@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.jdi.ArrayReference;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassObjectReference;
@@ -102,15 +103,16 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
             return result;
         }
         
-        // TODO: Type subclasses, primitive arrays, 
         if (t instanceof ClassObjectReference) {
             result = new JDIClassMirror(this, (ClassObjectReference)t);
         } else if (t instanceof ClassLoaderReference) {
             result = new JDIClassLoaderMirror(this, (ClassLoaderReference)t);
         } else if (t instanceof ThreadReference) {
             result = new JDIThreadMirror(this, (ThreadReference)t);
+        } else if (t instanceof ArrayReference) {
+            result = new JDIArrayMirror(this, (ArrayReference)t);
         } else if (t instanceof ObjectReference) {
-            result = new JDIObjectMirror(this, (ObjectReference)t);
+            result = new JDIInstanceMirror(this, (ObjectReference)t);
         } else {
             throw new IllegalArgumentException();
         }

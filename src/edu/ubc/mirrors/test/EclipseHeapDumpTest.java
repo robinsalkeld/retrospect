@@ -34,6 +34,7 @@ import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
+import edu.ubc.retrospect.RetroactiveWeaver;
 
 public class EclipseHeapDumpTest implements IApplication {
 
@@ -79,32 +80,12 @@ public class EclipseHeapDumpTest implements IApplication {
         ThreadMirror thread = holographVM.getThreads().get(0);
         ClassMirrorLoader loader = Reflection.newURLClassLoader(holographVM, thread, null, new URL[] {urlPath, urlAspectJRTPath});
         
-        ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
+        ThreadHolograph threadHolograph = (ThreadHolograph)holographVM.getThreads().get(0);
         threadHolograph.enterHologramExecution();
+        
         ClassMirror aspect = Reflection.classMirrorForName(holographVM, thread, "tracing.version3.TraceMyClasses", true, loader);
-        ObjectArrayMirror methods = (ObjectArrayMirror)Reflection.invokeMethodHandle(aspect, new MethodHandle() {
-            protected void methodCall() throws Throwable {
-                ((Class<?>)null).getDeclaredMethods();
-            }
-        });
-        ObjectMirror pointcutClass = Reflection.classMirrorForName(holographVM, thread, Pointcut.class.getName(), true, loader);
-        int n = methods.length();
-        for (int i = 0; i < n; i++) {
-            ObjectMirror method = methods.get(i);
-            ObjectMirror annot = (ObjectMirror)Reflection.invokeMethodHandle(method, new MethodHandle() {
-                protected void methodCall() throws Throwable {
-                    ((Method)null).getAnnotation(null);
-                }
-            }, pointcutClass);
-            if (annot != null) {
-                String pointcut = Reflection.getRealStringForMirror((InstanceMirror)Reflection.invokeMethodHandle(annot, new MethodHandle() {
-                    protected void methodCall() throws Throwable {
-                        ((Pointcut)null).value();
-                    }
-                }));
-                System.out.println(pointcut);
-            }
-        }
+        RetroactiveWeaver.weave(aspect);
+        
         threadHolograph.exitHologramExecution();
         
 //        ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);

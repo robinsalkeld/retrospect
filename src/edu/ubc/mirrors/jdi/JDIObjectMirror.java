@@ -5,7 +5,7 @@ import com.sun.jdi.ObjectReference;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectMirror;
 
-public class JDIObjectMirror implements ObjectMirror {
+public abstract class JDIObjectMirror implements ObjectMirror {
 
     protected final JDIVirtualMachineMirror vm;
     protected final ObjectReference mirror;

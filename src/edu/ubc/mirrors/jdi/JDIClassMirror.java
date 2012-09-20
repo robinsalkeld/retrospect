@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.mat.snapshot.model.IClass;
+
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
@@ -23,6 +25,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 
 public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
@@ -41,7 +44,11 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public String getClassName() {
-        return refType.name();
+        String name = refType.name();
+        if (name.endsWith("[]")) {
+            name = Reflection.arrayClassName(name);
+        }
+        return name;
     }
 
     @Override
@@ -114,8 +121,8 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
                 try {
                     result.put(field.name(), vm.makeClassMirror(field.type()));
                 } catch (ClassNotLoadedException e) {
-                    // TODO-RS: How to handle this?
-                    throw new RuntimeException(e);
+                    // Re-raise as unsupported so that holographs can take care of this
+                    throw new UnsupportedOperationException();
                 }
             }
             return result;

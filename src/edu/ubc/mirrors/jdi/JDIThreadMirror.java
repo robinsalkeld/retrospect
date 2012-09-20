@@ -54,4 +54,8 @@ public class JDIThreadMirror extends JDIInstanceMirror implements ThreadMirror {
                 sourceName, 
                 location.lineNumber());
     }
+    
+    public void suspend() {
+        thread.suspend();
+    }
 }

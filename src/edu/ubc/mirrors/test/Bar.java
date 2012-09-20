@@ -26,7 +26,7 @@ public class Bar {
         Bar bar = new Bar(47);
         bar.map.put(new String("foo"), new String("bar"));
         System.out.println("ZZZZZZ");
-        Thread.sleep(1000000);
+        Thread.sleep(1000000000);
     }
     
     int f;

@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.objectweb.asm.Type;
 
@@ -37,9 +38,20 @@ import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
+import edu.ubc.retrospect.RetroactiveWeaver;
 
 public class Reflection {
 
+    public static <T> T withThread(ThreadMirror t, Callable<T> c) throws Exception {
+        ThreadHolograph threadHolograph = (ThreadHolograph)t;
+        threadHolograph.enterHologramExecution();
+        try {
+            return c.call();
+        } finally {
+            threadHolograph.exitHologramExecution();
+        }
+    }
+    
     public static ObjectMirror getMirror(Object o) {
         if (o instanceof Mirage) {
             return ((Mirage)o).getMirror();
@@ -503,4 +515,42 @@ public class Reflection {
         }
         return t;
     }
+    
+    /**
+     * Given a class name in the form "int[][]" or "a.b.c.D[]", returns
+     * a class name in the form "[[I" or "[La.b.c.D;"
+     */
+    public static String arrayClassName(String name) {
+        String elementName = name;
+        String dimsString = "";
+        while (elementName.endsWith("[]")) {
+            elementName = elementName.substring(0, elementName.length() - 2);
+            dimsString += "[";
+        }
+        return dimsString + arrayElementDescriptor(elementName);
+    }
+    
+    public static String arrayElementDescriptor(String name) {
+        if (name.equals("boolean")) {
+            return "Z";
+        } else if (name.equals("byte")) {
+            return "B";
+        } else if (name.equals("char")) {
+            return "C";
+        } else if (name.equals("short")) {
+            return "S";
+        } else if (name.equals("int")) {
+            return "I";
+        } else if (name.equals("long")) {
+            return "J";
+        } else if (name.equals("float")) {
+            return "F";
+        } else if (name.equals("double")) {
+            return "D";
+        } else {
+            return "L" + name + ";";
+        }
+    }
+    
+    
 }

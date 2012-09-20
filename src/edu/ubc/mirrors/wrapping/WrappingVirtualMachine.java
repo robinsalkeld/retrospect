@@ -97,8 +97,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         } else if (mirror instanceof ObjectArrayMirror) {
             return new WrappingObjectArrayMirror(this, (ObjectArrayMirror)mirror);
         } else {
-            // Primitive arrays don't have to be wrapped (or at least we have no use for wrapping them yet).
-            return mirror;
+            throw new IllegalArgumentException();
         }
     }
     
