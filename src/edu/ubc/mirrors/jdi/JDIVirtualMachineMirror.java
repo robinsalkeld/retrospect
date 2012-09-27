@@ -24,6 +24,7 @@ import com.sun.tools.jdi.SocketAttachingConnector;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -34,15 +35,15 @@ import edu.ubc.mirrors.raw.PrimitiveClassMirror;
 
 public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 
-    private final VirtualMachine vm;
+    protected final VirtualMachine jdiVM;
 
     private final Map<Mirror, ObjectMirror> mirrors = new HashMap<Mirror, ObjectMirror>();
     
-    public JDIVirtualMachineMirror(VirtualMachine vm) {
-        this.vm = vm;
+    public JDIVirtualMachineMirror(VirtualMachine jdiVM) {
+        this.jdiVM = jdiVM;
     }
     
-    public static VirtualMachineMirror connectOnPort(int port) throws IOException, IllegalConnectorArgumentsException {
+    public static VirtualMachine connectOnPort(int port) throws IOException, IllegalConnectorArgumentsException {
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List<Connector> connectors = vmm.allConnectors();
         SocketAttachingConnector c = null;
@@ -55,14 +56,12 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         
         Map connectorArgs = c.defaultArguments();
         ((IntegerArgument)connectorArgs.get("port")).setValue(port);
-        VirtualMachine vm = c.attach(connectorArgs);
-        
-        return new JDIVirtualMachineMirror(vm);
+        return c.attach(connectorArgs);
     }
     
     @Override
     public ClassMirror findBootstrapClassMirror(String name) {
-        for (ReferenceType t : vm.classesByName(name)) {
+        for (ReferenceType t : jdiVM.classesByName(name)) {
             if (t.classLoader() == null) {
                 return makeClassMirror(t.classObject());
             }
@@ -78,7 +77,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
         List<ClassMirror> classes = new ArrayList<ClassMirror>();
-        for (ReferenceType t : vm.classesByName(name)) {
+        for (ReferenceType t : jdiVM.classesByName(name)) {
             classes.add(((ClassMirror)makeMirror(t.classObject())));
         }
         return classes;
@@ -87,7 +86,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public List<ThreadMirror> getThreads() {
         List<ThreadMirror> threads = new ArrayList<ThreadMirror>();
-        for (ThreadReference t : vm.allThreads()) {
+        for (ThreadReference t : jdiVM.allThreads()) {
             threads.add(((ThreadMirror)makeMirror(t)));
         }
         return threads;
@@ -152,6 +151,11 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
         return new ArrayClassMirror(dimensions, elementClass);
+    }
+
+    @Override
+    public MirrorEventRequestManager eventRequestManager() {
+	return new JDIMirrorEventRequestManager(this, jdiVM.eventRequestManager());
     }
     
 }

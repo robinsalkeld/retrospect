@@ -15,4 +15,6 @@ public interface VirtualMachineMirror {
     public ClassMirror getPrimitiveClass(String name);
     
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass);
+    
+    public MirrorEventRequestManager eventRequestManager();
 }

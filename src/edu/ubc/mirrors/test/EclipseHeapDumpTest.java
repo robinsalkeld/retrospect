@@ -83,8 +83,11 @@ public class EclipseHeapDumpTest implements IApplication {
         ThreadHolograph threadHolograph = (ThreadHolograph)holographVM.getThreads().get(0);
         threadHolograph.enterHologramExecution();
         
-        ClassMirror aspect = Reflection.classMirrorForName(holographVM, thread, "tracing.version3.TraceMyClasses", true, loader);
+        ClassMirror aspect = Reflection.classMirrorForName(holographVM, thread, "tracing.version1.TraceMyClasses", true, loader);
         RetroactiveWeaver.weave(aspect);
+        
+//        aspect = Reflection.classMirrorForName(holographVM, thread, "tracing.version3.TraceMyClasses", true, loader);
+//        RetroactiveWeaver.weave(aspect);
         
         threadHolograph.exitHologramExecution();
         

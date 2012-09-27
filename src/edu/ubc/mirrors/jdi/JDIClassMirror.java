@@ -30,7 +30,7 @@ import edu.ubc.mirrors.raw.ArrayClassMirror;
 
 public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
-    private final ReferenceType refType;
+    protected final ReferenceType refType;
     
     public JDIClassMirror(JDIVirtualMachineMirror vm, ClassObjectReference t) {
         super(vm, t);
@@ -153,8 +153,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
-    public MethodMirror getMethod(String name, ClassMirror... paramTypes)
-            throws SecurityException, NoSuchMethodException {
+    public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
         // TODO-RS: Could implement but holograms don't need it.
         throw new UnsupportedOperationException();
     }

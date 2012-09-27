@@ -16,6 +16,7 @@ import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
+import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
@@ -139,7 +140,6 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return getWrappedThreadMirrorList(wrappedVM.getThreads());
     }
     
-    // TODO-RS: Should these be full-on object mirrors as well? Probably. :(
     private final Map<FieldMirror, FieldMirror> wrappedFieldMirrors = new HashMap<FieldMirror, FieldMirror>();
     
     protected FieldMirror wrapFieldMirror(FieldMirror fieldMirror) {
@@ -179,5 +179,10 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
         ClassMirror unwrapedElementClass = (ClassMirror)unwrapMirror(elementClass);
         return getWrappedClassMirror(wrappedVM.getArrayClass(dimensions, unwrapedElementClass));
+    }
+    
+    @Override
+    public MirrorEventRequestManager eventRequestManager() {
+        return new WrappingMirrorEventRequestManager(this, wrappedVM.eventRequestManager());
     }
 }

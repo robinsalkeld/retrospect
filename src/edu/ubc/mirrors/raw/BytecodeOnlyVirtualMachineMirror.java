@@ -8,6 +8,7 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
@@ -62,5 +63,10 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
         return baseVM.getArrayClass(dimensions, elementClass);
+    }
+
+    @Override
+    public MirrorEventRequestManager eventRequestManager() {
+	throw new UnsupportedOperationException(); 
     }
 }

@@ -410,26 +410,7 @@ public class Reflection {
     }
     
     public static Object invokeMethodHandle(ObjectMirror obj, MethodHandle m, Object ... args) {
-        ClassMirror klass = obj.getClassMirror();
-        VirtualMachineMirror vm = klass.getVM();
-        ThreadMirror thread = vm.getThreads().get(0);
-        ClassMirror targetClass;
-        try {
-            targetClass = classMirrorForName(vm, thread, m.getMethod().owner, false, klass.getLoader());
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(e.getMessage());
-        }
-        Type[] paramTypes = Type.getArgumentTypes(m.getMethod().desc);
-        ClassMirror[] paramClasses = new ClassMirror[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            try {
-                paramClasses[i] = classMirrorForType(vm, thread, paramTypes[i], false, klass.getLoader());
-            } catch (ClassNotFoundException e) {
-                throw new NoClassDefFoundError(e.getMessage());
-            }
-        }
-        MethodMirror method = HolographInternalUtils.getMethod(targetClass, m.getMethod().name, paramClasses);
-        return HolographInternalUtils.mirrorInvoke(thread, method, obj, args);
+        return m.invoke(obj, args);
     }
     
     public static Object invokeStaticMethodHandle(ClassMirror targetClass, MethodHandle m, Object ... args) {

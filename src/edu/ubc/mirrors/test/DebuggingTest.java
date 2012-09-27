@@ -6,11 +6,18 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 
+import com.sun.jdi.Location;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+import com.sun.jdi.event.EventSet;
+import com.sun.jdi.request.BreakpointRequest;
+import com.sun.jdi.request.EventRequestManager;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIThreadMirror;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
@@ -20,7 +27,8 @@ import edu.ubc.retrospect.RetroactiveWeaver;
 public class DebuggingTest {
 
     public static void main(String[] args) throws Exception {
-        final VirtualMachineHolograph vm = new VirtualMachineHolograph(JDIVirtualMachineMirror.connectOnPort(8998),
+        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(8998);
+	final VirtualMachineHolograph vm = new VirtualMachineHolograph(new JDIVirtualMachineMirror(jdiVM),
                 Collections.<URL>emptyList(),
                 Collections.singletonMap("/", "/"));
         
@@ -32,7 +40,7 @@ public class DebuggingTest {
             public Void call() throws Exception {
                 ClassMirror klass = Reflection.classMirrorForName(vm, thread, "tracing.version3.TraceMyClasses", true, loader);
                 // Need to suspend thread first
-//                RetroactiveWeaver.weave(klass);
+                RetroactiveWeaver.weave(klass);
                 return null;
             }
         });
