@@ -11,37 +11,55 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java_cup.runtime.Symbol;
+
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Before;
 
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
-import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.mirages.MethodHandle;
-import edu.ubc.mirrors.mirages.Reflection;
-
-import java_cup.runtime.Symbol;
 import polyglot.ast.Node;
-import polyglot.ast.NodeFactory;
+import polyglot.ast.TypeNode;
 import polyglot.frontend.Job;
 import polyglot.types.Flags;
+import polyglot.types.Named;
+import polyglot.types.SemanticException;
 import polyglot.util.StdErrorQueue;
 import polyglot.visit.AmbiguityRemover;
 import polyglot.visit.NodeVisitor;
 import polyglot.visit.StringPrettyPrinter;
 import abc.aspectj.ExtensionInfo;
+import abc.aspectj.ast.AJNodeFactory;
 import abc.aspectj.ast.AJNodeFactory_c;
+import abc.aspectj.ast.CPEBinary;
+import abc.aspectj.ast.CPEName;
+import abc.aspectj.ast.CPENot;
+import abc.aspectj.ast.CPESubName;
+import abc.aspectj.ast.CPEUniversal;
+import abc.aspectj.ast.ClassTypeDotId;
+import abc.aspectj.ast.ClassnamePatternExpr;
+import abc.aspectj.ast.ConstructorPattern;
+import abc.aspectj.ast.DotDotFormalPattern;
+import abc.aspectj.ast.DotDotNamePattern;
+import abc.aspectj.ast.DotNamePattern;
+import abc.aspectj.ast.FormalPattern;
+import abc.aspectj.ast.MethodPattern;
+import abc.aspectj.ast.ModifierPattern;
+import abc.aspectj.ast.NamePattern;
 import abc.aspectj.ast.PCName;
 import abc.aspectj.ast.PCName_c;
 import abc.aspectj.ast.Pointcut;
+import abc.aspectj.ast.SimpleNamePattern;
+import abc.aspectj.ast.TPEArray;
+import abc.aspectj.ast.TPEBinary;
+import abc.aspectj.ast.TPENot;
+import abc.aspectj.ast.TPERefTypePat;
+import abc.aspectj.ast.TPEType;
+import abc.aspectj.ast.TPEUniversal;
+import abc.aspectj.ast.ThrowsPattern;
+import abc.aspectj.ast.TypeFormalPattern;
+import abc.aspectj.ast.TypePatternExpr;
 import abc.aspectj.parse.Grm;
 import abc.aspectj.parse.Lexer_c;
 import abc.aspectj.types.AJTypeSystem;
@@ -49,6 +67,28 @@ import abc.aspectj.types.AJTypeSystem_c;
 import abc.aspectj.visit.InitClasses;
 import abc.aspectj.visit.NoSourceJob;
 import abc.main.CompilerAbortedException;
+import abc.om.ast.CPEFlags;
+import abc.weaving.aspectinfo.AndPointcut;
+import abc.weaving.aspectinfo.Execution;
+import abc.weaving.aspectinfo.MethodCall;
+import abc.weaving.aspectinfo.NotPointcut;
+import abc.weaving.aspectinfo.OrPointcut;
+import abc.weaving.aspectinfo.Within;
+import abc.weaving.aspectinfo.WithinConstructor;
+import abc.weaving.aspectinfo.WithinMethod;
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorEntryEvent;
+import edu.ubc.mirrors.MethodMirrorExitEvent;
+import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.mirages.MethodHandle;
+import edu.ubc.mirrors.mirages.Reflection;
 
 public class AspectJMirrors {
 
@@ -91,7 +131,7 @@ public class AspectJMirrors {
 	// This holds the formal declarations
 	private final ObjectMirror method;
 	// Null for abstract pointcuts. Non-final because of the resolution phase.
-	private Pointcut pc;
+	private abc.aspectj.ast.Pointcut pc;
 	
 	private String getPointcutName(ObjectMirror method) {
 	    String name = Reflection.getRealStringForMirror((InstanceMirror)new MethodHandle() {
@@ -150,6 +190,14 @@ public class AspectJMirrors {
 		pc = parsePointcut(locals, pointcut);
 	    }
 	}
+
+	public Pointcut getPointcut() {
+	    return pc;
+	}
+
+	public AdviceKind getKind() {
+	    return kind;
+	}
     }
 
     public AdviceMirror getAdviceForMethod(ObjectMirror method) {
@@ -191,6 +239,10 @@ public class AspectJMirrors {
 		}
 	    }
 	}
+	
+	public List<AdviceMirror> getAdvice() {
+	    return Collections.unmodifiableList(adviceDecls);
+	}
     }
 
 
@@ -198,7 +250,7 @@ public class AspectJMirrors {
     private final ExtensionInfo ext = new ExtensionInfo(Collections.<String>emptyList(), Collections.<String>emptyList());
     private final StdErrorQueue eq = new StdErrorQueue(System.err, 80, "pointcut parsing");
     private final AJTypeSystem ts = new AJTypeSystem_c();
-    private final NodeFactory nf = new AJNodeFactory_c();
+    private final AJNodeFactory nf = new AJNodeFactory_c();
     private final Job job = new NoSourceJob(ext);
     
     private final Map<String, AspectMirror> aspects = new HashMap<String, AspectMirror>();
@@ -269,7 +321,7 @@ public class AspectJMirrors {
 		if (!pcName.arguments().isEmpty()) {
 		    throw new UnsupportedOperationException("Argument binding not yet supported");
 		}
-		return pcDecl.pc;
+		return pcDecl.getPointcut();
 	    } else {
 		return super.leave(old, n, v);
 	    }
@@ -285,8 +337,8 @@ public class AspectJMirrors {
 	for (AspectMirror aspect : aspects.values()) {
 	    v.aspect = aspect;
 	    for (AdviceMirror advice : aspect.adviceDecls) {
-		advice.pc = (Pointcut)advice.pc.visit(v);
-		System.out.println(new StringPrettyPrinter(Integer.MAX_VALUE).toString(advice.pc));
+		advice.pc = (Pointcut)advice.getPointcut().visit(v);
+		System.out.println(new StringPrettyPrinter(Integer.MAX_VALUE).toString(advice.getPointcut()));
 	    }
 	}
     }
@@ -299,4 +351,257 @@ public class AspectJMirrors {
 	}
 	return aspect;
     }
+    
+    // TODO-RS: Extend to bind pointcut formals
+    // TODO-RS: Will also have to be stateful to handle cflow and similar dynamic tests
+    public boolean adviceMatchesEvent(AdviceKind kind, abc.weaving.aspectinfo.Pointcut pc, MirrorEvent event, boolean beforeEvent) {
+	if (pc instanceof AndPointcut) {
+	    AndPointcut andPC = (AndPointcut)pc;
+	    return adviceMatchesEvent(kind, andPC.getLeftPointcut(), event, beforeEvent) 
+		&& adviceMatchesEvent(kind, andPC.getRightPointcut(), event, beforeEvent);
+	} else if (pc instanceof OrPointcut) {
+	    OrPointcut orPC = (OrPointcut)pc;
+	    return adviceMatchesEvent(kind, orPC.getLeftPointcut(), event, beforeEvent) 
+		|| adviceMatchesEvent(kind, orPC.getRightPointcut(), event, beforeEvent);
+	} else if (pc instanceof NotPointcut) {
+	    NotPointcut notPC = (NotPointcut)pc;
+	    return !adviceMatchesEvent(kind, notPC, event, beforeEvent);
+	} else if (pc instanceof Execution) {
+	    if ((event instanceof MethodMirrorEntryEvent && beforeEvent == false) ||
+	     		(event instanceof MethodMirrorExitEvent && beforeEvent == true)) {
+		return true;
+	    } else {
+		return false;
+	    }
+	} else if (pc instanceof MethodCall) {
+	    if ((event instanceof MethodMirrorEntryEvent && beforeEvent == true) ||
+		    	(event instanceof MethodMirrorExitEvent && beforeEvent == false)) {
+		MethodCall methodCall = (MethodCall)pc;
+		MethodPattern pattern = methodCall.getPattern().getPattern();
+		// TODO-RS: Need to either find method calls in bytecode and set breakpoints 
+		// or fake things by hiding the extra stack frame (probably the former)
+		return false;
+	    } else {
+		return false;
+	    }
+	} else if (pc instanceof Within) {
+	    Within within = (Within)pc;
+	    ClassnamePatternExpr pattern = within.getPattern().getPattern();
+	    
+	    if (event instanceof MethodMirrorEntryEvent) {
+		MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
+		ClassMirror klass = mmee.method().getDeclaringClass();
+		
+		//TODO
+		return false;
+	    } else {
+		return false;
+	    }
+	} else if (pc instanceof WithinMethod) {
+	    WithinMethod withinMethod = (WithinMethod)pc;
+	    MethodPattern pattern = withinMethod.getPattern().getPattern();
+	    
+	    if (event instanceof MethodMirrorEntryEvent) {
+		MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
+		MethodMirror method = mmee.method();
+		return methodMatches(method, pattern);
+	    } else {
+		return false;
+	    }
+	} else if (pc instanceof WithinConstructor) {
+	    WithinConstructor within = (WithinConstructor)pc;
+	    ConstructorPattern pattern = within.getPattern().getPattern();
+	    // TODO
+	    return true;
+	} else {
+	    throw new IllegalArgumentException("Unsupported pointcut type: " + pc);
+	}
+    }
+
+    private boolean methodMatches(MethodMirror method, MethodPattern pattern) {
+	ClassTypeDotId namePattern = pattern.getName();
+	return classMatches(method.getDeclaringClass(), namePattern.base())
+	    && nameMatches(method.getName(), namePattern.name())
+	    && modifiersMatch(method.getModifiers(), pattern.getModifiers())
+	    && formalsMatch(method.getParameterTypes(), pattern.getFormals())
+	    && exceptionsMatch(method.getExceptionTypes(), pattern.getThrowspats());
+    }
+
+    private boolean exceptionsMatch(List<ClassMirror> exceptionTypes, List<?> throwsPatterns) {
+	// Empty seems to means no pattern provided
+	int size = throwsPatterns.size();
+	if (size == 0) {
+	    return true;
+	}
+	if (exceptionTypes.size() != size) {
+	    return false;
+	}
+	for (int i = 0; i < size; i++) {
+	    ThrowsPattern pattern = (ThrowsPattern)throwsPatterns.get(i);
+	    ClassMirror exceptionType = exceptionTypes.get(i);
+	    if (pattern.positive() != classMatches(exceptionType, pattern.type())) {
+		return false;
+	    }
+	}
+	return true;
+    }
+
+    private boolean formalsMatch(List<ClassMirror> parameterTypes, List formalPatterns) {
+	int size = formalPatterns.size();
+	for (int i = 0; i < size; i++) {
+	    FormalPattern pattern = (FormalPattern)formalPatterns.get(i);
+	    if (pattern instanceof DotDotFormalPattern) {
+		if (i == size - 1) {
+		    return true;
+		} else {
+		    // TODO-RS: Support ".." in the beginning/middle of the list,
+		    // which requires some more complicated backtracking/forking
+		    throw new IllegalArgumentException("'..' is only supported at the end of formal pattern lists");
+		}
+	    } else {
+		TypeFormalPattern tfp = (TypeFormalPattern)pattern;
+		if (i >= parameterTypes.size()) {
+		    return false;
+		}
+		if (!typeMatches(parameterTypes.get(i), tfp.expr())) {
+		    return false;
+		}
+	    }
+	}
+	return true;
+    }
+
+    private boolean typeMatches(ClassMirror classMirror, TypePatternExpr pattern) {
+    	if (pattern instanceof TPEUniversal) {
+	    return true;
+    	} else if (pattern instanceof TPEType) {
+	    TPEType tpeType = (TPEType)pattern;
+	    TypeNode typeNode = tpeType.type();
+	    return classMirror.getClassName().equals(((Named)typeNode).name());
+	} else if (pattern instanceof TPERefTypePat) {
+	    try {
+		return classMatches(classMirror, ((TPERefTypePat)pattern).transformToClassnamePattern(nf));
+	    } catch (SemanticException e) {
+		// TODO-RS: I imagine this shouldn't happen but I'm not sure
+		throw new RuntimeException(e);
+	    }
+	} else if (pattern instanceof TPENot) {
+	    return !typeMatches(classMirror, ((TPENot)pattern).getTpe());
+	} else if (pattern instanceof TPEBinary) {
+	    TPEBinary tpeBinary = (TPEBinary)pattern;
+	    if (tpeBinary.op() == TPEBinary.COND_AND) {
+		return typeMatches(classMirror, tpeBinary.left()) && typeMatches(classMirror, tpeBinary.right());
+	    } else {
+		return typeMatches(classMirror, tpeBinary.left()) || typeMatches(classMirror, tpeBinary.right());
+	    }
+	} else if (pattern instanceof TPEArray) {
+	    if (!classMirror.isArray()) {
+		return false;
+	    }
+	    TPEArray tpeArray = (TPEArray)pattern;
+	    // Not efficient but should work
+	    TPEArray componentPattern = nf.TPEArray(tpeArray.position(), tpeArray.base(), tpeArray.dims() - 1);
+	    return typeMatches(classMirror.getComponentClassMirror(), componentPattern);
+	} else {
+	    throw new IllegalArgumentException("Unexpected TypePatternExpr: " + pattern);
+	}
+    }
+
+    private boolean modifiersMatch(int modifiers, List<?> modifierPatterns) {
+	for (Object o : modifierPatterns) {
+	    ModifierPattern mp = (ModifierPattern)o;
+	    if (mp.positive() == flagsMatch(modifiers, mp.modifier())) {
+		return false;
+	    }
+	}
+	return true;
+    }
+
+    private boolean nameMatches(String name, NamePattern pattern) {
+	if (pattern instanceof SimpleNamePattern) {
+	    return ((SimpleNamePattern)pattern).getPattern().matcher(name).matches();
+	} else {
+	    int dotIndex = name.lastIndexOf('.');
+	    if (dotIndex == -1) {
+		return false;
+	    }
+	    String nameInit = name.substring(0, dotIndex);
+	    if (pattern instanceof DotDotNamePattern) {
+		return nameMatches(nameInit, ((DotDotNamePattern)pattern).getInit());
+	    } else if (pattern instanceof DotNamePattern) {
+		DotNamePattern dotNamePattern = (DotNamePattern)pattern;
+		String nameLast = name.substring(dotIndex + 1);
+		return nameMatches(nameInit, dotNamePattern.getInit())
+		    && nameMatches(nameLast, dotNamePattern.getLast());
+	    } else {
+		throw new IllegalArgumentException("Unknown NamePattern: " + pattern);
+	    }
+	}
+    }
+
+    private boolean classMatches(ClassMirror classMirror, ClassnamePatternExpr pattern) {
+    	if (pattern instanceof CPEUniversal) {
+	    return true;
+	    
+    	} else if (pattern instanceof CPEName) {
+	    return nameMatches(classMirror.getClassName(), ((CPEName)pattern).getNamePattern());
+	
+    	} else if (pattern instanceof CPESubName) {
+	    if (nameMatches(classMirror.getClassName(), ((CPEName)pattern).getNamePattern())) {
+		return true;
+	    }
+	    ClassMirror superClassMirror = classMirror.getSuperClassMirror();
+	    if (superClassMirror != null && classMatches(superClassMirror, pattern)) {
+		return true;
+	    }
+	    for (ClassMirror interfaceMirror : classMirror.getInterfaceMirrors()) {
+		if (classMatches(interfaceMirror, pattern)) {
+		    return true;
+		}
+	    }
+	    return false;
+	
+    	} else if (pattern instanceof CPENot) {
+	    return !classMatches(classMirror, ((CPENot)pattern).getCpe());
+	
+    	} else if (pattern instanceof CPEBinary) {
+	    CPEBinary cpeBinary = (CPEBinary)pattern;
+	    if (cpeBinary.getOperator() == CPEBinary.COND_AND) {
+		return classMatches(classMirror, cpeBinary.getLeft()) && classMatches(classMirror, cpeBinary.getRight());
+	    } else {
+		return classMatches(classMirror, cpeBinary.getLeft()) || classMatches(classMirror, cpeBinary.getRight());
+	    }
+	
+    	} else if (pattern instanceof CPEFlags) {
+	    CPEFlags cpeFlags = (CPEFlags)pattern;
+	    return classMatches(classMirror, cpeFlags.getCpe())
+		&& flagsMatch(classMirror.getModifiers(), cpeFlags.getFlags());
+	
+    	} else {
+	    throw new IllegalArgumentException("Unexpected ClassnamePatternExpr: " + pattern);
+	}	
+    }
+
+    private boolean flagsMatch(int modifiers, Flags flags) {
+	// How unfortunate that the Flags bits aren't *quite* consistent...
+	if (flags.isPublic() && !Modifier.isPublic(modifiers)) return false;
+	if (flags.isProtected() && !Modifier.isProtected(modifiers)) return false;
+	if (flags.isPrivate() && !Modifier.isPrivate(modifiers)) return false;
+	if (flags.isStatic() && !Modifier.isStatic(modifiers)) return false;
+	if (flags.isFinal() && !Modifier.isFinal(modifiers)) return false;
+	if (flags.isSynchronized() && !Modifier.isSynchronized(modifiers)) return false;
+	if (flags.isTransient() && !Modifier.isTransient(modifiers)) return false;
+	if (flags.isNative() && !Modifier.isNative(modifiers)) return false;
+	if (flags.isInterface() && !Modifier.isInterface(modifiers)) return false;
+	if (flags.isAbstract() && !Modifier.isAbstract(modifiers)) return false;
+	if (flags.isVolatile() && !Modifier.isVolatile(modifiers)) return false;
+	if (flags.isStrictFP() && !Modifier.isStrict(modifiers)) return false;
+	return true;
+    }
+    
+    private InstanceMirror makeStaticJoinPoint(MethodMirror method) {
+	// TODO-RS
+	return null;
+    }
+    
 }

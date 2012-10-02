@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface MirrorEventRequestManager {
 
-    MethodMirrorEntryRequest createMethodMirrorEntryRequest(MethodMirror method);
+    MethodMirrorEntryRequest createMethodMirrorEntryRequest();
     
     List<MethodMirrorEntryRequest> methodMirrorEntryRequests();
     

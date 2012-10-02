@@ -21,14 +21,8 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public MethodMirrorEntryRequest createMethodMirrorEntryRequest(MethodMirror method) {
-	MethodEntryRequest jdiRequest = wrapped.createMethodEntryRequest();
-	JDIClassMirror declaringClass = (JDIClassMirror)method.getDeclaringClass();
-	jdiRequest.addClassFilter(declaringClass.refType);
-	
-	MethodMirrorEntryRequest result = new JDIMethodMirrorEntryRequest(vm, jdiRequest, method);
-	
-	return result;
+    public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
+	return new JDIMethodMirrorEntryRequest(vm, wrapped.createMethodEntryRequest());
     }
 
     @Override

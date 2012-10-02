@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.wrapping;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 
@@ -13,8 +14,13 @@ public class WrappingMethodMirrorEntryRequest extends WrappingMirrorEventRequest
     }
 
     @Override
-    public MethodMirror method() {
-	return new WrappingMethodMirror(vm, wrapped.method());
+    public void addClassFilter(ClassMirror klass) {
+	wrapped.addClassFilter(vm.unwrapClassMirror(klass));
     }
-
+    
+    @Override
+    public void setMethodFilter(MethodMirror method) {
+        wrapped.setMethodFilter(((WrappingMethodMirror)method).wrapped);
+    }
+    
 }

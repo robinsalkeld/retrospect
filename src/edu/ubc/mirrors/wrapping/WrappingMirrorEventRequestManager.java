@@ -2,7 +2,6 @@ package edu.ubc.mirrors.wrapping;
 
 import java.util.List;
 
-import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 
@@ -17,9 +16,8 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
 
     @Override
-    public MethodMirrorEntryRequest createMethodMirrorEntryRequest(MethodMirror method) {
-	MethodMirror unwrappedMethod = ((WrappingMethodMirror)method).wrapped;
-	return new WrappingMethodMirrorEntryRequest(vm, wrapped.createMethodMirrorEntryRequest(unwrappedMethod));
+    public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
+	return new WrappingMethodMirrorEntryRequest(vm, wrapped.createMethodMirrorEntryRequest());
     }
 
     @Override

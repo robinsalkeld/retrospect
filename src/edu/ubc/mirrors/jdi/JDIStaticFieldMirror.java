@@ -17,14 +17,13 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
 
-public class JDIStaticFieldMirror implements FieldMirror {
+public class JDIStaticFieldMirror extends JDIMirror implements FieldMirror {
 
-    private final JDIVirtualMachineMirror vm;
     private final ReferenceType refType;
     private final Field field;
     
     public JDIStaticFieldMirror(JDIVirtualMachineMirror vm, ReferenceType refType, Field field) {
-        this.vm = vm;
+	super(vm, field);
         this.refType = refType;
         this.field = field;
     }
@@ -54,8 +53,7 @@ public class JDIStaticFieldMirror implements FieldMirror {
         try {
             return vm.makeClassMirror(field.type());
         } catch (ClassNotLoadedException e) {
-            // TODO-RS: how to deal with this?
-            throw new RuntimeException(e);
+            throw new UnsupportedOperationException();
         }
     }
 

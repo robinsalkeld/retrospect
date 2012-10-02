@@ -5,15 +5,13 @@ import com.sun.jdi.request.MethodEntryRequest;
 
 import edu.ubc.mirrors.MirrorEventRequest;
 
-public class JDIEventRequest implements MirrorEventRequest {
-    private final JDIVirtualMachineMirror vm;
+public class JDIEventRequest extends JDIMirror implements MirrorEventRequest {
     protected final EventRequest wrapped;
     
     protected static final String MIRROR_WRAPPER = "edu.ubc.mirrors.jdi.mirrorWrapper";
     
-    
     public JDIEventRequest(JDIVirtualMachineMirror vm, MethodEntryRequest wrapped) {
-	this.vm = vm;
+	super(vm, wrapped);
 	this.wrapped = wrapped;
 	wrapped.putProperty(MIRROR_WRAPPER, this);
     }

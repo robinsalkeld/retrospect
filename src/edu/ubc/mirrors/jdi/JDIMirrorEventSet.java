@@ -13,11 +13,12 @@ import com.sun.jdi.request.MethodEntryRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventSet;
 
-public class JDIMirrorEventSet implements MirrorEventSet {
+public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
 
     private final EventSet eventSet;
 
-    public JDIMirrorEventSet(EventSet eventSet) {
+    public JDIMirrorEventSet(JDIVirtualMachineMirror vm, EventSet eventSet) {
+	super(vm, eventSet);
 	this.eventSet = eventSet;
     }
 
@@ -35,12 +36,18 @@ public class JDIMirrorEventSet implements MirrorEventSet {
     private MirrorEvent wrapEvent(Event e) {
 	if (e instanceof MethodEntryEvent) {
 	    MethodEntryEvent mee = (MethodEntryEvent)e;
+	    JDIMethodMirrorEntryEvent result = new JDIMethodMirrorEntryEvent(vm, mee);
+	    // Apply the method filter if present, since it's not supported directly
 	    JDIMethodMirrorEntryRequest request = (JDIMethodMirrorEntryRequest)mee.request().getProperty(JDIEventRequest.MIRROR_WRAPPER);
-	    
-	    
+	    if (request.methodFilter != null) {
+		if (!request.methodFilter.equals(result.method())) {
+		    return null;
+		}
+	    }
+	    return result;
+	} else {
+	    return null;
 	}
-	// TODO Auto-generated method stub
-	return null;
     }
 
     /**
@@ -65,7 +72,7 @@ public class JDIMirrorEventSet implements MirrorEventSet {
      * @see java.util.Set#contains(java.lang.Object)
      */
     public boolean contains(Object o) {
-	return eventSet.contains(o);
+	return toMirrorSet().contains(o);
     }
 
     /**
@@ -73,7 +80,7 @@ public class JDIMirrorEventSet implements MirrorEventSet {
      * @see java.util.Set#iterator()
      */
     public Iterator<MirrorEvent> iterator() {
-	return eventSet.iterator();
+	return toMirrorSet().iterator();
     }
 
     /**
@@ -100,7 +107,7 @@ public class JDIMirrorEventSet implements MirrorEventSet {
      * @see java.util.Set#containsAll(java.util.Collection)
      */
     public boolean containsAll(Collection<?> c) {
-	return eventSet.containsAll(c);
+	return toMirrorSet().containsAll(c);
     }
 
     @Override
@@ -147,7 +154,7 @@ public class JDIMirrorEventSet implements MirrorEventSet {
      * @see java.util.Set#toArray()
      */
     public Object[] toArray() {
-	return eventSet.toArray();
+	return toMirrorSet().toArray();
     }
 
     /**
@@ -156,6 +163,6 @@ public class JDIMirrorEventSet implements MirrorEventSet {
      * @see java.util.Set#toArray(T[])
      */
     public <T> T[] toArray(T[] a) {
-	return eventSet.toArray(a);
+	return toMirrorSet().toArray(a);
     }
 }

@@ -2,5 +2,6 @@ package edu.ubc.mirrors;
 
 public interface MethodMirrorEntryRequest extends MirrorEventRequest {
 
-    public MethodMirror method();
+    public void addClassFilter(ClassMirror klass);
+    public void setMethodFilter(MethodMirror method);
 }

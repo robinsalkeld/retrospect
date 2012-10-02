@@ -14,6 +14,7 @@ import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.InterfaceType;
+import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 
@@ -154,10 +155,15 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-        // TODO-RS: Could implement but holograms don't need it.
-        throw new UnsupportedOperationException();
+	for (Method method : refType.methodsByName(name)) {
+	    MethodMirror mirror = new JDIMethodMirror(vm, method);
+	    if (mirror.getParameterTypes().equals(paramTypes)) {
+		return mirror;
+	    }
+	}
+	throw new NoSuchMethodException(name);
     }
-
+    
     @Override
     public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
         throw new UnsupportedOperationException();

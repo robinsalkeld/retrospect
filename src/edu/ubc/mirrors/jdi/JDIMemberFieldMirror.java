@@ -18,14 +18,13 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
-public class JDIMemberFieldMirror implements FieldMirror {
+public class JDIMemberFieldMirror extends JDIMirror implements FieldMirror {
 
-    private final JDIVirtualMachineMirror vm;
     private final Field field;
     private final ObjectReference obj;
     
     public JDIMemberFieldMirror(JDIVirtualMachineMirror vm, Field field, ObjectReference obj) {
-        this.vm = checkNull(vm);
+        super(vm, field);
         this.field = checkNull(field);
         this.obj = checkNull(obj);
     }

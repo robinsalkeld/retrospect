@@ -135,10 +135,10 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         }
     }
     
-    public List<ClassMirror> makeClassMirrorList(List<? extends ReferenceType> refTypes) {
-        List<ClassMirror> result = new ArrayList<ClassMirror>(refTypes.size());
-        for (ReferenceType refType : refTypes) {
-            result.add(makeClassMirror(refType.classObject()));
+    public List<ClassMirror> makeClassMirrorList(List<? extends Type> types) {
+        List<ClassMirror> result = new ArrayList<ClassMirror>(types.size());
+        for (Type type : types) {
+            result.add(makeClassMirror(type));
         }
         return result;
     }
