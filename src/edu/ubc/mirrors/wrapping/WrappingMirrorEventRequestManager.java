@@ -3,6 +3,7 @@ package edu.ubc.mirrors.wrapping;
 import java.util.List;
 
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
+import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 
 public class WrappingMirrorEventRequestManager implements MirrorEventRequestManager {
@@ -22,12 +23,27 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
 
     @Override
     public List<MethodMirrorEntryRequest> methodMirrorEntryRequests() {
-	return null;
+	throw new UnsupportedOperationException();
     }
 
     @Override
     public void deleteMethodMirrorEntryRequest(MethodMirrorEntryRequest request) {
-	
+	throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public MethodMirrorExitRequest createMethodMirrorExitRequest() {
+	return new WrappingMethodMirrorExitRequest(vm, wrapped.createMethodMirrorExitRequest());
+    }
+
+    @Override
+    public List<MethodMirrorExitRequest> methodMirrorExitRequests() {
+	throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void deleteMethodMirrorExitRequest(MethodMirrorExitRequest request) {
+	throw new UnsupportedOperationException();
     }
 
 }

@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,7 +10,10 @@ import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.IStackFrame;
 import org.eclipse.mat.snapshot.model.IThreadStack;
 
+import com.sun.jdi.StackFrame;
+
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -25,10 +30,8 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
         super(vm, heapDumpObject);
     }
 
-    private static final Pattern framePattern = Pattern.compile("at (.*)\\.(.*)\\(.*\\).* \\((?:(.*):(\\d*)|(.*))\\)");
-    
     @Override
-    public ObjectArrayMirror getStackTrace() {
+    public List<FrameMirror> getStackTrace() {
         
         IStackFrame[] frames;
         try {
@@ -42,27 +45,13 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
             throw new RuntimeException(e);
         }
         
-        ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
-        ClassMirror stackTraceArrayClass = new ArrayClassMirror(1, stackTraceElementClass);
-        ObjectArrayMirror trace = new DirectArrayMirror(stackTraceArrayClass, frames.length);
+        List<FrameMirror> result = new ArrayList<FrameMirror>(frames.length);
         for (int i = 0; i < frames.length; i++) {
             String text = frames[i].getText();
-            Matcher m = framePattern.matcher(text);
-            if (m.matches()) {
-                String className = m.group(1);
-                String methodName = m.group(2);
-                String fileName = m.group(3);
-                String lineTxt = m.group(4);
-                int line = (lineTxt != null ? Integer.parseInt(lineTxt) : -1);
-                
-                FieldMapStackTraceElementMirror ste = new FieldMapStackTraceElementMirror(vm, className, methodName, fileName, line);
-                trace.set(i, ste);
-            } else {
-                throw new RuntimeException("Unexpected frame text format: " + text);
-            }
+            result.add(new HeapDumpFrameMirror(vm, text));
         }
         
-        return trace;
+        return result;
     }
 
 }

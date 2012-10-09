@@ -4,7 +4,7 @@ import static edu.ubc.mirrors.mirages.Reflection.checkNull;
 
 import com.sun.jdi.Mirror;
 
-public class JDIMirror {
+public abstract class JDIMirror {
     
     protected final JDIVirtualMachineMirror vm;
     protected final Mirror mirror;
@@ -16,11 +16,11 @@ public class JDIMirror {
     
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof JDIObjectMirror)) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
             return false;
         }
         
-        return mirror.equals(((JDIObjectMirror)obj).mirror);
+        return mirror.equals(((JDIMirror)obj).mirror);
     }
     
     @Override

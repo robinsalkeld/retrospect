@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.raw;
 
+import java.util.List;
+
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -13,13 +16,9 @@ public class NativeThreadMirror extends NativeInstanceMirror implements ThreadMi
     private final Thread thread;
     
     @Override
-    public ObjectArrayMirror getStackTrace() {
-        StackTraceElement[] stackTrace = thread.getStackTrace();
-        if (stackTrace.length == 0) {
-            return null;
-        } else {
-            return (ObjectArrayMirror)makeMirror(stackTrace);
-        }
+    public List<FrameMirror> getStackTrace() {
+	// TODO-RS
+	return null;
     }
 
 }

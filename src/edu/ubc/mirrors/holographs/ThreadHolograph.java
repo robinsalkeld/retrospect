@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.holographs;
 
+import java.util.List;
+
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
@@ -9,7 +12,7 @@ public class ThreadHolograph extends WrappingThreadMirror {
 
     private Thread runningThread = null;
     private int runningThreadCount = 0;
-    private static ThreadLocal<ThreadMirror> currentThreadMirror = new ThreadLocal<ThreadMirror>();
+    private static ThreadLocal<ThreadHolograph> currentThreadMirror = new ThreadLocal<ThreadHolograph>();
     
     public ThreadHolograph(WrappingVirtualMachine vm, ThreadMirror wrappedThread) {
         super(vm, wrappedThread);
@@ -24,8 +27,8 @@ public class ThreadHolograph extends WrappingThreadMirror {
         currentThreadMirror.set(this);
     }
     
-    public static ThreadMirror currentThreadMirror() {
-        ThreadMirror result = currentThreadMirror.get();
+    public static ThreadHolograph currentThreadMirror() {
+	ThreadHolograph result = currentThreadMirror.get();
         if (result == null) {
             throw new IllegalStateException("Not in holograph execution.");
         }
@@ -43,16 +46,16 @@ public class ThreadHolograph extends WrappingThreadMirror {
     }
     
     @Override
-    public ObjectArrayMirror getStackTrace() {
-        ObjectArrayMirror originalStack = super.getStackTrace();
+    public List<FrameMirror> getStackTrace() {
+	List<FrameMirror> originalStack = super.getStackTrace();
         
         if (runningThread == null) {
             return originalStack;
         }
         
-        // TODO-RS: Need to remove non-MirageClassLoader frames
+        // TODO-RS: Need to append native frames, removing non-MirageClassLoader frames.
+        // See also ReflectionStubs#getCallerClass
 //        StackTraceElement[] holographicTrace = runningThread.getStackTrace();
-        
         
         return originalStack;
     }

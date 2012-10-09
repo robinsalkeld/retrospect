@@ -19,20 +19,7 @@ public class NativeMethodAccessorImplStubs {
     public static Mirage invoke0(Class<?> classLoaderLiteral, Mirage method, Mirage target, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
         InstanceMirror m = (InstanceMirror)method.getMirror();
         
-        ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(m, "clazz");
-        String name = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(m, "name"));
-        ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)HolographInternalUtils.getField(m, "parameterTypes");
-        ClassMirror[] parameterTypes = new ClassMirror[parameterTypesMirror.length()];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i++] = (ClassMirror)parameterTypesMirror.get(i);
-        }
-
-        MethodMirror methodMirror;
-        try {
-            methodMirror = declaringClass.getMethod(name, parameterTypes);
-        } catch (NoSuchMethodException e) {
-            throw new NoSuchMethodError(e.getMessage());
-        }
+        MethodMirror methodMirror = Reflection.methodMirrorForMethodInstance(m);
         
         ObjectArrayMirror argsMirror = arguments == null ? null : (ObjectArrayMirror)arguments.getMirror();
         Object[] argsArray = new Object[argsMirror == null ? 0 : argsMirror.length()];
@@ -44,5 +31,4 @@ public class NativeMethodAccessorImplStubs {
         Object result = methodMirror.invoke(ThreadHolograph.currentThreadMirror(), ObjectMirage.getMirror(target), argsArray);
         return ObjectMirage.make((ObjectMirror)result);
     }
-    
 }

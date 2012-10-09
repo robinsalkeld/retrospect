@@ -17,4 +17,9 @@ public interface VirtualMachineMirror {
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass);
     
     public MirrorEventRequestManager eventRequestManager();
+    
+    public MirrorEventQueue eventQueue();
+    
+    public void suspend();
+    public void resume();
 }

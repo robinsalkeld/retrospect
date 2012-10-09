@@ -1,7 +1,9 @@
 package edu.ubc.mirrors.fieldmap;
 
+import java.util.List;
+
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class FieldMapThreadMirror extends FieldMapMirror implements ThreadMirror {
@@ -11,7 +13,7 @@ public class FieldMapThreadMirror extends FieldMapMirror implements ThreadMirror
     }
 
     @Override
-    public ObjectArrayMirror getStackTrace() {
+    public List<FrameMirror> getStackTrace() {
         return null;
     }
 }

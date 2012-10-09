@@ -1,8 +1,10 @@
 package edu.ubc.mirrors.jdi;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +30,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
+import edu.ubc.mirrors.test.Breakpoint;
 
 public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
@@ -69,8 +72,8 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     
     @Override
     public boolean isPrimitive() {
-        // TODO-RS: There seems to be no way to get at the primitive classes
-        return false;
+	// Well ain't I just too clever :)
+	return refType.signature().length() == 1;
     }
 
     @Override
@@ -155,9 +158,10 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+	List<ClassMirror> requestedTypes = Arrays.asList(paramTypes);
 	for (Method method : refType.methodsByName(name)) {
 	    MethodMirror mirror = new JDIMethodMirror(vm, method);
-	    if (mirror.getParameterTypes().equals(paramTypes)) {
+	    if (mirror.getParameterTypes().equals(requestedTypes)) {
 		return mirror;
 	    }
 	}

@@ -33,6 +33,9 @@ public class ClassStubs {
 
     public static Mirage getName0(Class<?> classLoaderLiteral, Mirage mirage) {
         String name = ((ClassMirror)mirage.getMirror()).getClassName();
+        if (name == null) {
+            throw new NullPointerException();
+        }
         return ObjectMirage.makeStringMirage(name, classLoaderLiteral);
     }
     
@@ -201,5 +204,14 @@ public class ClassStubs {
         InstanceMirror result = classMirror.getVM().findBootstrapClassMirror("sun.reflect.ConstantPool").newRawInstance();
         HolographInternalUtils.setField(result, "constantPoolOop", reader);
         return ObjectMirage.make(result);
+    }
+    
+    public static Mirage getPrimitiveClass(Class<?> classLoaderLiteral, Mirage name) {
+	MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineMirror vm = callingLoader.getVM();
+        
+        String realName = Reflection.getRealStringForMirror((InstanceMirror)ObjectMirage.getMirror(name));
+	ClassMirror result = vm.getPrimitiveClass(realName);
+	return ObjectMirage.make(result);
     }
 }

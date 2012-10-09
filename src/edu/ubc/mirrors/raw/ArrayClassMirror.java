@@ -35,6 +35,22 @@ public class ArrayClassMirror implements ClassMirror {
     }
     
     @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ArrayClassMirror)) {
+            return false;
+        }
+        
+        ArrayClassMirror other = (ArrayClassMirror)obj;
+        return elementClassMirror.equals(other.elementClassMirror)
+            && dims == other.dims;
+    }
+    
+    @Override
+    public int hashCode() {
+        return dims * elementClassMirror.hashCode() + 7;
+    }
+    
+    @Override
     public VirtualMachineMirror getVM() {
         return elementClassMirror.getVM();
     }

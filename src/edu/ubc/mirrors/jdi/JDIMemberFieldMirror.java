@@ -31,17 +31,17 @@ public class JDIMemberFieldMirror extends JDIMirror implements FieldMirror {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof JDIMemberFieldMirror)) {
-            return false;
-        }
+	if (!super.equals(obj)) {
+	    return false;
+	}
         
         JDIMemberFieldMirror other = (JDIMemberFieldMirror)obj;
-        return field.equals(other.field) && vm.equals(other.vm);
+        return this.obj.equals(other.obj);
     }
     
     @Override
     public int hashCode() {
-        return 11 * field.hashCode() * vm.hashCode();
+        return super.hashCode() * obj.hashCode();
     }
     
     @Override

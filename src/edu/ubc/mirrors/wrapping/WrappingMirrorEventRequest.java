@@ -1,13 +1,12 @@
 package edu.ubc.mirrors.wrapping;
 
-import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 
 public class WrappingMirrorEventRequest implements MirrorEventRequest {
     protected final WrappingVirtualMachine vm;
-    private final MethodMirrorEntryRequest wrapped;
+    private final MirrorEventRequest wrapped;
 
-    public WrappingMirrorEventRequest(WrappingVirtualMachine vm, MethodMirrorEntryRequest wrapped) {
+    public WrappingMirrorEventRequest(WrappingVirtualMachine vm, MirrorEventRequest wrapped) {
 	this.vm = vm;
 	this.wrapped = wrapped;
     }

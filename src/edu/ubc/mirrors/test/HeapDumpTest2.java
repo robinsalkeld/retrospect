@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -52,26 +53,33 @@ public class HeapDumpTest2 implements IApplication {
     List<URL> bootstrapPath = Reflection.getBootstrapPath();
     bootstrapPath.add(new File(jrubyJar).toURL());
     
-    VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
+    final VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
             bootstrapPath,
             mappedFiles);
     
-    // Create a new class loader in the holograph VM and define more bytecode.
-    ClassMirror rubyClass = holographVM.findAllClasses(Ruby.class.getName(), false).get(0);
-    ThreadMirror thread = holographVM.getThreads().get(0);
-    ClassMirror printerClass = Reflection.injectBytecode(holographVM, thread, 
-            rubyClass.getLoader(), new NativeClassMirror(JRubyStackTraces.class));
- 
-    // Redirect standard out
-    InstanceMirror baos = (InstanceMirror)printerClass.getMethod("redirectStdErr").invoke(thread, null);
+    Reflection.withThread(holographVM.getThreads().get(0), new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
     
-    // For each class instance (in this case we only expect one)...
-    MethodMirror method = printerClass.getMethod("printStackTraces", rubyClass);
-    for (InstanceMirror ruby : rubyClass.getInstances()) {
-      // Invoke JRubyStackTraces#printStackTraces reflectively.
-      method.invoke(thread, null, ruby);
-      System.out.println(Reflection.toString(baos));
-    }
+            // Create a new class loader in the holograph VM and define more bytecode.
+            ClassMirror rubyClass = holographVM.findAllClasses(Ruby.class.getName(), false).get(0);
+            ThreadMirror thread = holographVM.getThreads().get(0);
+            ClassMirror printerClass = Reflection.injectBytecode(holographVM, thread, 
+        	    rubyClass.getLoader(), new NativeClassMirror(JRubyStackTraces.class));
+
+            // Redirect standard out
+            InstanceMirror baos = (InstanceMirror)printerClass.getMethod("redirectStdErr").invoke(thread, null);
+
+            // For each class instance (in this case we only expect one)...
+            MethodMirror method = printerClass.getMethod("printStackTraces", rubyClass);
+            for (InstanceMirror ruby : rubyClass.getInstances()) {
+        	// Invoke JRubyStackTraces#printStackTraces reflectively.
+        	method.invoke(thread, null, ruby);
+        	System.out.println(Reflection.toString(baos));
+            }
+            return null;
+        }
+    });
   }
 
     public Object start(IApplicationContext context) throws Exception {

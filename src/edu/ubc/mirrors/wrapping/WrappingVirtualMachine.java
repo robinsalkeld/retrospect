@@ -16,12 +16,14 @@ import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
+import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.test.Breakpoint;
 
 public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
 
@@ -88,6 +90,9 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         } else if (classNameString.equals("[D")) {
             return new WrappingDoubleArrayMirror(this, (DoubleArrayMirror)mirror);
         } else if (mirror instanceof ClassMirror) {
+            if (((ClassMirror)mirror).isPrimitive()) {
+        	Breakpoint.bp();
+            }
             return new WrappingClassMirror(this, (ClassMirror)mirror);
         } else if (mirror instanceof ClassMirrorLoader) {
             return new WrappingClassMirrorLoader(this, (ClassMirrorLoader)mirror);
@@ -188,5 +193,20 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     @Override
     public MirrorEventRequestManager eventRequestManager() {
         return new WrappingMirrorEventRequestManager(this, wrappedVM.eventRequestManager());
+    }
+    
+    @Override
+    public MirrorEventQueue eventQueue() {
+	return new WrappingMirrorEventQueue(this, wrappedVM.eventQueue()); 
+    }
+
+    @Override
+    public void suspend() {
+        wrappedVM.suspend();
+    }
+    
+    @Override
+    public void resume() {
+	wrappedVM.resume(); 
     }
 }

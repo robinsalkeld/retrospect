@@ -3,6 +3,7 @@ package edu.ubc.mirrors.raw.nativestubs.sun.reflect;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -37,27 +38,14 @@ public class ReflectionStubs {
         }
         
         // Off the top of the holographic stack, so refer to the original stack.
-        // Unfortunately here we only have class names rather than actual classes
-        // so if any are ambiguous we're hooped.
         ThreadMirror currentThread = ThreadHolograph.currentThreadMirror();
-        ObjectArrayMirror stack = currentThread.getStackTrace();
-        int frameIndex = stack.length() - 1 - depth;
+        List<FrameMirror> stack = currentThread.getStackTrace();
+        int frameIndex = stack.size() - 1 - depth;
         if (frameIndex < 0) {
             return null;
         }
-        InstanceMirror frame = (InstanceMirror)stack.get(frameIndex);
-        String className = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(frame, "declaringClass"));
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineMirror vm = callingLoader.getVM();
-        List<ClassMirror> matchingClasses = vm.findAllClasses(className, false);
-        if (matchingClasses.isEmpty()) {
-            // This indicates an error in the underlying VM
-            throw new InternalError();
-        } else if (matchingClasses.size() > 1) {
-            // This is just unfortunate but could happen
-            throw new InternalError("Ambiguous class name on stack: " + className);
-        }
-        return ObjectMirage.make(matchingClasses.get(0));
+        FrameMirror frame = stack.get(frameIndex);
+        return ObjectMirage.make(frame.declaringClass());
     }
     
     public static int getClassAccessFlags(Class<?> classLoaderLiteral, Mirage klass) {

@@ -10,4 +10,10 @@ public interface MirrorEventRequestManager {
     
     void deleteMethodMirrorEntryRequest(MethodMirrorEntryRequest request);
     
+    MethodMirrorExitRequest createMethodMirrorExitRequest();
+    
+    List<MethodMirrorExitRequest> methodMirrorExitRequests();
+    
+    void deleteMethodMirrorExitRequest(MethodMirrorExitRequest request);
+    
 }

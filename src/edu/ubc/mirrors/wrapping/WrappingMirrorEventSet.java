@@ -1,52 +1,41 @@
-package edu.ubc.mirrors.jdi;
+package edu.ubc.mirrors.wrapping;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.sun.jdi.event.Event;
-import com.sun.jdi.event.EventSet;
-import com.sun.jdi.event.MethodEntryEvent;
-import com.sun.jdi.request.MethodEntryRequest;
-
+import edu.ubc.mirrors.MethodMirrorEntryEvent;
+import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventSet;
 
-public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
+public class WrappingMirrorEventSet implements MirrorEventSet {
 
-    private final EventSet eventSet;
+    private final WrappingVirtualMachine vm;
+    private final MirrorEventSet wrapped;
 
-    public JDIMirrorEventSet(JDIVirtualMachineMirror vm, EventSet eventSet) {
-	super(vm, eventSet);
-	this.eventSet = eventSet;
+    public WrappingMirrorEventSet(WrappingVirtualMachine vm, MirrorEventSet wrapped) {
+	this.vm = vm;
+	this.wrapped = wrapped;
     }
 
-    private Set<MirrorEvent> toMirrorSet() {
-	Set<MirrorEvent> result = new HashSet<MirrorEvent>(eventSet.size());
-	for (Event e : eventSet) {
-	    MirrorEvent wrapped = wrapEvent(e);
-	    if (wrapped != null) {
-		result.add(wrapped);
-	    }
+    private Set<MirrorEvent> wrappedSet() {
+	Set<MirrorEvent> result = new HashSet<MirrorEvent>(wrapped.size());
+	for (MirrorEvent e : wrapped) {
+	    MirrorEvent wrappedEvent = wrapEvent(e);
+	    result.add(wrappedEvent);
 	}
 	return result;
     }
     
-    private MirrorEvent wrapEvent(Event e) {
-	if (e instanceof MethodEntryEvent) {
-	    MethodEntryEvent mee = (MethodEntryEvent)e;
-	    JDIMethodMirrorEntryEvent result = new JDIMethodMirrorEntryEvent(vm, mee);
-	    // Apply the method filter if present, since it's not supported directly
-	    JDIMethodMirrorEntryRequest request = (JDIMethodMirrorEntryRequest)mee.request().getProperty(JDIEventRequest.MIRROR_WRAPPER);
-	    if (request.methodFilter != null) {
-		if (!request.methodFilter.equals(result.method())) {
-		    return null;
-		}
-	    }
-	    return result;
+    private MirrorEvent wrapEvent(MirrorEvent e) {
+	if (e instanceof MethodMirrorEntryEvent) {
+	    return new WrappingMethodMirrorEntryEvent(vm, (MethodMirrorEntryEvent)e);
+	} else if (e instanceof MethodMirrorExitEvent) {
+	    return new WrappingMethodMirrorExitEvent(vm, (MethodMirrorExitEvent)e);
 	} else {
-	    return null;
+	    throw new IllegalArgumentException("Unrecognized event type: " + e);
 	}
     }
 
@@ -55,7 +44,7 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      * @see java.util.Set#size()
      */
     public int size() {
-	return eventSet.size();
+	return wrapped.size();
     }
 
     /**
@@ -63,7 +52,7 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      * @see java.util.Set#isEmpty()
      */
     public boolean isEmpty() {
-	return eventSet.isEmpty();
+	return wrapped.isEmpty();
     }
 
     /**
@@ -72,7 +61,7 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      * @see java.util.Set#contains(java.lang.Object)
      */
     public boolean contains(Object o) {
-	return toMirrorSet().contains(o);
+	return wrappedSet().contains(o);
     }
 
     /**
@@ -80,7 +69,7 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      * @see java.util.Set#iterator()
      */
     public Iterator<MirrorEvent> iterator() {
-	return toMirrorSet().iterator();
+	return wrappedSet().iterator();
     }
 
     /**
@@ -107,7 +96,7 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      * @see java.util.Set#containsAll(java.util.Collection)
      */
     public boolean containsAll(Collection<?> c) {
-	return toMirrorSet().containsAll(c);
+	return wrappedSet().containsAll(c);
     }
 
     @Override
@@ -137,7 +126,7 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      * @see com.sun.jdi.event.EventSet#resume()
      */
     public void resume() {
-	eventSet.resume();
+	wrapped.resume();
     }
 
     /**
@@ -154,7 +143,7 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      * @see java.util.Set#toArray()
      */
     public Object[] toArray() {
-	return toMirrorSet().toArray();
+	return wrappedSet().toArray();
     }
 
     /**
@@ -163,11 +152,11 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      * @see java.util.Set#toArray(T[])
      */
     public <T> T[] toArray(T[] a) {
-	return toMirrorSet().toArray(a);
+	return wrappedSet().toArray(a);
     }
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ": " + eventSet;
+        return getClass().getSimpleName() + " on " + wrapped;
     }
 }

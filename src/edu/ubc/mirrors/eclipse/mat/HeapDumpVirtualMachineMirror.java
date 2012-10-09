@@ -19,6 +19,7 @@ import org.eclipse.mat.snapshot.model.ObjectReference;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -188,6 +189,21 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     public MirrorEventRequestManager eventRequestManager() {
 	// Could return an event manager that creates a "VM terminated" event
 	// immediately after resuming, but there's no point for now.
+	throw new UnsupportedOperationException(); 
+    }
+
+    @Override
+    public MirrorEventQueue eventQueue() {
+	throw new UnsupportedOperationException(); 
+    }
+
+    @Override
+    public void resume() {
+	throw new UnsupportedOperationException(); 
+    }
+    
+    @Override
+    public void suspend() {
 	throw new UnsupportedOperationException(); 
     }
 }

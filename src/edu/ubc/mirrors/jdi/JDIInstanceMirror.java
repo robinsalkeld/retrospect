@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.jdi;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 import com.sun.jdi.ClassObjectReference;
@@ -9,6 +10,7 @@ import com.sun.jdi.ObjectReference;
 
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.test.Breakpoint;
 
 public class JDIInstanceMirror extends JDIObjectMirror implements InstanceMirror {
 

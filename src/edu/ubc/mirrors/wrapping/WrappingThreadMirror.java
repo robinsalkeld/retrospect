@@ -1,5 +1,9 @@
 package edu.ubc.mirrors.wrapping;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -13,7 +17,11 @@ public class WrappingThreadMirror extends WrappingInstanceMirror implements Thre
     }
 
     @Override
-    public ObjectArrayMirror getStackTrace() {
-        return (ObjectArrayMirror)vm.getWrappedMirror(wrappedThread.getStackTrace());
+    public List<FrameMirror> getStackTrace() {
+	List<FrameMirror> result = new ArrayList<FrameMirror>();
+	for (FrameMirror frame : wrappedThread.getStackTrace()) {
+	    result.add(new WrappingFrameMirror(vm, frame));
+	}
+        return result;
     }
 }

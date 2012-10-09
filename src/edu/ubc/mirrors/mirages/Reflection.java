@@ -410,7 +410,13 @@ public class Reflection {
     }
     
     public static Object invokeMethodHandle(ObjectMirror obj, MethodHandle m, Object ... args) {
-        return m.invoke(obj, args);
+	ClassMirror klass = obj.getClassMirror();
+        VirtualMachineMirror vm = klass.getVM();
+        return m.invoke(obj, vm.getThreads().get(0), args);
+    }
+   
+    public static Object invokeMethodHandle(ObjectMirror obj, ThreadMirror thread, MethodHandle m, Object ... args) {
+        return m.invoke(obj, thread, args);
     }
     
     public static Object invokeStaticMethodHandle(ClassMirror targetClass, MethodHandle m, Object ... args) {
@@ -533,5 +539,19 @@ public class Reflection {
         }
     }
     
-    
+    public static MethodMirror methodMirrorForMethodInstance(InstanceMirror m) {
+	ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(m, "clazz");
+        String name = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(m, "name"));
+        ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)HolographInternalUtils.getField(m, "parameterTypes");
+        ClassMirror[] parameterTypes = new ClassMirror[parameterTypesMirror.length()];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            parameterTypes[i] = (ClassMirror)parameterTypesMirror.get(i);
+        }
+
+        try {
+            return declaringClass.getMethod(name, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            throw new NoSuchMethodError(e.getMessage());
+        }
+    }
 }

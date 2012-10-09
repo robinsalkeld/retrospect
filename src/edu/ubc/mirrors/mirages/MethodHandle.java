@@ -115,9 +115,14 @@ public abstract class MethodHandle {
     }
     
     public Object invoke(ObjectMirror obj, Object ... args) {
+	ClassMirror klass = obj.getClassMirror();
+        VirtualMachineMirror vm = klass.getVM();
+        return invoke(obj, vm.getThreads().get(0), args);
+    }
+	
+    public Object invoke(ObjectMirror obj, ThreadMirror thread, Object ... args) {
         ClassMirror klass = obj.getClassMirror();
         VirtualMachineMirror vm = klass.getVM();
-        ThreadMirror thread = vm.getThreads().get(0);
         ClassMirror targetClass;
         try {
             targetClass = Reflection.classMirrorForName(vm, thread, getMethod().owner, false, klass.getLoader());

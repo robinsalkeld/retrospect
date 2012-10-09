@@ -26,6 +26,22 @@ public class PrimitiveClassMirror implements ClassMirror {
     }
     
     @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof PrimitiveClassMirror)) {
+            return false;
+        }
+        
+        PrimitiveClassMirror other = (PrimitiveClassMirror)obj;
+        return vm.equals(other.vm)
+            && typeName.equals(other.typeName);
+    }
+    
+    @Override
+    public int hashCode() {
+        return typeName.hashCode() * 32 + typeName.hashCode();
+    }
+    
+    @Override
     public FieldMirror getMemberField(String name) throws NoSuchFieldException {
         return new ClassFieldMirror(this, name);
     }

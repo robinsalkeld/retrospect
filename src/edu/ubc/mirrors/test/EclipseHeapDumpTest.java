@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -15,6 +16,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
+import org.eclipse.osgi.framework.internal.core.BundleRepository;
 import org.osgi.framework.Bundle;
 
 import edu.ubc.mirrors.ArrayMirror;
@@ -66,34 +68,20 @@ public class EclipseHeapDumpTest implements IApplication {
         HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
         
         // Create a holograph VM
-        File binDir = new File("/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
-        File aspectJRuntimeJar = new File("/Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar");
-        Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
-        mappedFiles.put(binDir.getAbsolutePath(), binDir.getAbsolutePath());
-        mappedFiles.put(aspectJRuntimeJar.getAbsolutePath(), aspectJRuntimeJar.getAbsolutePath());
-        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
+        final VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
                 Reflection.getBootstrapPath(),
-                mappedFiles);
+                Reflection.getStandardMappedFiles());
         
-        URL urlPath = binDir.toURI().toURL();
-        URL urlAspectJRTPath = aspectJRuntimeJar.toURI().toURL();
-        ThreadMirror thread = holographVM.getThreads().get(0);
-        ClassMirrorLoader loader = Reflection.newURLClassLoader(holographVM, thread, null, new URL[] {urlPath, urlAspectJRTPath});
+        Reflection.withThread(holographVM.getThreads().get(0), new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+        	ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);
+                InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
+                printBundlesFromRepository(bundleRepository);
+                return null;
+            }
+	});
         
-        ThreadHolograph threadHolograph = (ThreadHolograph)holographVM.getThreads().get(0);
-        threadHolograph.enterHologramExecution();
-        
-        ClassMirror aspect = Reflection.classMirrorForName(holographVM, thread, "tracing.version1.TraceMyClasses", true, loader);
-        RetroactiveWeaver.weave(aspect);
-        
-//        aspect = Reflection.classMirrorForName(holographVM, thread, "tracing.version3.TraceMyClasses", true, loader);
-//        RetroactiveWeaver.weave(aspect);
-        
-        threadHolograph.exitHologramExecution();
-        
-//        ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);
-//        InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
-//        printBundlesFromRepository(bundleRepository);
     }
     
     public static ObjectMirror getWrapped(VirtualMachineMirror vm, ObjectMirror o) {

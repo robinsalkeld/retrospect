@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipFile;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -47,6 +46,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type objectType = Type.getType(Object.class);
     public static Type stringType = Type.getType(String.class);
     public static Type mirageStringType = getMirageType(String.class);
+    public static Type mirageThrowableType = getMirageType(Throwable.class);
     public static Type classType = Type.getType(Class.class);
     public static Type stackTraceElementType = Type.getType(StackTraceElement.class);
     public static Type stackTraceType = Type.getType(StackTraceElement[].class);
@@ -119,12 +119,32 @@ public class MirageClassGenerator extends ClassVisitor {
         this.superName = getMirageSuperclassName(isInterface, name, superName);
         interfaces = getMirageInterfaces(isInterface, interfaces);
         
-        // Force everything to be public for now, since MirageClassLoader has to reflectively
-        // construct mirages.
+        // Force everything to be public, since MirageClassLoader has to reflectively
+        // construct mirages. Again, not a problem because the VM will see the original flags on the ClassMirror instead.
         // Also remove enum flags.
         int mirageAccess = (~(Opcodes.ACC_ENUM | Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED) & access) | Opcodes.ACC_PUBLIC;
         
         super.visit(version, mirageAccess, name, signature, this.superName, interfaces);
+        
+        if (this.name.equals(mirageThrowableType.getInternalName())) {
+            // Generate aliases for the original superclass' fillInStackTrace and getStackTrace methods,
+            // so we can call them in stubs without hitting hologram code.
+            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, "superFillInStackTrace", Type.getMethodDescriptor(Type.VOID_TYPE), null, null);
+            v.visitCode();
+            v.visitVarInsn(Opcodes.ALOAD, 0);
+            v.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(Throwable.class), "fillInStackTrace", Type.getMethodDescriptor(Type.getType(Throwable.class)));
+            v.visitInsn(Opcodes.RETURN);
+            v.visitMaxs(1, 1);
+            v.visitEnd();
+            
+            v = super.visitMethod(Opcodes.ACC_PUBLIC, "superGetStackTrace", Type.getMethodDescriptor(Type.getType(StackTraceElement[].class)), null, null);
+            v.visitCode();
+            v.visitVarInsn(Opcodes.ALOAD, 0);
+            v.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(Throwable.class), "getStackTrace", Type.getMethodDescriptor(Type.getType(StackTraceElement[].class)));
+            v.visitInsn(Opcodes.ARETURN);
+            v.visitMaxs(1, 1);
+            v.visitEnd();
+        }
     }
 
     @Override
@@ -380,8 +400,6 @@ public class MirageClassGenerator extends ClassVisitor {
             desc = addMirrorParam(desc);
         }
         
-        Type mirageThrowableType = getMirageType(Throwable.class);
-        
         // toString() is a special case - it's defined in java.lang.Object, which this class must ultimately
         // extend, so we have to return a real String rather than a mirage.
         boolean isToString = name.equals("toString") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(String.class))));
@@ -395,10 +413,9 @@ public class MirageClassGenerator extends ClassVisitor {
         if (isGetStackTrace) {
             desc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
         }
-        boolean isGetOurStackTrace = name.equals("getOurStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement[].class)))); 
-        if (name.equals("getStackTraceElement") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement.class)), Type.INT_TYPE))) {
-            desc = Type.getMethodDescriptor(Type.getType(StackTraceElement.class), Type.INT_TYPE);
-        }
+//        if (name.equals("getStackTraceElement") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement.class)), Type.INT_TYPE))) {
+//            desc = Type.getMethodDescriptor(Type.getType(StackTraceElement.class), Type.INT_TYPE);
+//        }
         
         // Take off the native keyword if it's there - we're going to fill in an actual
         // method (even if it's a stub that throws an exception).
@@ -406,41 +423,7 @@ public class MirageClassGenerator extends ClassVisitor {
         
         MethodVisitor superVisitor = super.visitMethod(mirageAccess, name, desc, signature, exceptions);
         
-        if (this.name.equals(mirageThrowableType.getInternalName())) {
-            if (name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(mirageThrowableType))) {
-                superVisitor.visitCode();
-                superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-                superVisitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, superName, name, Type.getMethodDescriptor(Type.getType(Throwable.class)));
-                superVisitor.visitInsn(Opcodes.POP);
-                superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-                superVisitor.visitInsn(Opcodes.ARETURN);
-                superVisitor.visitMaxs(1, 1);
-                superVisitor.visitEnd();
-                
-                return null;
-            } else if (isGetOurStackTrace) {
-                superVisitor.visitCode();
-                superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-                superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-                new MethodHandle() {
-                    protected void methodCall() throws Throwable {
-                        ((Throwable)null).getStackTrace();
-                    }
-                }.invoke(superVisitor);
-                new MethodHandle() {
-                    protected void methodCall() throws Throwable {
-                        ObjectMirage.cleanAndSetStackTrace(null, null);
-                    }                    
-                }.invoke(superVisitor);
-
-                superVisitor.visitTypeInsn(Opcodes.CHECKCAST, getMirageType(stackTraceType).getInternalName());
-                superVisitor.visitInsn(Opcodes.ARETURN);
-                superVisitor.visitMaxs(2, 1);
-                superVisitor.visitEnd();
-                
-                return null;
-            }
-        }
+        
         
         MirageMethodGenerator generator = new MirageMethodGenerator(this.name, mirageAccess, name, desc, superVisitor, isToString, isGetStackTrace);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);

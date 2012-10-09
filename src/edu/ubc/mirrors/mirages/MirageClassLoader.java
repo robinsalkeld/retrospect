@@ -239,6 +239,10 @@ public class MirageClassLoader extends ClassLoader {
         
         final String internalClassName = mirror.getClassMirror().getClassName().replace('.', '/');
         
+        if (internalClassName.equals("java/util/AbstractMap")) {
+            Breakpoint.bp();
+        }
+        
         if (internalClassName.equals("[Z")) {
             mirage = new BooleanArrayMirage((BooleanArrayMirror)mirror);
         } else if (internalClassName.equals("[B")) {
