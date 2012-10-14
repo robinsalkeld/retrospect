@@ -28,4 +28,9 @@ public class JDIMethodMirrorExitRequest extends JDIEventRequest implements Metho
 	// Not supported directly, but adding a class filter helps to reduce excess events
 	addClassFilter(methodFilter.getDeclaringClass());
     }
+    
+    @Override
+    public void addClassFilter(String classNamePattern) {
+	wrapped.addClassFilter(classNamePattern);
+    }
 }

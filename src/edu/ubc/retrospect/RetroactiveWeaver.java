@@ -23,10 +23,7 @@ public class RetroactiveWeaver {
         AspectMirror aspectMirror = mirrors.getAspectMirror(aspect);
         mirrors.resolve();
         
-        MethodMirrorEntryRequest entryRequest = vm.eventRequestManager().createMethodMirrorEntryRequest();
-        entryRequest.enable();
-        MethodMirrorExitRequest exitRequest = vm.eventRequestManager().createMethodMirrorExitRequest();
-        exitRequest.enable();
+        aspectMirror.installRequests();
         
         vm.resume();
         

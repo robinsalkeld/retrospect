@@ -14,6 +14,6 @@ public class WrappingMethodMirrorEntryEvent extends WrappingMirrorEvent implemen
 
     @Override
     public MethodMirror method() {
-	return new WrappingMethodMirror(vm, wrapped.method());
+	return vm.wrapMethod(wrapped.method());
     }
 }

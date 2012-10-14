@@ -120,4 +120,13 @@ public class InflaterStubs {
         return result;
     }
     
+    public static long getBytesWritten(Class<?> classLoaderLiteral, long addr) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+	MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+        
+        Inflater hostInflater = vm.getHostInflator(addr);
+        long hostAddress = addressField.getLong(zsRefField.get(hostInflater));
+        
+        return (Long) ZipFileStubs.getHostNativeMethod(Inflater.class, "getBytesWritten", long.class).invoke(null, hostAddress);
+    }
 }

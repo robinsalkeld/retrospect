@@ -15,6 +15,7 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
@@ -273,5 +274,10 @@ public class ObjectMirage implements Mirage {
         InstanceMirror throwableMirror = klass.newRawInstance();
         HolographInternalUtils.setField(throwableMirror, "detailMessage", Reflection.makeString(vm, t.getMessage()));
         return (Throwable)ObjectMirage.make(throwableMirror);
+    }
+    
+    public static VirtualMachineHolograph getVM(Class<?> classLoaderLiteral) {
+	MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
+        return (VirtualMachineHolograph)callingLoader.getVM();
     }
 }

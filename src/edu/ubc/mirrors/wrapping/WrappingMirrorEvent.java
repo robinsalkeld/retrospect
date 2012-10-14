@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.wrapping;
 
 import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorEventRequest;
 
 public class WrappingMirrorEvent implements MirrorEvent {
 
@@ -11,5 +12,10 @@ public class WrappingMirrorEvent implements MirrorEvent {
 	super();
 	this.vm = vm;
 	this.wrapped = wrapped;
+    }
+
+    @Override
+    public MirrorEventRequest request() {
+	return (MirrorEventRequest)wrapped.request().getProperty(WrappingMirrorEventRequest.WRAPPER);
     }
 }

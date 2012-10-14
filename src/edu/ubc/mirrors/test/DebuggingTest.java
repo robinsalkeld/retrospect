@@ -31,10 +31,10 @@ import edu.ubc.retrospect.RetroactiveWeaver;
 public class DebuggingTest {
 
     public static void main(String[] args) throws Exception {
-//        VirtualMachine jdiVM = JDIVirtualMachineMirror.commandLineLaunch(
-//        	"tracing.ExampleMain", 
-//        	"-cp '/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin'");
-        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
+        VirtualMachine jdiVM = JDIVirtualMachineMirror.commandLineLaunch(
+        	"tracing.ExampleMain", 
+        	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"");
+//        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ThreadStartRequest r = jdiVM.eventRequestManager().createThreadStartRequest();
         r.enable();
         jdiVM.resume();

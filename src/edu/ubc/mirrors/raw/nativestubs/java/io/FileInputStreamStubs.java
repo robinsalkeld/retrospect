@@ -59,4 +59,9 @@ public class FileInputStreamStubs {
         }
         return result;
     }
+    
+    public static int available(Class<?> classLoaderLiteral, Mirage fis) throws IllegalAccessException, NoSuchFieldException, IOException {
+	FileInputStream hostFIS = getHostFIS(classLoaderLiteral, fis);
+        return hostFIS.available();
+    }
 }

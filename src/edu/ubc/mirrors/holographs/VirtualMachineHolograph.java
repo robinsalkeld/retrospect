@@ -7,8 +7,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.objectweb.asm.Type;
+
+import sun.misc.FileURLMapper;
+import sun.misc.Launcher;
 
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
@@ -29,6 +34,7 @@ import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
@@ -71,7 +77,15 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         this.mirageVM = new MirageVirtualMachine(this);
         this.mirageBootstrapLoader = new MirageClassLoader(this, null);
         this.mappedFiles = mappedFiles;
-        this.bootstrapBytecodeLoader = new URLClassLoader(bootstrapPath.toArray(new URL[bootstrapPath.size()]));
+        
+        // Ignore invalid paths as the VM would
+        List<URL> filteredURLs = new ArrayList<URL>();
+        for (URL url : bootstrapPath) {
+            if (new FileURLMapper(url).exists()) {
+        	filteredURLs.add(url);
+            }
+        }
+        this.bootstrapBytecodeLoader = new URLClassLoader(filteredURLs.toArray(new URL[filteredURLs.size()]));
         
         // Start a thread dedicated to debugging, so the debugger has something to
         // execute mirror interface methods on without messing up the rest of the VM.
@@ -83,6 +97,27 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         
     }
     
+    private List<URL> extractBootstrapPath(VirtualMachineMirror wrappedVM) {
+	try {
+	    ClassMirror launcherClass = wrappedVM.findBootstrapClassMirror(Launcher.class.getName());
+	    InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.getStaticField("bootClassPath").get();
+	    char pathSeparator = wrappedVM.findBootstrapClassMirror(File.class.getName()).getStaticField("pathSeparator").getChar();
+	    String bootClassPath = Reflection.getRealStringForMirror(bootClassPathMirror);
+	    String[] paths = bootClassPath.split("" + pathSeparator);
+	    List<URL> urls = new ArrayList<URL>();
+	    for (int i = 0; i < paths.length; i++) {
+	        urls.add(new URL(paths[i]));
+	    }
+	    return urls;
+	} catch (MalformedURLException e) {
+	    throw new RuntimeException(e);
+	} catch (IllegalAccessException e) {
+	    throw new RuntimeException(e);
+	} catch (NoSuchFieldException e) {
+	    throw new RuntimeException(e);
+	}
+    }
+
     private void collectZipFiles() {
         for (ClassMirror zipFileClass : findAllClasses(ZipFile.class.getName(), true)) {
             for (InstanceMirror zipFileMirror : zipFileClass.getInstances()) {
@@ -346,5 +381,12 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(newClass);
         dynamicallyDefinedClasses.put(name, newClassHolograph);
         return newClassHolograph;
+    }
+    
+    @Override
+    public MethodMirror wrapMethod(MethodMirror method) {
+	MethodMirror wrappedMethod = super.wrapMethod(method);
+	ClassHolograph klass = (ClassHolograph)wrappedMethod.getDeclaringClass();
+        return new MethodHolograph(klass, wrappedMethod);
     }
 }

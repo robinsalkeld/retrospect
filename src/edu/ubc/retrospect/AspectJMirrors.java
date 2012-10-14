@@ -50,7 +50,6 @@ import abc.aspectj.ast.ModifierPattern;
 import abc.aspectj.ast.NamePattern;
 import abc.aspectj.ast.PCName;
 import abc.aspectj.ast.PCName_c;
-import abc.aspectj.ast.Pointcut;
 import abc.aspectj.ast.SimpleNamePattern;
 import abc.aspectj.ast.TPEArray;
 import abc.aspectj.ast.TPEBinary;
@@ -74,6 +73,7 @@ import abc.weaving.aspectinfo.Execution;
 import abc.weaving.aspectinfo.MethodCall;
 import abc.weaving.aspectinfo.NotPointcut;
 import abc.weaving.aspectinfo.OrPointcut;
+import abc.weaving.aspectinfo.Pointcut;
 import abc.weaving.aspectinfo.Within;
 import abc.weaving.aspectinfo.WithinConstructor;
 import abc.weaving.aspectinfo.WithinMethod;
@@ -85,6 +85,8 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorEventRequest;
+import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorEventSet;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -199,7 +201,7 @@ public class AspectJMirrors {
 	    }
 	}
 
-	public abc.weaving.aspectinfo.Pointcut getAIPointcut() {
+	public Pointcut getAIPointcut() {
 	    return aiPC;
 	}
 
@@ -247,9 +249,10 @@ public class AspectJMirrors {
 		ObjectMirror method = methods.get(i);
 		AdviceMirror advice = getAdviceForMethod(method);
 		if (advice != null) {
-		    adviceDecls.add(advice);
 		    if (advice.kind == AdviceKind.POINTCUT) {
 			pointcutDecls.put(advice.name, advice);
+		    } else {
+			adviceDecls.add(advice);
 		    }
 		}
 	    }
@@ -259,18 +262,101 @@ public class AspectJMirrors {
 	    return Collections.unmodifiableList(adviceDecls);
 	}
 
+	public void installRequests() {
+	    MirrorEventRequestManager manager = vm.eventRequestManager();
+	    for (AdviceMirror advice : adviceDecls) {
+		Pointcut pc = advice.getAIPointcut();
+		Pointcut dnf = pc.dnf().makePointcut(pc.getPosition());
+		List<List<Pointcut>> actualDNF = disjuncts(dnf);
+		
+		for (List<Pointcut> disjunct : actualDNF) {
+		    System.out.println("Disjunct: " + disjunct);
+		    MirrorEventRequest request;
+		    Pointcut kindingPC = extractKindingPC(disjunct);
+		    if (kindingPC instanceof Execution) {
+			if (advice.getKind() == AdviceKind.BEFORE) {
+			    request = manager.createMethodMirrorEntryRequest();
+			} else {
+			    request = manager.createMethodMirrorExitRequest();
+			}
+		    } else {
+			throw new IllegalStateException("Unsupported kinding pointcut: " + kindingPC);
+		    }
+		    
+		    for (Pointcut otherPC : disjunct) {
+			if (otherPC instanceof Within) {
+			    Within within = (Within)otherPC;
+			    // TODO-RS: toString() is likely wrong here. Need to decide on 
+			    // what pattern DSL the mirrors API should accept.
+			    request.addClassFilter(within.getPattern().toString());
+			}
+		    }
+		    
+		    request.enable();
+		}
+	    }
+	}
+	
+	private Pointcut extractKindingPC(List<Pointcut> disjunct) {
+	    // TODO-RS: Assuming there is only one here.
+	    // If there's more than one, we'll install an arbitrary request
+	    // and then (most likely) ignore all the events it generates.
+	    Pointcut result = null;
+	    for (Pointcut pc : disjunct) {
+		if (pc instanceof Execution || pc instanceof MethodCall) {
+		    result = pc;
+		    disjunct.remove(pc);
+		    break;
+		}
+	    }
+	    return result;
+	}
+
+	// Collect DNF assuming the argument is already a DNF pointcut
+	private List<List<Pointcut>> disjuncts(Pointcut pc) {
+	    if (pc instanceof OrPointcut) {
+		OrPointcut or = (OrPointcut)pc;
+		List<List<Pointcut>> result = new ArrayList<List<Pointcut>>();
+		result.addAll(disjuncts(or.getLeftPointcut()));
+		result.addAll(disjuncts(or.getRightPointcut()));
+		return result;
+	    } else {
+		List<List<Pointcut>> result = new ArrayList<List<Pointcut>>(1);
+		result.add(conjuncts(pc));
+		return result;
+	    }
+	}
+
+	private List<Pointcut> conjuncts(Pointcut pc) {
+	    if (pc instanceof AndPointcut) {
+		AndPointcut or = (AndPointcut)pc;
+		List<Pointcut> result = new ArrayList<Pointcut>();
+		result.addAll(conjuncts(or.getLeftPointcut()));
+		result.addAll(conjuncts(or.getRightPointcut()));
+		return result;
+	    } else {
+		List<Pointcut> result = new ArrayList<Pointcut>(1);
+		result.add(pc);
+		return result;
+	    }
+	}
+
 	public void executeAdvice(MirrorEventSet eventSet) {
-	    for (MirrorEvent event : eventSet) {
-		for (AdviceMirror advice : adviceDecls) {
+	    for (AdviceMirror advice : adviceDecls) {
+		// Note the break below - each advice should only apply at most once to
+		// each joinpoint, even if there are multiple events at that joinpoint
+		// that match its pointcut
+		for (MirrorEvent event : eventSet) {
 		    if (adviceMatchesEvent(advice.getKind(), advice.getAIPointcut(), event)) {
 			InstanceMirror staticJoinPoint = makeStaticJoinPoint(event);
 			InstanceMirror aspectInstance = getInstance();
 			try {
 			    advice.methodMirror.invoke(thread, aspectInstance, staticJoinPoint);
+			    break;
 			} catch (IllegalAccessException e) {
 			    throw new RuntimeException(e);
 			} catch (InvocationTargetException e) {
-			    // TODO-RS: Think about excepions in general. Advice throwing exceptions
+			    // TODO-RS: Think about exceptions in general. Advice throwing exceptions
 			    // would perturb the original execution so they need to be handled specially.
 			    throw new RuntimeException(e);
 			}
@@ -328,7 +414,7 @@ public class AspectJMirrors {
 		vm.findBootstrapClassMirror(Class.class.getName()));
     }
     
-    public Pointcut parsePointcut(Map<String, String> locals, String expr) {
+    public abc.aspectj.ast.Pointcut parsePointcut(Map<String, String> locals, String expr) {
         Reader reader = new StringReader(expr);
         
         Lexer_c lexer = new Lexer_c(reader, "<runtime expression>", eq);
@@ -345,7 +431,7 @@ public class AspectJMirrors {
         // No point since we can't reuse it.
         // lexer.returnToPrevState();
         
-        Pointcut pc = (Pointcut)result.value;
+        abc.aspectj.ast.Pointcut pc = (abc.aspectj.ast.Pointcut)result.value;
         
         new InitClasses(ExtensionInfo.INIT_CLASSES, ext, ts).run();
         
@@ -354,7 +440,7 @@ public class AspectJMirrors {
         for (Map.Entry<String, String> entry : locals.entrySet()) {
             v.context().addVariable(ts.localInstance(null,Flags.FINAL,null,entry.getKey()));
         }
-	pc = (Pointcut)pc.visit(v);
+	pc = (abc.aspectj.ast.Pointcut)pc.visit(v);
 	v.finish();
         return pc;
     }
@@ -393,10 +479,13 @@ public class AspectJMirrors {
 	PCResolver v = new PCResolver();
 	for (AspectMirror aspect : aspects.values()) {
 	    v.aspect = aspect;
-	    for (AdviceMirror advice : aspect.adviceDecls) {
-		advice.astPC = (Pointcut)advice.getASTPointcut().visit(v);
+	    for (AdviceMirror advice : aspect.pointcutDecls.values()) {
+		advice.astPC = (abc.aspectj.ast.Pointcut)advice.getASTPointcut().visit(v);
 		advice.aiPC = advice.astPC.makeAIPointcut();
-		System.out.println(new StringPrettyPrinter(Integer.MAX_VALUE).toString(advice.getASTPointcut()));
+	    }
+	    for (AdviceMirror advice : aspect.adviceDecls) {
+		advice.astPC = (abc.aspectj.ast.Pointcut)advice.getASTPointcut().visit(v);
+		advice.aiPC = advice.astPC.makeAIPointcut();
 	    }
 	}
     }

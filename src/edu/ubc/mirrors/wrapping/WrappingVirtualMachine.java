@@ -16,6 +16,7 @@ import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectArrayMirror;
@@ -208,5 +209,9 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     @Override
     public void resume() {
 	wrappedVM.resume(); 
+    }
+
+    public MethodMirror wrapMethod(MethodMirror method) {
+	return new WrappingMethodMirror(this, method);
     }
 }

@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +17,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.objectweb.asm.Type;
+
+import sun.nio.cs.ThreadLocalCoders;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -41,6 +42,7 @@ import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
 import edu.ubc.mirrors.raw.NativeConstructorMirror;
+import edu.ubc.mirrors.test.Breakpoint;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
 public class ClassHolograph extends WrappingClassMirror {
@@ -148,13 +150,11 @@ public class ClassHolograph extends WrappingClassMirror {
     }
         
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-        MethodMirror original;
         try {
-            original = super.getMethod(name, paramTypes);
+            return super.getMethod(name, paramTypes);
         } catch (UnsupportedOperationException e) {
-            original = getBytecodeMirror().getMethod(name, paramTypes);
+            return getBytecodeMirror().getMethod(name, paramTypes);
         }
-        return new MirageMethod(original);
     }
     
     @Override
@@ -218,132 +218,7 @@ public class ClassHolograph extends WrappingClassMirror {
         return getMirageClass(this, impl);
     }
     
-    private class MirageMethod implements MethodMirror {
-
-        private MethodMirror wrapped;
-        private Method mirageClassMethod;
-        private boolean accessible = false;
-        
-        public MirageMethod(MethodMirror wrapped) {
-            this.wrapped = wrapped;
-        }
-
-        private void resolveMethod() {
-            List<ClassMirror> paramTypes = getParameterTypes();
-            Class<?>[] mirageParamTypes = new Class<?>[paramTypes.size()];
-            for (int i = 0; i < mirageParamTypes.length; i++) {
-                mirageParamTypes[i] = getMirageClass(paramTypes.get(i), false);
-            }
-            Class<?> mirageClass = getMirageClass(true);
-            // Account for the fact that ObjectMirage is not actually the top of the type lattice
-            if (getClassName().equals(Object.class.getName())) {
-                mirageClass = Object.class;
-            }
-            try {
-                mirageClassMethod = mirageClass.getDeclaredMethod(getName(), mirageParamTypes);
-            } catch (NoSuchMethodException e) {
-                throw new NoSuchMethodError(getName());
-            }
-            mirageClassMethod.setAccessible(accessible);
-        }
-        
-        @Override
-        public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalAccessException, InvocationTargetException {
-            if (thread == null) {
-                throw new NullPointerException();
-            }
-            
-            ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
-            threadHolograph.enterHologramExecution();
-            try {
-                resolveMethod();
-                
-                Object[] mirageArgs = new Object[args.length];
-                for (int i = 0; i < args.length; i++) {
-                    mirageArgs[i] = makeMirage(args[i]);
-                }
-                Object mirageObj = makeMirage(obj);
-                Object result = mirageClassMethod.invoke(mirageObj, mirageArgs);
-                // Account for the fact that toString() has to return a real String here
-                if (result instanceof String) {
-                    return Reflection.makeString(vm, (String)result);
-                } else {
-                    return unwrapMirage(result);
-                }
-            } catch (InvocationTargetException e) {
-                cleanStackTrace(e);
-                throw e;
-            } finally {
-                threadHolograph.enterHologramExecution();
-            }
-        }
-        
-        @Override
-        public void setAccessible(boolean flag) {
-            if (mirageClassMethod != null) {
-                mirageClassMethod.setAccessible(flag);
-            } else {
-                accessible = flag;
-            }
-        }
-        
-        @Override
-        public List<ClassMirror> getParameterTypes() {
-            return wrapped.getParameterTypes();
-        }
-        
-        @Override
-        public ClassMirror getReturnType() {
-            return wrapped.getReturnType();
-        }
-
-        @Override
-        public String getName() {
-            return wrapped.getName();
-        }
-
-        @Override
-        public byte[] getRawAnnotations() {
-            return wrapped.getRawAnnotations();
-        }
-
-        @Override
-        public byte[] getRawParameterAnnotations() {
-            return wrapped.getRawParameterAnnotations();
-        }
-
-        @Override
-        public byte[] getRawAnnotationDefault() {
-            return wrapped.getRawAnnotationDefault();
-        }
-        
-        @Override
-        public ClassMirror getDeclaringClass() {
-            return wrapped.getDeclaringClass();
-        }
-
-        @Override
-        public int getSlot() {
-            return wrapped.getSlot();
-        }
-
-        @Override
-        public int getModifiers() {
-            return wrapped.getModifiers();
-        }
-
-        @Override
-        public List<ClassMirror> getExceptionTypes() {
-            return wrapped.getExceptionTypes();
-        }
-
-        @Override
-        public String getSignature() {
-            return wrapped.getSignature();
-        }
-    }
-    
-    private static void cleanStackTrace(Throwable t) {
+    public static void cleanStackTrace(Throwable t) {
         StackTraceElement[] stackTrace = t.getStackTrace();
         for (int i = 0; i < stackTrace.length; i++) {
             stackTrace[i] = new StackTraceElement(
@@ -446,7 +321,7 @@ public class ClassHolograph extends WrappingClassMirror {
         }
     }
     
-    private ClassMirror getBytecodeMirror() {
+    ClassMirror getBytecodeMirror() {
         if (bytecodeMirror == null) {
             if (wrapped instanceof DefinedClassMirror) {
                 throw new IllegalStateException();
@@ -495,7 +370,7 @@ public class ClassHolograph extends WrappingClassMirror {
 
     @Override
     public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
-        try {
+	try {
             return super.getDeclaredMethods(publicOnly);
         } catch (UnsupportedOperationException e) {
             return getBytecodeMirror().getDeclaredMethods(publicOnly);
@@ -654,6 +529,10 @@ public class ClassHolograph extends WrappingClassMirror {
         // Force initialization just as the VM would, in case there is
         // a <clinit> method that needs to be run.
         MirageClassLoader.initializeClassMirror(this);
+        if (getClassName().equals(ThreadLocalCoders.class.getName())) {
+            Breakpoint.bp();
+        }
+        
         
         return super.getStaticField(name);
     }

@@ -4,7 +4,7 @@ import com.sun.jdi.request.EventRequest;
 
 import edu.ubc.mirrors.MirrorEventRequest;
 
-public class JDIEventRequest extends JDIMirror implements MirrorEventRequest {
+public abstract class JDIEventRequest extends JDIMirror implements MirrorEventRequest {
     protected final EventRequest wrapped;
     
     protected static final String MIRROR_WRAPPER = "edu.ubc.mirrors.jdi.mirrorWrapper";
@@ -29,5 +29,16 @@ public class JDIEventRequest extends JDIMirror implements MirrorEventRequest {
     public void setEnabled(boolean enabled) {
 	wrapped.setEnabled(enabled);
     }
+
+    @Override
+    public Object getProperty(Object key) {
+	return wrapped.getProperty(key);
+    }
+
+    @Override
+    public void putProperty(Object key, Object value) {
+	wrapped.putProperty(key, value);
+    }
+
     
 }

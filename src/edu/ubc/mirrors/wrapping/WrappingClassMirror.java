@@ -121,7 +121,7 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
         for (int i = 0; i < paramTypes.length; i++) {
             unwrappedParamTypes[i] = (ClassMirror)vm.unwrapMirror(paramTypes[i]);
         }
-        return new WrappingMethodMirror(vm, wrapped.getMethod(name, unwrappedParamTypes));
+        return vm.wrapMethod(wrapped.getMethod(name, unwrappedParamTypes));
     }
     
     @Override
@@ -149,7 +149,7 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
         List<MethodMirror> originals = wrapped.getDeclaredMethods(publicOnly);
         List<MethodMirror> result = new ArrayList<MethodMirror>(originals.size());
         for (MethodMirror original : originals) {
-            result.add(new WrappingMethodMirror(vm, original));
+            result.add(vm.wrapMethod(original));
         }
         return result;
     }

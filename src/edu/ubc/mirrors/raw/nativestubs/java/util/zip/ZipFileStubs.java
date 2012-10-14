@@ -11,6 +11,7 @@ import java.util.zip.ZipFile;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -23,65 +24,27 @@ import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 public class ZipFileStubs {
 
-    private static final Method openMethod;
-    private static final Method getTotalMethod;
-    private static final Method readMethod;
-    private static final Method getEntryMethod;
-    private static final Method getEntryTimeMethod;
-    private static final Method getEntryCrcMethod;
-    private static final Method getEntryCSizeMethod;
-    private static final Method getEntrySizeMethod;
-    private static final Method getEntryMethodMethod;
-    private static final Method getEntryFlagMethod;
-    private static final Method getCommentBytesMethod;
-    private static final Method getEntryBytesMethod;
-    private static final Method freeEntryMethod;
+//    private static final Map<org.objectweb.asm.commons.Method, Method> hostNativeMethods = 
+//	         new HashMap<org.objectweb.asm.commons.Method, Method>();
+    
+    public static Method getHostNativeMethod(Class<?> klass, String name, Class<?> ... paramTypes) {
+	// TODO-RS: Caching!!!
+	try {
+	    Method result = klass.getDeclaredMethod(name, paramTypes);
+	    result.setAccessible(true);
+	    return result;
+	} catch (SecurityException e) {
+	    throw new RuntimeException(e);
+	} catch (NoSuchMethodException e) {
+	    throw new RuntimeException(e);
+	}
+    }
+    
     private static final Field jzfileField;
     static {
         try {
-            openMethod = ZipFile.class.getDeclaredMethod("open", String.class, Integer.TYPE, Long.TYPE, Boolean.TYPE);
-            openMethod.setAccessible(true);
-            
-            getTotalMethod = ZipFile.class.getDeclaredMethod("getTotal", Long.TYPE);
-            getTotalMethod.setAccessible(true);
-            
-            readMethod = ZipFile.class.getDeclaredMethod("read", Long.TYPE, Long.TYPE, Long.TYPE, byte[].class, Integer.TYPE, Integer.TYPE);
-            readMethod.setAccessible(true);
-            
-            getEntryMethod = ZipFile.class.getDeclaredMethod("getEntry", Long.TYPE, byte[].class, Boolean.TYPE);
-            getEntryMethod.setAccessible(true);
-            
-            getEntryTimeMethod = ZipFile.class.getDeclaredMethod("getEntryTime", Long.TYPE);
-            getEntryTimeMethod.setAccessible(true);
-            
-            getEntryCrcMethod = ZipFile.class.getDeclaredMethod("getEntryCrc", Long.TYPE);
-            getEntryCrcMethod.setAccessible(true);
-            
-            getEntryCSizeMethod = ZipFile.class.getDeclaredMethod("getEntryCSize", Long.TYPE);
-            getEntryCSizeMethod.setAccessible(true);
-            
-            getEntrySizeMethod = ZipFile.class.getDeclaredMethod("getEntrySize", Long.TYPE);
-            getEntrySizeMethod.setAccessible(true);
-            
-            getEntryMethodMethod = ZipFile.class.getDeclaredMethod("getEntryMethod", Long.TYPE);
-            getEntryMethodMethod.setAccessible(true);
-            
-            getEntryFlagMethod = ZipFile.class.getDeclaredMethod("getEntryFlag", Long.TYPE);
-            getEntryFlagMethod.setAccessible(true);
-            
-            getCommentBytesMethod = ZipFile.class.getDeclaredMethod("getCommentBytes", Long.TYPE);
-            getCommentBytesMethod.setAccessible(true);
-            
-            getEntryBytesMethod = ZipFile.class.getDeclaredMethod("getEntryBytes", Long.TYPE, Integer.TYPE);
-            getEntryBytesMethod.setAccessible(true);
-            
-            freeEntryMethod = ZipFile.class.getDeclaredMethod("freeEntry", Long.TYPE, Long.TYPE);
-            freeEntryMethod.setAccessible(true);
-            
             jzfileField = ZipFile.class.getDeclaredField("jzfile");
             jzfileField.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
@@ -91,7 +54,7 @@ public class ZipFileStubs {
         ZipFile hostZipFile = getZipFileForAddress(classLoaderLiteral, jzfile);
         long hostJzfile = getJzfile(hostZipFile);
         
-        return (Integer)getTotalMethod.invoke(null, hostJzfile);
+        return (Integer)getHostNativeMethod(ZipFile.class, "getTotal", Long.TYPE).invoke(null, hostJzfile);
     }
     
     public static int read(Class<?> classLoaderLiteral, long jzfile, long jzentry, long pos, Mirage b, int off, int len) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
@@ -103,7 +66,7 @@ public class ZipFileStubs {
         NativeByteArrayMirror nativeBMirror = (NativeByteArrayMirror)Reflection.copyArray(NativeVirtualMachineMirror.INSTANCE, bMirror);
         byte[] nativeB = (byte[])nativeBMirror.getNativeObject();
         
-        int result = (Integer)readMethod.invoke(null, hostJzfile, jzentry, pos, nativeB, off, len);
+        int result = (Integer)getHostNativeMethod(ZipFile.class, "read", Long.TYPE, Long.TYPE, Long.TYPE, byte[].class, Integer.TYPE, Integer.TYPE).invoke(null, hostJzfile, jzentry, pos, nativeB, off, len);
         
         SystemStubs.arraycopyMirrors(nativeBMirror, 0, bMirror, 0, bMirror.length());
         
@@ -157,11 +120,16 @@ public class ZipFileStubs {
         ZipFile hostZipFile = getZipFileForAddress(classLoaderLiteral, jzfile);
         long hostJzfile = getJzfile(hostZipFile);
         
-        ByteArrayMirror nameMirror = (ByteArrayMirror)name.getMirror();
-        NativeByteArrayMirror nativeNameMirror = (NativeByteArrayMirror)Reflection.copyArray(NativeVirtualMachineMirror.INSTANCE, nameMirror);
-        byte[] nativeName = (byte[])nativeNameMirror.getNativeObject();
-                
-        long hostJzentry = (Long)getEntryMethod.invoke(null, hostJzfile, nativeName, addSlash);
+        ObjectMirror mirror = name.getMirror();
+        Object nativeName;
+        if (mirror instanceof ByteArrayMirror) {
+            ByteArrayMirror nameMirror = (ByteArrayMirror)mirror;
+            NativeByteArrayMirror nativeNameMirror = (NativeByteArrayMirror)Reflection.copyArray(NativeVirtualMachineMirror.INSTANCE, nameMirror);
+            nativeName = nativeNameMirror.getNativeObject();
+        } else {
+            nativeName = Reflection.getRealStringForMirror((InstanceMirror)mirror);
+        }
+        long hostJzentry = (Long)getHostNativeMethod(ZipFile.class, "getEntry", Long.TYPE, nativeName.getClass(), Boolean.TYPE).invoke(null, hostJzfile, nativeName, addSlash);
         return hostJzentry;
     }
     
@@ -170,7 +138,7 @@ public class ZipFileStubs {
         long hostJzfile = getJzfile(hostZipFile);
         checkEntry(jzentry);
         
-        freeEntryMethod.invoke(null, hostJzfile, jzentry);
+        getHostNativeMethod(ZipFile.class, "freeEntry", Long.TYPE, Long.TYPE).invoke(null, hostJzfile, jzentry);
     }
 
     
@@ -180,39 +148,39 @@ public class ZipFileStubs {
     
     public static long getEntryTime(Class<?> classLoaderLiteral, long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
-        return (Long)getEntryTimeMethod.invoke(null, jzentry);
+        return (Long)getHostNativeMethod(ZipFile.class, "getEntryTime", Long.TYPE).invoke(null, jzentry);
     }
     
     public static long getEntryCrc(Class<?> classLoaderLiteral, long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
-        return (Long)getEntryCrcMethod.invoke(null, jzentry);
+        return (Long)getHostNativeMethod(ZipFile.class, "getEntryCrc", Long.TYPE).invoke(null, jzentry);
     }
     
     public static long getEntryCSize(Class<?> classLoaderLiteral, long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
-        return (Long)getEntryCSizeMethod.invoke(null, jzentry);
+        return (Long)getHostNativeMethod(ZipFile.class, "getEntryCSize", Long.TYPE).invoke(null, jzentry);
     }
     
     public static long getEntrySize(Class<?> classLoaderLiteral, long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
-        return (Long)getEntrySizeMethod.invoke(null, jzentry);
+        return (Long)getHostNativeMethod(ZipFile.class, "getEntrySize", Long.TYPE).invoke(null, jzentry);
     }
     
     public static int getEntryMethod(Class<?> classLoaderLiteral, long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
-        return (Integer)getEntryMethodMethod.invoke(null, jzentry);
+        return (Integer)getHostNativeMethod(ZipFile.class, "getEntryMethod", Long.TYPE).invoke(null, jzentry);
     }
     
     public static int getEntryFlag(Class<?> classLoaderLiteral, long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
-        return (Integer)getEntryFlagMethod.invoke(null, jzentry);
+        return (Integer)getHostNativeMethod(ZipFile.class, "getEntryFlag", Long.TYPE).invoke(null, jzentry);
     }
     
     public static Mirage getCommentBytes(Class<?> classLoaderLiteral, long jzfile) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         ZipFile hostZipFile = getZipFileForAddress(classLoaderLiteral, jzfile);
         long hostJzfile = getJzfile(hostZipFile);
         
-        byte[] result = (byte[])getCommentBytesMethod.invoke(null, hostJzfile);
+        byte[] result = (byte[])getHostNativeMethod(ZipFile.class, "getCommentBytes", Long.TYPE).invoke(null, hostJzfile);
         
         MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
@@ -223,7 +191,7 @@ public class ZipFileStubs {
     public static Mirage getEntryBytes(Class<?> classLoaderLiteral, long jzentry, int type) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
         
-        byte[] result = (byte[])getEntryBytesMethod.invoke(null, jzentry, type);
+        byte[] result = (byte[])getHostNativeMethod(ZipFile.class, "getEntryBytes", Long.TYPE, Integer.TYPE).invoke(null, jzentry, type);
         
         MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
