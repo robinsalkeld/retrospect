@@ -8,19 +8,30 @@ import java.util.List;
 import java.util.Map;
 
 import com.sun.jdi.ArrayReference;
+import com.sun.jdi.BooleanValue;
 import com.sun.jdi.Bootstrap;
+import com.sun.jdi.ByteValue;
+import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.DoubleValue;
+import com.sun.jdi.FloatValue;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
+import com.sun.jdi.LongValue;
 import com.sun.jdi.Method;
 import com.sun.jdi.Mirror;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ShortValue;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
+import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.connect.Connector;
@@ -125,9 +136,31 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
         List<ClassMirror> classes = new ArrayList<ClassMirror>();
         for (ReferenceType t : jdiVM.classesByName(name)) {
-            classes.add(((ClassMirror)makeMirror(t.classObject())));
+            if (includeSubclasses) {
+        	collectSubclasses(t, classes);
+            } else {
+        	classes.add(((ClassMirror)makeMirror(t.classObject())));
+            }
         }
         return classes;
+    }
+
+    private void collectSubclasses(ReferenceType t, List<ClassMirror> classes) {
+	classes.add(((ClassMirror)makeMirror(t.classObject())));
+	if (t instanceof ClassType) {
+	    ClassType classType = (ClassType)t;
+	    for (ReferenceType subclass : classType.subclasses()) {
+		collectSubclasses(subclass, classes);
+	    }
+	} else if (t instanceof InterfaceType) {
+	    InterfaceType interfaceType = (InterfaceType)t;
+	    for (ReferenceType implementor : interfaceType.implementors()) {
+		collectSubclasses(implementor, classes);
+	    }
+	    for (ReferenceType extender : interfaceType.subinterfaces()) {
+		collectSubclasses(extender, classes);
+	    }
+	}
     }
 
     @Override
@@ -227,6 +260,15 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
+	String name = elementClass.getClassName();
+	for (int d = 0; d < dimensions; d++) {
+	    name += "[]";
+	}
+	ClassMirror result = findBootstrapClassMirror(name);
+	if (result != null) {
+	    return result;
+	}
+	
         return new ArrayClassMirror(dimensions, elementClass);
     }
 
@@ -248,5 +290,27 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public void resume() {
 	jdiVM.resume();
+    }
+
+    public Object wrapValue(Value value) {
+	if (value instanceof BooleanValue) {
+	    return ((BooleanValue)value).booleanValue();
+	} else if (value instanceof ByteValue) {
+	    return ((ByteValue)value).byteValue();
+	} else if (value instanceof CharValue) {
+	    return ((CharValue)value).charValue();
+	} else if (value instanceof ShortValue) {
+	    return ((ShortValue)value).shortValue();
+	} else if (value instanceof IntegerValue) {
+	    return ((IntegerValue)value).intValue();
+	} else if (value instanceof LongValue) {
+	    return ((LongValue)value).longValue();
+	} else if (value instanceof FloatValue) {
+	    return ((FloatValue)value).floatValue();
+	} else if (value instanceof DoubleValue) {
+	    return ((FloatValue)value).doubleValue();
+	} else {
+	    return makeMirror((ObjectReference)value);
+	}
     }
 }

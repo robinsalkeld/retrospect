@@ -16,4 +16,16 @@ public interface MirrorEventRequestManager {
     
     void deleteMethodMirrorExitRequest(MethodMirrorExitRequest request);
     
+    FieldMirrorSetRequest createFieldMirrorSetRequest(ClassMirror klass, String fieldName);
+    
+    List<FieldMirrorSetRequest> fieldMirrorSetRequests();
+    
+    void deleteFieldMirrorSetRequest(FieldMirrorSetRequest request);
+    
+    ClassMirrorPrepareRequest createClassMirrorPrepareRequest();
+    
+    List<ClassMirrorPrepareRequest> classMirrorPrepareRequests();
+    
+    void deleteClassMirrorPrepareRequest(ClassMirrorPrepareRequest request);
+    
 }

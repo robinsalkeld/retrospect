@@ -2,6 +2,9 @@ package edu.ubc.mirrors.wrapping;
 
 import java.util.List;
 
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorPrepareRequest;
+import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
@@ -46,4 +49,34 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
 	throw new UnsupportedOperationException();
     }
 
+    @Override
+    public FieldMirrorSetRequest createFieldMirrorSetRequest(ClassMirror klass, String fieldName) {
+	ClassMirror unwrappedClass = vm.unwrapClassMirror(klass);
+	return new WrappingFieldMirrorSetRequest(vm, wrapped.createFieldMirrorSetRequest(unwrappedClass, fieldName));
+    }
+
+    @Override
+    public List<FieldMirrorSetRequest> fieldMirrorSetRequests() {
+	throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void deleteFieldMirrorSetRequest(FieldMirrorSetRequest request) {
+	throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ClassMirrorPrepareRequest createClassMirrorPrepareRequest() {
+	return new WrappingClassMirrorPrepareRequest(vm, wrapped.createClassMirrorPrepareRequest());
+    }
+
+    @Override
+    public List<ClassMirrorPrepareRequest> classMirrorPrepareRequests() {
+	throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void deleteClassMirrorPrepareRequest(ClassMirrorPrepareRequest request) {
+	throw new UnsupportedOperationException();
+    }
 }

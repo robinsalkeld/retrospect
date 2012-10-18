@@ -15,7 +15,8 @@ public class WrappingMirrorEventQueue implements MirrorEventQueue {
 
     @Override
     public MirrorEventSet remove() throws InterruptedException {
-	return new WrappingMirrorEventSet(vm, wrapped.remove());
+	MirrorEventSet eventSet = wrapped.remove();
+	return eventSet == null ? null : new WrappingMirrorEventSet(vm, eventSet);
     }
 
 }

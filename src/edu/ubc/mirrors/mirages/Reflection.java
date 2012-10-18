@@ -2,7 +2,10 @@ package edu.ubc.mirrors.mirages;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassName;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -503,5 +506,14 @@ public class Reflection {
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         }
+    }
+    
+    public static InstanceMirror newByteArrayPrintStream(VirtualMachineMirror vm) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, SecurityException, NoSuchMethodException {
+	ThreadMirror thread = vm.getThreads().get(0);
+	InstanceMirror baos = vm.findBootstrapClassMirror(ByteArrayOutputStream.class.getName())
+		.getConstructor().newInstance(thread);
+	return vm.findBootstrapClassMirror(PrintStream.class.getName())
+		.getConstructor(vm.findBootstrapClassMirror(OutputStream.class.getName())).newInstance(thread, baos);
+	      
     }
 }

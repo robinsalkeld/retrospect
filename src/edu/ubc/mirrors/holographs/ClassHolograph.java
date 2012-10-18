@@ -529,10 +529,6 @@ public class ClassHolograph extends WrappingClassMirror {
         // Force initialization just as the VM would, in case there is
         // a <clinit> method that needs to be run.
         MirageClassLoader.initializeClassMirror(this);
-        if (getClassName().equals(ThreadLocalCoders.class.getName())) {
-            Breakpoint.bp();
-        }
-        
         
         return super.getStaticField(name);
     }

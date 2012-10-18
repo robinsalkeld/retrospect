@@ -30,6 +30,9 @@ public class ArrayClassMirror implements ClassMirror {
     
     public ArrayClassMirror(int dims, ClassMirror elementClassMirror) {
         this.elementClassMirror = elementClassMirror;
+        if (dims < 0) {
+            throw new IllegalArgumentException();
+        }
         this.dims = dims;
         this.arrayType = makeArrayType(dims, Reflection.typeForClassMirror(elementClassMirror));
     }

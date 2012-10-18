@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -26,28 +25,12 @@ public class WrappingMethodMirror implements MethodMirror {
 
         Object[] unwrappedArgs = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
-            unwrappedArgs[i] = unwrappedValue(vm, args[i]);
+            unwrappedArgs[i] = vm.unwrappedValue(args[i]);
         }
         ObjectMirror unwrappedObj = vm.unwrapMirror(obj);
         ThreadMirror unwrappedThread = (ThreadMirror)vm.unwrapMirror(thread);
         Object result = wrapped.invoke(unwrappedThread, unwrappedObj, unwrappedArgs);
-        return getWrappedValue(vm, result);
-    }
-    
-    static Object getWrappedValue(WrappingVirtualMachine vm, Object value) {
-        if (value instanceof ObjectMirror) {
-            return vm.getWrappedMirror((ObjectMirror)value);
-        } else {
-            return value;
-        }
-    }
-    
-    static Object unwrappedValue(WrappingVirtualMachine vm, Object value) {
-        if (value instanceof ObjectMirror) {
-            return vm.unwrapMirror((ObjectMirror)value);
-        } else {
-            return value;
-        }
+        return vm.wrapValue(result);
     }
     
     @Override

@@ -83,7 +83,16 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public ClassMirror getComponentClassMirror() {
-        throw new UnsupportedOperationException();
+        if (refType instanceof ArrayType) {
+            try {
+		return vm.makeClassMirror(((ArrayType)refType).componentType());
+	    } catch (ClassNotLoadedException e) {
+		// This really shouldn't happen, should it?
+		throw new RuntimeException(e);
+	    }
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -165,6 +174,24 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 		return mirror;
 	    }
 	}
+	
+	ClassMirror superClassMirror = getSuperClassMirror();
+	if (superClassMirror != null) {    
+	    try {
+		return superClassMirror.getMethod(name, paramTypes);
+	    } catch (NoSuchMethodException e) {
+		// Fall through
+	    }
+	}
+	
+        for (ClassMirror interfaceMirror : getInterfaceMirrors()) {
+            try {
+                return interfaceMirror.getMethod(name, paramTypes);
+            } catch (NoSuchMethodException e) {
+                // Fall through
+            }
+        }
+	
 	throw new NoSuchMethodException(name);
     }
     

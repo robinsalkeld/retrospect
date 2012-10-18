@@ -9,7 +9,6 @@ public class WrappingMirrorEvent implements MirrorEvent {
     private final MirrorEvent wrapped;
     
     public WrappingMirrorEvent(WrappingVirtualMachine vm, MirrorEvent wrapped) {
-	super();
 	this.vm = vm;
 	this.wrapped = wrapped;
     }

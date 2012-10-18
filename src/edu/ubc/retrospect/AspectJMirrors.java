@@ -8,8 +8,10 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import java_cup.runtime.Symbol;
 
@@ -80,6 +82,7 @@ import abc.weaving.aspectinfo.WithinMethod;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
@@ -92,13 +95,14 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.StringStubs;
 
 public class AspectJMirrors {
 
-    private final VirtualMachineMirror vm;
+    private final VirtualMachineHolograph vm;
     private final ThreadMirror thread;
     private final ClassMirrorLoader loader;
     private final ConstructorMirror factoryConstructor;
@@ -264,13 +268,13 @@ public class AspectJMirrors {
 
 	public void installRequests() {
 	    MirrorEventRequestManager manager = vm.eventRequestManager();
+	    final Set<MirrorEvent> joinpointEvents = new HashSet<MirrorEvent>();
 	    for (AdviceMirror advice : adviceDecls) {
 		Pointcut pc = advice.getAIPointcut();
 		Pointcut dnf = pc.dnf().makePointcut(pc.getPosition());
 		List<List<Pointcut>> actualDNF = disjuncts(dnf);
 		
 		for (List<Pointcut> disjunct : actualDNF) {
-		    System.out.println("Disjunct: " + disjunct);
 		    MirrorEventRequest request;
 		    Pointcut kindingPC = extractKindingPC(disjunct);
 		    if (kindingPC instanceof Execution) {
@@ -284,6 +288,8 @@ public class AspectJMirrors {
 		    }
 		    
 		    for (Pointcut otherPC : disjunct) {
+			// TODO-RS: Should remove clauses that are completely expressed
+			// as request filters, to avoid redundant checking.
 			if (otherPC instanceof Within) {
 			    Within within = (Within)otherPC;
 			    // TODO-RS: toString() is likely wrong here. Need to decide on 
@@ -292,9 +298,22 @@ public class AspectJMirrors {
 			}
 		    }
 		    
+		    vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
+		        @Override
+		        public void handle(MirrorEvent event) {
+		            joinpointEvents.add(event);
+		        }
+		    });
 		    request.enable();
 		}
 	    }
+	    
+	    vm.dispatch().addSetCallback(new Runnable() {
+		@Override
+		public void run() {
+		    executeAdvice(joinpointEvents);
+		}
+	    });
 	}
 	
 	private Pointcut extractKindingPC(List<Pointcut> disjunct) {
@@ -341,7 +360,7 @@ public class AspectJMirrors {
 	    }
 	}
 
-	public void executeAdvice(MirrorEventSet eventSet) {
+	public void executeAdvice(Set<MirrorEvent> eventSet) {
 	    for (AdviceMirror advice : adviceDecls) {
 		// Note the break below - each advice should only apply at most once to
 		// each joinpoint, even if there are multiple events at that joinpoint
@@ -406,7 +425,7 @@ public class AspectJMirrors {
     
     public AspectJMirrors(ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException {
         this.loader = loader;
-	this.vm = loader.getClassMirror().getVM();
+	this.vm = (VirtualMachineHolograph)loader.getClassMirror().getVM();
 	this.thread = thread;
         ClassMirror factoryClass = Reflection.classMirrorForName(vm, thread, Factory.class.getName(), false, loader);
 	this.factoryConstructor = factoryClass.getConstructor(
@@ -802,7 +821,7 @@ public class AspectJMirrors {
 	    protected void methodCall() throws Throwable {
 		((Factory)null).makeMethodSig(0, null, null, null, null, null, null);
 	    }
-	}.invoke(factory, method.getName(), method.getModifiers(), method.getDeclaringClass(), 
+	}.invoke(factory, method.getModifiers(), Reflection.makeString(vm, method.getName()), method.getDeclaringClass(), 
 		parameterTypes, parameterNames, exceptionTypes, method.getReturnType());
     }
     

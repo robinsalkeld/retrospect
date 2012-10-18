@@ -1,11 +1,15 @@
 package edu.ubc.mirrors.jdi;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.sun.jdi.request.EventRequest;
 
 import edu.ubc.mirrors.MirrorEventRequest;
 
 public abstract class JDIEventRequest extends JDIMirror implements MirrorEventRequest {
     protected final EventRequest wrapped;
+    private final Map<Object, Object> properties = new HashMap<Object, Object>();
     
     protected static final String MIRROR_WRAPPER = "edu.ubc.mirrors.jdi.mirrorWrapper";
     
@@ -32,12 +36,12 @@ public abstract class JDIEventRequest extends JDIMirror implements MirrorEventRe
 
     @Override
     public Object getProperty(Object key) {
-	return wrapped.getProperty(key);
+	return properties.get(key);
     }
 
     @Override
     public void putProperty(Object key, Object value) {
-	wrapped.putProperty(key, value);
+	properties.put(key, value);
     }
 
     

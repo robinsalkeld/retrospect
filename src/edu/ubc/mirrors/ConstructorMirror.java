@@ -17,9 +17,9 @@ public interface ConstructorMirror {
     
     public String getSignature();
     
-    public byte[] getAnnotations();
+    public byte[] getRawAnnotations();
     
-    public byte[] getParameterAnnotations();
+    public byte[] getRawParameterAnnotations();
     
     // TODO-RS: Should we have a different InvocationTargetException that has a mirror as a cause instead?
     public InstanceMirror newInstance(ThreadMirror thread, Object ... args)

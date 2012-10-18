@@ -5,10 +5,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.MethodEntryEvent;
-import com.sun.jdi.request.MethodEntryRequest;
+import com.sun.jdi.event.ModificationWatchpointEvent;
+import com.sun.jdi.request.ClassPrepareRequest;
 
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventSet;
@@ -36,15 +38,25 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
     private MirrorEvent wrapEvent(Event e) {
 	if (e instanceof MethodEntryEvent) {
 	    MethodEntryEvent mee = (MethodEntryEvent)e;
-	    JDIMethodMirrorEntryEvent result = new JDIMethodMirrorEntryEvent(vm, mee);
-	    // Apply the method filter if present, since it's not supported directly
-	    JDIMethodMirrorEntryRequest request = (JDIMethodMirrorEntryRequest)mee.request().getProperty(JDIEventRequest.MIRROR_WRAPPER);
-	    if (request.methodFilter != null) {
-		if (!request.methodFilter.equals(result.method())) {
-		    return null;
+	    if (!mee.method().name().startsWith("<")) {
+		JDIMethodMirrorEntryEvent result = new JDIMethodMirrorEntryEvent(vm, mee);
+		// Apply the method filter if present, since it's not supported directly
+		JDIMethodMirrorEntryRequest request = (JDIMethodMirrorEntryRequest)mee.request().getProperty(JDIEventRequest.MIRROR_WRAPPER);
+		if (request.methodFilter != null) {
+		    if (!request.methodFilter.equals(result.method())) {
+			return null;
+		    }
 		}
+		return result;
+	    } else {
+		return null;
 	    }
-	    return result;
+	} else if (e instanceof ModificationWatchpointEvent) {
+	    ModificationWatchpointEvent mwe = (ModificationWatchpointEvent)e;
+	    return new JDIFieldMirrorSetEvent(vm, mwe);
+	} else if (e instanceof ClassPrepareEvent) {
+	    ClassPrepareEvent cpe = (ClassPrepareEvent)e;
+	    return new JDIClassMirrorPrepareEvent(vm, cpe);
 	} else {
 	    return null;
 	}

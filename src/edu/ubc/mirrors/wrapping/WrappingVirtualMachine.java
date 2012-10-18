@@ -214,4 +214,22 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     public MethodMirror wrapMethod(MethodMirror method) {
 	return new WrappingMethodMirror(this, method);
     }
+
+    public Object wrapValue(Object value) {
+        if (value instanceof ObjectMirror) {
+            return getWrappedMirror((ObjectMirror)value);
+        } else {
+            return value;
+        }
+    }
+    
+    public Object unwrappedValue(Object value) {
+        if (value instanceof ObjectMirror) {
+            return unwrapMirror((ObjectMirror)value);
+        } else {
+            return value;
+        }
+    }
+    
+    
 }

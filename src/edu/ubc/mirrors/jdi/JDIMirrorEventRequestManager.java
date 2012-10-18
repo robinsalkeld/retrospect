@@ -3,11 +3,16 @@ package edu.ubc.mirrors.jdi;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.jdi.Field;
+import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
+import com.sun.jdi.request.ModificationWatchpointRequest;
 
-import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorPrepareRequest;
+import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
@@ -62,4 +67,45 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 	wrapped.deleteEventRequest(unwrapped);
     }
 
+    @Override
+    public FieldMirrorSetRequest createFieldMirrorSetRequest(ClassMirror klass, String fieldName) {
+	// TODO-RS: Doh again on fixing the field API
+	Field f = ((JDIClassMirror)klass).refType.fieldByName(fieldName);
+	return new JDIFieldMirrorSetRequest(vm, wrapped.createModificationWatchpointRequest(f));
+    }
+
+    @Override
+    public List<FieldMirrorSetRequest> fieldMirrorSetRequests() {
+	List<FieldMirrorSetRequest> result = new ArrayList<FieldMirrorSetRequest>();
+	for (ModificationWatchpointRequest r : wrapped.modificationWatchpointRequests()) {
+	    result.add((FieldMirrorSetRequest)r.getProperty(JDIEventRequest.MIRROR_WRAPPER));
+	}
+	return result;
+    }
+
+    @Override
+    public void deleteFieldMirrorSetRequest(FieldMirrorSetRequest request) {
+	ModificationWatchpointRequest unwrapped = ((JDIFieldMirrorSetRequest)request).wrapped;
+	wrapped.deleteEventRequest(unwrapped);
+    }
+
+    @Override
+    public ClassMirrorPrepareRequest createClassMirrorPrepareRequest() {
+	return new JDIClassMirrorPrepareRequest(vm, wrapped.createClassPrepareRequest());
+    }
+
+    @Override
+    public List<ClassMirrorPrepareRequest> classMirrorPrepareRequests() {
+	List<ClassMirrorPrepareRequest> result = new ArrayList<ClassMirrorPrepareRequest>();
+	for (ClassPrepareRequest r : wrapped.classPrepareRequests()) {
+	    result.add((ClassMirrorPrepareRequest)r.getProperty(JDIEventRequest.MIRROR_WRAPPER));
+	}
+	return result;
+    }
+
+    @Override
+    public void deleteClassMirrorPrepareRequest(ClassMirrorPrepareRequest request) {
+	ClassPrepareRequest unwrapped = ((JDIClassMirrorPrepareRequest)request).wrapped;
+	wrapped.deleteEventRequest(unwrapped);
+    }
 }

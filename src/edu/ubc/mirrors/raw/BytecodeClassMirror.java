@@ -879,26 +879,46 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         return false;
     }
     
+    public boolean methodMatches(MethodMirror m, String name, ClassMirror... paramClasses) {
+	if (!m.getName().equals(name)) {
+            return false;
+        }
+        List<ClassMirror> paramTypes = m.getParameterTypes();
+        if (paramTypes.size() != paramClasses.length) {
+            return false;
+        }
+        for (int i = 0; i < paramClasses.length; i++) {
+            if (!paramClasses[i].equals(paramTypes.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
     @Override
     public MethodMirror getMethod(String name, ClassMirror... paramClasses)
             throws SecurityException, NoSuchMethodException {
         resolve();
         for (MethodMirror m : methods) {
-            if (!m.getName().equals(name)) {
-                continue;
+            if (methodMatches(m, name, paramClasses)) {
+        	return m;
             }
-            List<ClassMirror> paramTypes = m.getParameterTypes();
-            if (paramTypes.size() != paramClasses.length) {
-                continue;
-            }
-            for (int i = 0; i < paramClasses.length; i++) {
-                if (!paramClasses[i].equals(paramTypes.get(i))) {
-                    continue;
-                }
-            }
-            return m;
         }
 
+        try {
+            return getSuperClassMirror().getMethod(name, paramClasses);
+        } catch (NoSuchMethodException e) {
+            // Fall through
+        }
+        
+        for (ClassMirror interfaceMirror : getInterfaceMirrors()) {
+            try {
+                return interfaceMirror.getMethod(name, paramClasses);
+            } catch (NoSuchMethodException e) {
+                // Fall through
+            }
+        }
+        
         throw new NoSuchMethodException(name);
     }
     @Override

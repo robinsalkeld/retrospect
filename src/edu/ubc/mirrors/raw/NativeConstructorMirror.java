@@ -98,12 +98,12 @@ public class NativeConstructorMirror extends NativeInstanceMirror implements Con
     }
     
     @Override
-    public byte[] getAnnotations() {
+    public byte[] getRawAnnotations() {
         return (byte[])readField("annotations");
     }
     
     @Override
-    public byte[] getParameterAnnotations() {
+    public byte[] getRawParameterAnnotations() {
         return (byte[])readField("parameterAnnotations");
     }
 }

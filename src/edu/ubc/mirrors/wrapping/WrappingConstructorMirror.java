@@ -25,9 +25,9 @@ public class WrappingConstructorMirror implements ConstructorMirror {
 
         Object[] unwrappedArgs = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
-            unwrappedArgs[i] = WrappingMethodMirror.unwrappedValue(vm, args[i]);
+            unwrappedArgs[i] = vm.unwrappedValue(args[i]);
         }
-        ThreadMirror unwrappedThread = (ThreadMirror)WrappingMethodMirror.unwrappedValue(vm, thread);
+        ThreadMirror unwrappedThread = (ThreadMirror)vm.unwrappedValue(thread);
         InstanceMirror result = wrapped.newInstance(unwrappedThread, unwrappedArgs);
         return (InstanceMirror)vm.getWrappedMirror(result);
     }
@@ -53,8 +53,8 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     }
     
     @Override
-    public byte[] getAnnotations() {
-        return wrapped.getAnnotations();
+    public byte[] getRawAnnotations() {
+        return wrapped.getRawAnnotations();
     }
     
     @Override
@@ -63,8 +63,8 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     }
     
     @Override
-    public byte[] getParameterAnnotations() {
-        return wrapped.getParameterAnnotations();
+    public byte[] getRawParameterAnnotations() {
+        return wrapped.getRawParameterAnnotations();
     }
     
     public String getSignature() {

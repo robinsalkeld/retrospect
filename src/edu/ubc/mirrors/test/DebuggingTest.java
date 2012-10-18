@@ -1,29 +1,27 @@
 package edu.ubc.mirrors.test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 
-import com.sun.jdi.Location;
-import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.ThreadStartEvent;
-import com.sun.jdi.request.BreakpointRequest;
-import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.ThreadStartRequest;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.jdi.JDIThreadMirror;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.retrospect.RetroactiveWeaver;
@@ -36,6 +34,7 @@ public class DebuggingTest {
         	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"");
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ThreadStartRequest r = jdiVM.eventRequestManager().createThreadStartRequest();
+        r.setSuspendPolicy(EventRequest.SUSPEND_ALL);
         r.enable();
         jdiVM.resume();
         EventQueue q = jdiVM.eventQueue();
@@ -56,8 +55,21 @@ public class DebuggingTest {
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath});
         Reflection.withThread(thread, new Callable<Void>() {
             public Void call() throws Exception {
-                ClassMirror klass = Reflection.classMirrorForName(vm, thread, "tracing.version1.TraceMyClasses", true, loader);
-                RetroactiveWeaver.weave(klass, thread);
+        	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);
+        	traceClass.getStaticField("TRACELEVEL").setInt(2);
+        	
+        	InstanceMirror baos = vm.findBootstrapClassMirror(ByteArrayOutputStream.class.getName())
+        		.getConstructor().newInstance(thread);
+        	InstanceMirror stream = vm.findBootstrapClassMirror(PrintStream.class.getName())
+        		.getConstructor(vm.findBootstrapClassMirror(OutputStream.class.getName())).newInstance(thread, baos);
+        	MethodMirror method = traceClass.getMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
+                method.invoke(thread, null, stream);
+        	
+        	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version1.TraceMyClasses", true, loader);
+                RetroactiveWeaver.weave(aspect, thread);
+                
+                System.out.println(Reflection.toString(baos));
+                
                 return null;
             }
         });

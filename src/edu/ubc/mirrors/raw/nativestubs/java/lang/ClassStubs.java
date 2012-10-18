@@ -89,8 +89,8 @@ public class ClassStubs {
             HolographInternalUtils.setField(inst, "modifiers", c.getModifiers());
             HolographInternalUtils.setField(inst, "parameterTypes", Reflection.toArray(classClass, c.getParameterTypes()));
             HolographInternalUtils.setField(inst, "exceptionTypes", Reflection.toArray(classClass, c.getExceptionTypes()));
-            HolographInternalUtils.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(c.getAnnotations())));
-            HolographInternalUtils.setField(inst, "parameterAnnotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(c.getParameterAnnotations())));
+            HolographInternalUtils.setField(inst, "annotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(c.getRawAnnotations())));
+            HolographInternalUtils.setField(inst, "parameterAnnotations", Reflection.copyArray(vm, (ArrayMirror)NativeInstanceMirror.makeMirror(c.getRawParameterAnnotations())));
             HolographInternalUtils.setField(inst, "signature", Reflection.makeString(vm, c.getSignature()));
             
             result.set(i++, inst);

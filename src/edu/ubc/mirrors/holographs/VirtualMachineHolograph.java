@@ -22,19 +22,24 @@ import org.objectweb.asm.Type;
 
 import sun.misc.FileURLMapper;
 import sun.misc.Launcher;
-
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ClassMirrorPrepareEvent;
+import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.DoubleArrayMirror;
+import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FieldMirrorSetEvent;
+import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
@@ -54,6 +59,9 @@ import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 public class VirtualMachineHolograph extends WrappingVirtualMachine {
 
     private final MirageVirtualMachine mirageVM;
+    
+    // TODO-RS: Expose this more generally?
+    private final EventDispatch dispatch;
     
     private final MirageClassLoader mirageBootstrapLoader;
     
@@ -77,6 +85,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         this.mirageVM = new MirageVirtualMachine(this);
         this.mirageBootstrapLoader = new MirageClassLoader(this, null);
         this.mappedFiles = mappedFiles;
+        this.dispatch = new EventDispatch(this);
         
         // Ignore invalid paths as the VM would
         List<URL> filteredURLs = new ArrayList<URL>();
@@ -94,7 +103,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         this.debuggingThread.start();
         
         collectZipFiles();
-        
+    }
+    
+    public EventDispatch dispatch() {
+	return dispatch;
     }
     
     private List<URL> extractBootstrapPath(VirtualMachineMirror wrappedVM) {
@@ -125,7 +137,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 String name;
                 try {
                     address = zipFileMirror.getMemberField("jzfile").getLong();
-                    name = Reflection.getRealStringForMirror((InstanceMirror)zipFileMirror.getMemberField("name").get());
+                    name = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(zipFileMirror, "name"));
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 } catch (NoSuchFieldException e) {
@@ -136,7 +148,37 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 }
             }
         }
+        
+        ClassMirrorPrepareRequest request = eventRequestManager().createClassMirrorPrepareRequest();
+        request.addClassFilter(ZipFile.class.getName());
+        dispatch.addCallback(request, ZIP_FILE_CREATED_CALLBACK);
+        request.enable();
     }
+    
+    private final EventDispatch.EventCallback ZIP_FILE_CREATED_CALLBACK = new EventDispatch.EventCallback() {
+	public void handle(MirrorEvent event) {
+	    if (event instanceof FieldMirrorSetEvent) {
+    	    	FieldMirrorSetEvent fieldSetEvent = (FieldMirrorSetEvent)event;
+    	    	if (fieldSetEvent.classMirror().getClassName().equals(ZipFile.class.getName()) && fieldSetEvent.fieldName().equals("name")) {
+    	    	    InstanceMirror zipFileMirror = fieldSetEvent.instance();
+    	    	    try {
+			long address = zipFileMirror.getMemberField("jzfile").getLong();
+			String path = Reflection.getRealStringForMirror((InstanceMirror)fieldSetEvent.newValue());
+			zipPathsByAddress.put(address, new File(path));
+		    } catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		    } catch (NoSuchFieldException e) {
+			throw new RuntimeException(e);
+		    }
+    	    	}
+	    } else if (event instanceof ClassMirrorPrepareEvent) {
+		ClassMirror zipFileClass = ((ClassMirrorPrepareEvent)event).classMirror();
+		FieldMirrorSetRequest request = eventRequestManager().createFieldMirrorSetRequest(zipFileClass, "name");
+	        dispatch.addCallback(request, this);
+	        request.enable();
+	    }
+	}
+    };
     
     public File getMappedFile(InstanceMirror fileMirage, boolean errorOnUnmapped) {
         InstanceMirror pathMirror = (InstanceMirror)HolographInternalUtils.getField(fileMirage, "path");

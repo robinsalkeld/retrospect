@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import edu.ubc.mirrors.ClassMirrorPrepareEvent;
+import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
@@ -34,6 +36,10 @@ public class WrappingMirrorEventSet implements MirrorEventSet {
 	    return new WrappingMethodMirrorEntryEvent(vm, (MethodMirrorEntryEvent)e);
 	} else if (e instanceof MethodMirrorExitEvent) {
 	    return new WrappingMethodMirrorExitEvent(vm, (MethodMirrorExitEvent)e);
+	} else if (e instanceof FieldMirrorSetEvent) {
+	    return new WrappingFieldMirrorSetEvent(vm, (FieldMirrorSetEvent)e);
+	} else if (e instanceof ClassMirrorPrepareEvent) {
+	    return new WrappingClassMirrorPrepareEvent(vm, (ClassMirrorPrepareEvent)e);
 	} else {
 	    throw new IllegalArgumentException("Unrecognized event type: " + e);
 	}

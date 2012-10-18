@@ -1,6 +1,8 @@
 package edu.ubc.mirrors.jdi;
 
 import com.sun.jdi.event.EventQueue;
+import com.sun.jdi.event.EventSet;
+import com.sun.jdi.event.VMDeathEvent;
 
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventSet;
@@ -16,7 +18,12 @@ public class JDIMirrorEventQueue extends JDIMirror implements MirrorEventQueue {
 
     @Override
     public MirrorEventSet remove() throws InterruptedException {
-	return new JDIMirrorEventSet(vm, wrapped.remove());
+	EventSet eventSet = wrapped.remove();
+	if (eventSet.size() == 1 && eventSet.iterator().next() instanceof VMDeathEvent) {
+	    return null;
+	} else {
+	    return new JDIMirrorEventSet(vm, eventSet);
+	}
     }
     
     
