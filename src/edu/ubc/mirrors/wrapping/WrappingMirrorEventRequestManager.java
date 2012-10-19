@@ -4,9 +4,12 @@ import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
+import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
+import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 
 public class WrappingMirrorEventRequestManager implements MirrorEventRequestManager {
@@ -30,11 +33,6 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
 
     @Override
-    public void deleteMethodMirrorEntryRequest(MethodMirrorEntryRequest request) {
-	throw new UnsupportedOperationException();
-    }
-
-    @Override
     public MethodMirrorExitRequest createMethodMirrorExitRequest() {
 	return new WrappingMethodMirrorExitRequest(vm, wrapped.createMethodMirrorExitRequest());
     }
@@ -45,7 +43,22 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
 
     @Override
-    public void deleteMethodMirrorExitRequest(MethodMirrorExitRequest request) {
+    public ConstructorMirrorEntryRequest createConstructorMirrorEntryRequest() {
+	return new WrappingConstructorMirrorEntryRequest(vm, wrapped.createConstructorMirrorEntryRequest());
+    }
+
+    @Override
+    public List<ConstructorMirrorEntryRequest> constructorMirrorEntryRequests() {
+	throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ConstructorMirrorExitRequest createConstructorMirrorExitRequest() {
+	return new WrappingConstructorMirrorExitRequest(vm, wrapped.createConstructorMirrorExitRequest());
+    }
+
+    @Override
+    public List<ConstructorMirrorExitRequest> constructorMirrorExitRequests() {
 	throw new UnsupportedOperationException();
     }
 
@@ -61,11 +74,6 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
 
     @Override
-    public void deleteFieldMirrorSetRequest(FieldMirrorSetRequest request) {
-	throw new UnsupportedOperationException();
-    }
-
-    @Override
     public ClassMirrorPrepareRequest createClassMirrorPrepareRequest() {
 	return new WrappingClassMirrorPrepareRequest(vm, wrapped.createClassMirrorPrepareRequest());
     }
@@ -76,7 +84,7 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
 
     @Override
-    public void deleteClassMirrorPrepareRequest(ClassMirrorPrepareRequest request) {
+    public void deleteMirrorEventRequest(MirrorEventRequest request) {
 	throw new UnsupportedOperationException();
     }
 }

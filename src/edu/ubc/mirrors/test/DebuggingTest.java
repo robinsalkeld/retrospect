@@ -58,17 +58,18 @@ public class DebuggingTest {
         	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);
         	traceClass.getStaticField("TRACELEVEL").setInt(2);
         	
-        	InstanceMirror baos = vm.findBootstrapClassMirror(ByteArrayOutputStream.class.getName())
-        		.getConstructor().newInstance(thread);
-        	InstanceMirror stream = vm.findBootstrapClassMirror(PrintStream.class.getName())
-        		.getConstructor(vm.findBootstrapClassMirror(OutputStream.class.getName())).newInstance(thread, baos);
+//        	InstanceMirror baos = vm.findBootstrapClassMirror(ByteArrayOutputStream.class.getName())
+//        		.getConstructor().newInstance(thread);
+//        	InstanceMirror stream = vm.findBootstrapClassMirror(PrintStream.class.getName())
+//        		.getConstructor(vm.findBootstrapClassMirror(OutputStream.class.getName())).newInstance(thread, baos);
+        	InstanceMirror stream = (InstanceMirror)vm.findBootstrapClassMirror(System.class.getName()).getStaticField("out").get();
         	MethodMirror method = traceClass.getMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
                 method.invoke(thread, null, stream);
         	
         	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version1.TraceMyClasses", true, loader);
                 RetroactiveWeaver.weave(aspect, thread);
                 
-                System.out.println(Reflection.toString(baos));
+//                System.out.println(Reflection.toString(baos));
                 
                 return null;
             }

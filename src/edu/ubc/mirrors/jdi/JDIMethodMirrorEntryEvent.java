@@ -18,4 +18,18 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
     public MethodMirror method() {
         return new JDIMethodMirror(vm, wrapped.method());
     }
+    
+    public static JDIMethodMirrorEntryEvent wrap(JDIVirtualMachineMirror vm, MethodEntryEvent wrapped) {
+	Object request = wrapped.request().getProperty(JDIEventRequest.MIRROR_WRAPPER);
+	if (!(request instanceof JDIMethodMirrorEntryRequest)) {
+	    return null;
+	}
+	JDIMethodMirrorEntryEvent result = new JDIMethodMirrorEntryEvent(vm, wrapped);
+	JDIMethodMirrorEntryRequest mmer = (JDIMethodMirrorEntryRequest)request;
+	// Apply the method filter if present, since it's not supported directly
+	if (mmer.methodFilter != null && !mmer.methodFilter.equals(result.method())) {
+	    return null;
+	}
+	return result;
+    }
 }

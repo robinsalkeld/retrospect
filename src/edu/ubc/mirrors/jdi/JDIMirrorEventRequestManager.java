@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.sun.jdi.Field;
 import com.sun.jdi.request.ClassPrepareRequest;
+import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
@@ -12,9 +13,12 @@ import com.sun.jdi.request.ModificationWatchpointRequest;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
+import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
+import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 
 public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
@@ -36,15 +40,12 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     public List<MethodMirrorEntryRequest> methodMirrorEntryRequests() {
 	List<MethodMirrorEntryRequest> result = new ArrayList<MethodMirrorEntryRequest>();
 	for (MethodEntryRequest r : wrapped.methodEntryRequests()) {
-	    result.add((MethodMirrorEntryRequest)r.getProperty(JDIEventRequest.MIRROR_WRAPPER));
+	    Object wrapper = r.getProperty(JDIEventRequest.MIRROR_WRAPPER);
+	    if (wrapper instanceof MethodMirrorEntryRequest) {
+		result.add((MethodMirrorEntryRequest)wrapper);
+	    }
 	}
 	return result;
-    }
-
-    @Override
-    public void deleteMethodMirrorEntryRequest(MethodMirrorEntryRequest request) {
-	MethodEntryRequest unwrapped = ((JDIMethodMirrorEntryRequest)request).wrapped;
-	wrapped.deleteEventRequest(unwrapped);
     }
 
     @Override
@@ -56,15 +57,46 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     public List<MethodMirrorExitRequest> methodMirrorExitRequests() {
 	List<MethodMirrorExitRequest> result = new ArrayList<MethodMirrorExitRequest>();
 	for (MethodExitRequest r : wrapped.methodExitRequests()) {
-	    result.add((MethodMirrorExitRequest)r.getProperty(JDIEventRequest.MIRROR_WRAPPER));
+	    Object wrapper = r.getProperty(JDIEventRequest.MIRROR_WRAPPER);
+	    if (wrapper instanceof MethodMirrorExitRequest) {
+		result.add((MethodMirrorExitRequest)wrapper);
+	    }
+	}
+	return result;
+    }
+    
+    @Override
+    public ConstructorMirrorEntryRequest createConstructorMirrorEntryRequest() {
+	return new JDIConstructorMirrorEntryRequest(vm, wrapped.createMethodEntryRequest());
+    }
+
+    @Override
+    public List<ConstructorMirrorEntryRequest> constructorMirrorEntryRequests() {
+	List<ConstructorMirrorEntryRequest> result = new ArrayList<ConstructorMirrorEntryRequest>();
+	for (MethodEntryRequest r : wrapped.methodEntryRequests()) {
+	    Object wrapper = r.getProperty(JDIEventRequest.MIRROR_WRAPPER);
+	    if (wrapper instanceof ConstructorMirrorEntryRequest) {
+		result.add((ConstructorMirrorEntryRequest)wrapper);
+	    }
 	}
 	return result;
     }
 
     @Override
-    public void deleteMethodMirrorExitRequest(MethodMirrorExitRequest request) {
-	MethodExitRequest unwrapped = ((JDIMethodMirrorExitRequest)request).wrapped;
-	wrapped.deleteEventRequest(unwrapped);
+    public ConstructorMirrorExitRequest createConstructorMirrorExitRequest() {
+	return new JDIConstructorMirrorExitRequest(vm, wrapped.createMethodExitRequest());
+    }
+
+    @Override
+    public List<ConstructorMirrorExitRequest> constructorMirrorExitRequests() {
+	List<ConstructorMirrorExitRequest> result = new ArrayList<ConstructorMirrorExitRequest>();
+	for (MethodExitRequest r : wrapped.methodExitRequests()) {
+	    Object wrapper = r.getProperty(JDIEventRequest.MIRROR_WRAPPER);
+	    if (wrapper instanceof ConstructorMirrorExitRequest) {
+		result.add((ConstructorMirrorExitRequest)wrapper);
+	    }
+	}
+	return result;
     }
 
     @Override
@@ -84,12 +116,6 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public void deleteFieldMirrorSetRequest(FieldMirrorSetRequest request) {
-	ModificationWatchpointRequest unwrapped = ((JDIFieldMirrorSetRequest)request).wrapped;
-	wrapped.deleteEventRequest(unwrapped);
-    }
-
-    @Override
     public ClassMirrorPrepareRequest createClassMirrorPrepareRequest() {
 	return new JDIClassMirrorPrepareRequest(vm, wrapped.createClassPrepareRequest());
     }
@@ -104,8 +130,8 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public void deleteClassMirrorPrepareRequest(ClassMirrorPrepareRequest request) {
-	ClassPrepareRequest unwrapped = ((JDIClassMirrorPrepareRequest)request).wrapped;
+    public void deleteMirrorEventRequest(MirrorEventRequest request) {
+	EventRequest unwrapped = ((JDIEventRequest)request).wrapped;
 	wrapped.deleteEventRequest(unwrapped);
     }
 }

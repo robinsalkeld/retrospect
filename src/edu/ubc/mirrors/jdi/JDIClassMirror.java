@@ -87,8 +87,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
             try {
 		return vm.makeClassMirror(((ArrayType)refType).componentType());
 	    } catch (ClassNotLoadedException e) {
-		// This really shouldn't happen, should it?
-		throw new RuntimeException(e);
+		throw new UnsupportedOperationException();
 	    }
         } else {
             return null;

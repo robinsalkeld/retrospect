@@ -31,6 +31,16 @@ public class HolographInternalUtils {
         }
     }
 
+    public static int getIntField(InstanceMirror o, String name) {
+        try {
+            return o.getMemberField(name).getInt();
+        } catch (IllegalAccessException e) {
+            throw new IllegalAccessError(e.getMessage());
+        } catch (NoSuchFieldException e) {
+            throw new NoSuchFieldError(e.getMessage());
+        }
+    }
+
     public static void setField(InstanceMirror o, String name, ObjectMirror value) {
         try {
             o.getMemberField(name).set(value);

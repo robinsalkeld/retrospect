@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import edu.ubc.mirrors.ClassMirrorPrepareEvent;
+import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.ConstructorMirrorExitEvent;
 import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
@@ -36,6 +38,10 @@ public class WrappingMirrorEventSet implements MirrorEventSet {
 	    return new WrappingMethodMirrorEntryEvent(vm, (MethodMirrorEntryEvent)e);
 	} else if (e instanceof MethodMirrorExitEvent) {
 	    return new WrappingMethodMirrorExitEvent(vm, (MethodMirrorExitEvent)e);
+	} else if (e instanceof ConstructorMirrorEntryEvent) {
+	    return new WrappingConstructorMirrorEntryEvent(vm, (ConstructorMirrorEntryEvent)e);
+	} else if (e instanceof ConstructorMirrorExitEvent) {
+	    return new WrappingConstructorMirrorExitEvent(vm, (ConstructorMirrorExitEvent)e);
 	} else if (e instanceof FieldMirrorSetEvent) {
 	    return new WrappingFieldMirrorSetEvent(vm, (FieldMirrorSetEvent)e);
 	} else if (e instanceof ClassMirrorPrepareEvent) {

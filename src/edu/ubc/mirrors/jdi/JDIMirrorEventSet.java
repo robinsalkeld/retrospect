@@ -9,6 +9,7 @@ import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.MethodEntryEvent;
+import com.sun.jdi.event.MethodExitEvent;
 import com.sun.jdi.event.ModificationWatchpointEvent;
 import com.sun.jdi.request.ClassPrepareRequest;
 
@@ -39,15 +40,18 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
 	if (e instanceof MethodEntryEvent) {
 	    MethodEntryEvent mee = (MethodEntryEvent)e;
 	    if (!mee.method().name().startsWith("<")) {
-		JDIMethodMirrorEntryEvent result = new JDIMethodMirrorEntryEvent(vm, mee);
-		// Apply the method filter if present, since it's not supported directly
-		JDIMethodMirrorEntryRequest request = (JDIMethodMirrorEntryRequest)mee.request().getProperty(JDIEventRequest.MIRROR_WRAPPER);
-		if (request.methodFilter != null) {
-		    if (!request.methodFilter.equals(result.method())) {
-			return null;
-		    }
-		}
-		return result;
+		return JDIMethodMirrorEntryEvent.wrap(vm, mee);
+	    } else if (mee.method().name().equals("<init>")) {
+		return JDIConstructorMirrorEntryEvent.wrap(vm, mee);
+	    } else {
+		return null;
+	    }
+	} else if (e instanceof MethodExitEvent) {
+	    MethodExitEvent mee = (MethodExitEvent)e;
+	    if (!mee.method().name().startsWith("<")) {
+		return JDIMethodMirrorExitEvent.wrap(vm, mee);
+	    } else if (mee.method().name().equals("<init>")) {
+		return JDIConstructorMirrorExitEvent.wrap(vm, mee);
 	    } else {
 		return null;
 	    }

@@ -80,8 +80,8 @@ public class EventDispatch {
 	MirrorEventQueue q = vm.eventQueue();
 	MirrorEventSet eventSet = q.remove();
 	while (eventSet != null) {
-	    System.out.println(eventSet);
 	    for (MirrorEvent event : eventSet) {
+//		System.out.println(event);
 		// TODO-RS: Temporary - this should be on a separate thread
 		handleEvent(event);
 	    }

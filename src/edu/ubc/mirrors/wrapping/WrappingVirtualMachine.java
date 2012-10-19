@@ -10,6 +10,7 @@ import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.DoubleArrayMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FloatArrayMirror;
@@ -229,6 +230,10 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         } else {
             return value;
         }
+    }
+
+    public ConstructorMirror wrapConstructor(ConstructorMirror constructor) {
+	return new WrappingConstructorMirror(this, constructor);
     }
     
     

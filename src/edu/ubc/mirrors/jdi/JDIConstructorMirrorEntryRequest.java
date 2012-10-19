@@ -3,13 +3,13 @@ package edu.ubc.mirrors.jdi;
 import com.sun.jdi.request.MethodEntryRequest;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MethodMirrorEntryRequest;
+import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 
-public class JDIConstructorMirrorEntryRequest extends JDIEventRequest implements MethodMirrorEntryRequest {
+public class JDIConstructorMirrorEntryRequest extends JDIEventRequest implements ConstructorMirrorEntryRequest {
 
     protected final MethodEntryRequest wrapped;
-    protected MethodMirror methodFilter;
+    protected ConstructorMirror constructorFilter;
 
     public JDIConstructorMirrorEntryRequest(JDIVirtualMachineMirror vm, MethodEntryRequest wrapped) {
 	super(vm, wrapped);
@@ -23,10 +23,10 @@ public class JDIConstructorMirrorEntryRequest extends JDIEventRequest implements
     }
     
     @Override
-    public void setMethodFilter(MethodMirror methodFilter) {
-	this.methodFilter = methodFilter;
+    public void setConstructorFilter(ConstructorMirror constructorFilter) {
+	this.constructorFilter = constructorFilter;
 	// Not supported directly, but adding a class filter helps to reduce excess events
-	addClassFilter(methodFilter.getDeclaringClass());
+	addClassFilter(constructorFilter.getDeclaringClass());
     }
     
     @Override

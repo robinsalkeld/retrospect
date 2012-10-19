@@ -8,24 +8,26 @@ public interface MirrorEventRequestManager {
     
     List<MethodMirrorEntryRequest> methodMirrorEntryRequests();
     
-    void deleteMethodMirrorEntryRequest(MethodMirrorEntryRequest request);
-    
     MethodMirrorExitRequest createMethodMirrorExitRequest();
     
     List<MethodMirrorExitRequest> methodMirrorExitRequests();
     
-    void deleteMethodMirrorExitRequest(MethodMirrorExitRequest request);
+    ConstructorMirrorEntryRequest createConstructorMirrorEntryRequest();
+    
+    List<ConstructorMirrorEntryRequest> constructorMirrorEntryRequests();
+    
+    ConstructorMirrorExitRequest createConstructorMirrorExitRequest();
+    
+    List<ConstructorMirrorExitRequest> constructorMirrorExitRequests();
     
     FieldMirrorSetRequest createFieldMirrorSetRequest(ClassMirror klass, String fieldName);
     
     List<FieldMirrorSetRequest> fieldMirrorSetRequests();
     
-    void deleteFieldMirrorSetRequest(FieldMirrorSetRequest request);
-    
     ClassMirrorPrepareRequest createClassMirrorPrepareRequest();
     
     List<ClassMirrorPrepareRequest> classMirrorPrepareRequests();
     
-    void deleteClassMirrorPrepareRequest(ClassMirrorPrepareRequest request);
-    
+    void deleteMirrorEventRequest(MirrorEventRequest request);
+
 }

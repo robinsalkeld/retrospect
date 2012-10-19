@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,6 +83,8 @@ import abc.weaving.aspectinfo.WithinMethod;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.ConstructorMirrorExitEvent;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -275,28 +278,7 @@ public class AspectJMirrors {
 		List<List<Pointcut>> actualDNF = disjuncts(dnf);
 		
 		for (List<Pointcut> disjunct : actualDNF) {
-		    MirrorEventRequest request;
-		    Pointcut kindingPC = extractKindingPC(disjunct);
-		    if (kindingPC instanceof Execution) {
-			if (advice.getKind() == AdviceKind.BEFORE) {
-			    request = manager.createMethodMirrorEntryRequest();
-			} else {
-			    request = manager.createMethodMirrorExitRequest();
-			}
-		    } else {
-			throw new IllegalStateException("Unsupported kinding pointcut: " + kindingPC);
-		    }
-		    
-		    for (Pointcut otherPC : disjunct) {
-			// TODO-RS: Should remove clauses that are completely expressed
-			// as request filters, to avoid redundant checking.
-			if (otherPC instanceof Within) {
-			    Within within = (Within)otherPC;
-			    // TODO-RS: toString() is likely wrong here. Need to decide on 
-			    // what pattern DSL the mirrors API should accept.
-			    request.addClassFilter(within.getPattern().toString());
-			}
-		    }
+		    MirrorEventRequest request = extractRequest(manager, advice.getKind(), disjunct);
 		    
 		    vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
 		        @Override
@@ -312,23 +294,57 @@ public class AspectJMirrors {
 		@Override
 		public void run() {
 		    executeAdvice(joinpointEvents);
+		    joinpointEvents.clear();
 		}
 	    });
 	}
 	
-	private Pointcut extractKindingPC(List<Pointcut> disjunct) {
-	    // TODO-RS: Assuming there is only one here.
-	    // If there's more than one, we'll install an arbitrary request
-	    // and then (most likely) ignore all the events it generates.
-	    Pointcut result = null;
-	    for (Pointcut pc : disjunct) {
-		if (pc instanceof Execution || pc instanceof MethodCall) {
-		    result = pc;
-		    disjunct.remove(pc);
-		    break;
+	private MirrorEventRequest extractRequest(MirrorEventRequestManager manager, AdviceKind adviceKind, List<Pointcut> disjunct) {
+	    boolean isExecution = false;
+	    boolean isConstructor = false;
+	    for (Iterator<Pointcut> pcIter = disjunct.iterator(); pcIter.hasNext();) {
+		Pointcut pc = pcIter.next();
+		
+		// TODO-RS: Be more rigorous about conflicting specifications
+		if (pc instanceof Execution) {
+		    isExecution = true;
+		    pcIter.remove();
+		} else if (pc instanceof WithinConstructor) {
+		    isConstructor = true;
 		}
 	    }
-	    return result;
+	    
+	    MirrorEventRequest request;
+	    if (isExecution) {
+		if (adviceKind == AdviceKind.BEFORE) {
+		    if (isConstructor) {
+			request = manager.createConstructorMirrorEntryRequest();
+		    } else {
+			request = manager.createMethodMirrorEntryRequest();
+		    }
+		} else {
+		    if (isConstructor) {
+			request = manager.createConstructorMirrorExitRequest();
+		    } else {
+			request = manager.createMethodMirrorExitRequest();
+		    }
+		}
+	    } else {
+		throw new IllegalStateException("Unsupported pointcut: " + disjunct);
+	    }
+	    
+	    for (Pointcut otherPC : disjunct) {
+		// TODO-RS: Should remove clauses that are completely expressed
+		// as request filters, to avoid redundant checking.
+		if (otherPC instanceof Within) {
+		    Within within = (Within)otherPC;
+		    // TODO-RS: toString() is likely wrong here. Need to decide on 
+		    // what pattern DSL the mirrors API should accept.
+		    request.addClassFilter(within.getPattern().toString());
+		}
+	    }
+	    
+	    return request;
 	}
 
 	// Collect DNF assuming the argument is already a DNF pointcut
@@ -533,8 +549,9 @@ public class AspectJMirrors {
 	    NotPointcut notPC = (NotPointcut)pc;
 	    return !adviceMatchesEvent(kind, notPC, event);
 	} else if (pc instanceof Execution) {
-	    if ((event instanceof MethodMirrorEntryEvent) ||
-	     		(event instanceof MethodMirrorExitEvent)) {
+	    if ((event instanceof MethodMirrorEntryEvent || event instanceof ConstructorMirrorEntryEvent) && kind == AdviceKind.BEFORE) {
+		return true;
+	    } else if ((event instanceof MethodMirrorExitEvent || event instanceof ConstructorMirrorExitEvent) && kind == AdviceKind.AFTER) {
 		return true;
 	    } else {
 		return false;
@@ -576,11 +593,28 @@ public class AspectJMirrors {
 	} else if (pc instanceof WithinConstructor) {
 	    WithinConstructor within = (WithinConstructor)pc;
 	    ConstructorPattern pattern = within.getPattern().getPattern();
-	    // TODO
-	    return false;
+	    
+	    if (event instanceof ConstructorMirrorEntryEvent && kind == AdviceKind.BEFORE) {
+		ConstructorMirrorEntryEvent cmee = (ConstructorMirrorEntryEvent)event;
+		ConstructorMirror constructor = cmee.constructor();
+		return constructorMatches(constructor, pattern);
+	    } else if (event instanceof ConstructorMirrorExitEvent && kind == AdviceKind.AFTER) {
+		ConstructorMirrorExitEvent mmee = (ConstructorMirrorExitEvent)event;
+		ConstructorMirror constructor = mmee.constructor();
+		return constructorMatches(constructor, pattern);
+	    } else {
+		return false;
+	    }
 	} else {
 	    throw new IllegalArgumentException("Unsupported pointcut type: " + pc);
 	}
+    }
+
+    private boolean constructorMatches(ConstructorMirror constructor, ConstructorPattern pattern) {
+	return classMatches(constructor.getDeclaringClass(), pattern.getName().base())
+		    && modifiersMatch(constructor.getModifiers(), pattern.getModifiers())
+		    && formalsMatch(constructor.getParameterTypes(), pattern.getFormals())
+		    && exceptionsMatch(constructor.getExceptionTypes(), pattern.getThrowspats());
     }
 
     private boolean methodMatches(MethodMirror method, MethodPattern pattern) {

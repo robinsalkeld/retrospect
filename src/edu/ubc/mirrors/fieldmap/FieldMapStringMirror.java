@@ -9,11 +9,13 @@ import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 public class FieldMapStringMirror extends FieldMapMirror {
 
+    private final String s;
     private final ClassMirror intClass;
     private final ClassMirror charArrayClass;
     
     public FieldMapStringMirror(VirtualMachineMirror vm, String s) {
         super(vm.findBootstrapClassMirror(String.class.getName()));
+        this.s = s;
         this.intClass = vm.getPrimitiveClass("int");
         this.charArrayClass = vm.getArrayClass(1, vm.getPrimitiveClass("char"));
         
@@ -38,5 +40,10 @@ public class FieldMapStringMirror extends FieldMapMirror {
         } else {
             throw new NoSuchFieldException(name);
         }
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "[" + s + "]";
     }
 }

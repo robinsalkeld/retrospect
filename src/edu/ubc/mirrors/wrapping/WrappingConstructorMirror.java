@@ -11,7 +11,7 @@ import edu.ubc.mirrors.ThreadMirror;
 public class WrappingConstructorMirror implements ConstructorMirror {
 
     private final WrappingVirtualMachine vm;
-    private final ConstructorMirror wrapped;
+    protected final ConstructorMirror wrapped;
     
     public WrappingConstructorMirror(WrappingVirtualMachine vm, ConstructorMirror wrapped) {
         this.vm = vm;

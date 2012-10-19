@@ -93,4 +93,9 @@ public class WrappingMethodMirror implements MethodMirror {
         // TODO-RS: Probably need to parse and re-build this too
         return wrapped.getSignature();
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + wrapped;
+    }
 }

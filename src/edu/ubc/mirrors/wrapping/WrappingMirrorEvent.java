@@ -17,4 +17,9 @@ public class WrappingMirrorEvent implements MirrorEvent {
     public MirrorEventRequest request() {
 	return (MirrorEventRequest)wrapped.request().getProperty(WrappingMirrorEventRequest.WRAPPER);
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + wrapped;
+    }
 }
