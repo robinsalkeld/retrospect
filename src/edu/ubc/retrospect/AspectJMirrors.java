@@ -403,7 +403,8 @@ public class AspectJMirrors {
 	private InstanceMirror getInstance() {
 	    if (instance == null) {
 		try {
-		    instance = klass.getConstructor().newInstance(thread);
+		    ConstructorMirror constructor = klass.getConstructor();
+		    instance = constructor.newInstance(thread);
 		} catch (InstantiationException e) {
 		    throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
@@ -564,7 +565,15 @@ public class AspectJMirrors {
 	    Within within = (Within)pc;
 	    ClassnamePatternExpr pattern = within.getPattern().getPattern();
 	    
-	    if (event instanceof MethodMirrorEntryEvent && kind == AdviceKind.BEFORE) {
+	    if (event instanceof ConstructorMirrorEntryEvent && kind == AdviceKind.BEFORE) {
+		ConstructorMirrorEntryEvent mmee = (ConstructorMirrorEntryEvent)event;
+		ClassMirror klass = mmee.constructor().getDeclaringClass();
+		return classMatches(klass, pattern);
+	    } else if (event instanceof ConstructorMirrorExitEvent && kind == AdviceKind.AFTER) {
+		ConstructorMirrorExitEvent mmee = (ConstructorMirrorExitEvent)event;
+		ClassMirror klass = mmee.constructor().getDeclaringClass();
+		return classMatches(klass, pattern);
+	    } else if (event instanceof MethodMirrorEntryEvent && kind == AdviceKind.BEFORE) {
 		MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
 		ClassMirror klass = mmee.method().getDeclaringClass();
 		return classMatches(klass, pattern);
@@ -859,6 +868,16 @@ public class AspectJMirrors {
 		parameterTypes, parameterNames, exceptionTypes, method.getReturnType());
     }
     
+    public InstanceMirror makeStaticJoinPoint(String kind, ConstructorMirror constructor) {
+	InstanceMirror factory = getAJFactory(constructor.getDeclaringClass());
+	InstanceMirror signature = makeConstructorSignature(constructor);
+	return (InstanceMirror)new MethodHandle() {
+	    protected void methodCall() throws Throwable {
+		((Factory)null).makeSJP(null, null, null);
+	    }
+	}.invoke(factory, StringStubs.internMirror(Reflection.makeString(vm, kind)), signature, null);
+    }
+    
     public InstanceMirror makeStaticJoinPoint(String kind, MethodMirror method) {
 	InstanceMirror factory = getAJFactory(method.getDeclaringClass());
 	InstanceMirror signature = makeMethodSignature(method);
@@ -871,7 +890,11 @@ public class AspectJMirrors {
     
 
     private InstanceMirror makeStaticJoinPoint(MirrorEvent event) {
-	if (event instanceof MethodMirrorEntryEvent) {
+	if (event instanceof ConstructorMirrorEntryEvent) {
+	    return makeStaticJoinPoint(org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((ConstructorMirrorEntryEvent)event).constructor());
+	} else if (event instanceof ConstructorMirrorExitEvent) {
+	    return makeStaticJoinPoint(org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((ConstructorMirrorExitEvent)event).constructor());
+	} else if (event instanceof MethodMirrorEntryEvent) {
 	    return makeStaticJoinPoint(org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((MethodMirrorEntryEvent)event).method());
 	} else if (event instanceof MethodMirrorExitEvent) {
 	    return makeStaticJoinPoint(org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((MethodMirrorExitEvent)event).method());

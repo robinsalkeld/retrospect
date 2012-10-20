@@ -29,6 +29,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ClassMirrorPrepareEvent;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.DoubleArrayMirror;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.FieldMirror;
@@ -431,4 +432,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	ClassHolograph klass = (ClassHolograph)wrappedMethod.getDeclaringClass();
         return new MethodHolograph(klass, wrappedMethod);
     }
+    
+    public ConstructorMirror wrapConstructor(ConstructorMirror constructor) {
+	ConstructorMirror wrappedConstructor = super.wrapConstructor(constructor);
+	ClassHolograph klass = (ClassHolograph)wrappedConstructor.getDeclaringClass();
+        return new ConstructorHolograph(klass, wrappedConstructor);
+    };
 }

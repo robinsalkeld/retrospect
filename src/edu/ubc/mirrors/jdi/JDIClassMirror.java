@@ -202,7 +202,32 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     @Override
     public ConstructorMirror getConstructor(ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
-        throw new UnsupportedOperationException();
+	List<ClassMirror> requestedTypes = Arrays.asList(paramTypes);
+	for (Method method : refType.methodsByName("<init>")) {
+	    ConstructorMirror mirror = new JDIConstructorMirror(vm, method);
+	    if (mirror.getParameterTypes().equals(requestedTypes)) {
+		return mirror;
+	    }
+	}
+	
+	ClassMirror superClassMirror = getSuperClassMirror();
+	if (superClassMirror != null) {    
+	    try {
+		return superClassMirror.getConstructor(paramTypes);
+	    } catch (NoSuchMethodException e) {
+		// Fall through
+	    }
+	}
+	
+        for (ClassMirror interfaceMirror : getInterfaceMirrors()) {
+            try {
+                return interfaceMirror.getConstructor(paramTypes);
+            } catch (NoSuchMethodException e) {
+                // Fall through
+            }
+        }
+	
+	throw new NoSuchMethodException();
     }
 
     @Override

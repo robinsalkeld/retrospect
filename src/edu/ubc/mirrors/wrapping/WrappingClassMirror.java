@@ -131,7 +131,7 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
         for (int i = 0; i < paramTypes.length; i++) {
             unwrappedParamTypes[i] = (ClassMirror)vm.unwrapMirror(paramTypes[i]);
         }
-        return new WrappingConstructorMirror(vm, wrapped.getConstructor(unwrappedParamTypes));
+        return vm.wrapConstructor(wrapped.getConstructor(unwrappedParamTypes));
     }
     
     @Override
@@ -139,7 +139,7 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
         List<ConstructorMirror> originals = wrapped.getDeclaredConstructors(publicOnly);
         List<ConstructorMirror> result = new ArrayList<ConstructorMirror>(originals.size());
         for (ConstructorMirror original : originals) {
-            result.add(new WrappingConstructorMirror(vm, original));
+            result.add(vm.wrapConstructor(original));
         }
         return result;
     }

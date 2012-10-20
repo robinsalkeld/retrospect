@@ -125,7 +125,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
     }
 
-    private class BytecodeMethodMirror implements MethodMirror {
+    private class BytecodeMethodMirror implements MethodMirror, ConstructorMirror {
 
         private final MethodNode method;
         private final int slot;
@@ -150,6 +150,13 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
         @Override
         public void setAccessible(boolean flag) {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
+        public InstanceMirror newInstance(ThreadMirror thread, Object... args)
+        	throws InstantiationException, IllegalAccessException,
+        	IllegalArgumentException, InvocationTargetException {
             throw new UnsupportedOperationException();
         }
 
@@ -230,7 +237,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     private boolean isInterface;
     private Map<String, ClassMirror> memberFieldNames = new LinkedHashMap<String, ClassMirror>();
     private Map<String, StaticField> staticFields = new LinkedHashMap<String, StaticField>();
-    private final List<MethodMirror> methods = new ArrayList<MethodMirror>();
+    private final List<BytecodeMethodMirror> methods = new ArrayList<BytecodeMethodMirror>();
     private byte[] rawAnnotations;
     
     private StaticsInfo staticInitInfo;
@@ -345,9 +352,6 @@ public abstract class BytecodeClassMirror implements ClassMirror {
                 
                 // Inline subroutines since other pieces of the pipeline can't handle them
                 return new JSRInlinerAdapter(analyzer, access, name, desc, signature, exceptions);
-            } else if (name.equals("<init>")) {
-                // TODO-RS: Constructors
-                return null;
             } else {
                 return new BytecodeMethodVisitor(new MethodNode(access, name, desc, signature, exceptions), methodSlot++, classWriter, classWriter.visitMethod(access, name, desc, signature, exceptions));
             }
@@ -921,24 +925,59 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         
         throw new NoSuchMethodException(name);
     }
+    
     @Override
-    public ConstructorMirror getConstructor(ClassMirror... paramTypes)
+    public ConstructorMirror getConstructor(ClassMirror... paramClasses)
             throws SecurityException, NoSuchMethodException {
         
-        // Could create un-invocable methods, but no use for that yet.
-        throw new UnsupportedOperationException();
+	resolve();
+        for (BytecodeMethodMirror m : methods) {
+            if (methodMatches(m, "<init>", paramClasses)) {
+        	return m;
+            }
+        }
+
+        try {
+            return getSuperClassMirror().getConstructor(paramClasses);
+        } catch (NoSuchMethodException e) {
+            // Fall through
+        }
+        
+        for (ClassMirror interfaceMirror : getInterfaceMirrors()) {
+            try {
+                return interfaceMirror.getConstructor(paramClasses);
+            } catch (NoSuchMethodException e) {
+                // Fall through
+            }
+        }
+        
+        throw new NoSuchMethodException();
     }
     
     @Override
     public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
-        // Could create un-invocable methods, but no use for that yet.
-        throw new UnsupportedOperationException();
+	resolve();
+        List<ConstructorMirror> result = new ArrayList<ConstructorMirror>();
+        for (BytecodeMethodMirror m : methods) {
+            if (m.getName().equals("<init>")) {
+        	result.add(m);
+            }
+        }
+        
+        return result;
     }
     
     @Override
     public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
         resolve();
-        return methods;
+        List<MethodMirror> result = new ArrayList<MethodMirror>();
+        for (BytecodeMethodMirror m : methods) {
+            if (!m.getName().equals("<init>")) {
+        	result.add(m);
+            }
+        }
+        
+        return result;
     }
     
     @Override

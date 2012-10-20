@@ -9,9 +9,8 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.wrapping.WrappingMethodMirror;
 
-public class MethodHolograph extends WrappingMethodMirror {
+public class MethodHolograph implements MethodMirror {
 
     private final ClassHolograph klass;
     private final MethodMirror wrapped;
@@ -20,7 +19,6 @@ public class MethodHolograph extends WrappingMethodMirror {
     private boolean accessible = false;
     
     public MethodHolograph(ClassHolograph klass, MethodMirror wrapped) {
-        super(klass.getVM(), wrapped);
 	this.klass = klass;
         this.wrapped = wrapped;
     }

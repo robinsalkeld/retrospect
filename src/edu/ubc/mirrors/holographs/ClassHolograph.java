@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,8 +16,6 @@ import java.util.regex.PatternSyntaxException;
 
 import org.objectweb.asm.Type;
 
-import sun.nio.cs.ThreadLocalCoders;
-
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -28,7 +24,6 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
@@ -37,12 +32,9 @@ import edu.ubc.mirrors.fieldmap.FieldMapThreadMirror;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
-import edu.ubc.mirrors.raw.NativeConstructorMirror;
-import edu.ubc.mirrors.test.Breakpoint;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
 public class ClassHolograph extends WrappingClassMirror {
@@ -160,27 +152,20 @@ public class ClassHolograph extends WrappingClassMirror {
     @Override
     public ConstructorMirror getConstructor(ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
-        // Add the extra implicit mirror parameter
-        Class<?>[] mirageParamTypes = new Class<?>[paramTypes.length + 1];
-        for (int i = 0; i < paramTypes.length; i++) {
-            mirageParamTypes[i] = getMirageClass(paramTypes[i], false);
-        }
-        mirageParamTypes[paramTypes.length] = InstanceMirror.class;
-        
-        Class<?> mirageClass = getMirageClass(this, true);
-        Constructor<?> constructor = mirageClass.getDeclaredConstructor(mirageParamTypes);
-        return new MirageConstructor(constructor);
+	try {
+	    return super.getConstructor(paramTypes);
+	} catch (UnsupportedOperationException e) {
+	    return getBytecodeMirror().getConstructor(paramTypes);
+	}
     }
     
     @Override
     public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
-        Class<?> mirageClass = getMirageClass(this, true);
-        Constructor<?>[] constructors = publicOnly ? mirageClass.getConstructors() : mirageClass.getDeclaredConstructors();
-        List<ConstructorMirror> result = new ArrayList<ConstructorMirror>();
-        for (Constructor<?> constructor : constructors) {
-            result.add(new MirageConstructor(constructor));
+	try {
+            return super.getDeclaredConstructors(publicOnly);
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMirror().getDeclaredConstructors(publicOnly);
         }
-        return result;
     }
     
     @Override
@@ -233,70 +218,6 @@ public class ClassHolograph extends WrappingClassMirror {
         if (cause != null && cause != t) {
             cleanStackTrace(cause);
         }
-    }
-    
-    private class MirageConstructor extends NativeConstructorMirror implements ConstructorMirror {
-
-        private final Constructor<?> mirageClassConstructor;
-        
-        public MirageConstructor(Constructor<?> mirageClassConstructor) {
-            super(mirageClassConstructor);
-            this.mirageClassConstructor = mirageClassConstructor;
-            this.mirageClassConstructor.setAccessible(true);
-        }
-        
-        @Override
-        public InstanceMirror newInstance(ThreadMirror thread, Object... args)
-                throws InstantiationException, IllegalAccessException,
-                IllegalArgumentException, InvocationTargetException {
-            ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
-            threadHolograph.enterHologramExecution();
-            try {
-                // Add the extra implicit mirror parameter
-                Class<?> classLoaderLiteral = mirageClassConstructor.getDeclaringClass();
-                InstanceMirror mirror = ObjectMirage.newInstanceMirror(classLoaderLiteral, classLoaderLiteral.getName().replace('/', '.'));
-                Object[] mirageArgs = new Object[args.length + 1];
-                for (int i = 0; i < args.length; i++) {
-                    mirageArgs[i] = makeMirage(args[i]);
-                }
-                mirageArgs[args.length] = mirror;
-                Object result = mirageClassConstructor.newInstance(mirageArgs);
-                return (InstanceMirror)unwrapMirage(result);
-            } catch (InvocationTargetException e) {
-                cleanStackTrace(e);
-                throw e;
-            } finally {
-                threadHolograph.exitHologramExecution();
-            }
-        }
-        
-        @Override
-        public ClassMirror getDeclaringClass() {
-            return ClassHolograph.this;
-        }
-        
-        @Override
-        public List<ClassMirror> getParameterTypes() {
-            List<ClassMirror> result = new ArrayList<ClassMirror>();
-            Class<?>[] mirageParamTypes = mirageClassConstructor.getParameterTypes();
-            // Skip the extra mirror argument
-            for (int i = 0; i < mirageParamTypes.length - 1; i++) {
-                result.add(getOriginalClassMirror(mirageParamTypes[i]));
-            }
-            return result;
-        }
-        
-        @Override
-        public List<ClassMirror> getExceptionTypes() {
-            List<ClassMirror> result = new ArrayList<ClassMirror>();
-            Class<?>[] mirageParamTypes = mirageClassConstructor.getExceptionTypes();
-            for (Class<?> mirageParamType : mirageParamTypes) {
-                result.add(getOriginalClassMirror(mirageParamType));
-            }
-            return result;
-        }
-        
-        // TODO-RS: May need to translate annotations back to original classes too...
     }
     
     public static Object makeMirage(Object mirror) {
