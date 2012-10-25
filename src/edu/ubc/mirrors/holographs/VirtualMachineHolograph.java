@@ -41,6 +41,7 @@ import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
@@ -150,7 +151,15 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             }
         }
         
-        ClassMirrorPrepareRequest request = eventRequestManager().createClassMirrorPrepareRequest();
+        MirrorEventRequestManager erm;
+	try {
+	    erm = eventRequestManager();
+	} catch (UnsupportedOperationException e) {
+	    // TODO-RS: A more generic approch would be for non-resumable
+	    // VMs to implement stub methods and then immediately run out of events.
+	    return;
+	}
+	ClassMirrorPrepareRequest request = erm.createClassMirrorPrepareRequest();
         request.addClassFilter(ZipFile.class.getName());
         dispatch.addCallback(request, ZIP_FILE_CREATED_CALLBACK);
         request.enable();

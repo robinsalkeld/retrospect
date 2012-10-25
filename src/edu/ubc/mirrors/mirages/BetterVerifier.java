@@ -79,7 +79,7 @@ public class BetterVerifier extends SimpleVerifier {
             } else {
                 className = t.getClassName();
             }
-            return Reflection.classMirrorForName(vm, vm.getThreads().get(0), className, false, loader);
+            return Reflection.classMirrorForName(vm, ThreadHolograph.currentThreadMirror(), className, false, loader);
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);

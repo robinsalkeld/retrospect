@@ -77,7 +77,7 @@ public class ConstructorHolograph implements ConstructorMirror {
             ClassHolograph.cleanStackTrace(e);
             throw e;
         } finally {
-            threadHolograph.enterHologramExecution();
+            threadHolograph.exitHologramExecution();
         }
     }
     
@@ -98,7 +98,7 @@ public class ConstructorHolograph implements ConstructorMirror {
 
     @Override
     public ClassMirror getDeclaringClass() {
-        return wrapped.getDeclaringClass();
+        return klass;
     }
 
     @Override

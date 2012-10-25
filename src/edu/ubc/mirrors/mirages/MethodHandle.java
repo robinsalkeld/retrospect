@@ -13,6 +13,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public abstract class MethodHandle {
@@ -115,9 +116,7 @@ public abstract class MethodHandle {
     }
     
     public Object invoke(ObjectMirror obj, Object ... args) {
-	ClassMirror klass = obj.getClassMirror();
-        VirtualMachineMirror vm = klass.getVM();
-        return invoke(obj, vm.getThreads().get(0), args);
+        return invoke(obj, ThreadHolograph.currentThreadMirror(), args);
     }
 	
     public Object invoke(ObjectMirror obj, ThreadMirror thread, Object ... args) {

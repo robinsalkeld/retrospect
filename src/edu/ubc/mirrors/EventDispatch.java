@@ -81,10 +81,6 @@ public class EventDispatch {
 	MirrorEventSet eventSet = q.remove();
 	while (eventSet != null) {
 	    for (MirrorEvent event : eventSet) {
-		if (event instanceof ConstructorMirrorEntryEvent) {
-		    int bp = 4;
-		    bp++;
-		}
 		// TODO-RS: Temporary - this should be on a separate thread
 		handleEvent(event);
 	    }

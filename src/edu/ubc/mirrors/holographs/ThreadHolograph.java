@@ -22,6 +22,10 @@ public class ThreadHolograph extends WrappingThreadMirror {
         if (runningThread != null && runningThread != Thread.currentThread()) {
             throw new IllegalStateException();
         }
+        ThreadHolograph thisThreadsMirror = currentThreadMirror.get();
+        if (thisThreadsMirror != null && thisThreadsMirror != this) {
+            throw new IllegalStateException();
+        }
         runningThread = Thread.currentThread();
         runningThreadCount++;
         currentThreadMirror.set(this);
@@ -36,7 +40,7 @@ public class ThreadHolograph extends WrappingThreadMirror {
     }
     
     public void exitHologramExecution() {
-        if (runningThread != Thread.currentThread()) {
+	if (runningThreadCount <= 0 || runningThread != Thread.currentThread()) {
             throw new IllegalStateException();
         }
         if (--runningThreadCount == 0) {

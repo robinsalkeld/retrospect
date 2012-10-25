@@ -145,7 +145,7 @@ public class ClassHolograph extends WrappingClassMirror {
         try {
             return super.getMethod(name, paramTypes);
         } catch (UnsupportedOperationException e) {
-            return getBytecodeMirror().getMethod(name, paramTypes);
+            return new MethodHolograph(this, getBytecodeMirror().getMethod(name, paramTypes));
         }
     }
     
@@ -155,7 +155,7 @@ public class ClassHolograph extends WrappingClassMirror {
 	try {
 	    return super.getConstructor(paramTypes);
 	} catch (UnsupportedOperationException e) {
-	    return getBytecodeMirror().getConstructor(paramTypes);
+	    return new ConstructorHolograph(this, getBytecodeMirror().getConstructor(paramTypes));
 	}
     }
     
@@ -164,7 +164,12 @@ public class ClassHolograph extends WrappingClassMirror {
 	try {
             return super.getDeclaredConstructors(publicOnly);
         } catch (UnsupportedOperationException e) {
-            return getBytecodeMirror().getDeclaredConstructors(publicOnly);
+            List<ConstructorMirror> bytecodeCtrs = getBytecodeMirror().getDeclaredConstructors(publicOnly);
+            List<ConstructorMirror> result = new ArrayList<ConstructorMirror>(bytecodeCtrs.size());
+            for (ConstructorMirror bytecodeCtr : bytecodeCtrs) {
+        	result.add(new ConstructorHolograph(this, bytecodeCtr));
+            }
+            return result;
         }
     }
     
@@ -309,7 +314,12 @@ public class ClassHolograph extends WrappingClassMirror {
 	try {
             return super.getDeclaredMethods(publicOnly);
         } catch (UnsupportedOperationException e) {
-            return getBytecodeMirror().getDeclaredMethods(publicOnly);
+            List<MethodMirror> bytecodeMethods = getBytecodeMirror().getDeclaredMethods(publicOnly);
+            List<MethodMirror> result = new ArrayList<MethodMirror>(bytecodeMethods.size());
+            for (MethodMirror bytecodeMethod : bytecodeMethods) {
+        	result.add(new MethodHolograph(this, bytecodeMethod));
+            }
+            return result;
         }
     }
 

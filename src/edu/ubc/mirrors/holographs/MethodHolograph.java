@@ -80,7 +80,7 @@ public class MethodHolograph implements MethodMirror {
             ClassHolograph.cleanStackTrace(e);
             throw e;
         } finally {
-            threadHolograph.enterHologramExecution();
+            threadHolograph.exitHologramExecution();
         }
     }
     
