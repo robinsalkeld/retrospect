@@ -434,7 +434,8 @@ public class MirageClassLoader extends ClassLoader {
         Class<?> mirageClass = klass.getMirageClass(true);
         if (!mirageClass.isInterface()) {
             try {
-                mirageClass.getField("initialized").set(null, true);
+        	// Reading a non-constant field forces class initialization
+                mirageClass.getField("classMirror").get(null);
             } catch (IllegalAccessException e) {
                 throw new InternalError();
             } catch (NoSuchFieldException e) {

@@ -122,6 +122,11 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         public int getAccess() {
             return access;
         }
+        
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + ": " + type + " " + name;
+        }
 
     }
 
@@ -444,7 +449,9 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
         public IsDefault isDefault(String staticFieldName) {
             IsDefault result = statics.get(staticFieldName);
-            return result == null ? IsDefault.UNKNOWN : result;
+            // If the field was never touched, it will still have
+            // the default value.
+            return result == null ? IsDefault.YES : result;
         }
 
         public boolean mayHaveSideEffects() {

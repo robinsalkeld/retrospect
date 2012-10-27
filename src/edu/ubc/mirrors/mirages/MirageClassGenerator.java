@@ -34,6 +34,7 @@ import edu.ubc.mirrors.test.Breakpoint;
 public class MirageClassGenerator extends ClassVisitor {
 
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
+    public static Type classMirrorType = Type.getType(ClassMirror.class);
     public static Type instanceMirrorType = Type.getType(InstanceMirror.class);
     public static Type arrayMirrorType = Type.getType(ArrayMirror.class);
     public static Type objectArrayMirrorType = Type.getType(ObjectArrayMirror.class);
@@ -84,8 +85,6 @@ public class MirageClassGenerator extends ClassVisitor {
         };
     };
     
-    private final boolean needsInitialization;
-    
     private boolean isInterface;
     private String name;
     private String superName;
@@ -94,7 +93,6 @@ public class MirageClassGenerator extends ClassVisitor {
     
     public MirageClassGenerator(ClassMirror classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
-        this.needsInitialization = !classMirror.initialized();
         Class<?> nativeStubsClass = ClassHolograph.getNativeStubsClass(classMirror.getClassName());
         mirrorMethods = indexStubMethods(nativeStubsClass);
     }
@@ -123,6 +121,12 @@ public class MirageClassGenerator extends ClassVisitor {
         // construct mirages. Again, not a problem because the VM will see the original flags on the ClassMirror instead.
         // Also remove enum flags.
         int mirageAccess = (~(Opcodes.ACC_ENUM | Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED) & access) | Opcodes.ACC_PUBLIC;
+        
+        // We need at least 49 to use class literal constants
+        // TODO-RS: Work out a better way to interpret 45.X numbers correctly
+        if (version < 49 || version > 100) {
+            version = 49;
+        }
         
         super.visit(version, mirageAccess, name, signature, this.superName, interfaces);
         
@@ -382,18 +386,14 @@ public class MirageClassGenerator extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
-
-        // Remove all static initializers for classes that were already defined - 
-        // these will have already been executed when
-        // loading the original class and state will be proxied by ClassMirrors instead.
-        if (!needsInitialization && name.equals("<clinit>")) {
+if (name.equals("<clinit>")) {
+    int bp = 4;
+    bp++;
+}
+        // TODO-RS: Remove me - avoiding a race condition in ZipFileInflaterInputStream...
+        if (name.equals("finalize")) {
             return null;
         }
-        
-    // TODO-RS: Remove me - avoiding a race condition in ZipFileInflaterInputStream...
-    if (name.equals("finalize")) {
-        return null;
-    }
         
         if (name.equals("<init>")) {
             // Add the implicit mirror argument
@@ -422,8 +422,6 @@ public class MirageClassGenerator extends ClassVisitor {
         int mirageAccess = ~Opcodes.ACC_NATIVE & access;
         
         MethodVisitor superVisitor = super.visitMethod(mirageAccess, name, desc, signature, exceptions);
-        
-        
         
         MirageMethodGenerator generator = new MirageMethodGenerator(this.name, mirageAccess, name, desc, superVisitor, isToString, isGetStackTrace);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
@@ -527,9 +525,9 @@ public class MirageClassGenerator extends ClassVisitor {
     
     @Override
     public void visitEnd() {
-        // Generate the dummy static field used to force initialization
+        // Generate the static field used to store the corresponding ClassMirror
         if (!isInterface) {
-            super.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "initialized", Type.BOOLEAN_TYPE.getDescriptor(), null, false);
+            super.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "classMirror", classMirrorType.getDescriptor(), null, null);
         }
         
         // Generate the constructor that takes a mirror instance as an Object parameter

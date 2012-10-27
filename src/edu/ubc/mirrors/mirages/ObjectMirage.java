@@ -172,15 +172,25 @@ public class ObjectMirage implements Mirage {
         return loader.makeMirage(sMirror);
     }
     
+    public static ClassMirror getClassMirrorForHolographicClass(Class<?> klass) {
+	if (klass == null) {
+            return null;
+        }
+        
+        MirageClassLoader loader = (MirageClassLoader)klass.getClassLoader();
+        String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(klass.getName());
+        return loader.loadOriginalClassMirror(originalClassName);
+    }
+    
     public static Mirage makeClassMirage(Class<?> c, Class<?> classLoaderLiteral) {
-        if (c == null) {
+	if (c == null) {
             return null;
         }
         
         MirageClassLoader loader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
         String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(c.getName());
-        ClassMirror originalMirror = loader.loadOriginalClassMirror(originalClassName);
-        return loader.makeMirage(originalMirror);
+        ClassMirror classMirror = loader.loadOriginalClassMirror(originalClassName);
+        return ObjectMirage.make(classMirror);
     }
     
     public static ObjectMirror getMirror(Object o) {

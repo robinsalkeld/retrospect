@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
+import edu.ubc.mirrors.test.Breakpoint;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
 public class ClassHolograph extends WrappingClassMirror {
@@ -209,15 +211,17 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public static void cleanStackTrace(Throwable t) {
-        StackTraceElement[] stackTrace = t.getStackTrace();
-        for (int i = 0; i < stackTrace.length; i++) {
-            stackTrace[i] = new StackTraceElement(
-                    MirageClassGenerator.getOriginalBinaryClassName(stackTrace[i].getClassName()),
-                    stackTrace[i].getMethodName(),
-                    stackTrace[i].getFileName(),
-                    stackTrace[i].getLineNumber());
-        }
-        t.setStackTrace(stackTrace);
+	if (!(t instanceof Mirage)) {
+            StackTraceElement[] stackTrace = t.getStackTrace();
+            for (int i = 0; i < stackTrace.length; i++) {
+                stackTrace[i] = new StackTraceElement(
+                        MirageClassGenerator.getOriginalBinaryClassName(stackTrace[i].getClassName()),
+                        stackTrace[i].getMethodName(),
+                        stackTrace[i].getFileName(),
+                        stackTrace[i].getLineNumber());
+            }
+            t.setStackTrace(stackTrace);
+	}
         
         Throwable cause = t.getCause();
         if (cause != null && cause != t) {
@@ -385,6 +389,10 @@ public class ClassHolograph extends WrappingClassMirror {
     private boolean inferInitialized() {
         BytecodeClassMirror bytecodeClassMirror = (BytecodeClassMirror)getBytecodeMirror();
         
+        if (getClassName().equals(Collections.class.getName())) {
+            Breakpoint.bp();
+        }
+        
         // TODO-RS: Make this pluggable
         if (idempotentClassInits.contains(getClassName())) {
             return false;
@@ -475,7 +483,7 @@ public class ClassHolograph extends WrappingClassMirror {
         // Force initialization just as the VM would, in case there is
         // a <clinit> method that needs to be run.
         MirageClassLoader.initializeClassMirror(this);
-        
+
         return super.getStaticField(name);
     }
     

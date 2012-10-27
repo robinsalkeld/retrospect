@@ -48,6 +48,9 @@ public class Reflection {
         threadHolograph.enterHologramExecution();
         try {
             return c.call();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
         } finally {
             threadHolograph.exitHologramExecution();
         }

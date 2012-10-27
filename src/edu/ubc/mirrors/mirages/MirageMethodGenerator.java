@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.mirages;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.arrayMirrorType;
+import static edu.ubc.mirrors.mirages.MirageClassGenerator.classMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageInternalClassName;
@@ -516,18 +517,31 @@ public class MirageMethodGenerator extends InstructionAdapter {
     public void visitCode() {
         super.visitCode();
 
-//        if (owner.equals(getMirageType(Inflater.class).getInternalName()) && name.equals("setInput")) {
-//            ClassLoaderLiteralMirror.getClassLoaderLiteralClass(this);
-//            load(0, Type.getObjectType(owner));
-//            visitFieldInsn(Opcodes.GETFIELD, owner, "zsRef", "Ljava/util/zip/ZStreamRef;");
-//            visitFieldInsn(Opcodes.GETFIELD, "java/util/zip/ZStreamRef", "address", "J");
-//            
-//            new MethodHandle() {
-//                protected void methodCall() throws Throwable {
-//                    InflaterStubs.setInputExecuted(null, 0);
-//                }
-//            }.invoke(this);
-//        }
+        if (name.equals("<clinit>")) {
+            // Initialize the static field that holds the ClassMirror for this holographic Class
+            aconst(Type.getObjectType(owner));
+            new MethodHandle() {
+        	protected void methodCall() throws Throwable {
+        	    ObjectMirage.getClassMirrorForHolographicClass(null);
+        	}
+            }.invoke(this);
+            dup();
+            putstatic(owner, "classMirror", classMirrorType.getDescriptor());
+            
+            // Skip the static initializer for classes that were already defined - 
+            // these will have already been executed when
+            // loading the original class and state will be proxied by ClassMirrors instead.
+            Label afterEarlyReturn = new Label();
+            new MethodHandle() {
+	        protected void methodCall() throws Throwable {
+	    	   ((ClassMirror)null).initialized();
+	        }
+	    }.invoke(this);
+            ifeq(afterEarlyReturn);
+            areturn(Type.VOID_TYPE);
+            mark(afterEarlyReturn);
+            visitFrame(Opcodes.F_NEW, 0, null, 0, null);
+        }
         
         if (name.equals("<init>")) {
             lvs.newLocal(instanceMirrorType);
