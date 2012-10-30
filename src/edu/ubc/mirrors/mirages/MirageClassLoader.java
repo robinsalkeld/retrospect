@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -53,7 +54,6 @@ public class MirageClassLoader extends ClassLoader {
             traceDir = new File(path);
         }
     }
-    public final File myTraceDir;
     public static boolean debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
     public static boolean preverify = Boolean.getBoolean("edu.ubc.mirrors.mirages.preverify");
     
@@ -93,23 +93,15 @@ public class MirageClassLoader extends ClassLoader {
         this.vm = vm;
         this.originalLoader = originalLoader;
         this.mirageClassMirrorLoader = new MirageClassMirrorLoader(vm.getMirageVM(), new NativeClassMirrorLoader(getParent()), originalLoader);
-
-        if (traceDir != null) {
-            String loaderID = originalLoader == null ? "0" : String.valueOf(originalLoader.hashCode());
-            myTraceDir = new File(traceDir, loaderID);
-            myTraceDir.mkdir();
-        } else {
-            myTraceDir = null;
-        }
     }
     
-    public File createClassFile(String internalName) {
-        File classFile = new File(myTraceDir, internalName);
+    public static File createClassFile(int index, String internalName) {
+        File classFile = new File(new File(traceDir, index + ""), internalName);
         createDirRecursive(classFile.getParentFile());
         return classFile;
     }
     
-    private void createDirRecursive(File dir) {
+    private static void createDirRecursive(File dir) {
         if (!dir.exists()) {
             File parent = dir.getParentFile();
             if (parent == null) {
@@ -286,14 +278,20 @@ public class MirageClassLoader extends ClassLoader {
     public byte[] getBytecode(MirageClassMirror mirageClassMirror) {
         String name = mirageClassMirror.getClassName();
         String internalName = name.replace('.', '/');
-        if (myTraceDir != null) {
-            File classFile = createClassFile(internalName + ".class");
-            if (classFile.exists()) {
-                try {
-                    return NativeClassMirror.readFully(new FileInputStream(classFile));
-                } catch (Throwable e) {
-                    throw new RuntimeException("Error caught while using cached class definition " + name, e);
-                }
+        
+        ClassMirror classMirrorForCacheKey = mirageClassMirror.getOriginal();
+        while (classMirrorForCacheKey.isArray()) {
+            classMirrorForCacheKey = classMirrorForCacheKey.getComponentClassMirror();
+        }
+        // This will be null for primitive classes
+        byte[] originalBytecode = classMirrorForCacheKey.getBytecode();
+        String originalInternalName = MirageClassGenerator.getOriginalInternalClassName(classMirrorForCacheKey.getClassName().replace('.', '/'));
+        int cacheIndex = 0;
+        if (traceDir != null) {
+            cacheIndex = findCacheIndex(originalInternalName, originalBytecode);
+            byte[] result = readFromBytecodeCache(cacheIndex, internalName);
+            if (result != null) {
+                return result;
             }
         }
         
@@ -318,19 +316,10 @@ public class MirageClassLoader extends ClassLoader {
         
         inFlightClasses.add(name);
         try {
-            byte[] result = generateBytecode(mirageClassMirror);
+            byte[] result = generateBytecode(cacheIndex, mirageClassMirror);
             
-            if (myTraceDir != null) {
-                File file = createClassFile(name.replace('.', '/') + ".class");
-                OutputStream classFile;
-                try {
-                    classFile = new FileOutputStream(file);
-                    classFile.write(result);
-                    classFile.flush();
-                    classFile.close();
-                } catch (IOException e) {
-                    throw new RuntimeException();
-                }
+            if (traceDir != null) {
+        	writeToBytecodeCache(cacheIndex, internalName, result);
             }
             
             long time = sw.stop();
@@ -349,13 +338,55 @@ public class MirageClassLoader extends ClassLoader {
         }
     }
     
+    private static int findCacheIndex(String className, byte[] bytecode) {
+        int cacheIndex = 0;
+        if (bytecode == null) {
+            return cacheIndex;
+        }
+        byte[] cacheKey = null;
+        while ((cacheKey = readFromBytecodeCache(cacheIndex, className)) != null) {
+            if (Arrays.equals(bytecode, cacheKey)) {
+                break;
+            }
+            cacheIndex++;
+        }
+        if (cacheKey == null) {
+            writeToBytecodeCache(cacheIndex, className, bytecode);
+        }
+        return cacheIndex;
+    }
+    
+    private static byte[] readFromBytecodeCache(int cacheIndex, String className) {
+	try {
+	    File classFile = createClassFile(cacheIndex, className + ".class");
+	    if (classFile.exists()) {
+		return NativeClassMirror.readFully(new FileInputStream(classFile));
+	    } else {
+		return null;
+	    }
+        } catch (IOException e) {
+            throw new RuntimeException();
+        }
+    }
+    
+    private static void writeToBytecodeCache(int cacheIndex, String className, byte[] bytecode) {
+	try {
+	    OutputStream classFile = new FileOutputStream(createClassFile(cacheIndex, className + ".class"));
+            classFile.write(bytecode);
+            classFile.flush();
+            classFile.close();
+        } catch (IOException e) {
+            throw new RuntimeException();
+        }
+    }
+    
     public static void printIndent() {
         for (int i = 0; i < timerStack.size(); i++) {
             System.out.print("  ");
         }
     }
     
-    public byte[] generateBytecode(MirageClassMirror mirageClassMirror) {
+    public byte[] generateBytecode(int cacheIndex, MirageClassMirror mirageClassMirror) {
         if (mirageClassMirror.getOriginal().isArray()) {
             return MirageClassGenerator.generateArray(this, mirageClassMirror.getOriginal(), !mirageClassMirror.isImplementationClass());
         }
@@ -368,8 +399,8 @@ public class MirageClassLoader extends ClassLoader {
         if (preverify) {
             visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, false, true);
         }
-        if (myTraceDir != null) {
-            File txtFile = createClassFile(internalName + ".txt");
+        if (traceDir != null) {
+            File txtFile = createClassFile(cacheIndex, internalName + ".txt");
             PrintWriter textFileWriter;
             try {
                 textFileWriter = new PrintWriter(txtFile);
@@ -380,8 +411,8 @@ public class MirageClassLoader extends ClassLoader {
         }
         visitor = new MirageClassGenerator(original, visitor);
         visitor = new RemappingClassAdapter(visitor, MirageClassGenerator.REMAPPER);
-        if (myTraceDir != null) {
-            File txtFile = createClassFile(internalName + ".afterframes.txt");
+        if (traceDir != null) {
+            File txtFile = createClassFile(cacheIndex, internalName + ".afterframes.txt");
             PrintWriter textFileWriter;
             try {
                 textFileWriter = new PrintWriter(txtFile);
@@ -397,8 +428,8 @@ public class MirageClassLoader extends ClassLoader {
             new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
         }
         visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true, false);
-        if (myTraceDir != null) {
-            File txtFile = createClassFile(internalName + ".original.txt");
+        if (traceDir != null) {
+            File txtFile = createClassFile(cacheIndex, internalName + ".original.txt");
             PrintWriter textFileWriter;
             try {
                 textFileWriter = new PrintWriter(txtFile);
@@ -420,15 +451,13 @@ public class MirageClassLoader extends ClassLoader {
 
     public static void initializeClassMirror(ClassHolograph klass) {
         Class<?> mirageClass = klass.getMirageClass(true);
-        if (!mirageClass.isInterface()) {
-            try {
-        	// Reading a non-constant field forces class initialization
-                mirageClass.getField("classMirror").get(null);
-            } catch (IllegalAccessException e) {
-                throw new InternalError();
-            } catch (NoSuchFieldException e) {
-                throw new InternalError();
-            }
+        try {
+	    // Reading a non-constant field forces class initialization
+            mirageClass.getField("classMirror").get(null);
+        } catch (IllegalAccessException e) {
+            throw new InternalError();
+        } catch (NoSuchFieldException e) {
+            throw new InternalError();
         }
     }
 }

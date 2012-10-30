@@ -52,6 +52,7 @@ import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.MirageVirtualMachine;
 import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.mirages.Stopwatch;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -349,17 +350,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
         
         String className = holographClass.getClassName();
-        MirageClassLoader mirageLoader = ((ClassLoaderHolograph)holographLoader).getMirageClassLoader();
-        if (mirageLoader.myTraceDir != null) {
-            File file = mirageLoader.createClassFile(className.replace('.', '/') + ".original.class");
-            if (file.exists()) {
-                try {
-                    return NativeClassMirror.readFully(new FileInputStream(file));
-                } catch (Throwable e) {
-                    throw new RuntimeException("Error caught while using cached original class definition " + className, e);
-                }
-            }
-        }
         
         if (MirageClassLoader.debug) {
             MirageClassLoader.printIndent();
@@ -393,22 +383,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
         byte[] result = baos.toByteArray();
         
-        if (mirageLoader.myTraceDir != null) {
-            if (MirageClassLoader.debug) {
-                MirageClassLoader.printIndent();
-                System.out.println("Caching original bytecode for: " + holographClass.getClassName());
-            }
-            File file = mirageLoader.createClassFile(className.replace('.', '/') + ".original.class");
-            OutputStream classFile;
-            try {
-                classFile = new FileOutputStream(file);
-                classFile.write(result);
-                classFile.flush();
-                classFile.close();
-            } catch (IOException e) {
-                throw new RuntimeException();
-            }
+        if (MirageClassLoader.debug) {
+            MirageClassLoader.printIndent();
+            System.out.println("Fetched original bytecode for: " + holographClass.getClassName());
         }
+
         return result;
     }
     

@@ -49,7 +49,6 @@ public class ToStringer implements IApplication {
         String samplePath = args[1];
         
         MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
-        MirageClassLoader.debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
         
         Method method = Package.class.getDeclaredMethod("getSystemPackage0", String.class);
         method.setAccessible(true);
