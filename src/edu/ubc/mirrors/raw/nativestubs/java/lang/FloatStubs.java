@@ -1,12 +1,19 @@
 package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
-public class FloatStubs {
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 
-    public static int floatToRawIntBits(Class<?> classLoaderLiteral, float value) {
+public class FloatStubs extends NativeStubs {
+
+    public FloatStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public int floatToRawIntBits(float value) {
         return Float.floatToRawIntBits(value);
     }
 
-    public static float intBitsToFloat(Class<?> classLoaderLiteral, int value) {
+    public float intBitsToFloat(int value) {
         return Float.intBitsToFloat(value);
     }
 }

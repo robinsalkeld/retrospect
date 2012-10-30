@@ -11,17 +11,23 @@ import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 
-public class SystemStubs {
+public class SystemStubs extends NativeStubs {
 
-    public static int identityHashCode(Class<?> classLoaderLiteral, Mirage o) {
+    public SystemStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public int identityHashCode(Mirage o) {
         return System.identityHashCode(o);
     }
     
-    public static void arraycopy(Class<?> classLoaderLiteral, Mirage src, int srcPos, Mirage dest, int destPos, int length) {
+    public void arraycopy(Mirage src, int srcPos, Mirage dest, int destPos, int length) {
         arraycopyMirrors(src.getMirror(), srcPos, dest.getMirror(), destPos, length);
     }
     
@@ -77,27 +83,18 @@ public class SystemStubs {
         }
     }
     
-    public static void setIn0(Class<?> classLoaderLiteral, Mirage stream) throws IllegalAccessException, NoSuchFieldException {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
-        
-        ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+    public void setIn0(Mirage stream) throws IllegalAccessException, NoSuchFieldException {
+        ClassMirror systemClass = getVM().findBootstrapClassMirror(System.class.getName());
         systemClass.getStaticField("in").set(stream.getMirror());
     }
     
-    public static void setOut0(Class<?> classLoaderLiteral, Mirage stream) throws IllegalAccessException, NoSuchFieldException {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
-        
-        ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+    public void setOut0(Mirage stream) throws IllegalAccessException, NoSuchFieldException {
+        ClassMirror systemClass = getVM().findBootstrapClassMirror(System.class.getName());
         systemClass.getStaticField("out").set(stream.getMirror());
     }
     
-    public static void setErr0(Class<?> classLoaderLiteral, Mirage stream) throws IllegalAccessException, NoSuchFieldException {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
-        
-        ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+    public void setErr0(Mirage stream) throws IllegalAccessException, NoSuchFieldException {
+        ClassMirror systemClass = getVM().findBootstrapClassMirror(System.class.getName());
         systemClass.getStaticField("err").set(stream.getMirror());
     }
     
@@ -106,11 +103,11 @@ public class SystemStubs {
     // and also seems necessary in the read-only mapped fs.
     // It's probably actually okay, because this will just look like a very long
     // system delay to the original process, which is fairly reasonable.
-    public static long nanoTime(Class<?> classLoaderLiteral) {
+    public long nanoTime() {
         return System.nanoTime();
     }
     
-    public static long currentTimeMillis(Class<?> classLoaderLiteral) {
+    public long currentTimeMillis() {
         return System.currentTimeMillis();
     }
     

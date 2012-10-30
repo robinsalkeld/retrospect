@@ -8,16 +8,21 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.test.Breakpoint;
 
-public class ThrowableStubs {
+public class ThrowableStubs extends NativeStubs {
 
-    public static Mirage fillInStackTrace(Class<?> classLoaderLiteral, Mirage throwable) {
+    public ThrowableStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public Mirage fillInStackTrace(Mirage throwable) {
 	try {
 	    throwable.getClass().getMethod("superFillInStackTrace").invoke(throwable);
 	} catch (IllegalAccessException e) {
@@ -36,11 +41,11 @@ public class ThrowableStubs {
     }
     
     // Java 1.7 version
-    public static Mirage fillInStackTrace(Class<?> classLoaderLiteral, Mirage throwable, int dummy) {
-	return fillInStackTrace(classLoaderLiteral, throwable);
+    public Mirage fillInStackTrace(Mirage throwable, int dummy) {
+	return fillInStackTrace(throwable);
     }
     
-    private static StackTraceElement[] getNativeStack(Mirage throwable) {
+    private StackTraceElement[] getNativeStack(Mirage throwable) {
 	try {
 	    return (StackTraceElement[])throwable.getClass().getMethod("superGetStackTrace").invoke(throwable);
 	} catch (IllegalAccessException e) {
@@ -53,12 +58,12 @@ public class ThrowableStubs {
     }
     
     // TODO-RS: Pretty darn expensive, but caching this correctly is a bit tricky so leave that for later...
-    public static int getStackTraceDepth(Class<?> classLoaderLiteral, Mirage throwable) {
+    public int getStackTraceDepth(Mirage throwable) {
 	return getNativeStack(throwable).length;
     }
     
     // TODO-RS: Pretty darn expensive, but caching this correctly is a bit tricky so leave that for later...
-    public static Mirage getStackTraceElement(Class<?> classLoaderLiteral, Mirage throwable, int index) {
+    public Mirage getStackTraceElement(Mirage throwable, int index) {
 	VirtualMachineMirror vm = throwable.getMirror().getClassMirror().getVM();
         ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());

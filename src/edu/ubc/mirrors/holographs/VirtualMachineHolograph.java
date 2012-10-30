@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarFile;
 import java.util.zip.Inflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -189,6 +190,24 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	    }
 	}
     };
+    
+    public ZipFile getZipFileForAddress(long jzfile) {
+        ZipFile hostZipFile = zipFilesByAddress.get(jzfile);
+        if (hostZipFile == null) {
+            File path = zipPathsByAddress.get(jzfile);
+            if (path == null) {
+                throw new InternalError();
+            }
+            File mappedPath = getMappedFile(path, true);
+            // Create a JarFile in case any of its native methods are invoked
+            try {
+                hostZipFile = new JarFile(mappedPath);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return hostZipFile;
+    }
     
     public File getMappedFile(InstanceMirror fileMirage, boolean errorOnUnmapped) {
         InstanceMirror pathMirror = (InstanceMirror)HolographInternalUtils.getField(fileMirage, "path");

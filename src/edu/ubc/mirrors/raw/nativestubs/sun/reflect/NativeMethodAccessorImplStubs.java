@@ -9,14 +9,19 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 
-public class NativeMethodAccessorImplStubs {
+public class NativeMethodAccessorImplStubs extends NativeStubs {
 
-    public static Mirage invoke0(Class<?> classLoaderLiteral, Mirage method, Mirage target, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    public NativeMethodAccessorImplStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public Mirage invoke0(Mirage method, Mirage target, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
         InstanceMirror m = (InstanceMirror)method.getMirror();
         
         MethodMirror methodMirror = Reflection.methodMirrorForMethodInstance(m);

@@ -12,32 +12,36 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
-import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassLoaderStubs;
 
-public class UnsafeStubs {
+public class UnsafeStubs extends NativeStubs {
 
-    public static Mirage getObject(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, int offset) {
-        return getObjectVolatile(classLoaderLiteral, unsafe, object, offset);
+    public UnsafeStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public Mirage getObject(Mirage unsafe, Mirage object, int offset) {
+        return getObjectVolatile(unsafe, object, offset);
     }
     
-    public static Mirage getObject(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset) {
-        return getObjectVolatile(classLoaderLiteral, unsafe, object, offset);
+    public Mirage getObject(Mirage unsafe, Mirage object, long offset) {
+        return getObjectVolatile(unsafe, object, offset);
     }
     
-    public static Mirage getObjectVolatile(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset) {
+    public Mirage getObjectVolatile(Mirage unsafe, Mirage object, long offset) {
         ObjectArrayMirror array = (ObjectArrayMirror)object.getMirror();
         // TODO-RS: Need to be much more careful about this!
         ObjectMirror element = array.get((int)((offset - 16) / 4));
         return ObjectMirage.make(element);
     }
     
-    public static int getInt(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset) {
+    public int getInt(Mirage unsafe, Mirage object, long offset) {
         ArrayMirror array = (ArrayMirror)object.getMirror();
         // TODO-RS: Need to be more careful about offset calculations!
         String className = array.getClassMirror().getClassName();
@@ -58,7 +62,7 @@ public class UnsafeStubs {
         }
     }
     
-    public static void putInt(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset, int value) {
+    public void putInt(Mirage unsafe, Mirage object, long offset, int value) {
         ArrayMirror array = (ArrayMirror)object.getMirror();
         // TODO-RS: Need to be much more careful about this!
         String className = array.getClassMirror().getClassName();
@@ -79,7 +83,7 @@ public class UnsafeStubs {
         }
     }
     
-    public static void putOrderedObject(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset, Mirage element) throws IllegalAccessException, NoSuchFieldException {
+    public void putOrderedObject(Mirage unsafe, Mirage object, long offset, Mirage element) throws IllegalAccessException, NoSuchFieldException {
         ObjectMirror mirror = object.getMirror();
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
@@ -95,7 +99,7 @@ public class UnsafeStubs {
         }
     }
     
-    public static long objectFieldOffset(Class<?> classLoaderLiteral, Mirage unsafe, Mirage field) {
+    public long objectFieldOffset(Mirage unsafe, Mirage field) {
         InstanceMirror fieldMirror = (InstanceMirror)field.getMirror();
         ClassMirror klass = (ClassMirror)HolographInternalUtils.getField(fieldMirror, "clazz");
         String fieldName = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(fieldMirror, "name"));
@@ -121,7 +125,7 @@ public class UnsafeStubs {
         throw new InternalError("wrong field name???");
     }
     
-    private static String fieldForOffset(InstanceMirror instance, long offset) {
+    private String fieldForOffset(InstanceMirror instance, long offset) {
         ClassMirror klass = instance.getClassMirror();
         long fieldOffset = 12;
         for (Map.Entry<String, ClassMirror> entry : klass.getDeclaredFields().entrySet()) {
@@ -147,7 +151,7 @@ public class UnsafeStubs {
         throw new InternalError("offset overflow???");
     }
     
-    public static boolean compareAndSwapObject(Class<?> classLoaderLiteral, Mirage unsafe, Mirage object, long offset, Mirage oldValue, Mirage newValue) throws IllegalAccessException, NoSuchFieldException {
+    public boolean compareAndSwapObject(Mirage unsafe, Mirage object, long offset, Mirage oldValue, Mirage newValue) throws IllegalAccessException, NoSuchFieldException {
         ObjectMirror mirror = object.getMirror();
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
@@ -178,28 +182,25 @@ public class UnsafeStubs {
         }
     }
     
-    public static long getLong(Class<?> classLoaderLiteral, Mirage unsafe, long address) {
+    public long getLong(Mirage unsafe, long address) {
         // TODO-RS: Need to figure this one out...
         return 0;
     }
-    public static void putLong(Class<?> classLoaderLiteral, Mirage unsafe, long address, long value) {
+    public void putLong(Mirage unsafe, long address, long value) {
         // TODO-RS: Need to figure this one out...
     }
     
-    public static Mirage defineClass(Class<?> classLoaderLiteral, Mirage unsafe, Mirage internalName, Mirage b, int off, int len,
+    public Mirage defineClass(Mirage unsafe, Mirage internalName, Mirage b, int off, int len,
             Mirage classLoader, Mirage pd) {
 
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
-        
         String realInternalName = Reflection.getRealStringForMirror((InstanceMirror)internalName.getMirror());
         String realClassName = realInternalName.replace('/', '.');
-        Mirage className = ObjectMirage.make(Reflection.makeString(vm, realClassName));
+        Mirage className = ObjectMirage.make(Reflection.makeString(getVM(), realClassName));
         
-        return ClassLoaderStubs.defineClass1(classLoaderLiteral, classLoader, className, b, off, len, pd, null);
+        return ClassLoaderStubs.defineClass(classLoader, className, b, off, len, pd, null);
     }
     
-    public static Mirage allocateInstance(Class<?> classLoaderLiteral, Mirage unsafe, Mirage klass) {
+    public Mirage allocateInstance(Mirage unsafe, Mirage klass) {
         ClassMirror classMirror = (ClassMirror)klass.getMirror();
         InstanceMirror result = classMirror.newRawInstance();
         return ObjectMirage.make(result);

@@ -3,7 +3,6 @@ package edu.ubc.mirrors.mirages;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.arrayMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.classMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.fieldMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageInternalClassName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalInternalClassName;
@@ -16,7 +15,6 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.stringType;
-import static edu.ubc.mirrors.mirages.MirageClassLoader.CLASS_LOADER_LITERAL_NAME;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -30,6 +28,7 @@ import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 
 public class MirageMethodGenerator extends InstructionAdapter {
 
@@ -38,7 +37,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
     private AnalyzerAdapter analyzer;
     private LocalVariablesSorter lvs;
     private Type methodType;
-    private String owner;
+    private Type owner;
     private String name;
     
     private final boolean isToString;
@@ -49,7 +48,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
         this.mv = analyzer;
         this.name = name;
-        this.owner = owner;
+        this.owner = Type.getObjectType(owner);
         this.methodType = Type.getMethodType(desc);
         this.isToString = isToString;
         this.isGetStackTrace = isGetStackTrace;
@@ -57,6 +56,20 @@ public class MirageMethodGenerator extends InstructionAdapter {
         activeMethod = name + desc;
     }
 
+    public void getClassMirror(Type type) {
+	if (type.getSort() == Type.OBJECT && type.getInternalName().startsWith("mirage")) {
+	    getstatic(type.getInternalName(), "classMirror", classMirrorType.getDescriptor());
+	} else {
+	    getstatic(owner.getInternalName(), "classMirror", classMirrorType.getDescriptor());
+	    aconst(type.getDescriptor());
+	    new MethodHandle() {
+        	protected void methodCall() throws Throwable {
+        	    ObjectMirage.getClassMirrorForType(null, null);
+        	}
+            }.invoke(this);
+	}
+    }
+    
     @Override
     public void visitEnd() {
         super.visitEnd();
@@ -91,20 +104,11 @@ public class MirageMethodGenerator extends InstructionAdapter {
             
             super.visitMethodInsn(opcode, owner, name, desc);
             
-            invokestatic(CLASS_LOADER_LITERAL_NAME,
+            getClassMirror(this.owner);
+            invokestatic(objectMirageType.getInternalName(),
                          "makeStringMirage",
-                         Type.getMethodDescriptor(mirageType, stringType));
+                         Type.getMethodDescriptor(mirageType, stringType, classMirrorType));
             checkcast(stringMirageType);
-            return;
-        }
-        
-        if (owner.equals(getMirageType(Throwable.class).getInternalName()) && name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(StackTraceElement[].class)))) {
-            super.visitMethodInsn(opcode, owner, name, Type.getMethodDescriptor(Type.getType(StackTraceElement[].class)));
-            
-            invokestatic(CLASS_LOADER_LITERAL_NAME,
-                         "lift",
-                         Type.getMethodDescriptor(OBJECT_TYPE, OBJECT_TYPE));
-            checkcast(getMirageType(StackTraceElement[].class));
             return;
         }
         
@@ -116,15 +120,15 @@ public class MirageMethodGenerator extends InstructionAdapter {
                             "getClassMirror",
                             Type.getMethodDescriptor(Type.getType(ClassMirror.class)));
             
-            invokestatic(CLASS_LOADER_LITERAL_NAME,
-                         "makeMirage",
+            invokestatic(objectMirageType.getInternalName(),
+                         "make",
                          Type.getMethodDescriptor(mirageType, objectMirrorType));
             checkcast(getMirageType(Class.class));
             return;
         }
         
         if (owner.equals(Type.getInternalName(Mirage.class))) {
-            if (name.equals("<init>") && this.owner.equals(getMirageType(Throwable.class).getInternalName())) {
+            if (name.equals("<init>") && this.owner.equals(getMirageType(Throwable.class))) {
                 owner = Type.getInternalName(Throwable.class);
             } else if (name.equals("<init>") || name.equals("toString")) {
                 owner = objectMirageType.getInternalName();
@@ -164,10 +168,10 @@ public class MirageMethodGenerator extends InstructionAdapter {
             } else if (targetType instanceof Label) {
                 // If the target is just uninitialized (i.e. we're calling <init> after
                 // a new), create the mirror
-                aconst(owner);
-                invokestatic(CLASS_LOADER_LITERAL_NAME,
-                        "newInstanceMirror",
-                        Type.getMethodDescriptor(instanceMirrorType, Type.getType(String.class)));
+                getClassMirror(Type.getObjectType(owner));
+                invokeinterface(classMirrorType.getInternalName(),
+                        "newRawInstance",
+                        Type.getMethodDescriptor(instanceMirrorType));
             } else {
                 // Shouldn't happen
                 throw new RuntimeException("Calling <init> on already initialized type: " + targetType);
@@ -211,8 +215,8 @@ public class MirageMethodGenerator extends InstructionAdapter {
                         methodDesc);
         
         if (!isSet && fieldTypeForMirrorCall.equals(objectMirrorType)) {
-            invokestatic(CLASS_LOADER_LITERAL_NAME,
-                         "makeMirage",
+            invokestatic(objectMirageType.getInternalName(),
+                         "make",
                          Type.getMethodDescriptor(mirageType, objectMirrorType));
             checkcast(fieldType);
         }
@@ -231,11 +235,13 @@ public class MirageMethodGenerator extends InstructionAdapter {
                 store(setValueLocal, fieldType);
             }
 
-            aconst(MirageClassGenerator.getOriginalInternalClassName(owner));
+            getClassMirror(Type.getObjectType(owner));
             aconst(name);
-            invokestatic(CLASS_LOADER_LITERAL_NAME, 
-                         "getStaticField", 
-                         Type.getMethodDescriptor(fieldMirrorType, Type.getType(String.class), Type.getType(String.class)));
+            new MethodHandle() {
+        	protected void methodCall() throws Throwable {
+        	    Reflection.getStaticField(null, null);
+        	}
+            }.invoke(this);
             
             if (isSet) {
                 load(setValueLocal, fieldType);
@@ -321,11 +327,11 @@ public class MirageMethodGenerator extends InstructionAdapter {
         anew(mirageArrayType);
         dup();
         
-        aconst(originalElementType.getDescriptor());
+        getClassMirror(originalElementType);
         load(dimsArrayVar, intArrayType);
-        invokestatic(CLASS_LOADER_LITERAL_NAME,
-                "newArrayMirror",
-                Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.getType(String.class), intArrayType));
+        invokeinterface(classMirrorType.getInternalName(),
+                "newArray",
+                Type.getMethodDescriptor(Type.getType(ArrayMirror.class), intArrayType));
         
         invokespecial(mirageArrayType.getInternalName(), 
                       "<init>", 
@@ -418,11 +424,11 @@ public class MirageMethodGenerator extends InstructionAdapter {
             String originalTypeName = getOriginalInternalClassName(type);
             Type arrayType = makeArrayType(1, Type.getObjectType(originalTypeName));
             
-            aconst(Type.getObjectType(originalTypeName).getDescriptor());
+            getClassMirror(Type.getObjectType(type));
             swap();
-            invokestatic(CLASS_LOADER_LITERAL_NAME,
-                    "newArrayMirror",
-                    Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.getType(String.class), Type.INT_TYPE));
+            invokeinterface(classMirrorType.getInternalName(),
+                    "newArray",
+                    Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.INT_TYPE));
             
             // Instantiate the mirage class
             Type mirageArrayType = Type.getObjectType(getMirageInternalClassName(arrayType.getInternalName(), true));
@@ -460,16 +466,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
             default: throw new IllegalArgumentException("Unknown type number: " + operand);
             }
             
-            aconst(elementType.getDescriptor());
+            getClassMirror(elementType);
             swap();
-            invokestatic(CLASS_LOADER_LITERAL_NAME,
-                    "newArrayMirror",
-                    Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.getType(String.class), Type.INT_TYPE));
+            invokeinterface(classMirrorType.getInternalName(),
+                    "newArray",
+                    Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.INT_TYPE));
             
             String arrayMirageType = "edu/ubc/mirrors/mirages/" + getSortName(elementType.getSort()) + "ArrayMirage";
             
-            invokestatic(CLASS_LOADER_LITERAL_NAME,
-                    "makeMirage",
+            invokestatic(objectMirageType.getInternalName(),
+                    "make",
                     Type.getMethodDescriptor(mirageType, objectMirrorType));
             checkcast(Type.getObjectType(arrayMirageType));
             
@@ -485,15 +491,17 @@ public class MirageMethodGenerator extends InstructionAdapter {
         
         if (cst instanceof String) {
             Type mirageStringType = getMirageType(stringType);
-            invokestatic(CLASS_LOADER_LITERAL_NAME, 
-                         "makeStringMirage", 
-                         Type.getMethodDescriptor(mirageType, stringType));
+            getClassMirror(this.owner);
+            invokestatic(objectMirageType.getInternalName(),
+                         "makeStringMirage",
+                         Type.getMethodDescriptor(mirageType, stringType, classMirrorType));
             checkcast(mirageStringType);
         } else if (cst instanceof Type) {
             Type mirageClassType = getMirageType(classType);
-            invokestatic(CLASS_LOADER_LITERAL_NAME, 
-                         "makeClassMirage", 
-                         Type.getMethodDescriptor(mirageType, classType));
+            getClassMirror(this.owner);
+            invokestatic(objectMirageType.getInternalName(),
+                         "makeClassMirage",
+                         Type.getMethodDescriptor(mirageType, classType, classMirrorType));
             checkcast(mirageClassType);
         }
     }
@@ -513,20 +521,38 @@ public class MirageMethodGenerator extends InstructionAdapter {
 //        invokevirtual(Type.getInternalName(PrintStream.class), "println", Type.getMethodDescriptor(Type.VOID_TYPE, OBJECT_TYPE));
     }
     
+    public static void initializeStaticFields(Type owner, InstructionAdapter mv) {
+	// Initialize the static field that holds the ClassMirror for this holographic Class
+        mv.aconst(owner);
+        new MethodHandle() {
+    	protected void methodCall() throws Throwable {
+    	    ObjectMirage.getClassMirrorForHolographicClass(null);
+    	}
+        }.invoke(mv);
+        mv.dup();
+        mv.putstatic(owner.getInternalName(), "classMirror", classMirrorType.getDescriptor());
+        
+        // Initialize the static field that holds the native stubs instance (if any)
+        String originalClassName = MirageClassGenerator.getOriginalInternalClassName(owner.getInternalName());
+        Class<?> nativeStubsClass = ClassHolograph.getNativeStubsClass(originalClassName.replace('/', '.'));
+        if (nativeStubsClass != null) {
+            mv.dup();
+            new MethodHandle() {
+        	protected void methodCall() throws Throwable {
+        	    ObjectMirage.getNativeStubsInstanceForClassMirror(null);
+        	}
+            }.invoke(mv);
+            mv.checkcast(Type.getType(nativeStubsClass));
+            mv.putstatic(owner.getInternalName(), "nativeStubs", Type.getDescriptor(nativeStubsClass));
+        }
+    }
+    
     @Override
     public void visitCode() {
         super.visitCode();
 
         if (name.equals("<clinit>")) {
-            // Initialize the static field that holds the ClassMirror for this holographic Class
-            aconst(Type.getObjectType(owner));
-            new MethodHandle() {
-        	protected void methodCall() throws Throwable {
-        	    ObjectMirage.getClassMirrorForHolographicClass(null);
-        	}
-            }.invoke(this);
-            dup();
-            putstatic(owner, "classMirror", classMirrorType.getDescriptor());
+            initializeStaticFields(owner, this);
             
             // Skip the static initializer for classes that were already defined - 
             // these will have already been executed when
@@ -540,16 +566,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
             ifeq(afterEarlyReturn);
             areturn(Type.VOID_TYPE);
             mark(afterEarlyReturn);
-            visitFrame(Opcodes.F_NEW, 0, null, 0, null);
+            visitFrame(Opcodes.F_NEW, 0, new Object[0], 0, new Object[0]);
         }
         
         if (name.equals("<init>")) {
             lvs.newLocal(instanceMirrorType);
 
-            if (owner.equals(getMirageType(Throwable.class).getInternalName())) {
-                load(0, Type.getObjectType(owner));
+            if (owner.equals(getMirageType(Throwable.class))) {
+                load(0, owner);
                 load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
-                putfield(owner, "mirror", Type.getDescriptor(ObjectMirror.class));
+                putfield(owner.getInternalName(), "mirror", Type.getDescriptor(ObjectMirror.class));
             }
         }
     }

@@ -17,6 +17,7 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.InstructionAdapter;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.objectweb.asm.commons.Remapper;
 
@@ -89,12 +90,15 @@ public class MirageClassGenerator extends ClassVisitor {
     private String name;
     private String superName;
     
+    private boolean hasClinit = false;
+    private final Type nativeStubsType;
     private final Map<org.objectweb.asm.commons.Method, Method> mirrorMethods;
     
     public MirageClassGenerator(ClassMirror classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
         Class<?> nativeStubsClass = ClassHolograph.getNativeStubsClass(classMirror.getClassName());
         mirrorMethods = indexStubMethods(nativeStubsClass);
+        nativeStubsType = nativeStubsClass == null ? null : Type.getType(nativeStubsClass);
     }
     
     public static Map<org.objectweb.asm.commons.Method, Method> indexStubMethods(Class<?> nativeStubsClass) {
@@ -386,11 +390,12 @@ public class MirageClassGenerator extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
-if (name.equals("<clinit>")) {
-    int bp = 4;
-    bp++;
-}
-        // TODO-RS: Remove me - avoiding a race condition in ZipFileInflaterInputStream...
+
+	if (name.equals("<clinit>")) {
+	    hasClinit = true;
+	}
+	
+	// TODO-RS: Remove me - avoiding a race condition in ZipFileInflaterInputStream...
         if (name.equals("finalize")) {
             return null;
         }
@@ -430,7 +435,6 @@ if (name.equals("<clinit>")) {
         Type methodType = Type.getMethodType(desc);
         Type[] argumentTypes = methodType.getArgumentTypes();
         List<Type> stubArgumentTypes = new ArrayList<Type>(argumentTypes.length + 1);
-        stubArgumentTypes.add(Type.getType(Class.class));
         if ((Opcodes.ACC_STATIC & access) == 0) {
             stubArgumentTypes.add(getStubType(Type.getObjectType(this.name)));
         }
@@ -442,7 +446,7 @@ if (name.equals("<clinit>")) {
                 stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
         Method mirrorMethod = mirrorMethods.get(methodDesc);
         if (mirrorMethod != null) {
-            generateStaticThunk(superVisitor, desc, mirrorMethod);
+            generateNativeThunk(superVisitor, this.name, desc, mirrorMethod);
             
             return null;
         } else if ((Opcodes.ACC_NATIVE & access) != 0) {
@@ -490,14 +494,13 @@ if (name.equals("<clinit>")) {
         }
     }
 
-    public static void generateStaticThunk(MethodVisitor visitor, String desc, Method method) {
-        Class<?>[] parameterClasses = method.getParameterTypes();
+    public void generateNativeThunk(MethodVisitor visitor, String owner, String desc, Method method) {
+	Class<?>[] parameterClasses = method.getParameterTypes();
         visitor.visitCode();
         
-        assert parameterClasses[0].equals(Class.class);
-        ClassLoaderLiteralMirror.getClassLoaderLiteralClass(visitor);
+        visitor.visitFieldInsn(Opcodes.GETSTATIC, owner, "nativeStubs", nativeStubsType.getDescriptor());
         int var = 0;
-        for (int param = 1; param < parameterClasses.length; param++) {
+        for (int param = 0; param < parameterClasses.length; param++) {
             Type paramType = Type.getType(parameterClasses[param]);
             visitor.visitVarInsn(paramType.getOpcode(Opcodes.ILOAD), var);
             var += paramType.getSize();
@@ -505,7 +508,7 @@ if (name.equals("<clinit>")) {
         
         Type returnType = Type.getType(method.getReturnType());
         
-        visitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(method.getDeclaringClass()), method.getName(), Type.getMethodDescriptor(method));
+        visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, nativeStubsType.getInternalName(), method.getName(), Type.getMethodDescriptor(method));
         
         if (isRefType(returnType)) {
             visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getReturnType(desc).getInternalName());
@@ -526,9 +529,11 @@ if (name.equals("<clinit>")) {
     @Override
     public void visitEnd() {
         // Generate the static field used to store the corresponding ClassMirror
-        if (!isInterface) {
-            super.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "classMirror", classMirrorType.getDescriptor(), null, null);
-        }
+	int staticAccess = Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_STATIC;
+	super.visitField(staticAccess, "classMirror", classMirrorType.getDescriptor(), null, null);
+	if (nativeStubsType != null) {
+	    super.visitField(staticAccess, "nativeStubs", nativeStubsType.getDescriptor(), null, null);
+	}
         
         // Generate the constructor that takes a mirror instance as an Object parameter
         String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));
@@ -567,6 +572,18 @@ if (name.equals("<clinit>")) {
             methodVisitor.visitInsn(Opcodes.RETURN);
             methodVisitor.visitMaxs(2, 2);
             methodVisitor.visitEnd();
+        }
+        
+        // Add a class initialization method to initialize the static fields,
+        // if one doesn't exist already.
+        if (!hasClinit) {
+            InstructionAdapter mv = new InstructionAdapter(super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, 
+        	    "<clinit>", "()V", null, null));
+            mv.visitCode();
+            MirageMethodGenerator.initializeStaticFields(Type.getObjectType(this.name), mv);
+            mv.areturn(Type.VOID_TYPE);
+            mv.visitMaxs(2, 2);
+            mv.visitEnd();
         }
         
         super.visitEnd();

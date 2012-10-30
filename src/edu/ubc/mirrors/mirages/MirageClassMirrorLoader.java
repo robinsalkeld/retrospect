@@ -9,8 +9,6 @@ public class MirageClassMirrorLoader extends WrappingClassMirrorLoader {
 
     ClassMirrorLoader parent;
     
-    ClassLoaderLiteralMirror classLoaderLiteralMirror = new ClassLoaderLiteralMirror(vm, this);
-    
     public MirageClassMirrorLoader(MirageVirtualMachine vm, ClassMirrorLoader parent, ClassMirrorLoader originalLoader) {
         super(vm, originalLoader);
         this.parent = parent;
@@ -31,8 +29,6 @@ public class MirageClassMirrorLoader extends WrappingClassMirrorLoader {
                 throw new NoClassDefFoundError(e.getMessage());
             }
             return new MirageClassMirror((MirageVirtualMachine)vm, original, MirageClassGenerator.isImplementationClass(name));
-        } else if (name.equals(ClassLoaderLiteralMirror.CLASS_LOADER_LITERAL_NAME)) {
-            return classLoaderLiteralMirror;
         } else {
             return null;
         }

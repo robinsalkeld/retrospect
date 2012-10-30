@@ -6,14 +6,20 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 
-public class NativeConstructorAccessorImplStubs {
+public class NativeConstructorAccessorImplStubs extends NativeStubs {
 
-    public static Mirage newInstance0(Class<?> classLoaderLiteral, Mirage constructor, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    public NativeConstructorAccessorImplStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public Mirage newInstance0(Mirage constructor, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
         InstanceMirror cons = (InstanceMirror)constructor.getMirror();
         
         ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(cons, "clazz");

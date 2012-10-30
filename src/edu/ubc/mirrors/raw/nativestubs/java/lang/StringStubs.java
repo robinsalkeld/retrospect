@@ -4,11 +4,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 
-public class StringStubs {
+public class StringStubs extends NativeStubs {
+
+    public StringStubs(ClassHolograph klass) {
+	super(klass);
+    }
 
     private static Map<String, InstanceMirror> internedStrings =
            new HashMap<String, InstanceMirror>();
@@ -23,7 +29,7 @@ public class StringStubs {
         return interned;
     }
     
-    public static Mirage intern(Class<?> classLoaderLiteral, Mirage s) {
+    public Mirage intern(Mirage s) {
         InstanceMirror mirror = (InstanceMirror)s.getMirror();
         InstanceMirror interned = internMirror(mirror);
         return ObjectMirage.make(interned);

@@ -3,17 +3,22 @@ package edu.ubc.mirrors.raw.nativestubs.java.lang;
 import java.net.URL;
 
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 
-public class PackageStubs {
+public class PackageStubs extends NativeStubs {
 
-    public static Mirage getSystemPackage(Class<?> classLoaderLiteral, Mirage name) {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+    public PackageStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public Mirage getSystemPackage(Mirage name) {
+        VirtualMachineHolograph vm = getVM();
         
         String realName = Reflection.getRealStringForMirror((InstanceMirror)name.getMirror());
         URL url = vm.getBootstrapBytecodeLoader().getResource(realName.replace('.', '/') + ".package_info.java");

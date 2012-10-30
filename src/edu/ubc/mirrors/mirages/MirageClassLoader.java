@@ -88,8 +88,6 @@ public class MirageClassLoader extends ClassLoader {
         return originalLoader;
     }
     
-    public static final String CLASS_LOADER_LITERAL_NAME = "edu/ubc/mirrors/ClassLoaderLiteral";
-    
     public MirageClassLoader(VirtualMachineHolograph vm, ClassMirrorLoader originalLoader) {
         super(MirageClassLoader.class.getClassLoader());
         this.vm = vm;
@@ -205,16 +203,6 @@ public class MirageClassLoader extends ClassLoader {
             return c;
         } else {
             return super.loadClass(name, resolve);
-        }
-    }
-    
-    @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if (name.replace('.', '/').equals(CLASS_LOADER_LITERAL_NAME)) {
-            byte[] b = mirageClassMirrorLoader.classLoaderLiteralMirror.getBytecode();
-            return defineDynamicClass(name, b);
-        } else {
-            return super.findClass(name);
         }
     }
     

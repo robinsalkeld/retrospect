@@ -64,8 +64,7 @@ public class ConstructorHolograph implements ConstructorMirror {
             resolveConstructor();
             
             // Add the extra implicit mirror parameter
-            Class<?> classLoaderLiteral = mirageClassConstructor.getDeclaringClass();
-            InstanceMirror mirror = ObjectMirage.newInstanceMirror(classLoaderLiteral, classLoaderLiteral.getName().replace('/', '.'));
+            InstanceMirror mirror = getDeclaringClass().newRawInstance();
             Object[] mirageArgs = new Object[args.length + 1];
             for (int i = 0; i < args.length; i++) {
                 mirageArgs[i] = ClassHolograph.makeMirage(args[i]);

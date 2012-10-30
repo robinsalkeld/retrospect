@@ -1,12 +1,19 @@
 package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
-public class DoubleStubs {
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 
-    public static long doubleToRawLongBits(Class<?> classLoaderLiteral, double value) {
+public class DoubleStubs extends NativeStubs {
+
+    public DoubleStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public long doubleToRawLongBits(double value) {
         return Double.doubleToRawLongBits(value);
     }
 
-    public static double longBitsToDouble(Class<?> classLoaderLiteral, long value) {
+    public double longBitsToDouble(long value) {
         return Double.longBitsToDouble(value);
     }
 }

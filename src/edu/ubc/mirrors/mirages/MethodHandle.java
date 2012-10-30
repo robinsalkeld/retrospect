@@ -32,20 +32,6 @@ public abstract class MethodHandle {
         }
     };
     
-    public static MethodHandle OBJECT_MIRAGE_MAKE_STRING_MIRAGE = new MethodHandle() {
-        @Override
-        public void methodCall() {
-            ObjectMirage.makeStringMirage(null, null);
-        }
-    };
-
-    public static MethodHandle OBJECT_MIRAGE_MAKE_CLASS_MIRAGE = new MethodHandle() {
-        @Override
-        public void methodCall() {
-            ObjectMirage.makeClassMirage(null, null);
-        }
-    };
-    
     public static MethodHandle MIRAGE_CLASS_LOADER_LOAD_ORIGINAL_CLASS_MIRROR = new MethodHandle() {
         MirageClassLoader loader = null;
         @Override

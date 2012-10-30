@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -12,31 +14,29 @@ import edu.ubc.mirrors.mirages.Reflection;
 
 // TODO-RS: These should actually do the work themselves so we could theoretically
 // emulate across platforms
-public class UnixFileSystemStubs {
+public class UnixFileSystemStubs extends NativeStubs {
 
-    private static File getMappedFile(Class<?> classLoaderLiteral, Mirage f, boolean errorOnUnmapped) {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
-        
-        return vm.getMappedFile((InstanceMirror)f.getMirror(), errorOnUnmapped);
+    public UnixFileSystemStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    private File getMappedFile(Mirage f, boolean errorOnUnmapped) {
+        return klass.getVM().getMappedFile((InstanceMirror)f.getMirror(), errorOnUnmapped);
     }
     
-    public static long getLastModifiedTime(Class<?> classLoaderLiteral, Mirage fs, Mirage f) {
-        File mappedFile = getMappedFile(classLoaderLiteral, f, false);
+    public long getLastModifiedTime(Mirage fs, Mirage f) {
+        File mappedFile = getMappedFile(f, false);
         return mappedFile != null ? mappedFile.lastModified() : 0;
     }
     
-    public static Mirage canonicalize0(Class<?> classLoaderLiteral, Mirage fs, Mirage f) throws IOException {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
-        
+    public Mirage canonicalize0(Mirage fs, Mirage f) throws IOException {
         String path = Reflection.getRealStringForMirror((InstanceMirror)f.getMirror());
         String result = new File(path).getCanonicalPath();
-        return ObjectMirage.make(Reflection.makeString(vm, result));
+        return ObjectMirage.make(Reflection.makeString(klass.getVM(), result));
     }
     
-    public static int getBooleanAttributes0(Class<?> classLoaderLiteral, Mirage fs, Mirage f) {
-        File mappedFile = getMappedFile(classLoaderLiteral, f, false);
+    public int getBooleanAttributes0(Mirage fs, Mirage f) {
+        File mappedFile = getMappedFile(f, false);
         int result = 0;
         if (mappedFile == null) {
             return result;
@@ -57,8 +57,8 @@ public class UnixFileSystemStubs {
         return result;
     }
     
-    public static long getLength(Class<?> classLoaderLiteral, Mirage fs, Mirage f) {
-        File mappedFile = getMappedFile(classLoaderLiteral, f, false);
+    public long getLength(Mirage fs, Mirage f) {
+        File mappedFile = getMappedFile(f, false);
         return mappedFile.length();
     }
 }

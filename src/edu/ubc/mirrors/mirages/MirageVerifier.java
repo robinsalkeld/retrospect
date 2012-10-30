@@ -19,9 +19,6 @@ public class MirageVerifier extends BetterVerifier {
 
     @Override
     protected ClassMirror getClassMirror(Type t) {
-        if (t.getInternalName().equals(ClassLoaderLiteralMirror.CLASS_LOADER_LITERAL_NAME)) {
-            return new ClassLoaderLiteralMirror(vm, loader);
-        }
         String className = t.getClassName();
         String tPackage = className.substring(0, className.lastIndexOf('.'));
         if (tPackage.equals("edu.ubc.mirrors") || tPackage.equals("edu.ubc.mirrors.mirages") || className.equals(Throwable.class.getName())) {

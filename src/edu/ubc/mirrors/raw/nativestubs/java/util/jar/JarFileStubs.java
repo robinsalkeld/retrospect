@@ -1,13 +1,13 @@
 package edu.ubc.mirrors.raw.nativestubs.java.util.jar;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.jar.JarFile;
-import java.util.zip.ZipFile;
 
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -15,8 +15,12 @@ import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.nativestubs.java.util.zip.ZipFileStubs;
 
-public class JarFileStubs {
+public class JarFileStubs extends NativeStubs {
     
+    public JarFileStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
     private static final Method getMetaInfEntryNamesMethod;
     static {
         try {
@@ -27,13 +31,12 @@ public class JarFileStubs {
         }
     }
     
-    public static Mirage getMetaInfEntryNames(Class<?> classLoaderLiteral, Mirage jarFile) throws IllegalAccessException, NoSuchFieldException, IllegalArgumentException, InvocationTargetException {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+    public Mirage getMetaInfEntryNames(Mirage jarFile) throws IllegalAccessException, NoSuchFieldException, IllegalArgumentException, InvocationTargetException {
+        VirtualMachineHolograph vm = getVM();
         
         InstanceMirror jarFileMirror = (InstanceMirror)jarFile.getMirror();
         long jzfile = jarFileMirror.getMemberField("jzfile").getLong();
-        JarFile hostJarFile = (JarFile)ZipFileStubs.getZipFileForAddress(classLoaderLiteral, jzfile);
+        JarFile hostJarFile = (JarFile)getVM().getZipFileForAddress(jzfile);
         
         String[] result = (String[]) getMetaInfEntryNamesMethod.invoke(hostJarFile);
         

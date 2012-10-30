@@ -7,19 +7,23 @@ import java.io.IOException;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
-public class FileInputStreamStubs {
+public class FileInputStreamStubs extends NativeStubs {
 
-    public static void open(Class<?> classLoaderLiteral, Mirage fis, Mirage name) throws FileNotFoundException, IllegalAccessException, NoSuchFieldException {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+    public FileInputStreamStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public void open(Mirage fis, Mirage name) throws FileNotFoundException, IllegalAccessException, NoSuchFieldException {
+        VirtualMachineHolograph vm = klass.getVM();
         
         InstanceMirror fisMirror = (InstanceMirror)fis.getMirror();
         InstanceMirror fdMirror = (InstanceMirror)HolographInternalUtils.getField(fisMirror, "fd");
@@ -32,24 +36,21 @@ public class FileInputStreamStubs {
         vm.fileInputStreams.put(fd, hostFIS);
     }
     
-    private static FileInputStream getHostFIS(Class<?> classLoaderLiteral, Mirage fis) throws IllegalAccessException, NoSuchFieldException {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
-        
+    private FileInputStream getHostFIS(Mirage fis) throws IllegalAccessException, NoSuchFieldException {
         InstanceMirror fisMirror = (InstanceMirror)fis.getMirror();
         InstanceMirror fdMirror = (InstanceMirror)HolographInternalUtils.getField(fisMirror, "fd");
         int fd = fdMirror.getMemberField("fd").getInt();
         
-        return vm.fileInputStreams.get(fd);
+        return klass.getVM().fileInputStreams.get(fd);
     }
     
-    public static void close0(Class<?> classLoaderLiteral, Mirage fis) throws IllegalAccessException, NoSuchFieldException, IOException {
-        FileInputStream hostFIS = getHostFIS(classLoaderLiteral, fis);
+    public void close0(Mirage fis) throws IllegalAccessException, NoSuchFieldException, IOException {
+        FileInputStream hostFIS = getHostFIS(fis);
         hostFIS.close();
     }
     
-    public static int readBytes(Class<?> classLoaderLiteral, Mirage fis, Mirage b, int off, int len) throws IllegalAccessException, NoSuchFieldException, IOException {
-        FileInputStream hostFIS = getHostFIS(classLoaderLiteral, fis);
+    public int readBytes(Mirage fis, Mirage b, int off, int len) throws IllegalAccessException, NoSuchFieldException, IOException {
+        FileInputStream hostFIS = getHostFIS(fis);
         
         byte[] buffer = new byte[len];
         int result = hostFIS.read(buffer, 0, buffer.length);
@@ -60,8 +61,8 @@ public class FileInputStreamStubs {
         return result;
     }
     
-    public static int available(Class<?> classLoaderLiteral, Mirage fis) throws IllegalAccessException, NoSuchFieldException, IOException {
-	FileInputStream hostFIS = getHostFIS(classLoaderLiteral, fis);
+    public int available(Mirage fis) throws IllegalAccessException, NoSuchFieldException, IOException {
+	FileInputStream hostFIS = getHostFIS(fis);
         return hostFIS.available();
     }
 }

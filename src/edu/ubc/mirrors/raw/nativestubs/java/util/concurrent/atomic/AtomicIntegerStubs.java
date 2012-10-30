@@ -2,11 +2,17 @@ package edu.ubc.mirrors.raw.nativestubs.java.util.concurrent.atomic;
 
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.mirages.Mirage;
 
-public class AtomicIntegerStubs {
+public class AtomicIntegerStubs extends NativeStubs {
 
-    public static boolean compareAndSet(Class<?> classLoaderLiteral, Mirage thiz, int expect, int update) {
+    public AtomicIntegerStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public boolean compareAndSet(Mirage thiz, int expect, int update) {
         try {
             FieldMirror field = ((InstanceMirror)thiz.getMirror()).getMemberField("value");
             if (field.getInt() == expect) {

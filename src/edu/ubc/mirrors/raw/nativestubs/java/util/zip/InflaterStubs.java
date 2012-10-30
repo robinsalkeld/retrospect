@@ -5,10 +5,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
-import java.util.zip.ZipFile;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -17,7 +18,11 @@ import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
-public class InflaterStubs {
+public class InflaterStubs extends NativeStubs {
+
+    public InflaterStubs(ClassHolograph klass) {
+	super(klass);
+    }
 
     private static final Method resetMethod;
     private static final Method inflateBytesMethod;
@@ -61,30 +66,23 @@ public class InflaterStubs {
         }
     }
     
-    public static long init(Class<?> classLoaderLiteral, boolean nowrap) throws IllegalArgumentException, IllegalAccessException {
+    public long init(boolean nowrap) throws IllegalArgumentException, IllegalAccessException {
         Inflater hostInflator = new Inflater(nowrap);
         long address = addressField.getLong(zsRefField.get(hostInflator));
         
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
-        
-        vm.inflaterByAddress.put(address, hostInflator);
+        getVM().inflaterByAddress.put(address, hostInflator);
         return address;
     }
     
-    public static void reset(Class<?> classLoaderLiteral, long addr) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
-        
-        Inflater hostInflater = vm.getHostInflator(addr);
+    public void reset(long addr) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        Inflater hostInflater = getVM().getHostInflator(addr);
         long hostAddress = addressField.getLong(zsRefField.get(hostInflater));
         
         resetMethod.invoke(null, hostAddress);
     }
 
-    public static int inflateBytes(Class<?> classLoaderLiteral, Mirage inflater, long addr, Mirage b, int off, int len) throws DataFormatException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
-        MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+    public int inflateBytes(Mirage inflater, long addr, Mirage b, int off, int len) throws DataFormatException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
+        VirtualMachineHolograph vm = getVM();
         
         Inflater hostInflater = vm.getHostInflator(addr);
         long hostAddress = addressField.getLong(zsRefField.get(hostInflater));
@@ -120,9 +118,8 @@ public class InflaterStubs {
         return result;
     }
     
-    public static long getBytesWritten(Class<?> classLoaderLiteral, long addr) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-	MirageClassLoader callingLoader = (MirageClassLoader)classLoaderLiteral.getClassLoader();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)callingLoader.getVM();
+    public long getBytesWritten(long addr) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        VirtualMachineHolograph vm = getVM();
         
         Inflater hostInflater = vm.getHostInflator(addr);
         long hostAddress = addressField.getLong(zsRefField.get(hostInflater));

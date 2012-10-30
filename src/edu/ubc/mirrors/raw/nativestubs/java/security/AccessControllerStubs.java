@@ -3,20 +3,23 @@ package edu.ubc.mirrors.raw.nativestubs.java.security;
 
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
-import edu.ubc.mirrors.mirages.Reflection;
 
-public class AccessControllerStubs {
+public class AccessControllerStubs extends NativeStubs {
 
-    
-    public static Mirage doPrivileged(Class<?> classLoaderLiteral, final Mirage action) throws Throwable {
+    public AccessControllerStubs(ClassHolograph klass) {
+	super(klass);
+    }
+
+    public Mirage doPrivileged(final Mirage action) throws Throwable {
         try {
             return (Mirage)AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
                 @Override
@@ -28,7 +31,7 @@ public class AccessControllerStubs {
             Exception runException = t.getException();
             if (runException instanceof InvocationTargetException) {
         	InvocationTargetException ite = (InvocationTargetException)runException;
-        	Throwable toThrow = ObjectMirage.throwableAsMirage(ObjectMirage.getVM(classLoaderLiteral), t);
+        	Throwable toThrow = ObjectMirage.throwableAsMirage(getVM(), t);
         	InstanceMirror toThrowMirror = (InstanceMirror)((Mirage)toThrow).getMirror();
         	Throwable cause = ite.getCause();
         	if (cause instanceof Mirage) {
@@ -43,12 +46,12 @@ public class AccessControllerStubs {
         }
     }
     
-    public static Mirage doPrivileged(Class<?> classLoaderLiteral, final Mirage action, final Mirage context) throws Throwable {
+    public Mirage doPrivileged(final Mirage action, final Mirage context) throws Throwable {
         // TODO-RS: Hoping the context doesn't matter for my examples...
-	return doPrivileged(classLoaderLiteral, action);
+	return doPrivileged(action);
     }
     
-    public static Mirage getStackAccessControlContext(Class<?> classLoaderLiteral) {
+    public Mirage getStackAccessControlContext() {
         // TODO-RS: Not correct in general, but adequate for now
         return null;
     }
