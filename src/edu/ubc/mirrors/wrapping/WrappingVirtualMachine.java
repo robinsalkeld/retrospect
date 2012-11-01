@@ -117,6 +117,10 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return (ClassMirror)unwrapMirror(mirror);
     }
 
+    public InstanceMirror unwrapInstanceMirror(ObjectMirror mirror) {
+        return (InstanceMirror)unwrapMirror(mirror);
+    }
+
     public WrappingClassMirror getWrappedClassMirror(ClassMirror mirror) {
         return (WrappingClassMirror)getWrappedMirror(mirror);
     }
@@ -170,14 +174,6 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         result = wrapFieldMirror(fieldMirror);
         
         wrappedFieldMirrors.put(fieldMirror, result);
-        return result;
-    }
-    
-    public List<FieldMirror> getWrappedFieldList(List<FieldMirror> fields) {
-        List<FieldMirror> result = new ArrayList<FieldMirror>(fields.size());
-        for (FieldMirror field : fields) {
-            result.add(getFieldMirror(field));
-        }
         return result;
     }
     

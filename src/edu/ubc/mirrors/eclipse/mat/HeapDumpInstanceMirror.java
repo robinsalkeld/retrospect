@@ -1,20 +1,8 @@
 package edu.ubc.mirrors.eclipse.mat;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.mat.snapshot.model.Field;
-import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IInstance;
-import org.eclipse.mat.snapshot.model.IObject;
-import org.eclipse.mat.snapshot.model.IObjectArray;
-import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
-import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.ObjectMirror;
 
 public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMirror {
 
@@ -44,31 +32,9 @@ public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMir
         return heapDumpObject;
     }
     
-    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        List<Field> fields = heapDumpObject.getFields();
-        for (Field field : fields) {
-            if (field.getName().equals(name)) {
-                return new HeapDumpFieldMirror(vm, field);
-            }
-        }
-        throw new NoSuchFieldException(name);
-    }
-
-    @Override
-    public List<FieldMirror> getMemberFields() {
-        List<Field> fields = heapDumpObject.getFields();
-        List<FieldMirror> result = new ArrayList<FieldMirror>(fields.size());
-        for (Field field : fields) {
-            result.add(new HeapDumpFieldMirror(vm, field));
-        }
-        return result;
-    }
-    
     public HeapDumpClassMirror getClassMirror() {
         return (HeapDumpClassMirror)vm.makeMirror(heapDumpObject.getClazz());
     }
-
-    
     
     @Override
     public String toString() {

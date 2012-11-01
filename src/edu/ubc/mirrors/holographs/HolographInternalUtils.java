@@ -23,7 +23,7 @@ public class HolographInternalUtils {
 
     public static ObjectMirror getField(InstanceMirror o, String name) {
         try {
-            return o.getMemberField(name).get();
+            return Reflection.findField(o.getClassMirror(), name).get(o);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         } catch (NoSuchFieldException e) {
@@ -33,7 +33,7 @@ public class HolographInternalUtils {
 
     public static int getIntField(InstanceMirror o, String name) {
         try {
-            return o.getMemberField(name).getInt();
+            return Reflection.findField(o.getClassMirror(), name).getInt(o);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         } catch (NoSuchFieldException e) {
@@ -43,7 +43,7 @@ public class HolographInternalUtils {
 
     public static void setField(InstanceMirror o, String name, ObjectMirror value) {
         try {
-            o.getMemberField(name).set(value);
+            Reflection.findField(o.getClassMirror(), name).set(o, value);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         } catch (NoSuchFieldException e) {
@@ -53,7 +53,7 @@ public class HolographInternalUtils {
 
     public static void setField(InstanceMirror o, String name, int value) {
         try {
-            o.getMemberField(name).setInt(value);
+            Reflection.findField(o.getClassMirror(), name).setInt(o, value);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         } catch (NoSuchFieldException e) {

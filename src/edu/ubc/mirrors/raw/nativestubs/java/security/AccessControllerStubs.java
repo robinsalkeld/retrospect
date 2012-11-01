@@ -6,12 +6,14 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
+import edu.ubc.mirrors.mirages.Reflection;
 
 public class AccessControllerStubs extends NativeStubs {
 
@@ -36,7 +38,8 @@ public class AccessControllerStubs extends NativeStubs {
         	Throwable cause = ite.getCause();
         	if (cause instanceof Mirage) {
         	    ObjectMirror causeMirror = ((Mirage)cause).getMirror();
-        	    toThrowMirror.getMemberField("exception").set(causeMirror);
+        	    ClassMirror paeClass = klass.getVM().findBootstrapClassMirror(PrivilegedActionException.class.getName());
+        	    paeClass.getDeclaredField("exception").set(toThrowMirror, causeMirror);
         	    throw toThrow;
         	}
             }

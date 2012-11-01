@@ -15,9 +15,10 @@ public class AbstractQueuedSynchronizerStubs extends NativeStubs {
     // TODO-RS: Needs to be made thread-safe!
     public boolean compareAndSetState(Mirage thiz, int expect, int update) {
         try {
-            FieldMirror field = ((InstanceMirror)thiz.getMirror()).getMemberField("state");
-            if (field.getInt() == expect) {
-                field.setInt(update);
+            InstanceMirror instance = (InstanceMirror)thiz.getMirror();
+            FieldMirror field = klass.getDeclaredField("state");
+            if (field.getInt(instance) == expect) {
+                field.setInt(instance, update);
                 return true;
             } else {
                 return false;

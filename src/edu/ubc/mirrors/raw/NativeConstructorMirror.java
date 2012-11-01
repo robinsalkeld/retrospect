@@ -45,8 +45,7 @@ public class NativeConstructorMirror extends NativeInstanceMirror implements Con
     @Override
     public int getSlot() {
         try {
-            InstanceMirror nativeMirror = (InstanceMirror)NativeInstanceMirror.makeMirror(nativeConstructor);
-            return nativeMirror.getMemberField("slot").getInt();
+            return Constructor.class.getDeclaredField("slot").getInt(nativeConstructor);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         } catch (NoSuchFieldException e) {

@@ -89,13 +89,13 @@ public class InflaterStubs extends NativeStubs {
         
         // Transfer the relevant fields onto the host inflater
         InstanceMirror inflatorMirror = (InstanceMirror)inflater.getMirror();
-        ByteArrayMirror bufMirror = (ByteArrayMirror)inflatorMirror.getMemberField("buf").get();
+        ByteArrayMirror bufMirror = (ByteArrayMirror)klass.getDeclaredField("buf").get(inflatorMirror);
         NativeByteArrayMirror nativeBufMirror = (NativeByteArrayMirror)Reflection.copyArray(NativeVirtualMachineMirror.INSTANCE, bufMirror);
         byte[] buf = (byte[])nativeBufMirror.getNativeObject();
-        int bufOff = inflatorMirror.getMemberField("off").getInt();
-        int bufLen = inflatorMirror.getMemberField("len").getInt();
-        boolean finished = inflatorMirror.getMemberField("finished").getBoolean();
-        boolean needsDict = inflatorMirror.getMemberField("needDict").getBoolean();
+        int bufOff = klass.getDeclaredField("off").getInt(inflatorMirror);
+        int bufLen = klass.getDeclaredField("len").getInt(inflatorMirror);
+        boolean finished = klass.getDeclaredField("finished").getBoolean(inflatorMirror);
+        boolean needsDict = klass.getDeclaredField("needDict").getBoolean(inflatorMirror);
         hostInflater.setInput(buf, bufOff, bufLen);
         finishedField.setBoolean(hostInflater, finished);
         needDictField.setBoolean(hostInflater, needsDict);
@@ -108,10 +108,10 @@ public class InflaterStubs extends NativeStubs {
         int result = (Integer)inflateBytesMethod.invoke(hostInflater, hostAddress, nativeB, off, len);
         
         // Transfer the relevant fields back onto the guest inflater
-        inflatorMirror.getMemberField("off").setInt(offField.getInt(hostInflater));
-        inflatorMirror.getMemberField("len").setInt(lenField.getInt(hostInflater));
-        inflatorMirror.getMemberField("finished").setBoolean(finishedField.getBoolean(hostInflater));
-        inflatorMirror.getMemberField("needDict").setBoolean(needDictField.getBoolean(hostInflater));
+        klass.getDeclaredField("off").setInt(inflatorMirror, offField.getInt(hostInflater));
+        klass.getDeclaredField("len").setInt(inflatorMirror, lenField.getInt(hostInflater));
+        klass.getDeclaredField("finished").setBoolean(inflatorMirror, finishedField.getBoolean(hostInflater));
+        klass.getDeclaredField("needDict").setBoolean(inflatorMirror, needDictField.getBoolean(hostInflater));
         
         SystemStubs.arraycopyMirrors(nativeBMirror, 0, bMirror, 0, bMirror.length());
         

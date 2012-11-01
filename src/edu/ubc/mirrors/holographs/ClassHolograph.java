@@ -7,10 +7,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -36,7 +34,6 @@ import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
-import edu.ubc.mirrors.test.Breakpoint;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
 public class ClassHolograph extends WrappingClassMirror {
@@ -305,11 +302,16 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     @Override
-    public Map<String, ClassMirror> getDeclaredFields() {
+    public List<FieldMirror> getDeclaredFields() {
         try {
             return super.getDeclaredFields();
         } catch (UnsupportedOperationException e) {
-            return getBytecodeMirror().getDeclaredFields();
+            List<FieldMirror> bytecodeFields = getBytecodeMirror().getDeclaredFields();
+            List<FieldMirror> result = new ArrayList<FieldMirror>(bytecodeFields.size());
+            for (FieldMirror bytecodeField : bytecodeFields) {
+                result.add(vm.getFieldMirror(bytecodeField));
+            }
+            return result;
         }
     }
 
@@ -329,18 +331,15 @@ public class ClassHolograph extends WrappingClassMirror {
 
     @Override
     public InstanceMirror newRawInstance() {
+        InstanceMirror result;
         if (Reflection.isAssignableFrom(getVM().findBootstrapClassMirror(ClassLoader.class.getName()), this)) {
-            return vm.getWrappedClassLoaderMirror(new FieldMapClassMirrorLoader(this) {
-                @Override
-                public ClassMirror getClassMirror() {
-                    return getWrappedClassMirror();
-                }
-            });
+            result = new FieldMapClassMirrorLoader(wrapped);
         } else if (Reflection.isAssignableFrom(getVM().findBootstrapClassMirror(Thread.class.getName()), this)) {
-            return new FieldMapThreadMirror(this);
+            result = new FieldMapThreadMirror(wrapped);
         } else {
-            return new FieldMapMirror(this);
+            result = new FieldMapMirror(wrapped);
         }
+        return (InstanceMirror)vm.getWrappedMirror(result);
     }
     
     @Override
@@ -389,10 +388,6 @@ public class ClassHolograph extends WrappingClassMirror {
     private boolean inferInitialized() {
         BytecodeClassMirror bytecodeClassMirror = (BytecodeClassMirror)getBytecodeMirror();
         
-        if (getClassName().equals(Collections.class.getName())) {
-            Breakpoint.bp();
-        }
-        
         // TODO-RS: Make this pluggable
         if (idempotentClassInits.contains(getClassName())) {
             return false;
@@ -410,31 +405,33 @@ public class ClassHolograph extends WrappingClassMirror {
         }
         
         // Examine all the static fields in the class.
-        for (BytecodeClassMirror.StaticField bytecodeField : bytecodeClassMirror.getStaticFields().values()) {
-            try {
-                // Be sure to call the super version of getStaticField, because otherwise
-                // we will end up in infinite recursion!
-                FieldMirror heapdumpField = super.getStaticField(bytecodeField.getName());
-                
-                if (!hasDefaultValue(heapdumpField)) {
-                    // If there are any static, non-constant fields with non-null values,
-                    // then initialization must have occurred since it has to before
-                    // any static fields can be set.
-                    if (!isConstantField(bytecodeField)) {
-                        return true;
+        for (FieldMirror bytecodeField : bytecodeClassMirror.getDeclaredFields()) {
+            if (Modifier.isStatic(bytecodeField.getModifiers())) {
+                try {
+                    // Be sure to call the super version of getStaticField, because otherwise
+                    // we will end up in infinite recursion!
+                    FieldMirror wrappedField = super.getDeclaredField(bytecodeField.getName());
+
+                    if (!hasDefaultValue(wrappedField)) {
+                        // If there are any static, non-constant fields with non-null values,
+                        // then initialization must have occurred since it has to before
+                        // any static fields can be set.
+                        if (hasDefaultValue(bytecodeField)) {
+                            return true;
+                        }
+                    } else {
+                        // If there are any static fields with null/0 values,
+                        // and the <clinit> method has the effect of setting non-default values,
+                        // then initialization must not have occurred.
+                        if (!classInitInfo.isDefault(bytecodeField.getName()).couldBeDefault()) {
+                            return false;
+                        }
                     }
-                } else {
-                    // If there are any static fields with null/0 values,
-                    // and the <clinit> method has the effect of setting non-default values,
-                    // then initialization must not have occurred.
-                    if (!classInitInfo.isDefault(heapdumpField.getName()).couldBeDefault()) {
-                        return false;
-                    }
+                } catch (NoSuchFieldException e) {
+                    throw new RuntimeException(e);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
             }
         }
         
@@ -445,6 +442,8 @@ public class ClassHolograph extends WrappingClassMirror {
         
         // If it touched any other classes that haven't yet been initialized, then
         // this class must not be initialized.
+        // TODO-RS: Apply the contra-positive too: if another class has been initialized and touches this class,
+        // this class must be initialized.
         for (String touchedClass : classInitInfo.touchedClasses()) {
             ClassMirror touchedClassMirror = HolographInternalUtils.loadClassMirrorInternal(this, touchedClass.replace('/', '.'));
             if (!touchedClassMirror.initialized()) {
@@ -455,36 +454,33 @@ public class ClassHolograph extends WrappingClassMirror {
         throw new UnsupportedOperationException("Unable to infer initialization status of class: " + this);
     }
     
-    private boolean isConstantField(BytecodeClassMirror.StaticField field) {
-        try {
-            return field.getBoxedValue() != null;
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    /**
+     * @param field Static field
+     * @return
+     * @throws IllegalAccessException
+     */
     private static boolean hasDefaultValue(FieldMirror field) throws IllegalAccessException {
         Type type = Reflection.typeForClassMirror(field.getType());
         switch (type.getSort()) {
-        case Type.BOOLEAN:      return field.getBoolean() == false;
-        case Type.BYTE:         return field.getByte() == 0;
-        case Type.SHORT:        return field.getShort() == 0;
-        case Type.CHAR:         return field.getChar() == 0;
-        case Type.INT:          return field.getInt() == 0;
-        case Type.LONG:         return field.getLong() == 0;
-        case Type.FLOAT:        return field.getFloat() == 0;
-        case Type.DOUBLE:       return field.getDouble() == 0;
-        default:                return field.get() == null;
+        case Type.BOOLEAN:      return field.getBoolean(null) == false;
+        case Type.BYTE:         return field.getByte(null) == 0;
+        case Type.SHORT:        return field.getShort(null) == 0;
+        case Type.CHAR:         return field.getChar(null) == 0;
+        case Type.INT:          return field.getInt(null) == 0;
+        case Type.LONG:         return field.getLong(null) == 0;
+        case Type.FLOAT:        return field.getFloat(null) == 0;
+        case Type.DOUBLE:       return field.getDouble(null) == 0;
+        default:                return field.get(null) == null;
         }
     }
     
     @Override
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
+    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
         // Force initialization just as the VM would, in case there is
         // a <clinit> method that needs to be run.
         MirageClassLoader.initializeClassMirror(this);
 
-        return super.getStaticField(name);
+        return super.getDeclaredField(name);
     }
     
     public byte[] getRawAnnotations() {

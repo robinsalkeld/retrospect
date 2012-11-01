@@ -3,7 +3,6 @@ package edu.ubc.mirrors.raw;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -13,7 +12,6 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
 
 public class PrimitiveClassMirror implements ClassMirror {
 
@@ -42,13 +40,8 @@ public class PrimitiveClassMirror implements ClassMirror {
     }
     
     @Override
-    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        return new ClassFieldMirror(this, name);
-    }
-
-    @Override
-    public List<FieldMirror> getMemberFields() {
-        throw new UnsupportedOperationException();
+    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
+        throw new NoSuchFieldException(name);
     }
 
     @Override
@@ -107,13 +100,8 @@ public class PrimitiveClassMirror implements ClassMirror {
     }
 
     @Override
-    public Map<String, ClassMirror> getDeclaredFields() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        throw new NoSuchFieldException(name);
+    public List<FieldMirror> getDeclaredFields() {
+        return Collections.emptyList();
     }
 
     @Override

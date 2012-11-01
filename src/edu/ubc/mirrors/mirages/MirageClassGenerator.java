@@ -27,10 +27,8 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
-import edu.ubc.mirrors.test.Breakpoint;
 
 public class MirageClassGenerator extends ClassVisitor {
 
@@ -44,7 +42,6 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Type mirageType = Type.getType(Mirage.class);
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeInstanceMirror.class);
-    public static Type fieldMapMirrorType = Type.getType(FieldMapMirror.class);
     public static Type objectType = Type.getType(Object.class);
     public static Type stringType = Type.getType(String.class);
     public static Type mirageStringType = getMirageType(String.class);

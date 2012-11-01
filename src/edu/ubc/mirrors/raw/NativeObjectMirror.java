@@ -5,7 +5,7 @@ import edu.ubc.mirrors.ObjectMirror;
 
 public class NativeObjectMirror implements ObjectMirror {
 
-    private final Object object;
+    protected final Object object;
     
     public NativeObjectMirror(Object object) {
         if (object == null) {

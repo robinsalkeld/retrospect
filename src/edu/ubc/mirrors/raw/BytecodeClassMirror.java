@@ -4,10 +4,8 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,14 +44,12 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapStringMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public abstract class BytecodeClassMirror implements ClassMirror {
 
-    public static class StaticField extends BoxingFieldMirror {
+    public static class BytecodeFieldMirror extends BoxingFieldMirror {
 
         private final BytecodeClassMirror klass;
         private final String name;
@@ -61,7 +57,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         private final int access;
         private final Object value;
         
-        public StaticField(BytecodeClassMirror klass, int access, String name, ClassMirror type, Object value) {
+        public BytecodeFieldMirror(BytecodeClassMirror klass, int access, String name, ClassMirror type, Object value) {
             this.klass = klass;
             this.access = access;
             this.name = name;
@@ -71,17 +67,22 @@ public abstract class BytecodeClassMirror implements ClassMirror {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof StaticField)) {
+            if (!(obj instanceof BytecodeFieldMirror)) {
                 return false;
             }
             
-            StaticField other = (StaticField)obj;
+            BytecodeFieldMirror other = (BytecodeFieldMirror)obj;
             return klass.equals(other.klass) && name.equals(other.name);
         }
         
         @Override
         public int hashCode() {
-            return 17 + name.hashCode();
+            return 17 + klass.hashCode() + name.hashCode();
+        }
+        
+        @Override
+        public ClassMirror getDeclaringClass() {
+            return klass;
         }
         
         @Override
@@ -95,31 +96,52 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         }
 
         @Override
-        public ObjectMirror get() throws IllegalAccessException {
+        public ObjectMirror get(InstanceMirror obj) throws IllegalAccessException {
             if (value == null) {
                 return null;
             }
             
             // Value must be string
-            return new FieldMapStringMirror(klass.getVM(), (String)value);
+            return Reflection.makeString(klass.getVM(), (String)value);
         }
 
         @Override
-        public void set(ObjectMirror o) throws IllegalAccessException {
+        public boolean getBoolean(InstanceMirror obj) throws IllegalAccessException {
+            return (value == Integer.valueOf(1));
+        }
+        
+        @Override
+        public byte getByte(InstanceMirror obj) throws IllegalAccessException {
+            return ((Integer)value).byteValue();
+        }
+        
+        @Override
+        public char getChar(InstanceMirror obj) throws IllegalAccessException {
+            return (char)((Integer)value).intValue();
+        }
+        
+        @Override
+        public short getShort(InstanceMirror obj) throws IllegalAccessException {
+            return ((Integer)value).shortValue();
+        }
+        
+        @Override
+        public void set(InstanceMirror obj, ObjectMirror o) throws IllegalAccessException {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Object getBoxedValue() throws IllegalAccessException {
+        public Object getBoxedValue(InstanceMirror obj) throws IllegalAccessException {
             return value;
         }
 
         @Override
-        public void setBoxedValue(Object o) throws IllegalAccessException {
+        public void setBoxedValue(InstanceMirror obj, Object o) throws IllegalAccessException {
             throw new UnsupportedOperationException();
         }
 
-        public int getAccess() {
+        @Override
+        public int getModifiers() {
             return access;
         }
         
@@ -240,8 +262,7 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     private ClassMirror superclassNode;
     private List<ClassMirror> interfaceNodes;
     private boolean isInterface;
-    private Map<String, ClassMirror> memberFieldNames = new LinkedHashMap<String, ClassMirror>();
-    private Map<String, StaticField> staticFields = new LinkedHashMap<String, StaticField>();
+    private List<BytecodeFieldMirror> fields = new ArrayList<BytecodeFieldMirror>();
     private final List<BytecodeMethodMirror> methods = new ArrayList<BytecodeMethodMirror>();
     private byte[] rawAnnotations;
     
@@ -311,12 +332,8 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            if ((Opcodes.ACC_STATIC & access) == 0) {
-                memberFieldNames.put(name, loadClassMirrorInternal(Type.getType(desc)));
-            } else {
-                StaticField field = new StaticField(BytecodeClassMirror.this, access, name, loadClassMirrorInternal(Type.getType(desc)), value);
-                staticFields.put(name, field);
-            }
+            BytecodeFieldMirror field = new BytecodeFieldMirror(BytecodeClassMirror.this, access, name, loadClassMirrorInternal(Type.getType(desc)), value);
+            fields.add(field);
             return null;
         }
         
@@ -855,36 +872,22 @@ public abstract class BytecodeClassMirror implements ClassMirror {
     }
 
     @Override
-    public Map<String, ClassMirror> getDeclaredFields() {
+    public List<FieldMirror> getDeclaredFields() {
         resolve();
-        return Collections.unmodifiableMap(memberFieldNames);
+        return new ArrayList<FieldMirror>(fields);
     }
     
     @Override
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
+    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
         resolve();
-        FieldMirror result = staticFields.get(name);
-        if (result != null) {
-            return result;
-        } else {
-            throw new NoSuchFieldException(name);
+        for (BytecodeFieldMirror field : fields) {
+            if (field.getName().equals(name)) {
+                return field;
+            }
         }
-    }
-    
-    public Map<String, StaticField> getStaticFields() {
-        return staticFields;
-    }
-    
-    @Override
-    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        return new ClassFieldMirror(this, name);
+        throw new NoSuchFieldException(name);
     }
 
-    @Override
-    public List<FieldMirror> getMemberFields() {
-        throw new UnsupportedOperationException();
-    }
-    
     @Override
     public boolean isPrimitive() {
         return false;

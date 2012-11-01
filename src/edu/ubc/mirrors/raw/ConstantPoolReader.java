@@ -2,15 +2,11 @@ package edu.ubc.mirrors.raw;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.List;
 
 import org.objectweb.asm.ClassReader;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.mirages.Reflection;
 
@@ -62,15 +58,5 @@ public class ConstantPoolReader implements InstanceMirror {
     @Override
     public ClassMirror getClassMirror() {
         return klass.getVM().findBootstrapClassMirror(Object.class.getName());
-    }
-
-    @Override
-    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        throw new NoSuchFieldException(name);
-    }
-
-    @Override
-    public List<FieldMirror> getMemberFields() {
-        return Collections.emptyList();
     }
 }

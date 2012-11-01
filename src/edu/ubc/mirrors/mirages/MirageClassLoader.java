@@ -457,7 +457,7 @@ public class MirageClassLoader extends ClassLoader {
         } catch (IllegalAccessException e) {
             throw new InternalError();
         } catch (NoSuchFieldException e) {
-            throw new InternalError();
+            // Ignore - not a dynamically generated class
         }
     }
 }

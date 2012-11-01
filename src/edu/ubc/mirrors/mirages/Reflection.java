@@ -33,7 +33,7 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapStringMirror;
+import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -108,12 +108,26 @@ public class Reflection {
         }
     }
     
-    public static InstanceMirror makeString(VirtualMachineMirror vm, String value) {
-        if (value == null) {
+    public static InstanceMirror makeString(VirtualMachineMirror vm, String s) {
+        if (s == null) {
             return null;
         }
         
-        return new FieldMapStringMirror(vm, value);
+        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
+        InstanceMirror result = stringClass.newRawInstance();
+        ClassMirror charArrayClass = vm.getArrayClass(1, vm.getPrimitiveClass("char"));
+        
+        CharArrayMirror value = new DirectArrayMirror(charArrayClass, s.length());
+        SystemStubs.arraycopyMirrors(new NativeCharArrayMirror(s.toCharArray()), 0, value, 0, s.length());
+        try {
+            stringClass.getDeclaredField("value").set(result, value);
+            stringClass.getDeclaredField("count").setInt(result, s.length());
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
     
     public static String getRealStringForMirror(InstanceMirror mirror) {
@@ -121,17 +135,18 @@ public class Reflection {
             return null;
         }
         
-        if (!mirror.getClassMirror().getClassName().equals(String.class.getName())) {
-            throw new IllegalArgumentException("Wrong class: " + mirror.getClassMirror());
+        ClassMirror stringClass = mirror.getClassMirror();
+        if (!stringClass.getClassName().equals(String.class.getName())) {
+            throw new IllegalArgumentException("Wrong class: " + stringClass);
         }
         
         try {
-            CharArrayMirror valueMirror = (CharArrayMirror)mirror.getMemberField("value").get();
+            CharArrayMirror valueMirror = (CharArrayMirror)stringClass.getDeclaredField("value").get(mirror);
             char[] value = new char[valueMirror.length()];
             NativeCharArrayMirror nativeValueMirror = new NativeCharArrayMirror(value);
             SystemStubs.arraycopyMirrors(valueMirror, 0, nativeValueMirror, 0, value.length);
-            int offset = mirror.getMemberField("offset").getInt();
-            int count = mirror.getMemberField("count").getInt();
+            int offset = stringClass.getDeclaredField("offset").getInt(mirror);
+            int count = stringClass.getDeclaredField("count").getInt(mirror);
             return new String(value, offset, count);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
@@ -149,87 +164,6 @@ public class Reflection {
         ArrayMirror target = targetClass.newArray(otherValue.length());
         SystemStubs.arraycopyMirrors(otherValue, 0, target, 0, otherValue.length());
         return target;
-    }
-    
-    public static ObjectMirror deepcopy(VirtualMachineMirror vm, ObjectMirror mirror) {
-        return deepcopy(vm, mirror, new HashMap<ObjectMirror, ObjectMirror>());
-    }
-    
-    public static ObjectMirror deepcopy(VirtualMachineMirror vm, ObjectMirror mirror, Map<ObjectMirror, ObjectMirror> copies) {
-        if (mirror == null) {
-            return null;
-        }
-        
-        ObjectMirror result = copies.get(mirror);
-        if (result != null) {
-            return result;
-        }
-        
-        if (mirror instanceof ClassMirror) {
-            ClassMirror src = (ClassMirror)mirror;
-            if (src.getLoader() != null) {
-                throw new IllegalArgumentException("Class mirror " + src + " is not a bootstrap class");
-            }
-            result = HolographInternalUtils.loadClassMirrorInternal(vm, null, src.getClassName());
-        } else {
-            ClassMirror targetClass = (ClassMirror)deepcopy(vm, mirror.getClassMirror(), copies);
-            
-            if (mirror instanceof ArrayMirror) {
-                ArrayMirror src = (ArrayMirror)mirror;
-                int length = src.length();
-                ArrayMirror dest = targetClass.getComponentClassMirror().newArray(src.length());
-                result = dest;
-                copies.put(mirror, result);
-                
-                if (targetClass.getComponentClassMirror().isPrimitive()) {
-                    SystemStubs.arraycopyMirrors(src, 0, dest, 0, length);
-                } else {
-                    ObjectArrayMirror srcOA = (ObjectArrayMirror)src;
-                    ObjectArrayMirror destOA = (ObjectArrayMirror)dest;
-                    for (int i = 0; i < length; i++) {
-                        destOA.set(i, deepcopy(vm, srcOA.get(i), copies));
-                    }
-                }
-            } else if (mirror instanceof InstanceMirror) {
-                InstanceMirror src = (InstanceMirror)mirror;
-                InstanceMirror dest = targetClass.newRawInstance();
-                result = dest;
-                copies.put(mirror, result);
-                
-                for (FieldMirror field : src.getMemberFields()) {
-                    ClassMirror fieldType = field.getType();
-                    String fieldTypeName = fieldType.getClassName();
-                    try {
-                        FieldMirror resultField = dest.getMemberField(field.getName());
-                        if (fieldTypeName.equals("boolean")) {
-                            resultField.setBoolean(field.getBoolean());
-                        } else if (fieldTypeName.equals("byte")) {
-                            resultField.setByte(field.getByte());
-                        } else if (fieldTypeName.equals("char")) {
-                            resultField.setChar(field.getChar());
-                        } else if (fieldTypeName.equals("short")) {
-                            resultField.setShort(field.getShort());
-                        } else if (fieldTypeName.equals("int")) {
-                            resultField.setInt(field.getInt());
-                        } else if (fieldTypeName.equals("long")) {
-                            resultField.setLong(field.getLong());
-                        } else if (fieldTypeName.equals("float")) {
-                            resultField.setFloat(field.getFloat());
-                        } else if (fieldTypeName.equals("double")) {
-                            resultField.setDouble(field.getDouble());
-                        } else {
-                            resultField.set(deepcopy(vm, field.get(), copies));
-                        }
-                    } catch (NoSuchFieldException e) {
-                        throw new NoSuchFieldError(e.getMessage());
-                    } catch (IllegalAccessException e) {
-                        throw new IllegalAccessError(e.getMessage());
-                    }
-                }
-            }
-        }
-        
-        return result;
     }
     
     public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException {
@@ -395,7 +329,7 @@ public class Reflection {
         URL[] urls = new URL[paths.length];
         for (int i = 0; i < paths.length; i++) {
             try {
-                urls[i] = new File(paths[i]).toURL();
+                urls[i] = new File(paths[i]).toURI().toURL();
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -422,26 +356,25 @@ public class Reflection {
         return isAssignableFrom(classMirror, oMirror.getClassMirror());
     }
     
-    public static FieldMirror getStaticField(ClassMirror klass, String fieldName) throws NoSuchFieldException {
+    public static FieldMirror getField(ClassMirror klass, String fieldName) throws NoSuchFieldException {
         try {
-            return klass.getStaticField(fieldName);
+            return klass.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {
             // Continue
         }
         
-        // TODO-RS: Check the spec on the ordering here
-        ClassMirror superclass = klass.getSuperClassMirror();
-        if (superclass != null) {
+        for (ClassMirror i : klass.getInterfaceMirrors()) {
             try {
-                return getStaticField(superclass, fieldName);
+                return getField(i, fieldName);
             } catch (NoSuchFieldException e) {
                 // Ignore
             }
         }
         
-        for (ClassMirror i : klass.getInterfaceMirrors()) {
+        ClassMirror superclass = klass.getSuperClassMirror();
+        if (superclass != null) {
             try {
-                return getStaticField(i, fieldName);
+                return getField(superclass, fieldName);
             } catch (NoSuchFieldException e) {
                 // Ignore
             }
@@ -516,5 +449,40 @@ public class Reflection {
 	return vm.findBootstrapClassMirror(PrintStream.class.getName())
 		.getConstructor(vm.findBootstrapClassMirror(OutputStream.class.getName())).newInstance(thread, baos);
 	      
+    }
+    
+    public static List<FieldMirror> getAllFields(ClassMirror klass) {
+        List<FieldMirror> result = new ArrayList<FieldMirror>();
+        while (klass != null) {
+            result.addAll(klass.getDeclaredFields());
+            klass = klass.getSuperClassMirror();
+        }
+        return result;
+    }
+
+    public static Object getBoxedValue(FieldMirror field, InstanceMirror instance) throws IllegalAccessException {
+        Type fieldType = Reflection.typeForClassMirror(field.getType());
+        switch (fieldType.getSort()) {
+        case Type.BOOLEAN: return field.getBoolean(instance);
+        case Type.BYTE: return field.getByte(instance);
+        case Type.CHAR: return field.getChar(instance);
+        case Type.SHORT: return field.getShort(instance);
+        case Type.INT: return field.getInt(instance);
+        case Type.LONG: return field.getLong(instance);
+        case Type.FLOAT: return field.getFloat(instance);
+        case Type.DOUBLE: return field.getDouble(instance);
+        default: return field.get(instance);
+        }
+    }
+
+    public static FieldMirror findField(ClassMirror klass, String name) throws NoSuchFieldException {
+        while (klass != null) {
+            try {
+                return klass.getDeclaredField(name);
+            } catch (NoSuchFieldException e) {
+                klass = klass.getSuperClassMirror();
+            }
+        }
+        throw new NoSuchFieldException(name);
     }
 }

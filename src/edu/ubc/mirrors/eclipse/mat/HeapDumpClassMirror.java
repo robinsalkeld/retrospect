@@ -2,34 +2,30 @@ package edu.ubc.mirrors.eclipse.mat;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.Field;
+import org.eclipse.mat.snapshot.model.FieldDescriptor;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IClassLoader;
-import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class HeapDumpClassMirror implements ClassMirror {
 
     private final HeapDumpVirtualMachineMirror vm;
-    private final IClass klass;
+    protected final IClass klass;
     private final IClassLoader loader;
     
     public HeapDumpClassMirror(HeapDumpVirtualMachineMirror vm, IClass klass) {
@@ -91,22 +87,21 @@ public class HeapDumpClassMirror implements ClassMirror {
         }
         return name;
     }
-    
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
+
+    @Override
+    public FieldMirror getDeclaredField(final String name) throws NoSuchFieldException {
         List<Field> fields = klass.getStaticFields();
         for (Field field : fields) {
             if (field.getName().equals(name)) {
-                return new HeapDumpFieldMirror(vm, field);
+                return new HeapDumpFieldMirror(vm, this, field);
+            }
+        }
+        for (FieldDescriptor fd : klass.getFieldDescriptors()) {
+            if (fd.getName().equals(name)) {
+                return new HeapDumpFieldMirror(vm, this, fd);
             }
         }
         throw new NoSuchFieldException(name);
-    }
-
-    @Override
-    public FieldMirror getMemberField(final String name) throws NoSuchFieldException {
-        // The MAT model doesn't expose member fields for classes.
-        // All the fields on Class are caches though, so it's safe to start off null/0
-        return new ClassFieldMirror(this, name);
     }
     
     @Override
@@ -138,11 +133,6 @@ public class HeapDumpClassMirror implements ClassMirror {
         }
     }
     
-    @Override
-    public List<FieldMirror> getMemberFields() {
-        throw new UnsupportedOperationException();
-    }
-
     @Override
     public ClassMirror getClassMirror() {
         return vm.findBootstrapClassMirror(Class.class.getName());
@@ -205,8 +195,15 @@ public class HeapDumpClassMirror implements ClassMirror {
     }
 
     @Override
-    public Map<String, ClassMirror> getDeclaredFields() {
-        throw new UnsupportedOperationException();
+    public List<FieldMirror> getDeclaredFields() {
+        List<FieldMirror> result = new ArrayList<FieldMirror>();
+        for (Field field : klass.getStaticFields()) {
+            result.add(new HeapDumpFieldMirror(vm, this, field));
+        }
+        for (FieldDescriptor fd : klass.getFieldDescriptors()) {
+            result.add(new HeapDumpFieldMirror(vm, this, fd));
+        }
+        return result;
     }
 
     @Override

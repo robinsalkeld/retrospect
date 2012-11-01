@@ -1,8 +1,6 @@
 package edu.ubc.mirrors.wrapping;
 
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpPrimitiveArrayMirror;
-import edu.ubc.mirrors.test.Breakpoint;
 
 public class WrappingMirror implements ObjectMirror {
 

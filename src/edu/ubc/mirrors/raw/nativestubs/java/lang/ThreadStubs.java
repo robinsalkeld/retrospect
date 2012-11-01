@@ -4,15 +4,16 @@ import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapStackTraceElementMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
+import edu.ubc.mirrors.mirages.Reflection;
 
 public class ThreadStubs extends NativeStubs {
     
@@ -37,7 +38,19 @@ public class ThreadStubs extends NativeStubs {
         ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
         ObjectArrayMirror result = (ObjectArrayMirror)stackTraceElementClass.newArray(size);
         for (int i = 0; i < size; i++) {
-	    result.set(i, new FieldMapStackTraceElementMirror(vm, trace.get(i)));
+            FrameMirror frame = trace.get(i);
+            InstanceMirror element = stackTraceElementClass.newRawInstance();
+            try {
+                stackTraceElementClass.getDeclaredField("declaringClass").set(element, Reflection.makeString(vm, frame.declaringClass().getClassName()));
+                stackTraceElementClass.getDeclaredField("methodName").set(element, Reflection.makeString(vm, frame.methodName()));
+                stackTraceElementClass.getDeclaredField("fileName").set(element, Reflection.makeString(vm, frame.fileName()));
+                stackTraceElementClass.getDeclaredField("lineNumber").setInt(element, frame.lineNumber());
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+	    result.set(i, element);
 	}
         return (Mirage)ObjectMirage.make(result);
     }

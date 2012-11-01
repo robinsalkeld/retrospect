@@ -27,7 +27,7 @@ public class FileInputStreamStubs extends NativeStubs {
         
         InstanceMirror fisMirror = (InstanceMirror)fis.getMirror();
         InstanceMirror fdMirror = (InstanceMirror)HolographInternalUtils.getField(fisMirror, "fd");
-        int fd = fdMirror.getMemberField("fd").getInt();
+        int fd = fdMirror.getClassMirror().getDeclaredField("fd").getInt(fdMirror);
         
         String realName = Reflection.getRealStringForMirror((InstanceMirror)name.getMirror());
         File mappedPath = vm.getMappedFile(new File(realName), true);
@@ -39,7 +39,7 @@ public class FileInputStreamStubs extends NativeStubs {
     private FileInputStream getHostFIS(Mirage fis) throws IllegalAccessException, NoSuchFieldException {
         InstanceMirror fisMirror = (InstanceMirror)fis.getMirror();
         InstanceMirror fdMirror = (InstanceMirror)HolographInternalUtils.getField(fisMirror, "fd");
-        int fd = fdMirror.getMemberField("fd").getInt();
+        int fd = fdMirror.getClassMirror().getDeclaredField("fd").getInt(fdMirror);
         
         return klass.getVM().fileInputStreams.get(fd);
     }

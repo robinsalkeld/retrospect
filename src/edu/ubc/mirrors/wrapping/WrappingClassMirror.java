@@ -1,9 +1,7 @@
 package edu.ubc.mirrors.wrapping;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -12,7 +10,6 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class WrappingClassMirror extends WrappingInstanceMirror implements ClassMirror {
@@ -75,18 +72,8 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
 
     @Override
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        return vm.getFieldMirror(wrapped.getStaticField(name));
-    }
-
-    @Override
-    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        return vm.getFieldMirror(wrapped.getMemberField(name));
-    }
-    
-    @Override
-    public List<FieldMirror> getMemberFields() {
-        return vm.getWrappedFieldList(wrapped.getMemberFields());
+    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
+        return vm.getFieldMirror(wrapped.getDeclaredField(name));
     }
     
     @Override
@@ -95,10 +82,10 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
     
     @Override
-    public Map<String, ClassMirror> getDeclaredFields() {
-        Map<String, ClassMirror> wrappedFields = new HashMap<String, ClassMirror>();
-        for (Map.Entry<String, ClassMirror> entry : wrapped.getDeclaredFields().entrySet()) {
-            wrappedFields.put(entry.getKey(), vm.getWrappedClassMirror(entry.getValue()));
+    public List<FieldMirror> getDeclaredFields() {
+        List<FieldMirror> wrappedFields = new ArrayList<FieldMirror>();
+        for (FieldMirror field : wrapped.getDeclaredFields()) {
+            wrappedFields.add(vm.getFieldMirror(field));
         }
         return wrappedFields;
     }

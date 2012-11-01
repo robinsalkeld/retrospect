@@ -26,9 +26,9 @@ public interface ClassMirror extends InstanceMirror {
     
     public List<ClassMirror> getInterfaceMirrors();
     
-    public Map<String, ClassMirror> getDeclaredFields();
+    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException;
     
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException;
+    public List<FieldMirror> getDeclaredFields();
     
     public List<InstanceMirror> getInstances();
 

@@ -3,19 +3,12 @@ package edu.ubc.mirrors.jdi;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.Location;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapStackTraceElementMirror;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class JDIThreadMirror extends JDIInstanceMirror implements ThreadMirror {
 

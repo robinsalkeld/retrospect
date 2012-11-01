@@ -7,7 +7,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.objectweb.asm.Type;
 
@@ -19,7 +18,6 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.fieldmap.ClassFieldMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class ArrayClassMirror implements ClassMirror {
@@ -67,23 +65,13 @@ public class ArrayClassMirror implements ClassMirror {
     }
     
     @Override
-    public FieldMirror getMemberField(final String name) throws NoSuchFieldException {
-        return new ClassFieldMirror(this, name);
+    public FieldMirror getDeclaredField(final String name) throws NoSuchFieldException {
+        throw new NoSuchFieldException(name);
     }
 
     @Override
-    public List<FieldMirror> getMemberFields() {
-        return Collections.emptyList();
-    }
-    
-    @Override
     public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
         return Collections.emptyList();
-    }
-    
-    @Override
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        throw new NoSuchFieldException(name);
     }
     
     @Override
@@ -145,8 +133,8 @@ public class ArrayClassMirror implements ClassMirror {
     }
     
     @Override
-    public Map<String, ClassMirror> getDeclaredFields() {
-        return Collections.emptyMap();
+    public List<FieldMirror> getDeclaredFields() {
+        return Collections.emptyList();
     }
     
     @Override

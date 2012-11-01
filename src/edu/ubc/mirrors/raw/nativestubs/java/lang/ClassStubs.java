@@ -12,6 +12,7 @@ import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
@@ -124,20 +125,20 @@ public class ClassStubs extends NativeStubs {
     
     public Mirage getDeclaredFields0(Mirage klass, boolean publicOnly) {
         ClassMirror classMirror = (ClassMirror)klass.getMirror();
-        Map<String, ClassMirror> fields = classMirror.getDeclaredFields();
+        List<FieldMirror> fields = classMirror.getDeclaredFields();
         ClassMirror constructorClass = getVM().findBootstrapClassMirror(Field.class.getName());
         ObjectArrayMirror result = (ObjectArrayMirror)constructorClass.newArray(fields.size());
         int i = 0;
-        for (Map.Entry<String, ClassMirror> entry : fields.entrySet()) {
+        for (FieldMirror field : fields) {
             InstanceMirror inst = constructorClass.newRawInstance();
             
             HolographInternalUtils.setField(inst, "clazz", classMirror);
             // The name must be interned according to spec
-            HolographInternalUtils.setField(inst, "name", StringStubs.internMirror(Reflection.makeString(getVM(), entry.getKey())));
-            HolographInternalUtils.setField(inst, "type", entry.getValue());
-            // TODO-RS: Might be time to finally fix the fields API...
-            HolographInternalUtils.setField(inst, "slot", 0);
-            HolographInternalUtils.setField(inst, "modifiers", Modifier.PUBLIC);
+            HolographInternalUtils.setField(inst, "name", StringStubs.internMirror(Reflection.makeString(getVM(), field.getName())));
+            HolographInternalUtils.setField(inst, "type", field.getType());
+            HolographInternalUtils.setField(inst, "slot", i);
+            HolographInternalUtils.setField(inst, "modifiers", field.getModifiers());
+            // TODO-RS: field annotations/signatures
             HolographInternalUtils.setField(inst, "annotations", Reflection.copyArray(getVM(), (ArrayMirror)NativeInstanceMirror.makeMirror(new byte[0])));
             HolographInternalUtils.setField(inst, "signature", Reflection.makeString(getVM(), ""));
             

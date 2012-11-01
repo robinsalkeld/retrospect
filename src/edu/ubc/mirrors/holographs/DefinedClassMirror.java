@@ -9,7 +9,7 @@ import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 
-public class DefinedClassMirror extends BytecodeClassMirror {
+public class DefinedClassMirror extends BytecodeClassMirror implements NewHolographInstance {
     
     public DefinedClassMirror(VirtualMachineHolograph vm, ClassLoaderHolograph loader, String className, byte[] bytecode) {
         super(className);

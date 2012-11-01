@@ -108,13 +108,14 @@ public class ObjectMirage implements Mirage {
         
         try {
             ObjectArrayMirror arrayMirror = (ObjectArrayMirror)mirage.getMirror();
+            ClassMirror steClass = arrayMirror.getClassMirror().getComponentClassMirror();
             StackTraceElement[] result = new StackTraceElement[arrayMirror.length()];
             for (int i = 0; i < result.length; i++) {
                 InstanceMirror element = (InstanceMirror)arrayMirror.get(i);
-                String declaringClass = Reflection.getRealStringForMirror((InstanceMirror)element.getMemberField("declaringClass").get());
-                String methodName = Reflection.getRealStringForMirror((InstanceMirror)element.getMemberField("methodName").get());
-                String fileName = Reflection.getRealStringForMirror((InstanceMirror)element.getMemberField("fileName").get());
-                int lineNumber = element.getMemberField("lineNumber").getInt();
+                String declaringClass = Reflection.getRealStringForMirror((InstanceMirror)steClass.getDeclaredField("declaringClass").get(element));
+                String methodName = Reflection.getRealStringForMirror((InstanceMirror)steClass.getDeclaredField("methodName").get(element));
+                String fileName = Reflection.getRealStringForMirror((InstanceMirror)steClass.getDeclaredField("fileName").get(element));
+                int lineNumber = steClass.getDeclaredField("lineNumber").getInt(element);
                 
                 result[i] = new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
             }
@@ -237,32 +238,30 @@ public class ObjectMirage implements Mirage {
         if (mirror instanceof InstanceMirror) {
             InstanceMirror instanceMirror = (InstanceMirror)mirror;
             InstanceMirror result = mirror.getClassMirror().newRawInstance();
-            for (FieldMirror field : instanceMirror.getMemberFields()) {
+            ClassMirror classMirror = instanceMirror.getClassMirror();
+            for (FieldMirror field : Reflection.getAllFields(classMirror)) {
                 ClassMirror fieldType = field.getType();
                 String typeName = fieldType.getClassName();
                 try {
-                    FieldMirror resultField = result.getMemberField(field.getName());
                     if (typeName.equals(Boolean.TYPE.getName())) {
-                        resultField.setBoolean(field.getBoolean());
+                        field.setBoolean(result, field.getBoolean(instanceMirror));
                     } else if (typeName.equals(Byte.TYPE.getName())) {
-                        resultField.setByte(field.getByte());
+                        field.setByte(result, field.getByte(instanceMirror));
                     } else if (typeName.equals(Character.TYPE.getName())) {
-                        resultField.setChar(field.getChar());
+                        field.setChar(result, field.getChar(instanceMirror));
                     } else if (typeName.equals(Short.TYPE.getName())) {
-                        resultField.setShort(field.getShort());
+                        field.setShort(result, field.getShort(instanceMirror));
                     } else if (typeName.equals(Integer.TYPE.getName())) {
-                        resultField.setInt(field.getInt());
+                        field.setInt(result, field.getInt(instanceMirror));
                     } else if (typeName.equals(Long.TYPE.getName())) {
-                        resultField.setLong(field.getLong());
+                        field.setLong(result, field.getLong(instanceMirror));
                     } else if (typeName.equals(Float.TYPE.getName())) {
-                        resultField.setFloat(field.getFloat());
+                        field.setFloat(result, field.getFloat(instanceMirror));
                     } else if (typeName.equals(Double.TYPE.getName())) {
-                        resultField.setDouble(field.getDouble());
+                        field.setDouble(result, field.getDouble(instanceMirror));
                     } else {
-                        resultField.set(field.get());
+                        field.set(result, field.get(instanceMirror));
                     }
-                } catch (NoSuchFieldException e) {
-                    throw new NoSuchFieldError(e.getMessage());
                 } catch (IllegalAccessException e) {
                     throw new IllegalAccessError(e.getMessage());
                 }

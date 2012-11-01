@@ -10,10 +10,8 @@ import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.raw.nativestubs.java.util.zip.ZipFileStubs;
 
 public class JarFileStubs extends NativeStubs {
     
@@ -35,7 +33,7 @@ public class JarFileStubs extends NativeStubs {
         VirtualMachineHolograph vm = getVM();
         
         InstanceMirror jarFileMirror = (InstanceMirror)jarFile.getMirror();
-        long jzfile = jarFileMirror.getMemberField("jzfile").getLong();
+        long jzfile = klass.getSuperClassMirror().getDeclaredField("jzfile").getLong(jarFileMirror);
         JarFile hostJarFile = (JarFile)getVM().getZipFileForAddress(jzfile);
         
         String[] result = (String[]) getMetaInfEntryNamesMethod.invoke(hostJarFile);

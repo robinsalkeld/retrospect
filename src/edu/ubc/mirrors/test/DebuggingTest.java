@@ -56,13 +56,13 @@ public class DebuggingTest {
         Reflection.withThread(thread, new Callable<Void>() {
             public Void call() throws Exception {
         	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);
-        	traceClass.getStaticField("TRACELEVEL").setInt(2);
+        	traceClass.getDeclaredField("TRACELEVEL").setInt(null, 2);
         	
 //        	InstanceMirror baos = vm.findBootstrapClassMirror(ByteArrayOutputStream.class.getName())
 //        		.getConstructor().newInstance(thread);
 //        	InstanceMirror stream = vm.findBootstrapClassMirror(PrintStream.class.getName())
 //        		.getConstructor(vm.findBootstrapClassMirror(OutputStream.class.getName())).newInstance(thread, baos);
-        	InstanceMirror stream = (InstanceMirror)vm.findBootstrapClassMirror(System.class.getName()).getStaticField("out").get();
+        	InstanceMirror stream = (InstanceMirror)vm.findBootstrapClassMirror(System.class.getName()).getDeclaredField("out").get(null);
         	MethodMirror method = traceClass.getMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
                 method.invoke(thread, null, stream);
         	

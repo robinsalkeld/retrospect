@@ -7,6 +7,7 @@ import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.IPathsFromGCRootsComputer;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.Field;
+import org.eclipse.mat.snapshot.model.FieldDescriptor;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.IObject;
@@ -16,18 +17,21 @@ import org.eclipse.mat.snapshot.model.ObjectReference;
 
 import edu.ubc.mirrors.BoxingFieldMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HeapDumpFieldMirror extends BoxingFieldMirror {
 
-    private final Field field;
+    private final HeapDumpClassMirror declaringClass;
+    private final FieldDescriptor fieldDescriptor;
     
     private final HeapDumpVirtualMachineMirror vm;
     
-    public HeapDumpFieldMirror(HeapDumpVirtualMachineMirror vm, Field field) {
+    public HeapDumpFieldMirror(HeapDumpVirtualMachineMirror vm, HeapDumpClassMirror declaringClass, FieldDescriptor fieldDescriptor) {
         this.vm = vm;
-        this.field = field;
+        this.declaringClass = declaringClass;
+        this.fieldDescriptor = fieldDescriptor;
     }
     
     @Override
@@ -36,26 +40,66 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
             return false;
         }
         
-        return field.equals(((HeapDumpFieldMirror)obj).field);
+        HeapDumpFieldMirror other = (HeapDumpFieldMirror)obj;
+        return declaringClass.equals(other.declaringClass) && fieldDescriptor.equals(other.fieldDescriptor);
     }
     
     @Override
     public int hashCode() {
-        return 7 * field.hashCode();
+        return 7 * declaringClass.hashCode() * fieldDescriptor.hashCode();
     }
     
     @Override
-    public Object getBoxedValue() throws IllegalAccessException {
-        return field.getValue();
+    public ClassMirror getDeclaringClass() {
+        return declaringClass;
     }
     
+    @Override
+    public Object getBoxedValue(InstanceMirror obj) throws IllegalAccessException {
+        if (fieldDescriptor instanceof Field) {
+            // Static field
+            return ((Field)fieldDescriptor).getValue();
+        } else {
+            if (obj instanceof HeapDumpClassMirror) {
+                // The MAT model doesn't expose member fields for classes.
+                // All the fields on Class are caches though, so it's safe to start off null/0
+                return null;
+            } else {
+                // Need to account for field shadowing manually
+                IInstance heapDumpObject = ((HeapDumpInstanceMirror)obj).heapDumpObject;
+                ClassMirror thisClass = obj.getClassMirror();
+                for (Field field : heapDumpObject.getFields()) {
+                    if (field.getName().equals(fieldDescriptor.getName())) {
+                        // Move up the hierarchy until we find the next field of this name
+                        for (;;) {
+                            try {
+                                thisClass.getDeclaredField(fieldDescriptor.getName());
+                                break;
+                            } catch (NoSuchFieldException e) {
+                                thisClass = thisClass.getSuperClassMirror();
+                            }
+                        }
+                        
+                        if (thisClass.equals(declaringClass)) {
+                            return field.getValue();
+                        } else {
+                            thisClass = thisClass.getSuperClassMirror();
+                        }
+                    }
+                }
+                
+                throw new InternalError();
+            }
+        }
+    }
+
     @Override
     public String getName() {
-        return field.getName();
+        return fieldDescriptor.getName();
     }
     
     public Class<?> getKlass() {
-        switch (field.getType()) {
+        switch (fieldDescriptor.getType()) {
         case IObject.Type.BOOLEAN: return Boolean.TYPE;
         case IObject.Type.BYTE: return Byte.TYPE;
         case IObject.Type.CHAR: return Character.TYPE;
@@ -74,8 +118,13 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         return (ClassMirror)NativeInstanceMirror.makeMirror(getKlass());
     }
     
-    public ObjectMirror get() throws IllegalAccessException {
-        Object value = field.getValue();
+    @Override
+    public int getModifiers() {
+        throw new UnsupportedOperationException();
+    }
+    
+    public ObjectMirror get(InstanceMirror obj) throws IllegalAccessException {
+        Object value = getBoxedValue(obj);
         ObjectReference ref = (ObjectReference)value;
         if (ref == null) {
             return null;
@@ -160,13 +209,17 @@ public class HeapDumpFieldMirror extends BoxingFieldMirror {
         return "(?: from " + from.getClazz().getName() + " to " + to.getClazz().getName() + ")";
     }
     
-    public void set(ObjectMirror o) throws IllegalAccessException {
+    public void set(InstanceMirror obj, ObjectMirror o) throws IllegalAccessException {
         throw new UnsupportedOperationException();
     }
     
     @Override
-    public void setBoxedValue(Object o) throws IllegalAccessException {
+    public void setBoxedValue(InstanceMirror obj, Object o) throws IllegalAccessException {
         throw new UnsupportedOperationException();
     }
     
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": " + fieldDescriptor.getVerboseSignature() + " " + fieldDescriptor.getName();
+    }
 }

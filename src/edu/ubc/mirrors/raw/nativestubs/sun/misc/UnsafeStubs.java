@@ -1,8 +1,8 @@
 package edu.ubc.mirrors.raw.nativestubs.sun.misc;
 
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
@@ -91,9 +91,8 @@ public class UnsafeStubs extends NativeStubs {
             array.set((int)((offset - 16) / 4), ObjectMirage.getMirror(element));
         } else if (mirror instanceof InstanceMirror) {
             InstanceMirror instance = (InstanceMirror)mirror;
-            // TODO-RS: Fix ClassMirror interface to return ordered list of FieldMirrors instead
-            String field = fieldForOffset(instance, offset);
-            instance.getMemberField(field).set(ObjectMirage.getMirror(element));
+            FieldMirror field = fieldForOffset(instance, offset);
+            field.set(instance, ObjectMirage.getMirror(element));
         } else {
             throw new InternalError();
         }
@@ -104,47 +103,51 @@ public class UnsafeStubs extends NativeStubs {
         ClassMirror klass = (ClassMirror)HolographInternalUtils.getField(fieldMirror, "clazz");
         String fieldName = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(fieldMirror, "name"));
         long fieldOffset = 12;
-        for (Map.Entry<String, ClassMirror> entry : klass.getDeclaredFields().entrySet()) {
-            ClassMirror fieldType = entry.getValue();
-            if (fieldType.isPrimitive()) {
-                String name = fieldType.getClassName();
-                if (name.equals("int")) {
-                    fieldOffset += 4;
+        for (FieldMirror declaredField : klass.getDeclaredFields()) {
+            if (!Modifier.isStatic(declaredField.getModifiers())) {
+                ClassMirror fieldType = declaredField.getType();
+                if (fieldType.isPrimitive()) {
+                    String name = fieldType.getClassName();
+                    if (name.equals("int")) {
+                        fieldOffset += 4;
+                    } else {
+                        throw new InternalError("Unsupported type: " + name);
+                    }
                 } else {
-                    throw new InternalError("Unsupported type: " + name);
+                    fieldOffset += 4;
                 }
-            } else {
-                fieldOffset += 4;
-            }
-            
-            if (fieldName.equals(entry.getKey())) {
-                return fieldOffset;
+                
+                if (fieldName.equals(declaredField.getName())) {
+                    return fieldOffset;
+                }
             }
         }
         
         throw new InternalError("wrong field name???");
     }
     
-    private String fieldForOffset(InstanceMirror instance, long offset) {
+    private FieldMirror fieldForOffset(InstanceMirror instance, long offset) {
         ClassMirror klass = instance.getClassMirror();
         long fieldOffset = 12;
-        for (Map.Entry<String, ClassMirror> entry : klass.getDeclaredFields().entrySet()) {
-            ClassMirror fieldType = entry.getValue();
-            if (fieldType.isPrimitive()) {
-                String name = fieldType.getClassName();
-                if (name.equals("int")) {
-                    fieldOffset += 4;
+        for (FieldMirror field : klass.getDeclaredFields()) {
+            if (!Modifier.isStatic(field.getModifiers())) {
+                ClassMirror fieldType = field.getType();
+                if (fieldType.isPrimitive()) {
+                    String name = fieldType.getClassName();
+                    if (name.equals("int")) {
+                        fieldOffset += 4;
+                    } else {
+                        throw new InternalError("Unsupported type: " + name);
+                    }
                 } else {
-                    throw new InternalError("Unsupported type: " + name);
+                    fieldOffset += 4;
                 }
-            } else {
-                fieldOffset += 4;
-            }
-            
-            if (fieldOffset == offset) {
-                return entry.getKey();
-            } else if (fieldOffset > offset) {
-                throw new InternalError("Non-aligned offset???");
+                
+                if (fieldOffset == offset) {
+                    return field;
+                } else if (fieldOffset > offset) {
+                    throw new InternalError("Non-aligned offset???");
+                }
             }
         }
         
@@ -166,13 +169,11 @@ public class UnsafeStubs extends NativeStubs {
             }
         } else if (mirror instanceof InstanceMirror) {
             InstanceMirror instance = (InstanceMirror)mirror;
-            // TODO-RS: Fix ClassMirror interface to return ordered list of FieldMirrors instead
-            String fieldName = fieldForOffset(instance, offset);
-            FieldMirror field = instance.getMemberField(fieldName);
+            FieldMirror field = fieldForOffset(instance, offset);
 
-            ObjectMirror current = field.get();
+            ObjectMirror current = field.get(instance);
             if (current == ObjectMirage.getMirror(oldValue)) {
-                field.set(newValue.getMirror());
+                field.set(instance, newValue.getMirror());
                 return true;
             } else {
                 return false;

@@ -3,12 +3,7 @@ package edu.ubc.mirrors.jdi;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
-
-import org.eclipse.mat.snapshot.model.IClass;
 
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.ClassNotLoadedException;
@@ -30,7 +25,6 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
-import edu.ubc.mirrors.test.Breakpoint;
 
 public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
@@ -126,35 +120,30 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
-    public Map<String, ClassMirror> getDeclaredFields() {
+    public List<FieldMirror> getDeclaredFields() {
         if (refType instanceof ClassType) {
-            Map<String, ClassMirror> result = new HashMap<String, ClassMirror>();
+            List<FieldMirror> result = new ArrayList<FieldMirror>();
             for (Field field : ((ClassType)refType).fields()) {
-                try {
-                    result.put(field.name(), vm.makeClassMirror(field.type()));
-                } catch (ClassNotLoadedException e) {
-                    // Re-raise as unsupported so that holographs can take care of this
-                    throw new UnsupportedOperationException();
-                }
+                result.add(new JDIFieldMirror(vm, field));
             }
             return result;
         } else {
-            return Collections.emptyMap();
+            return Collections.emptyList();
         }
     }
 
     @Override
-    public FieldMirror getStaticField(String name) throws NoSuchFieldException {
+    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
         if (refType instanceof ClassType) {
             Field field = ((ClassType)refType).fieldByName(name);
             if (field != null) {
-                return new JDIStaticFieldMirror(vm, refType, field);
+                return new JDIFieldMirror(vm, field);
             }
         }
         
         throw new NoSuchFieldException(name);
     }
-
+    
     @Override
     public List<InstanceMirror> getInstances() {
         List<InstanceMirror> result = new ArrayList<InstanceMirror>();

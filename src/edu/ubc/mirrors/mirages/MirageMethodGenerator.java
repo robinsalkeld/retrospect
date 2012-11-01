@@ -188,90 +188,46 @@ public class MirageMethodGenerator extends InstructionAdapter {
         }
     }
     
-    private void fieldMirrorInsn(boolean isSet, Type fieldType) {
-        Type fieldTypeForMirrorCall = fieldType;
-        int fieldSort = fieldType.getSort();
-        String suffix = "";
-        if (fieldSort == Type.ARRAY || fieldSort == Type.OBJECT) {
-            fieldTypeForMirrorCall = objectMirrorType;
-        } else {
-            suffix = MirageClassGenerator.getSortName(fieldSort);
-        }
-        
-        // Call the appropriate getter/setter method on the mirror
-        String methodDesc;
-        if (isSet) {
-            methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, fieldTypeForMirrorCall);
-        } else {
-            methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall);
-        }
-        if (isSet && fieldTypeForMirrorCall.equals(objectMirrorType)) {
-            invokestatic(objectMirageType.getInternalName(), 
-                         "getMirror", 
-                         Type.getMethodDescriptor(objectMirrorType, OBJECT_TYPE));
-        }
-        invokeinterface(MirageClassGenerator.fieldMirrorType.getInternalName(), 
-                        (isSet ? "set" : "get") + suffix, 
-                        methodDesc);
-        
-        if (!isSet && fieldTypeForMirrorCall.equals(objectMirrorType)) {
-            invokestatic(objectMirageType.getInternalName(),
-                         "make",
-                         Type.getMethodDescriptor(mirageType, objectMirrorType));
-            checkcast(fieldType);
-        }
-    }
-    
     @Override
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
         boolean isSet = (opcode == Opcodes.PUTFIELD || opcode == Opcodes.PUTSTATIC);
         boolean isStatic = (opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC);
 
         Type fieldType = Type.getType(desc);
-
+        
         if (isStatic) {
+            // For a static field the instance is null
             int setValueLocal = lvs.newLocal(fieldType);
             if (isSet) {
                 store(setValueLocal, fieldType);
             }
-
-            getClassMirror(Type.getObjectType(owner));
-            aconst(name);
-            new MethodHandle() {
-        	protected void methodCall() throws Throwable {
-        	    Reflection.getStaticField(null, null);
-        	}
-            }.invoke(this);
-            
+            aconst(null);
             if (isSet) {
                 load(setValueLocal, fieldType);
             }
-            
-            fieldMirrorInsn(isSet, fieldType);
-            
-            return;
-        }
-        
-        // If this is an "uninitialized this", the mirror is the nth argument instead
-        // of the mirror field on ObjectMirage.
-        Object stackType = stackType(isSet ? 1 : 0);
-        if (stackType == Opcodes.UNINITIALIZED_THIS) {
-            // Pop the original argument
-            int setValueLocal = lvs.newLocal(fieldType);
-            if (isSet) {
-                store(setValueLocal, fieldType);
-            }
+        } else {
+            // If this is an "uninitialized this", the mirror is the nth argument instead
+            // of the mirror field on ObjectMirage.
+            Object stackType = stackType(isSet ? 1 : 0);
+            if (stackType == Opcodes.UNINITIALIZED_THIS) {
+                // Pop the original argument
+                int setValueLocal = lvs.newLocal(fieldType);
+                if (isSet) {
+                    store(setValueLocal, fieldType);
+                }
 
-            pop();
-            load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
+                pop();
+                load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
 
-            MethodHandle.OBJECT_MIRAGE_MAKE.invoke(this);
+                MethodHandle.OBJECT_MIRAGE_MAKE.invoke(this);
 
-            if (isSet) {
-                load(setValueLocal, fieldType);
+                if (isSet) {
+                    load(setValueLocal, fieldType);
+                }
             }
         }
-        
+
+        getClassMirror(Type.getObjectType(owner));
         aconst(name);
         
         Type fieldTypeForMirrorCall = fieldType;
@@ -286,9 +242,9 @@ public class MirageMethodGenerator extends InstructionAdapter {
         // Call the appropriate getter/setter method on the mirror
         String methodDesc;
         if (isSet) {
-            methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, mirageType, fieldTypeForMirrorCall, stringType);
+            methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, mirageType, fieldTypeForMirrorCall, classMirrorType, stringType);
         } else {
-            methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall, mirageType, stringType);
+            methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall, mirageType, classMirrorType, stringType);
         }
         invokestatic(instanceMirageType.getInternalName(), 
                      (isSet ? "set" : "get") + suffix + "Field", 

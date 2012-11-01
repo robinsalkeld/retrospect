@@ -1,14 +1,12 @@
 package edu.ubc.mirrors.fieldmap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import edu.ubc.mirrors.BoxingArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
-
-import edu.ubc.mirrors.BoxingArrayMirror;
 
 public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayMirror {
 

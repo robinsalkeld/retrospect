@@ -6,14 +6,11 @@ import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.objectweb.asm.Type;
 
@@ -24,14 +21,8 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.raw.NativeInstanceMirror.NativeFieldMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.ThreadStubs;
 
 public class NativeClassMirror extends NativeInstanceMirror implements ClassMirror {
 
@@ -139,20 +130,9 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
             return NativeSystemSecurityField.INSTANCE;
         }
         
-        try {
-            Field field = klass.getDeclaredField(name);
-            if (Modifier.isStatic(field.getModifiers())) {
-                return new NativeFieldMirror(field, null);
-            }
-        } catch (NoSuchFieldException e) {
-            // ignore
-        }
-        
-        // Crap, fall back to manual search
-        for (Field f : klass.getDeclaredFields()) {
-            if (f.getName().equals(name) && Modifier.isStatic(f.getModifiers())) {
-                return new NativeFieldMirror(f, null);
-            }
+        Field field = klass.getDeclaredField(name);
+        if (Modifier.isStatic(field.getModifiers())) {
+            return new NativeFieldMirror(field);
         }
         
         throw new NoSuchFieldException();
@@ -180,22 +160,15 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
 
     @Override
-    public FieldMirror getMemberField(String name) throws NoSuchFieldException {
-        return NativeInstanceMirror.getField(klass, name, false);
+    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
+        return new NativeFieldMirror(klass.getDeclaredField(name));
     }
     
     @Override
-    public List<FieldMirror> getMemberFields() {
-        return NativeInstanceMirror.getMemberFields(klass);
-    }
-
-    @Override
-    public Map<String, ClassMirror> getDeclaredFields() {
-        Map<String, ClassMirror> fields = new HashMap<String, ClassMirror>();
+    public List<FieldMirror> getDeclaredFields() {
+        List<FieldMirror> fields = new ArrayList<FieldMirror>();
         for (Field f : klass.getDeclaredFields()) {
-            if (!Modifier.isStatic(f.getModifiers())) {
-                fields.put(f.getName(), (ClassMirror)NativeInstanceMirror.makeMirror(f.getType()));
-            }
+            fields.add(new NativeFieldMirror(f));
         }
         return fields;
     }
