@@ -39,7 +39,7 @@ public class AccessControllerStubs extends NativeStubs {
         	if (cause instanceof Mirage) {
         	    ObjectMirror causeMirror = ((Mirage)cause).getMirror();
         	    ClassMirror paeClass = klass.getVM().findBootstrapClassMirror(PrivilegedActionException.class.getName());
-        	    paeClass.getDeclaredField("exception").set(toThrowMirror, causeMirror);
+        	    toThrowMirror.set(paeClass.getDeclaredField("exception"), causeMirror);
         	    throw toThrow;
         	}
             }

@@ -1,23 +1,15 @@
 package edu.ubc.mirrors.holographs;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.wrapping.WrappingFieldMirror;
-import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
 
 public class MutableFieldMirror extends WrappingFieldMirror {
 
     private final ClassHolograph klass;
     private final FieldMirror immutableFieldMirror;
-    // Note null keys are used for static fields.
-    // TODO-RS: There is probably a much more efficient implementation of this,
-    // but this way I don't have to assume only one class of InstanceMirror.
-    private Map<InstanceMirror, Object> newValues = new HashMap<InstanceMirror, Object>();
     
     private FieldMirror bytecodeField;
     
@@ -57,157 +49,130 @@ public class MutableFieldMirror extends WrappingFieldMirror {
         return bytecodeField;
     }
     
-    private boolean isNewInstance(InstanceMirror obj) {
-        if (obj == null) {
-            // Static field
-            return isNewInstance(getDeclaringClass());
-        } else {
-            return ((WrappingInstanceMirror)obj).getWrapped() instanceof NewHolographInstance;
-        }
-    }
-    
     @Override
     public ObjectMirror get(InstanceMirror obj) throws IllegalAccessException {
-        if (newValues.containsKey(obj)) {
-            return (ObjectMirror)newValues.get(obj);
-        } else if (isNewInstance(obj)) {
-            return null;
-        } else {
-            return super.get(obj);
-        }
+        return obj == null ? klass.getStatic(wrapped) : ((InstanceHolograph)obj).get(wrapped);
     }
 
     @Override
     public boolean getBoolean(InstanceMirror obj) throws IllegalAccessException {
-        if (newValues.containsKey(obj)) {
-            return (Boolean)newValues.get(obj);
-        } else if (isNewInstance(obj)) {
-            return false;
-        } else {
-            return super.getBoolean(obj);
-        }
+        return obj == null ? klass.getStaticBoolean(wrapped) : ((InstanceHolograph)obj).getBoolean(wrapped);
     }
 
     @Override
     public byte getByte(InstanceMirror obj) throws IllegalAccessException {
-        if (newValues.containsKey(obj)) {
-            return (Byte)newValues.get(obj);
-        } else if (isNewInstance(obj)) {
-            return 0;
-        } else {
-            return super.getByte(obj);
-        }
+        return obj == null ? klass.getStaticByte(wrapped) : ((InstanceHolograph)obj).getByte(wrapped);
     }
 
     @Override
     public char getChar(InstanceMirror obj) throws IllegalAccessException {
-        if (newValues.containsKey(obj)) {
-            return (Character)newValues.get(obj);
-        } else if (isNewInstance(obj)) {
-            return 0;
-        } else {
-            return super.getChar(obj);
-        }
+        return obj == null ? klass.getStaticChar(wrapped) : ((InstanceHolograph)obj).getChar(wrapped);
     }
 
     @Override
     public short getShort(InstanceMirror obj) throws IllegalAccessException {
-        if (newValues.containsKey(obj)) {
-            return (Short)newValues.get(obj);
-        } else if (isNewInstance(obj)) {
-            return 0;
-        } else {
-            return super.getShort(obj);
-        }
+        return obj == null ? klass.getStaticShort(wrapped) : ((InstanceHolograph)obj).getShort(wrapped);
     }
 
     @Override
     public int getInt(InstanceMirror obj) throws IllegalAccessException {
-        if (newValues.containsKey(obj)) {
-            return (Integer)newValues.get(obj);
-        } else if (isNewInstance(obj)) {
-            return 0;
-        } else {
-            return super.getInt(obj);
-        }
+        return obj == null ? klass.getStaticInt(wrapped) : ((InstanceHolograph)obj).getInt(wrapped);
     }
 
     @Override
     public long getLong(InstanceMirror obj) throws IllegalAccessException {
-        if (newValues.containsKey(obj)) {
-            return (Long)newValues.get(obj);
-        } else if (isNewInstance(obj)) {
-            return 0;
-        } else {
-            return super.getLong(obj);
-        }
+        return obj == null ? klass.getStaticLong(wrapped) : ((InstanceHolograph)obj).getLong(wrapped);
     }
 
     @Override
     public float getFloat(InstanceMirror obj) throws IllegalAccessException {
-        if (newValues.containsKey(obj)) {
-            return (Float)newValues.get(obj);
-        } else if (isNewInstance(obj)) {
-            return 0;
-        } else {
-            return super.getFloat(obj);
-        }
+        return obj == null ? klass.getStaticFloat(wrapped) : ((InstanceHolograph)obj).getFloat(wrapped);
     }
 
     @Override
     public double getDouble(InstanceMirror obj) throws IllegalAccessException {
-        if (newValues.containsKey(obj)) {
-            return (Double)newValues.get(obj);
-        } else if (isNewInstance(obj)) {
-            return 0;
-        } else {
-            return super.getDouble(obj);
-        }
+        return obj == null ? klass.getStaticDouble(wrapped) : ((InstanceHolograph)obj).getDouble(wrapped);
     }
 
     @Override
     public void set(InstanceMirror obj, ObjectMirror o) throws IllegalAccessException {
-        newValues.put(obj, o);
+        if (obj == null) {
+            klass.setStatic(wrapped, o);
+        } else {
+            ((InstanceHolograph)obj).set(wrapped, o);
+        }
     }
 
     @Override
     public void setBoolean(InstanceMirror obj, boolean b) throws IllegalAccessException {
-        newValues.put(obj, b);
+        if (obj == null) {
+            klass.setStaticBoolean(wrapped, b);
+        } else {
+            ((InstanceHolograph)obj).setBoolean(wrapped, b);
+        }
     }
 
     @Override
     public void setByte(InstanceMirror obj, byte b) throws IllegalAccessException {
-        newValues.put(obj, b);
+        if (obj == null) {
+            klass.setStaticByte(wrapped, b);
+        } else {
+            ((InstanceHolograph)obj).setByte(wrapped, b);
+        }
     }
 
     @Override
     public void setChar(InstanceMirror obj, char c) throws IllegalAccessException {
-        newValues.put(obj, c);
+        if (obj == null) {
+            klass.setStaticChar(wrapped, c);
+        } else {
+            ((InstanceHolograph)obj).setChar(wrapped, c);
+        }
     }
 
     @Override
     public void setShort(InstanceMirror obj, short s) throws IllegalAccessException {
-        newValues.put(obj, s);
+        if (obj == null) {
+            klass.setStaticShort(wrapped, s);
+        } else {
+            ((InstanceHolograph)obj).setShort(wrapped, s);
+        }
     }
 
     @Override
     public void setInt(InstanceMirror obj, int i) throws IllegalAccessException {
-        newValues.put(obj, i);
+        if (obj == null) {
+            klass.setStaticInt(wrapped, i);
+        } else {
+            ((InstanceHolograph)obj).setInt(wrapped, i);
+        }
     }
 
     @Override
     public void setLong(InstanceMirror obj, long l) throws IllegalAccessException {
-        newValues.put(obj, l);
+        if (obj == null) {
+            klass.setStaticLong(wrapped, l);
+        } else {
+            ((InstanceHolograph)obj).setLong(wrapped, l);
+        }
     }
 
     @Override
     public void setFloat(InstanceMirror obj, float f) throws IllegalAccessException {
-        newValues.put(obj, f);
+        if (obj == null) {
+            klass.setStaticFloat(wrapped, f);
+        } else {
+            ((InstanceHolograph)obj).setFloat(wrapped, f);
+        }
     }
 
     @Override
     public void setDouble(InstanceMirror obj, double d) throws IllegalAccessException {
-        newValues.put(obj, d);
+        if (obj == null) {
+            klass.setStaticDouble(wrapped, d);
+        } else {
+            ((InstanceHolograph)obj).setDouble(wrapped, d);
+        }
     }
     
     @Override

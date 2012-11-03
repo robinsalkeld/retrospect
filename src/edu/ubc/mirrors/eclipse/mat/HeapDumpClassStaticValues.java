@@ -1,26 +1,26 @@
-package edu.ubc.mirrors.fieldmap;
+package edu.ubc.mirrors.eclipse.mat;
+
+import org.eclipse.mat.snapshot.model.Field;
 
 import edu.ubc.mirrors.BoxingInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 
-public class FieldMapMirror extends BoxingInstanceMirror {
+public class HeapDumpClassStaticValues extends BoxingInstanceMirror {
 
-    protected final ClassMirror classMirror;
-    
-    public FieldMapMirror(ClassMirror classMirror) {
-        this.classMirror = classMirror;
-    }
+    public static final HeapDumpClassStaticValues INSTANCE = new HeapDumpClassStaticValues();
 
-    public ClassMirror getClassMirror() {
-        return classMirror;
-    }
-    
     @Override
-    public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
+    public ClassMirror getClassMirror() {
         return null;
     }
-    
+
+    @Override
+    public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
+        HeapDumpFieldMirror hdfm = (HeapDumpFieldMirror)field;
+        return ((Field)hdfm.fieldDescriptor).getValue();
+    }
+
     @Override
     public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
         throw new UnsupportedOperationException();

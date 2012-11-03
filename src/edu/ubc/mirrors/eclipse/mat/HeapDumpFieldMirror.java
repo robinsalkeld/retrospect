@@ -24,7 +24,7 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 public class HeapDumpFieldMirror extends BoxingFieldMirror {
 
     private final HeapDumpClassMirror declaringClass;
-    private final FieldDescriptor fieldDescriptor;
+    final FieldDescriptor fieldDescriptor;
     
     private final HeapDumpVirtualMachineMirror vm;
     

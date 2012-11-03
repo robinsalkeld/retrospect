@@ -374,7 +374,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             }
         }, resourceNameMirror);
         if (stream == null) {
-            throw new InternalError("Couldn't load bytecode for class: " + holographClass);
+            throw new InternalError("Couldn't load bytecode for class " + resourceNameMirror + " from loader: " + holographLoader);
         }
         MethodHandle readMethod = new MethodHandle() {
             protected void methodCall() throws Throwable {

@@ -3,7 +3,6 @@ package edu.ubc.mirrors.holographs;
 import java.util.List;
 
 import edu.ubc.mirrors.FrameMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;

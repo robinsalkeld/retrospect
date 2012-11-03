@@ -54,4 +54,6 @@ public interface ClassMirror extends InstanceMirror {
     // but this works better since the annotations are parsed and instantiated in normal Java code
     // rather than in the VM itself.
     public byte[] getRawAnnotations();
+    
+    public InstanceMirror getStaticFieldValues();
 }

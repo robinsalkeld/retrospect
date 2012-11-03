@@ -112,10 +112,10 @@ public class ObjectMirage implements Mirage {
             StackTraceElement[] result = new StackTraceElement[arrayMirror.length()];
             for (int i = 0; i < result.length; i++) {
                 InstanceMirror element = (InstanceMirror)arrayMirror.get(i);
-                String declaringClass = Reflection.getRealStringForMirror((InstanceMirror)steClass.getDeclaredField("declaringClass").get(element));
-                String methodName = Reflection.getRealStringForMirror((InstanceMirror)steClass.getDeclaredField("methodName").get(element));
-                String fileName = Reflection.getRealStringForMirror((InstanceMirror)steClass.getDeclaredField("fileName").get(element));
-                int lineNumber = steClass.getDeclaredField("lineNumber").getInt(element);
+                String declaringClass = Reflection.getRealStringForMirror((InstanceMirror)element.get(steClass.getDeclaredField("declaringClass")));
+                String methodName = Reflection.getRealStringForMirror((InstanceMirror)element.get(steClass.getDeclaredField("methodName")));
+                String fileName = Reflection.getRealStringForMirror((InstanceMirror)element.get(steClass.getDeclaredField("fileName")));
+                int lineNumber = element.getInt(steClass.getDeclaredField("lineNumber"));
                 
                 result[i] = new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
             }

@@ -1,10 +1,14 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IInstance;
 
+import edu.ubc.mirrors.BoxingInstanceMirror;
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 
-public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMirror {
+public class HeapDumpInstanceMirror extends BoxingInstanceMirror implements HeapDumpObjectMirror {
 
     protected final HeapDumpVirtualMachineMirror vm;
     protected final IInstance heapDumpObject;
@@ -39,5 +43,38 @@ public class HeapDumpInstanceMirror implements InstanceMirror, HeapDumpObjectMir
     @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + heapDumpObject;
+    }
+
+    @Override
+    public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
+        // Need to account for field shadowing manually
+        ClassMirror thisClass = getClassMirror();
+        for (Field f : heapDumpObject.getFields()) {
+            if (f.getName().equals(field.getName())) {
+                // Move up the hierarchy until we find the next field of this name
+                for (;;) {
+                    try {
+                        thisClass.getDeclaredField(field.getName());
+                        break;
+                    } catch (NoSuchFieldException e) {
+                        thisClass = thisClass.getSuperClassMirror();
+                    }
+                }
+                
+                if (thisClass.equals(field.getDeclaringClass())) {
+                    return f.getValue();
+                } else {
+                    thisClass = thisClass.getSuperClassMirror();
+                }
+            }
+        }
+        
+        throw new InternalError();
+    }
+
+    @Override
+    public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
+        // TODO Auto-generated method stub
+        
     }
 }

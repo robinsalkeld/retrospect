@@ -13,6 +13,7 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.BoxingInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
@@ -22,7 +23,7 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.Reflection;
 
-public class HeapDumpClassMirror implements ClassMirror {
+public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMirror {
 
     private final HeapDumpVirtualMachineMirror vm;
     protected final IClass klass;
@@ -258,5 +259,22 @@ public class HeapDumpClassMirror implements ClassMirror {
     @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + klass;
+    }
+    
+    @Override
+    public InstanceMirror getStaticFieldValues() {
+        return HeapDumpClassStaticValues.INSTANCE;
+    }
+
+    @Override
+    public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
+        // The MAT model doesn't expose member fields for classes.
+        // All the fields on Class are caches though, so it's safe to start off null/0
+        return null;
+    }
+
+    @Override
+    public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
+        throw new UnsupportedOperationException();
     }
 }

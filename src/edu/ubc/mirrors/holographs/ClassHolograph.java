@@ -7,8 +7,10 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -489,5 +491,137 @@ public class ClassHolograph extends WrappingClassMirror {
         } catch (UnsupportedOperationException e) {
             return getBytecodeMirror().getRawAnnotations();
         }
+    }
+
+    private Map<FieldMirror, Object> newStaticValues = new HashMap<FieldMirror, Object>();
+    
+    private boolean isNewInstance() {
+        return wrapped instanceof NewHolographInstance;
+    }
+    
+    public ObjectMirror getStatic(FieldMirror field) throws IllegalAccessException {
+        if (newStaticValues.containsKey(field)) {
+            return (ObjectMirror)newStaticValues.get(field);
+        } else if (isNewInstance()) {
+            return null;
+        } else {
+            return vm.getWrappedMirror(field.get(null));
+        }
     };
+    
+    public boolean getStaticBoolean(FieldMirror field) throws IllegalAccessException {
+        if (newStaticValues.containsKey(field)) {
+            return (Boolean)newStaticValues.get(field);
+        } else if (isNewInstance()) {
+            return false;
+        } else {
+            return field.getBoolean(null);
+        }
+    }
+    
+    public byte getStaticByte(FieldMirror field) throws IllegalAccessException {
+        if (newStaticValues.containsKey(field)) {
+            return (Byte)newStaticValues.get(field);
+        } else if (isNewInstance()) {
+            return 0;
+        } else {
+            return field.getByte(null);
+        }
+    }
+    
+    public char getStaticChar(FieldMirror field) throws IllegalAccessException {
+        if (newStaticValues.containsKey(field)) {
+            return (Character)newStaticValues.get(field);
+        } else if (isNewInstance()) {
+            return 0;
+        } else {
+            return field.getChar(null);
+        }
+    }
+    
+    public short getStaticShort(FieldMirror field) throws IllegalAccessException {
+        if (newStaticValues.containsKey(field)) {
+            return (Short)newStaticValues.get(field);
+        } else if (isNewInstance()) {
+            return 0;
+        } else {
+            return field.getShort(null);
+        }
+    }
+    
+    public int getStaticInt(FieldMirror field) throws IllegalAccessException {
+        if (newStaticValues.containsKey(field)) {
+            return (Integer)newStaticValues.get(field);
+        } else if (isNewInstance()) {
+            return 0;
+        } else {
+            return field.getInt(null);
+        }
+    }
+    
+    public long getStaticLong(FieldMirror field) throws IllegalAccessException {
+        if (newStaticValues.containsKey(field)) {
+            return (Long)newStaticValues.get(field);
+        } else if (isNewInstance()) {
+            return 0;
+        } else {
+            return field.getLong(null);
+        }
+    }
+    
+    public float getStaticFloat(FieldMirror field) throws IllegalAccessException {
+        if (newStaticValues.containsKey(field)) {
+            return (Float)newStaticValues.get(field);
+        } else if (isNewInstance()) {
+            return 0;
+        } else {
+            return field.getFloat(null);
+        }
+    }
+    
+    public double getStaticDouble(FieldMirror field) throws IllegalAccessException {
+        if (newStaticValues.containsKey(field)) {
+            return (Double)newStaticValues.get(field);
+        } else if (isNewInstance()) {
+            return 0;
+        } else {
+            return field.getDouble(null);
+        }
+    }
+    
+    public void setStatic(FieldMirror field, ObjectMirror o) throws IllegalAccessException {
+        newStaticValues.put(field, o);
+    }
+    
+    public void setStaticBoolean(FieldMirror field, boolean b) throws IllegalAccessException {
+        newStaticValues.put(field, b);
+    }
+    
+    public void setStaticByte(FieldMirror field, byte b) throws IllegalAccessException {
+        newStaticValues.put(field, b);
+    }
+    
+    public void setStaticChar(FieldMirror field, char c) throws IllegalAccessException {
+        newStaticValues.put(field, c);
+    }
+    
+    public void setStaticShort(FieldMirror field, short s) throws IllegalAccessException {
+        newStaticValues.put(field, s);
+    }
+    
+    public void setStaticInt(FieldMirror field, int i) throws IllegalAccessException {
+        newStaticValues.put(field, i);
+    }
+    
+    public void setStaticLong(FieldMirror field, long l) throws IllegalAccessException {
+        newStaticValues.put(field, l);
+    }
+    
+    public void setStaticFloat(FieldMirror field, float f) throws IllegalAccessException {
+        newStaticValues.put(field, f);
+    }
+    
+    public void setStaticDouble(FieldMirror field, double d) throws IllegalAccessException {
+        newStaticValues.put(field, d);
+    }
 }

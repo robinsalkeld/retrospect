@@ -1,21 +1,13 @@
 package edu.ubc.mirrors.holographs;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 import edu.ubc.mirrors.wrapping.WrappingClassMirrorLoader;

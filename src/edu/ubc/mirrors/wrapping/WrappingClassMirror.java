@@ -165,4 +165,9 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     public boolean initialized() {
         return wrapped.initialized();
     }
+
+    @Override
+    public InstanceMirror getStaticFieldValues() {
+        return (InstanceMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
+    }
 }

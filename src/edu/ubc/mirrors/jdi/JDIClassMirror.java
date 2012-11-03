@@ -14,6 +14,7 @@ import com.sun.jdi.InterfaceType;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -247,6 +248,18 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     @Override
     public boolean initialized() {
         return refType.isInitialized();
+    }
+
+    @Override
+    public InstanceMirror getStaticFieldValues() {
+        return new JDIInstanceMirror(vm, mirror) {
+            @Override
+            protected Value getValue(FieldMirror field) {
+                Field jdiField = ((JDIFieldMirror)field).field;
+                assert jdiField.isStatic();
+                return jdiField.declaringType().getValue(jdiField);
+            }
+        };
     }
 
 }
