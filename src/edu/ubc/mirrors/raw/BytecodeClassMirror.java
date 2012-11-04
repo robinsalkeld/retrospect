@@ -35,7 +35,7 @@ import org.objectweb.asm.tree.analysis.Interpreter;
 import org.objectweb.asm.tree.analysis.Value;
 
 import edu.ubc.mirrors.ArrayMirror;
-import edu.ubc.mirrors.BoxingFieldMirror;
+import edu.ubc.mirrors.BoxingInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
@@ -47,9 +47,9 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Reflection;
 
-public abstract class BytecodeClassMirror implements ClassMirror {
+public abstract class BytecodeClassMirror extends BoxingInstanceMirror implements ClassMirror {
 
-    public static class BytecodeFieldMirror extends BoxingFieldMirror {
+    public static class BytecodeFieldMirror implements FieldMirror {
 
         private final BytecodeClassMirror klass;
         private final String name;
@@ -96,51 +96,6 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         }
 
         @Override
-        public ObjectMirror get(InstanceMirror obj) throws IllegalAccessException {
-            if (value == null) {
-                return null;
-            }
-            
-            // Value must be string
-            return Reflection.makeString(klass.getVM(), (String)value);
-        }
-
-        @Override
-        public boolean getBoolean(InstanceMirror obj) throws IllegalAccessException {
-            return (value == Integer.valueOf(1));
-        }
-        
-        @Override
-        public byte getByte(InstanceMirror obj) throws IllegalAccessException {
-            return ((Integer)value).byteValue();
-        }
-        
-        @Override
-        public char getChar(InstanceMirror obj) throws IllegalAccessException {
-            return (char)((Integer)value).intValue();
-        }
-        
-        @Override
-        public short getShort(InstanceMirror obj) throws IllegalAccessException {
-            return ((Integer)value).shortValue();
-        }
-        
-        @Override
-        public void set(InstanceMirror obj, ObjectMirror o) throws IllegalAccessException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object getBoxedValue(InstanceMirror obj) throws IllegalAccessException {
-            return value;
-        }
-
-        @Override
-        public void setBoxedValue(InstanceMirror obj, Object o) throws IllegalAccessException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public int getModifiers() {
             return access;
         }
@@ -149,9 +104,74 @@ public abstract class BytecodeClassMirror implements ClassMirror {
         public String toString() {
             return getClass().getSimpleName() + ": " + type + " " + name;
         }
-
     }
 
+    @Override
+    public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
+        return null;
+    }
+    
+    @Override
+    public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
+        throw new UnsupportedOperationException();
+    }
+    
+    private final InstanceMirror staticFieldValues = new BytecodeInstanceMirror();
+    
+    @Override
+    public InstanceMirror getStaticFieldValues() {
+        return staticFieldValues;
+    }
+    
+    private class BytecodeInstanceMirror extends BoxingInstanceMirror {
+
+        @Override
+        public ClassMirror getClassMirror() {
+            return loadClassMirrorInternal(Type.getType(Class.class));
+        }
+
+        @Override
+        public Object getBoxedValue(FieldMirror field) {
+            return ((BytecodeFieldMirror)field).value;
+        }
+        
+        @Override
+        public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
+            Object value = getBoxedValue(field);
+            if (value == null) {
+                return null;
+            }
+            
+            // Value must be string
+            return Reflection.makeString(getVM(), (String)value);
+        }
+
+        @Override
+        public boolean getBoolean(FieldMirror field) throws IllegalAccessException {
+            return (getBoxedValue(field) == Integer.valueOf(1));
+        }
+        
+        @Override
+        public byte getByte(FieldMirror field) throws IllegalAccessException {
+            return ((Integer)getBoxedValue(field)).byteValue();
+        }
+        
+        @Override
+        public char getChar(FieldMirror field) throws IllegalAccessException {
+            return (char)((Integer)getBoxedValue(field)).intValue();
+        }
+        
+        @Override
+        public short getShort(FieldMirror field) throws IllegalAccessException {
+            return ((Integer)getBoxedValue(field)).shortValue();
+        }
+        
+        @Override
+        public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
+            throw new UnsupportedOperationException();
+        }
+    }
+    
     private class BytecodeMethodMirror implements MethodMirror, ConstructorMirror {
 
         private final MethodNode method;

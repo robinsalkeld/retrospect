@@ -16,12 +16,16 @@ public class WrappingThreadMirror extends WrappingInstanceMirror implements Thre
         this.wrappedThread = wrappedThread;
     }
 
+    public static List<FrameMirror> getWrappedStackTrace(WrappingVirtualMachine vm, ThreadMirror wrappedThread) {
+        List<FrameMirror> result = new ArrayList<FrameMirror>();
+        for (FrameMirror frame : wrappedThread.getStackTrace()) {
+            result.add(new WrappingFrameMirror(vm, frame));
+        }
+        return result;
+    }
+    
     @Override
     public List<FrameMirror> getStackTrace() {
-	List<FrameMirror> result = new ArrayList<FrameMirror>();
-	for (FrameMirror frame : wrappedThread.getStackTrace()) {
-	    result.add(new WrappingFrameMirror(vm, frame));
-	}
-        return result;
+	return getWrappedStackTrace(vm, wrappedThread);
     }
 }

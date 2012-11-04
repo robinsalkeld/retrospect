@@ -1,9 +1,6 @@
 package edu.ubc.mirrors.raw;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
@@ -54,7 +51,7 @@ public class NativeInstanceMirror extends NativeObjectMirror implements Instance
     
     public static class NativeFieldMirror implements FieldMirror {
         
-        private final Field field;
+        final Field field;
         
         public NativeFieldMirror(Field field) {
             this.field = field;
@@ -95,83 +92,82 @@ public class NativeInstanceMirror extends NativeObjectMirror implements Instance
         public int getModifiers() {
             return field.getModifiers();
         }
-        
-        private Object getNativeObject(ObjectMirror obj) {
-            return ((NativeObjectMirror)obj).object;
-        }
-        
-        public ObjectMirror get(InstanceMirror obj) throws IllegalAccessException {
-            Object nativeValue = field.get(getNativeObject(obj));
-            return makeMirror(nativeValue);
-        }
+    }
+    private Field getNativeField(FieldMirror field) {
+        return ((NativeFieldMirror)field).field;
+    }
+    
+    public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
+        Object nativeValue = getNativeField(field).get(object);
+        return makeMirror(nativeValue);
+    }
 
-        public boolean getBoolean(InstanceMirror obj) throws IllegalAccessException {
-            return field.getBoolean(getNativeObject(obj));
-        }
+    public boolean getBoolean(FieldMirror field) throws IllegalAccessException {
+        return getNativeField(field).getBoolean(object);
+    }
 
-        public byte getByte(InstanceMirror obj) throws IllegalAccessException {
-            return field.getByte(getNativeObject(obj));
-        }
+    public byte getByte(FieldMirror field) throws IllegalAccessException {
+        return getNativeField(field).getByte(object);
+    }
 
-        public char getChar(InstanceMirror obj) throws IllegalAccessException {
-            return field.getChar(getNativeObject(obj));
-        }
+    public char getChar(FieldMirror field) throws IllegalAccessException {
+        return getNativeField(field).getChar(object);
+    }
 
-        public short getShort(InstanceMirror obj) throws IllegalAccessException {
-            return field.getShort(getNativeObject(obj));
-        }
+    public short getShort(FieldMirror field) throws IllegalAccessException {
+        return getNativeField(field).getShort(object);
+    }
 
-        public int getInt(InstanceMirror obj) throws IllegalAccessException {
-            return field.getInt(getNativeObject(obj));
-        }
+    public int getInt(FieldMirror field) throws IllegalAccessException {
+        return getNativeField(field).getInt(object);
+    }
 
-        public long getLong(InstanceMirror obj) throws IllegalAccessException {
-            return field.getLong(getNativeObject(obj));
-        }
+    public long getLong(FieldMirror field) throws IllegalAccessException {
+        return getNativeField(field).getLong(object);
+    }
 
-        public float getFloat(InstanceMirror obj) throws IllegalAccessException {
-            return field.getFloat(getNativeObject(obj));
-        }
+    public float getFloat(FieldMirror field) throws IllegalAccessException {
+        return getNativeField(field).getFloat(object);
+    }
 
-        public double getDouble(InstanceMirror obj) throws IllegalAccessException {
-            return field.getDouble(getNativeObject(obj));
-        }
+    public double getDouble(FieldMirror field) throws IllegalAccessException {
+        return getNativeField(field).getDouble(object);
+    }
 
-        public void set(InstanceMirror obj, ObjectMirror o) throws IllegalAccessException {
-            field.set(getNativeObject(obj), getNativeObject(o));
-        }
+    public void set(FieldMirror field, ObjectMirror o) throws IllegalAccessException {
+        getNativeField(field).set(object, ((NativeInstanceMirror)o).object);
+    }
 
-        public void setBoolean(InstanceMirror obj, boolean b) throws IllegalAccessException {
-            field.setBoolean(getNativeObject(obj), b);
-        }
+    public void setBoolean(FieldMirror field, boolean b) throws IllegalAccessException {
+        getNativeField(field).setBoolean(object, b);
+    }
 
-        public void setByte(InstanceMirror obj, byte b) throws IllegalAccessException {
-            field.setByte(getNativeObject(obj), b);
-        }
+    public void setByte(FieldMirror field, byte b) throws IllegalAccessException {
+        getNativeField(field).setByte(object, b);
+    }
 
-        public void setChar(InstanceMirror obj, char c) throws IllegalAccessException {
-            field.setChar(getNativeObject(obj), c);
-        }
+    public void setChar(FieldMirror field, char c) throws IllegalAccessException {
+        getNativeField(field).setChar(object, c);
+    }
 
-        public void setShort(InstanceMirror obj, short s) throws IllegalAccessException {
-            field.setShort(getNativeObject(obj), s);
-        }
+    public void setShort(FieldMirror field, short s) throws IllegalAccessException {
+        getNativeField(field).setShort(object, s);
+    }
 
-        public void setInt(InstanceMirror obj, int i) throws IllegalAccessException {
-            field.setInt(getNativeObject(obj), i);
-        }
+    public void setInt(FieldMirror field, int i) throws IllegalAccessException {
+        getNativeField(field).setInt(object, i);
+    }
 
-        public void setLong(InstanceMirror obj, long l) throws IllegalAccessException {
-            field.setLong(getNativeObject(obj), l);
-        }
+    public void setLong(FieldMirror field, long l) throws IllegalAccessException {
+        getNativeField(field).setLong(object, l);
+    }
 
-        public void setFloat(InstanceMirror obj, float f) throws IllegalAccessException {
-            field.setFloat(getNativeObject(obj), f);
-        }
+    public void setFloat(FieldMirror field, float f) throws IllegalAccessException {
+        getNativeField(field).setFloat(object, f);
+    }
 
-        public void setDouble(InstanceMirror obj, double d) throws IllegalAccessException {
-            field.setDouble(getNativeObject(obj), d);
-        }
+    public void setDouble(FieldMirror field, double d) throws IllegalAccessException {
+        getNativeField(field).setDouble(object, d);
     }
     
     public static ObjectMirror makeMirror(Object object) {

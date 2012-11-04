@@ -10,105 +10,81 @@ import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
 
 public class InstanceHolograph extends WrappingInstanceMirror {
 
-    private final InstanceMirror wrapped;
     private Map<FieldMirror, Object> newValues = new HashMap<FieldMirror, Object>();
     
     public InstanceHolograph(VirtualMachineHolograph vm, InstanceMirror wrappedInstance) {
         super(vm, wrappedInstance);
-        this.wrapped = wrappedInstance;
-    }
-    
-    private boolean isNewInstance() {
-        return wrapped instanceof NewHolographInstance;
     }
     
     public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (ObjectMirror)newValues.get(field);
-        } else if (isNewInstance()) {
-            return null;
         } else {
-            return vm.getWrappedMirror(field.get(wrapped));
+            return super.get(field);
         }
     }
     
     public boolean getBoolean(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (Boolean)newValues.get(field);
-        } else if (isNewInstance()) {
-            return false;
         } else {
-            return field.getBoolean(wrapped);
+            return super.getBoolean(field);
         }
     }
     
     public byte getByte(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (Byte)newValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
         } else {
-            return field.getByte(wrapped);
+            return super.getByte(field);
         }
     }
     
     public char getChar(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (Character)newValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
         } else {
-            return field.getChar(wrapped);
+            return super.getChar(field);
         }
     }
     
     public short getShort(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (Short)newValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
         } else {
-            return field.getShort(wrapped);
+            return super.getShort(field);
         }
     }
     
     public int getInt(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (Integer)newValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
         } else {
-            return field.getInt(wrapped);
+            return super.getInt(field);
         }
     }
     
     public long getLong(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (Long)newValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
         } else {
-            return field.getLong(wrapped);
+            return super.getLong(field);
         }
     }
     
     public float getFloat(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (Float)newValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
         } else {
-            return field.getFloat(wrapped);
+            return super.getFloat(field);
         }
     }
     
     public double getDouble(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (Double)newValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
         } else {
-            return field.getDouble(wrapped);
+            return super.getDouble(field);
         }
     }
     

@@ -1,8 +1,6 @@
 package edu.ubc.mirrors.test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
@@ -56,13 +54,14 @@ public class DebuggingTest {
         Reflection.withThread(thread, new Callable<Void>() {
             public Void call() throws Exception {
         	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);
-        	traceClass.getDeclaredField("TRACELEVEL").setInt(null, 2);
+        	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
         	
 //        	InstanceMirror baos = vm.findBootstrapClassMirror(ByteArrayOutputStream.class.getName())
 //        		.getConstructor().newInstance(thread);
 //        	InstanceMirror stream = vm.findBootstrapClassMirror(PrintStream.class.getName())
 //        		.getConstructor(vm.findBootstrapClassMirror(OutputStream.class.getName())).newInstance(thread, baos);
-        	InstanceMirror stream = (InstanceMirror)vm.findBootstrapClassMirror(System.class.getName()).getDeclaredField("out").get(null);
+        	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+                InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("out"));
         	MethodMirror method = traceClass.getMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
                 method.invoke(thread, null, stream);
         	

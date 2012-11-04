@@ -120,8 +120,8 @@ public class Reflection {
         CharArrayMirror value = new DirectArrayMirror(charArrayClass, s.length());
         SystemStubs.arraycopyMirrors(new NativeCharArrayMirror(s.toCharArray()), 0, value, 0, s.length());
         try {
-            stringClass.getDeclaredField("value").set(result, value);
-            stringClass.getDeclaredField("count").setInt(result, s.length());
+            result.set(stringClass.getDeclaredField("value"), value);
+            result.setInt(stringClass.getDeclaredField("count"), s.length());
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (NoSuchFieldException e) {
@@ -141,12 +141,12 @@ public class Reflection {
         }
         
         try {
-            CharArrayMirror valueMirror = (CharArrayMirror)stringClass.getDeclaredField("value").get(mirror);
+            CharArrayMirror valueMirror = (CharArrayMirror)mirror.get(stringClass.getDeclaredField("value"));
             char[] value = new char[valueMirror.length()];
             NativeCharArrayMirror nativeValueMirror = new NativeCharArrayMirror(value);
             SystemStubs.arraycopyMirrors(valueMirror, 0, nativeValueMirror, 0, value.length);
-            int offset = stringClass.getDeclaredField("offset").getInt(mirror);
-            int count = stringClass.getDeclaredField("count").getInt(mirror);
+            int offset = mirror.getInt(stringClass.getDeclaredField("offset"));
+            int count = mirror.getInt(stringClass.getDeclaredField("count"));
             return new String(value, offset, count);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
@@ -463,15 +463,15 @@ public class Reflection {
     public static Object getBoxedValue(FieldMirror field, InstanceMirror instance) throws IllegalAccessException {
         Type fieldType = Reflection.typeForClassMirror(field.getType());
         switch (fieldType.getSort()) {
-        case Type.BOOLEAN: return field.getBoolean(instance);
-        case Type.BYTE: return field.getByte(instance);
-        case Type.CHAR: return field.getChar(instance);
-        case Type.SHORT: return field.getShort(instance);
-        case Type.INT: return field.getInt(instance);
-        case Type.LONG: return field.getLong(instance);
-        case Type.FLOAT: return field.getFloat(instance);
-        case Type.DOUBLE: return field.getDouble(instance);
-        default: return field.get(instance);
+        case Type.BOOLEAN: return instance.getBoolean(field);
+        case Type.BYTE: return instance.getByte(field);
+        case Type.CHAR: return instance.getChar(field);
+        case Type.SHORT: return instance.getShort(field);
+        case Type.INT: return instance.getInt(field);
+        case Type.LONG: return instance.getLong(field);
+        case Type.FLOAT: return instance.getFloat(field);
+        case Type.DOUBLE: return instance.getDouble(field);
+        default: return instance.get(field);
         }
     }
 

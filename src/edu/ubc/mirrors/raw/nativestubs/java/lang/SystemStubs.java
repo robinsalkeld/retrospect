@@ -85,17 +85,17 @@ public class SystemStubs extends NativeStubs {
     
     public void setIn0(Mirage stream) throws IllegalAccessException, NoSuchFieldException {
         ClassMirror systemClass = getVM().findBootstrapClassMirror(System.class.getName());
-        systemClass.getDeclaredField("in").set(null, stream.getMirror());
+        systemClass.getStaticFieldValues().set(systemClass.getDeclaredField("in"), stream.getMirror());
     }
     
     public void setOut0(Mirage stream) throws IllegalAccessException, NoSuchFieldException {
         ClassMirror systemClass = getVM().findBootstrapClassMirror(System.class.getName());
-        systemClass.getDeclaredField("out").set(null, stream.getMirror());
+        systemClass.getStaticFieldValues().set(systemClass.getDeclaredField("out"), stream.getMirror());
     }
     
     public void setErr0(Mirage stream) throws IllegalAccessException, NoSuchFieldException {
         ClassMirror systemClass = getVM().findBootstrapClassMirror(System.class.getName());
-        systemClass.getDeclaredField("err").set(null, stream.getMirror());
+        systemClass.getStaticFieldValues().set(systemClass.getDeclaredField("err"), stream.getMirror());
     }
     
     // TODO-RS: I don't like this as a general rule, but it's called from 

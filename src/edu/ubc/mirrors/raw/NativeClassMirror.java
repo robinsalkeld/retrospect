@@ -21,6 +21,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
@@ -126,10 +127,6 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     public FieldMirror getStaticField(String name) throws NoSuchFieldException {
-        if (klass.equals(System.class) && name.equals("security")) {
-            return NativeSystemSecurityField.INSTANCE;
-        }
-        
         Field field = klass.getDeclaredField(name);
         if (Modifier.isStatic(field.getModifiers())) {
             return new NativeFieldMirror(field);
@@ -268,5 +265,35 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + klass;
+    }
+
+    private final InstanceMirror staticFieldValues = new NativeInstanceMirror(null) {
+        public ClassMirror getClassMirror() {
+            return null;
+        }
+        
+        public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
+            // Special case for java.lang.System.security, which is hidden from the reflective API.
+            if (getClassName().equals(System.class.getName()) && field.getName().equals("security")) {
+                return NativeInstanceMirror.makeMirror(System.getSecurityManager());
+            } else {
+                return super.get(field);
+            }
+        }
+        
+        public void set(FieldMirror field, ObjectMirror o) throws IllegalAccessException {
+            // Special case for java.lang.System.security, which is hidden from the reflective API.
+            if (getClassName().equals(System.class.getName()) && field.getName().equals("security")) {
+                Object nativeValue = ((NativeInstanceMirror)o).getNativeObject();
+                System.setSecurityManager((SecurityManager)nativeValue);
+            } else {
+                super.set(field, o);
+            }
+        }
+    };
+    
+    @Override
+    public InstanceMirror getStaticFieldValues() {
+        return staticFieldValues;
     }
 }

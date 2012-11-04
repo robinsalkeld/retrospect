@@ -16,8 +16,8 @@ public class AtomicIntegerStubs extends NativeStubs {
         try {
             InstanceMirror instance = (InstanceMirror)thiz.getMirror();
             FieldMirror field = klass.getDeclaredField("value");
-            if (field.getInt(instance) == expect) {
-                field.setInt(instance, update);
+            if (instance.getInt(field) == expect) {
+                instance.setInt(field, update);
                 return true;
             } else {
                 return false;

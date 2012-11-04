@@ -12,13 +12,16 @@ import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 import edu.ubc.mirrors.wrapping.WrappingClassMirrorLoader;
 
-public class ClassLoaderHolograph extends WrappingClassMirrorLoader {
+public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirrorLoader {
 
+    protected final ClassMirrorLoader wrappedLoader;
+    
     private final Map<String, ClassHolograph> dynamicallyDefinedClasses =
             new HashMap<String, ClassHolograph>();
       
     protected ClassLoaderHolograph(VirtualMachineHolograph vm, ClassMirrorLoader wrappedLoader) {
         super(vm, wrappedLoader);
+        this.wrappedLoader = wrappedLoader;
         this.mirageLoader = new MirageClassLoader(vm, this);
     }
 
@@ -30,9 +33,9 @@ public class ClassLoaderHolograph extends WrappingClassMirrorLoader {
     
     @Override
     public ClassMirror findLoadedClassMirror(String name) {
-        ClassMirror result = super.findLoadedClassMirror(name);
+        ClassMirror result = wrappedLoader.findLoadedClassMirror(name);
         if (result != null) {
-            return result;
+            return vm.getWrappedClassMirror(result);
         }
         
         return dynamicallyDefinedClasses.get(name);

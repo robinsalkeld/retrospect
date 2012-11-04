@@ -92,7 +92,7 @@ public class UnsafeStubs extends NativeStubs {
         } else if (mirror instanceof InstanceMirror) {
             InstanceMirror instance = (InstanceMirror)mirror;
             FieldMirror field = fieldForOffset(instance, offset);
-            field.set(instance, ObjectMirage.getMirror(element));
+            instance.set(field, ObjectMirage.getMirror(element));
         } else {
             throw new InternalError();
         }
@@ -171,9 +171,9 @@ public class UnsafeStubs extends NativeStubs {
             InstanceMirror instance = (InstanceMirror)mirror;
             FieldMirror field = fieldForOffset(instance, offset);
 
-            ObjectMirror current = field.get(instance);
+            ObjectMirror current = instance.get(field);
             if (current == ObjectMirage.getMirror(oldValue)) {
-                field.set(instance, newValue.getMirror());
+                instance.set(field, newValue.getMirror());
                 return true;
             } else {
                 return false;

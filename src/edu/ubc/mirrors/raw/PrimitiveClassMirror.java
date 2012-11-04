@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.BlankClassMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
@@ -13,7 +14,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
-public class PrimitiveClassMirror implements ClassMirror {
+public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirror {
 
     private final VirtualMachineMirror vm;
     private final String typeName;

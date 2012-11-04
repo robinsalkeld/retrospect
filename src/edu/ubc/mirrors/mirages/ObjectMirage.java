@@ -244,23 +244,23 @@ public class ObjectMirage implements Mirage {
                 String typeName = fieldType.getClassName();
                 try {
                     if (typeName.equals(Boolean.TYPE.getName())) {
-                        field.setBoolean(result, field.getBoolean(instanceMirror));
+                        result.setBoolean(field, instanceMirror.getBoolean(field));
                     } else if (typeName.equals(Byte.TYPE.getName())) {
-                        field.setByte(result, field.getByte(instanceMirror));
+                        result.setByte(field, instanceMirror.getByte(field));
                     } else if (typeName.equals(Character.TYPE.getName())) {
-                        field.setChar(result, field.getChar(instanceMirror));
+                        result.setChar(field, instanceMirror.getChar(field));
                     } else if (typeName.equals(Short.TYPE.getName())) {
-                        field.setShort(result, field.getShort(instanceMirror));
+                        result.setShort(field, instanceMirror.getShort(field));
                     } else if (typeName.equals(Integer.TYPE.getName())) {
-                        field.setInt(result, field.getInt(instanceMirror));
+                        result.setInt(field, instanceMirror.getInt(field));
                     } else if (typeName.equals(Long.TYPE.getName())) {
-                        field.setLong(result, field.getLong(instanceMirror));
+                        result.setLong(field, instanceMirror.getLong(field));
                     } else if (typeName.equals(Float.TYPE.getName())) {
-                        field.setFloat(result, field.getFloat(instanceMirror));
+                        result.setFloat(field, instanceMirror.getFloat(field));
                     } else if (typeName.equals(Double.TYPE.getName())) {
-                        field.setDouble(result, field.getDouble(instanceMirror));
+                        result.setDouble(field, instanceMirror.getDouble(field));
                     } else {
-                        field.set(result, field.get(instanceMirror));
+                        result.set(field, instanceMirror.get(field));
                     }
                 } catch (IllegalAccessException e) {
                     throw new IllegalAccessError(e.getMessage());

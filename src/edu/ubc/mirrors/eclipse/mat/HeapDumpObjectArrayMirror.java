@@ -1,8 +1,8 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
-import org.eclipse.mat.snapshot.model.NamedReference;
 
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -49,7 +49,12 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
         if (address == 0) {
             return null;
         }
-        return HeapDumpFieldMirror.getObjectWithErrorHandling(vm, new NamedReference(array.getSnapshot(), address, "[" + index + "]"));
+        try {
+            IObject obj = array.getSnapshot().getObject(array.getSnapshot().mapAddressToId(address));
+            return vm.makeMirror(obj);
+        } catch (SnapshotException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {

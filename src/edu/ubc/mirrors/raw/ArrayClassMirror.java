@@ -11,6 +11,7 @@ import java.util.List;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.BlankClassMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
@@ -20,7 +21,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
-public class ArrayClassMirror implements ClassMirror {
+public class ArrayClassMirror extends BlankClassMirror {
 
     private final ClassMirror elementClassMirror;
     private final int dims;

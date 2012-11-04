@@ -36,6 +36,7 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         this.vm = vm;
         this.klass = klass;
         this.loader = getClassLoader(klass);
+        this.staticFieldValues = new HeapDumpClassStaticValues(vm);
     }
     
     @Override
@@ -261,9 +262,11 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         return getClass().getSimpleName() + ": " + klass;
     }
     
+    private final InstanceMirror staticFieldValues;
+    
     @Override
     public InstanceMirror getStaticFieldValues() {
-        return HeapDumpClassStaticValues.INSTANCE;
+        return staticFieldValues;
     }
 
     @Override

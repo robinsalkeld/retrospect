@@ -1,12 +1,14 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.Field;
 import org.eclipse.mat.snapshot.model.IInstance;
+import org.eclipse.mat.snapshot.model.ObjectReference;
 
 import edu.ubc.mirrors.BoxingInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.ObjectMirror;
 
 public class HeapDumpInstanceMirror extends BoxingInstanceMirror implements HeapDumpObjectMirror {
 
@@ -73,8 +75,21 @@ public class HeapDumpInstanceMirror extends BoxingInstanceMirror implements Heap
     }
 
     @Override
+    public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
+        Object value = getBoxedValue(field);
+        ObjectReference ref = (ObjectReference)value;
+        if (ref == null) {
+            return null;
+        }
+        try {
+            return vm.makeMirror(ref.getObject());
+        } catch (SnapshotException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
     public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
-        // TODO Auto-generated method stub
-        
+        throw new UnsupportedOperationException();
     }
 }

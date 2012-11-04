@@ -407,6 +407,8 @@ public class ClassHolograph extends WrappingClassMirror {
         }
         
         // Examine all the static fields in the class.
+        InstanceMirror bytecodeValues = bytecodeClassMirror.getStaticFieldValues();
+        InstanceMirror wrappedValues = getStaticFieldValues();
         for (FieldMirror bytecodeField : bytecodeClassMirror.getDeclaredFields()) {
             if (Modifier.isStatic(bytecodeField.getModifiers())) {
                 try {
@@ -414,11 +416,11 @@ public class ClassHolograph extends WrappingClassMirror {
                     // we will end up in infinite recursion!
                     FieldMirror wrappedField = super.getDeclaredField(bytecodeField.getName());
 
-                    if (!hasDefaultValue(wrappedField)) {
+                    if (!hasDefaultValue(wrappedValues, wrappedField)) {
                         // If there are any static, non-constant fields with non-null values,
                         // then initialization must have occurred since it has to before
                         // any static fields can be set.
-                        if (hasDefaultValue(bytecodeField)) {
+                        if (hasDefaultValue(bytecodeValues, bytecodeField)) {
                             return true;
                         }
                     } else {
@@ -461,18 +463,18 @@ public class ClassHolograph extends WrappingClassMirror {
      * @return
      * @throws IllegalAccessException
      */
-    private static boolean hasDefaultValue(FieldMirror field) throws IllegalAccessException {
+    private static boolean hasDefaultValue(InstanceMirror obj, FieldMirror field) throws IllegalAccessException {
         Type type = Reflection.typeForClassMirror(field.getType());
         switch (type.getSort()) {
-        case Type.BOOLEAN:      return field.getBoolean(null) == false;
-        case Type.BYTE:         return field.getByte(null) == 0;
-        case Type.SHORT:        return field.getShort(null) == 0;
-        case Type.CHAR:         return field.getChar(null) == 0;
-        case Type.INT:          return field.getInt(null) == 0;
-        case Type.LONG:         return field.getLong(null) == 0;
-        case Type.FLOAT:        return field.getFloat(null) == 0;
-        case Type.DOUBLE:       return field.getDouble(null) == 0;
-        default:                return field.get(null) == null;
+        case Type.BOOLEAN:      return obj.getBoolean(field) == false;
+        case Type.BYTE:         return obj.getByte(field) == 0;
+        case Type.SHORT:        return obj.getShort(field) == 0;
+        case Type.CHAR:         return obj.getChar(field) == 0;
+        case Type.INT:          return obj.getInt(field) == 0;
+        case Type.LONG:         return obj.getLong(field) == 0;
+        case Type.FLOAT:        return obj.getFloat(field) == 0;
+        case Type.DOUBLE:       return obj.getDouble(field) == 0;
+        default:                return obj.get(field) == null;
         }
     }
     
@@ -492,136 +494,115 @@ public class ClassHolograph extends WrappingClassMirror {
             return getBytecodeMirror().getRawAnnotations();
         }
     }
-
-    private Map<FieldMirror, Object> newStaticValues = new HashMap<FieldMirror, Object>();
     
-    private boolean isNewInstance() {
-        return wrapped instanceof NewHolographInstance;
-    }
+    // From InstanceHolograph. Alas, no multiple inheritance...
+    private Map<FieldMirror, Object> newValues = new HashMap<FieldMirror, Object>();
     
-    public ObjectMirror getStatic(FieldMirror field) throws IllegalAccessException {
-        if (newStaticValues.containsKey(field)) {
-            return (ObjectMirror)newStaticValues.get(field);
-        } else if (isNewInstance()) {
-            return null;
+    public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
+        if (newValues.containsKey(field)) {
+            return (ObjectMirror)newValues.get(field);
         } else {
-            return vm.getWrappedMirror(field.get(null));
-        }
-    };
-    
-    public boolean getStaticBoolean(FieldMirror field) throws IllegalAccessException {
-        if (newStaticValues.containsKey(field)) {
-            return (Boolean)newStaticValues.get(field);
-        } else if (isNewInstance()) {
-            return false;
-        } else {
-            return field.getBoolean(null);
+            return super.get(field);
         }
     }
     
-    public byte getStaticByte(FieldMirror field) throws IllegalAccessException {
-        if (newStaticValues.containsKey(field)) {
-            return (Byte)newStaticValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
+    public boolean getBoolean(FieldMirror field) throws IllegalAccessException {
+        if (newValues.containsKey(field)) {
+            return (Boolean)newValues.get(field);
         } else {
-            return field.getByte(null);
+            return super.getBoolean(field);
         }
     }
     
-    public char getStaticChar(FieldMirror field) throws IllegalAccessException {
-        if (newStaticValues.containsKey(field)) {
-            return (Character)newStaticValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
+    public byte getByte(FieldMirror field) throws IllegalAccessException {
+        if (newValues.containsKey(field)) {
+            return (Byte)newValues.get(field);
         } else {
-            return field.getChar(null);
+            return super.getByte(field);
         }
     }
     
-    public short getStaticShort(FieldMirror field) throws IllegalAccessException {
-        if (newStaticValues.containsKey(field)) {
-            return (Short)newStaticValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
+    public char getChar(FieldMirror field) throws IllegalAccessException {
+        if (newValues.containsKey(field)) {
+            return (Character)newValues.get(field);
         } else {
-            return field.getShort(null);
+            return super.getChar(field);
         }
     }
     
-    public int getStaticInt(FieldMirror field) throws IllegalAccessException {
-        if (newStaticValues.containsKey(field)) {
-            return (Integer)newStaticValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
+    public short getShort(FieldMirror field) throws IllegalAccessException {
+        if (newValues.containsKey(field)) {
+            return (Short)newValues.get(field);
         } else {
-            return field.getInt(null);
+            return super.getShort(field);
         }
     }
     
-    public long getStaticLong(FieldMirror field) throws IllegalAccessException {
-        if (newStaticValues.containsKey(field)) {
-            return (Long)newStaticValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
+    public int getInt(FieldMirror field) throws IllegalAccessException {
+        if (newValues.containsKey(field)) {
+            return (Integer)newValues.get(field);
         } else {
-            return field.getLong(null);
+            return super.getInt(field);
         }
     }
     
-    public float getStaticFloat(FieldMirror field) throws IllegalAccessException {
-        if (newStaticValues.containsKey(field)) {
-            return (Float)newStaticValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
+    public long getLong(FieldMirror field) throws IllegalAccessException {
+        if (newValues.containsKey(field)) {
+            return (Long)newValues.get(field);
         } else {
-            return field.getFloat(null);
+            return super.getLong(field);
         }
     }
     
-    public double getStaticDouble(FieldMirror field) throws IllegalAccessException {
-        if (newStaticValues.containsKey(field)) {
-            return (Double)newStaticValues.get(field);
-        } else if (isNewInstance()) {
-            return 0;
+    public float getFloat(FieldMirror field) throws IllegalAccessException {
+        if (newValues.containsKey(field)) {
+            return (Float)newValues.get(field);
         } else {
-            return field.getDouble(null);
+            return super.getFloat(field);
         }
     }
     
-    public void setStatic(FieldMirror field, ObjectMirror o) throws IllegalAccessException {
-        newStaticValues.put(field, o);
+    public double getDouble(FieldMirror field) throws IllegalAccessException {
+        if (newValues.containsKey(field)) {
+            return (Double)newValues.get(field);
+        } else {
+            return super.getDouble(field);
+        }
     }
     
-    public void setStaticBoolean(FieldMirror field, boolean b) throws IllegalAccessException {
-        newStaticValues.put(field, b);
+    public void set(FieldMirror field, ObjectMirror o) {
+        newValues.put(field, o);
     }
     
-    public void setStaticByte(FieldMirror field, byte b) throws IllegalAccessException {
-        newStaticValues.put(field, b);
+    public void setBoolean(FieldMirror field, boolean b) {
+        newValues.put(field, b);
     }
     
-    public void setStaticChar(FieldMirror field, char c) throws IllegalAccessException {
-        newStaticValues.put(field, c);
+    public void setByte(FieldMirror field, byte b) {
+        newValues.put(field, b);
     }
     
-    public void setStaticShort(FieldMirror field, short s) throws IllegalAccessException {
-        newStaticValues.put(field, s);
+    public void setChar(FieldMirror field, char c) {
+        newValues.put(field, c);
     }
     
-    public void setStaticInt(FieldMirror field, int i) throws IllegalAccessException {
-        newStaticValues.put(field, i);
+    public void setShort(FieldMirror field, short s) {
+        newValues.put(field, s);
     }
     
-    public void setStaticLong(FieldMirror field, long l) throws IllegalAccessException {
-        newStaticValues.put(field, l);
+    public void setInt(FieldMirror field, int i) {
+        newValues.put(field, i);
     }
     
-    public void setStaticFloat(FieldMirror field, float f) throws IllegalAccessException {
-        newStaticValues.put(field, f);
+    public void setLong(FieldMirror field, long l) {
+        newValues.put(field, l);
     }
     
-    public void setStaticDouble(FieldMirror field, double d) throws IllegalAccessException {
-        newStaticValues.put(field, d);
+    public void setFloat(FieldMirror field, float f) {
+        newValues.put(field, f);
+    }
+    
+    public void setDouble(FieldMirror field, double d) {
+        newValues.put(field, d);
     }
 }

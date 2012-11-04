@@ -17,8 +17,8 @@ public class AbstractQueuedSynchronizerStubs extends NativeStubs {
         try {
             InstanceMirror instance = (InstanceMirror)thiz.getMirror();
             FieldMirror field = klass.getDeclaredField("state");
-            if (field.getInt(instance) == expect) {
-                field.setInt(instance, update);
+            if (instance.getInt(field) == expect) {
+                instance.setInt(field, update);
                 return true;
             } else {
                 return false;

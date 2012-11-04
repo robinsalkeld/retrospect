@@ -7,14 +7,16 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
-public class ThreadHolograph extends WrappingThreadMirror {
+public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
 
+    private final ThreadMirror wrappedThread;
     private Thread runningThread = null;
     private int runningThreadCount = 0;
     private static ThreadLocal<ThreadHolograph> currentThreadMirror = new ThreadLocal<ThreadHolograph>();
     
-    public ThreadHolograph(WrappingVirtualMachine vm, ThreadMirror wrappedThread) {
+    public ThreadHolograph(VirtualMachineHolograph vm, ThreadMirror wrappedThread) {
         super(vm, wrappedThread);
+        this.wrappedThread = wrappedThread;
     }
 
     public void enterHologramExecution() {
@@ -50,7 +52,7 @@ public class ThreadHolograph extends WrappingThreadMirror {
     
     @Override
     public List<FrameMirror> getStackTrace() {
-	List<FrameMirror> originalStack = super.getStackTrace();
+	List<FrameMirror> originalStack = WrappingThreadMirror.getWrappedStackTrace(vm, wrappedThread);
         
         if (runningThread == null) {
             return originalStack;

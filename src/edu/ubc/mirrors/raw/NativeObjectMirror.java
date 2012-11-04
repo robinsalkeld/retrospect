@@ -8,9 +8,6 @@ public class NativeObjectMirror implements ObjectMirror {
     protected final Object object;
     
     public NativeObjectMirror(Object object) {
-        if (object == null) {
-            throw new NullPointerException();
-        }
         this.object = object;
     }
     

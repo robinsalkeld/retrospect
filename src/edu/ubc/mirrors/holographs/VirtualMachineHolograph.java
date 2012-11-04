@@ -114,8 +114,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     private List<URL> extractBootstrapPath(VirtualMachineMirror wrappedVM) {
 	try {
 	    ClassMirror launcherClass = wrappedVM.findBootstrapClassMirror(Launcher.class.getName());
-	    InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.getDeclaredField("bootClassPath").get(null);
-	    char pathSeparator = wrappedVM.findBootstrapClassMirror(File.class.getName()).getDeclaredField("pathSeparator").getChar(null);
+	    InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.get(launcherClass.getDeclaredField("bootClassPath"));
+	    ClassMirror fileClass = wrappedVM.findBootstrapClassMirror(File.class.getName());
+	    char pathSeparator = fileClass.getChar(fileClass.getDeclaredField("pathSeparator"));
 	    String bootClassPath = Reflection.getRealStringForMirror(bootClassPathMirror);
 	    String[] paths = bootClassPath.split("" + pathSeparator);
 	    List<URL> urls = new ArrayList<URL>();
@@ -143,7 +144,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                             long address;
                             String name;
                             try {
-                                address = zipFileClass.getDeclaredField("jzfile").getLong(zipFileMirror);
+                                address = zipFileMirror.getLong(zipFileClass.getDeclaredField("jzfile"));
                                 name = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(zipFileMirror, "name"));
                             } catch (IllegalAccessException e) {
                                 throw new RuntimeException(e);
@@ -183,7 +184,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     	    	if (fieldSetEvent.classMirror().getClassName().equals(ZipFile.class.getName()) && fieldSetEvent.fieldName().equals("name")) {
     	    	    InstanceMirror zipFileMirror = fieldSetEvent.instance();
     	    	    try {
-			long address = fieldSetEvent.classMirror().getDeclaredField("jzfile").getLong(zipFileMirror);
+			long address = zipFileMirror.getLong(fieldSetEvent.classMirror().getDeclaredField("jzfile"));
 			String path = Reflection.getRealStringForMirror((InstanceMirror)fieldSetEvent.newValue());
 			zipPathsByAddress.put(address, new File(path));
 		    } catch (IllegalAccessException e) {

@@ -33,7 +33,7 @@ public class JarFileStubs extends NativeStubs {
         VirtualMachineHolograph vm = getVM();
         
         InstanceMirror jarFileMirror = (InstanceMirror)jarFile.getMirror();
-        long jzfile = klass.getSuperClassMirror().getDeclaredField("jzfile").getLong(jarFileMirror);
+        long jzfile = jarFileMirror.getLong(klass.getSuperClassMirror().getDeclaredField("jzfile"));
         JarFile hostJarFile = (JarFile)getVM().getZipFileForAddress(jzfile);
         
         String[] result = (String[]) getMetaInfEntryNamesMethod.invoke(hostJarFile);
