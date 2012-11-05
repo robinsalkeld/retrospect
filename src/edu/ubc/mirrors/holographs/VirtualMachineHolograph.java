@@ -422,6 +422,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             ClassMirror newClass = new DefinedClassMirror(this, null, name, bytecode);
             ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(newClass);
             dynamicallyDefinedClasses.put(name, newClassHolograph);
+            
+            DefinedClassMirror.registerPrepareCallback(newClassHolograph);
+            
             return newClassHolograph;
         } 
         

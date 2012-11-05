@@ -605,4 +605,8 @@ public class ClassHolograph extends WrappingClassMirror {
     public void setDouble(FieldMirror field, double d) {
         newValues.put(field, d);
     }
+    
+    public void setWrapped(ClassMirror wrapped) {
+        this.wrapped = wrapped;
+    }
 }

@@ -10,10 +10,12 @@ import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
 
 public class InstanceHolograph extends WrappingInstanceMirror {
 
+    protected final VirtualMachineHolograph vm;
     private Map<FieldMirror, Object> newValues = new HashMap<FieldMirror, Object>();
     
     public InstanceHolograph(VirtualMachineHolograph vm, InstanceMirror wrappedInstance) {
         super(vm, wrappedInstance);
+        this.vm = vm;
     }
     
     public ObjectMirror get(FieldMirror field) throws IllegalAccessException {

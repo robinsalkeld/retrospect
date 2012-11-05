@@ -14,7 +14,10 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class WrappingClassMirror extends WrappingInstanceMirror implements ClassMirror {
 
-    protected final ClassMirror wrapped;
+    // Not final for the benefit of ClassHolograph, which changes targets dynamically.
+    // TODO-RS: Could that be implemented more cleanly (but less efficiently)
+    // by replacing references to the ClassHolograph everywhere else instead?
+    protected ClassMirror wrapped;
     
     protected WrappingClassMirror(WrappingVirtualMachine vm, ClassMirror wrapped) {
         super(vm, wrapped);
