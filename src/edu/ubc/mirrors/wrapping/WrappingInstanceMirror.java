@@ -6,7 +6,7 @@ import edu.ubc.mirrors.ObjectMirror;
 
 public class WrappingInstanceMirror extends WrappingMirror implements InstanceMirror {
 
-    private final InstanceMirror wrapped;
+    protected final InstanceMirror wrapped;
     
     public WrappingInstanceMirror(WrappingVirtualMachine vm, InstanceMirror wrappedInstance) {
         super(vm, wrappedInstance);

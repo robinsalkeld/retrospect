@@ -109,7 +109,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         }
     }
     
-    protected ObjectMirror unwrapMirror(ObjectMirror mirror) {
+    public ObjectMirror unwrapMirror(ObjectMirror mirror) {
         return mirror == null ? null : ((WrappingMirror)mirror).wrapped;
     }
 

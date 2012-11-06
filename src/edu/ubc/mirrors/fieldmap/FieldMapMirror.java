@@ -1,10 +1,10 @@
 package edu.ubc.mirrors.fieldmap;
 
-import edu.ubc.mirrors.BoxingInstanceMirror;
+import edu.ubc.mirrors.BlankInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.holographs.NewInstanceMirror;
 
-public class FieldMapMirror extends BoxingInstanceMirror {
+public class FieldMapMirror extends BlankInstanceMirror implements NewInstanceMirror {
 
     protected final ClassMirror classMirror;
     
@@ -14,15 +14,5 @@ public class FieldMapMirror extends BoxingInstanceMirror {
 
     public ClassMirror getClassMirror() {
         return classMirror;
-    }
-    
-    @Override
-    public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
-        return null;
-    }
-    
-    @Override
-    public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
-        throw new UnsupportedOperationException();
     }
 }

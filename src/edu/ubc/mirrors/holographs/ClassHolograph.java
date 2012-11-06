@@ -7,10 +7,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -40,6 +38,9 @@ import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
 public class ClassHolograph extends WrappingClassMirror {
 
+    private InstanceMirror memberFieldsDelegate;
+    private InstanceMirror staticFieldValues;
+    
     private ClassMirror bytecodeMirror;
     
     public static class MethodPattern {
@@ -107,8 +108,18 @@ public class ClassHolograph extends WrappingClassMirror {
         }
     }
     
+    private final VirtualMachineHolograph vm;
+    
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
+        this.vm = vm;
+        memberFieldsDelegate = wrapped;
+        staticFieldValues = (InstanceMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
+        if (!vm.canBeModified() || wrapped instanceof DefinedClassMirror) {
+            // Allow mutations on existing objects only if the underlying VM can't be resumed
+            memberFieldsDelegate = new MutableInstanceMirror(memberFieldsDelegate);
+            staticFieldValues = new MutableInstanceMirror(staticFieldValues);
+        }
     }
     
     public ClassMirror getWrappedClassMirror() {
@@ -495,118 +506,91 @@ public class ClassHolograph extends WrappingClassMirror {
         }
     }
     
-    // From InstanceHolograph. Alas, no multiple inheritance...
-    private Map<FieldMirror, Object> newValues = new HashMap<FieldMirror, Object>();
+    // Since we'd rather extend WrappingClassMirror than InstanceHolograph, delegate the
+    // member field accessors instead.
     
+    @Override
     public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
-        if (newValues.containsKey(field)) {
-            return (ObjectMirror)newValues.get(field);
-        } else {
-            return super.get(field);
-        }
+        return vm.getWrappedMirror(memberFieldsDelegate.get(field));
     }
     
+    @Override
     public boolean getBoolean(FieldMirror field) throws IllegalAccessException {
-        if (newValues.containsKey(field)) {
-            return (Boolean)newValues.get(field);
-        } else {
-            return super.getBoolean(field);
-        }
+        return memberFieldsDelegate.getBoolean(field);
     }
     
+    @Override
     public byte getByte(FieldMirror field) throws IllegalAccessException {
-        if (newValues.containsKey(field)) {
-            return (Byte)newValues.get(field);
-        } else {
-            return super.getByte(field);
-        }
+        return memberFieldsDelegate.getByte(field);
     }
     
     public char getChar(FieldMirror field) throws IllegalAccessException {
-        if (newValues.containsKey(field)) {
-            return (Character)newValues.get(field);
-        } else {
-            return super.getChar(field);
-        }
+        return memberFieldsDelegate.getChar(field);
     }
     
     public short getShort(FieldMirror field) throws IllegalAccessException {
-        if (newValues.containsKey(field)) {
-            return (Short)newValues.get(field);
-        } else {
-            return super.getShort(field);
-        }
+        return memberFieldsDelegate.getShort(field);
     }
     
     public int getInt(FieldMirror field) throws IllegalAccessException {
-        if (newValues.containsKey(field)) {
-            return (Integer)newValues.get(field);
-        } else {
-            return super.getInt(field);
-        }
+        return memberFieldsDelegate.getInt(field);
     }
     
     public long getLong(FieldMirror field) throws IllegalAccessException {
-        if (newValues.containsKey(field)) {
-            return (Long)newValues.get(field);
-        } else {
-            return super.getLong(field);
-        }
+        return memberFieldsDelegate.getLong(field);
     }
     
     public float getFloat(FieldMirror field) throws IllegalAccessException {
-        if (newValues.containsKey(field)) {
-            return (Float)newValues.get(field);
-        } else {
-            return super.getFloat(field);
-        }
+        return memberFieldsDelegate.getFloat(field);
     }
     
     public double getDouble(FieldMirror field) throws IllegalAccessException {
-        if (newValues.containsKey(field)) {
-            return (Double)newValues.get(field);
-        } else {
-            return super.getDouble(field);
-        }
+        return memberFieldsDelegate.getDouble(field);
     }
     
-    public void set(FieldMirror field, ObjectMirror o) {
-        newValues.put(field, o);
+    public void set(FieldMirror field, ObjectMirror o) throws IllegalAccessException {
+        memberFieldsDelegate.set(field, vm.unwrapMirror(o));
     }
     
-    public void setBoolean(FieldMirror field, boolean b) {
-        newValues.put(field, b);
+    public void setBoolean(FieldMirror field, boolean b) throws IllegalAccessException {
+        memberFieldsDelegate.setBoolean(field, b);
     }
     
-    public void setByte(FieldMirror field, byte b) {
-        newValues.put(field, b);
+    public void setByte(FieldMirror field, byte b) throws IllegalAccessException {
+        memberFieldsDelegate.setByte(field, b);
     }
     
-    public void setChar(FieldMirror field, char c) {
-        newValues.put(field, c);
+    public void setChar(FieldMirror field, char c) throws IllegalAccessException {
+        memberFieldsDelegate.setChar(field, c);
     }
     
-    public void setShort(FieldMirror field, short s) {
-        newValues.put(field, s);
+    public void setShort(FieldMirror field, short s) throws IllegalAccessException {
+        memberFieldsDelegate.setShort(field, s);
     }
     
-    public void setInt(FieldMirror field, int i) {
-        newValues.put(field, i);
+    public void setInt(FieldMirror field, int i) throws IllegalAccessException {
+        memberFieldsDelegate.setInt(field, i);
     }
     
-    public void setLong(FieldMirror field, long l) {
-        newValues.put(field, l);
+    public void setLong(FieldMirror field, long l) throws IllegalAccessException {
+        memberFieldsDelegate.setLong(field, l);
     }
     
-    public void setFloat(FieldMirror field, float f) {
-        newValues.put(field, f);
+    public void setFloat(FieldMirror field, float f) throws IllegalAccessException {
+        memberFieldsDelegate.setFloat(field, f);
     }
     
-    public void setDouble(FieldMirror field, double d) {
-        newValues.put(field, d);
+    public void setDouble(FieldMirror field, double d) throws IllegalAccessException {
+        memberFieldsDelegate.setDouble(field, d);
+    }
+    
+    @Override
+    public InstanceMirror getStaticFieldValues() {
+        return staticFieldValues;
     }
     
     public void setWrapped(ClassMirror wrapped) {
         this.wrapped = wrapped;
+        // TODO-RS: Do the right thing with the fields delegates!!!
     }
 }

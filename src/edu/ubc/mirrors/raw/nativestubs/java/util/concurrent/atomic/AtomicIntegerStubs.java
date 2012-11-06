@@ -12,6 +12,7 @@ public class AtomicIntegerStubs extends NativeStubs {
 	super(klass);
     }
 
+    // TODO-RS: Complete UnsafeStubs and remove this higher-level version.
     public boolean compareAndSet(Mirage thiz, int expect, int update) {
         try {
             InstanceMirror instance = (InstanceMirror)thiz.getMirror();
