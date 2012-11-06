@@ -120,4 +120,10 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
     public void resume() {
 	throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public boolean canBeModified() {
+        // Not really, but I don't want to implement it. :)
+        return false;
+    }
 }

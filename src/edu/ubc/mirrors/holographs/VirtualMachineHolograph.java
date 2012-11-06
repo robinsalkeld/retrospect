@@ -156,19 +156,14 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                             }
                         }
                     }
-                    
-                    MirrorEventRequestManager erm;
-                    try {
-                        erm = eventRequestManager();
-                    } catch (UnsupportedOperationException e) {
-                        // TODO-RS: A more generic approach would be for non-resumable
-                        // VMs to implement stub methods and then immediately run out of events.
-                        return null;
+
+                    if (canBeModified()) {
+                        MirrorEventRequestManager erm = eventRequestManager();
+                        ClassMirrorPrepareRequest request = erm.createClassMirrorPrepareRequest();
+                        request.addClassFilter(ZipFile.class.getName());
+                        dispatch.addCallback(request, ZIP_FILE_CREATED_CALLBACK);
+                        request.enable();
                     }
-                    ClassMirrorPrepareRequest request = erm.createClassMirrorPrepareRequest();
-                    request.addClassFilter(ZipFile.class.getName());
-                    dispatch.addCallback(request, ZIP_FILE_CREATED_CALLBACK);
-                    request.enable();
                     return null;
                 }
             });
@@ -459,4 +454,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	ClassHolograph klass = (ClassHolograph)wrappedConstructor.getDeclaringClass();
         return new ConstructorHolograph(klass, wrappedConstructor);
     };
+    
+    @Override
+    public boolean canBeModified() {
+        return wrappedVM.canBeModified();
+    }
 }

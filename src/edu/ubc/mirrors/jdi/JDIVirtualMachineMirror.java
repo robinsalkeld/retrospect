@@ -313,4 +313,9 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 	    return makeMirror((ObjectReference)value);
 	}
     }
+    
+    @Override
+    public boolean canBeModified() {
+        return jdiVM.canBeModified();
+    }
 }

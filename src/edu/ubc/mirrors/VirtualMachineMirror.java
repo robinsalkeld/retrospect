@@ -22,4 +22,6 @@ public interface VirtualMachineMirror {
     
     public void suspend();
     public void resume();
+    
+    public boolean canBeModified();
 }

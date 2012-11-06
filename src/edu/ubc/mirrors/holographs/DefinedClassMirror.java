@@ -73,22 +73,23 @@ public class DefinedClassMirror extends BytecodeClassMirror {
         // TODO-RS: Make sure this is sound by checking the side-effects
         // in the class initialization method!!!
         VirtualMachineHolograph vm = newClassHolograph.getVM();
-        ClassMirrorPrepareRequest request = vm.eventRequestManager().createClassMirrorPrepareRequest();
-        request.addClassFilter(newClassHolograph.getClassName());
-        vm.dispatch().addCallback(request, new EventCallback() {
-            @Override
-            public void handle(MirrorEvent event) {
-                ClassMirrorPrepareEvent prepareEvent = (ClassMirrorPrepareEvent)event;
-                ClassHolograph prepared = (ClassHolograph)prepareEvent.classMirror();
-                // The name will match, but we have to check the class loader manually.
-                ClassMirrorLoader preparedLoader = prepared.getLoader();
-                ClassLoaderHolograph holographLoader = newClassHolograph.getLoader();
-                if (preparedLoader == null ? holographLoader == null : preparedLoader.equals(holographLoader)) {
-                    newClassHolograph.setWrapped(prepared.getWrappedClassMirror());
+        if (vm.canBeModified()) {
+            ClassMirrorPrepareRequest request = vm.eventRequestManager().createClassMirrorPrepareRequest();
+            request.addClassFilter(newClassHolograph.getClassName());
+            vm.dispatch().addCallback(request, new EventCallback() {
+                @Override
+                public void handle(MirrorEvent event) {
+                    ClassMirrorPrepareEvent prepareEvent = (ClassMirrorPrepareEvent)event;
+                    ClassHolograph prepared = (ClassHolograph)prepareEvent.classMirror();
+                    // The name will match, but we have to check the class loader manually.
+                    ClassMirrorLoader preparedLoader = prepared.getLoader();
+                    ClassLoaderHolograph holographLoader = newClassHolograph.getLoader();
+                    if (preparedLoader == null ? holographLoader == null : preparedLoader.equals(holographLoader)) {
+                        newClassHolograph.setWrapped(prepared.getWrappedClassMirror());
+                    }
                 }
-            }
-        });
-        request.enable();
+            });
+            request.enable();
+        }
     }
-    
 }

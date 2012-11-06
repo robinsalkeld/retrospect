@@ -236,5 +236,8 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
 	return new WrappingConstructorMirror(this, constructor);
     }
     
-    
+    @Override
+    public boolean canBeModified() {
+        return wrappedVM.canBeModified();
+    }
 }

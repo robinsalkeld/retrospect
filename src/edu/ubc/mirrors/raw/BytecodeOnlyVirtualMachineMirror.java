@@ -85,4 +85,9 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     public void suspend() {
 	throw new UnsupportedOperationException(); 
     }
+    
+    @Override
+    public boolean canBeModified() {
+        return false;
+    }
 }
