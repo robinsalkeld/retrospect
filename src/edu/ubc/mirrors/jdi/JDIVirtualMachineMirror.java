@@ -316,6 +316,6 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public boolean canBeModified() {
-        return jdiVM.canBeModified();
+        return false; //jdiVM.canBeModified();
     }
 }

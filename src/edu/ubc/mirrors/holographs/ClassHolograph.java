@@ -113,7 +113,7 @@ public class ClassHolograph extends WrappingClassMirror {
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
         this.vm = vm;
-        memberFieldsDelegate = wrapped;
+        memberFieldsDelegate = new InstanceHolograph(vm, wrapped);
         staticFieldValues = (InstanceMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
         if (!vm.canBeModified() || wrapped instanceof DefinedClassMirror) {
             // Allow mutations on existing objects only if the underlying VM can't be resumed
@@ -511,7 +511,7 @@ public class ClassHolograph extends WrappingClassMirror {
     
     @Override
     public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
-        return vm.getWrappedMirror(memberFieldsDelegate.get(field));
+        return memberFieldsDelegate.get(field);
     }
     
     @Override
@@ -549,7 +549,7 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public void set(FieldMirror field, ObjectMirror o) throws IllegalAccessException {
-        memberFieldsDelegate.set(field, vm.unwrapMirror(o));
+        memberFieldsDelegate.set(field, o);
     }
     
     public void setBoolean(FieldMirror field, boolean b) throws IllegalAccessException {

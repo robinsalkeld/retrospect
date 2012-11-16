@@ -14,13 +14,14 @@ public class RetroactiveWeaver {
         ThreadHolograph threadHolograph = (ThreadHolograph)thread;
         threadHolograph.enterHologramExecution();
         try {
+            ThreadHolograph.raiseMetalevel();
             ClassMirrorLoader loader = aspect.getLoader();
-            AspectJMirrors mirrors = new AspectJMirrors(loader, thread);
+            AspectJMirrors mirrors = new AspectJMirrors(vm, loader, thread);
             AspectMirror aspectMirror = mirrors.getAspectMirror(aspect);
             mirrors.resolve();
             
             aspectMirror.installRequests();
-            
+            ThreadHolograph.lowerMetalevel();
             vm.dispatch().start();
         } finally {
             threadHolograph.exitHologramExecution();

@@ -362,6 +362,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             MirageClassLoader.printIndent();
             System.out.println("Fetching original bytecode for: " + holographClass.getClassName());
         }
+        ThreadHolograph.raiseMetalevel();
         
         String resourceName = className.replace('.', '/') + ".class";
         InstanceMirror resourceNameMirror = Reflection.makeString(this, resourceName);
@@ -394,7 +395,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             MirageClassLoader.printIndent();
             System.out.println("Fetched original bytecode for: " + holographClass.getClassName());
         }
-
+        ThreadHolograph.lowerMetalevel();
+        
         return result;
     }
     

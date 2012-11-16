@@ -51,4 +51,9 @@ public class WrappingFieldMirror implements FieldMirror {
     public int getModifiers() {
         return wrapped.getModifiers();
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + wrapped;
+    }
 }

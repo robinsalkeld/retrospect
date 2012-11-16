@@ -98,38 +98,53 @@ public class InstanceHolograph extends WrappingInstanceMirror {
     }
     
     public void set(FieldMirror field, ObjectMirror o) {
+        debug(field);
         newValues.put(field, o);
     }
     
+    private void debug(FieldMirror field) {
+        if (!(wrapped instanceof NewInstanceMirror) && !ThreadHolograph.inMetalevel()) {
+            System.out.println("set field " + field + " for instance " + this);
+        }
+    }
+
     public void setBoolean(FieldMirror field, boolean b) {
+        debug(field);
         newValues.put(field, b);
     }
     
     public void setByte(FieldMirror field, byte b) {
+        debug(field);
         newValues.put(field, b);
     }
     
     public void setChar(FieldMirror field, char c) {
+        debug(field);
         newValues.put(field, c);
     }
     
     public void setShort(FieldMirror field, short s) {
+        debug(field);
         newValues.put(field, s);
     }
     
     public void setInt(FieldMirror field, int i) {
+        debug(field);
         newValues.put(field, i);
     }
     
     public void setLong(FieldMirror field, long l) {
+        debug(field);
         newValues.put(field, l);
     }
     
     public void setFloat(FieldMirror field, float f) {
+        debug(field);
         newValues.put(field, f);
     }
     
     public void setDouble(FieldMirror field, double d) {
+        debug(field);
         newValues.put(field, d);
     }
     

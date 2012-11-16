@@ -383,6 +383,8 @@ public class AspectJMirrors {
 			InstanceMirror staticJoinPoint = makeStaticJoinPoint(event);
 			InstanceMirror aspectInstance = getInstance();
 			try {
+			    // TODO-RS: Actually check that we're passing in the right kind of join point,
+			    // if it's a parameter at all.
 			    advice.methodMirror.invoke(thread, aspectInstance, staticJoinPoint);
 			    break;
 			} catch (IllegalAccessException e) {
@@ -437,9 +439,9 @@ public class AspectJMirrors {
         }
     }
     
-    public AspectJMirrors(ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException {
+    public AspectJMirrors(VirtualMachineHolograph vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException {
         this.loader = loader;
-	this.vm = (VirtualMachineHolograph)loader.getClassMirror().getVM();
+	this.vm = vm;
 	this.thread = thread;
         ClassMirror factoryClass = Reflection.classMirrorForName(vm, thread, Factory.class.getName(), false, loader);
 	this.factoryConstructor = factoryClass.getConstructor(

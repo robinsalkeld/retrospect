@@ -177,7 +177,9 @@ public class Reflection {
             ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
             MethodMirror method = HolographInternalUtils.getMethod(classLoaderClass, "loadClass", stringClass);
             
+            ThreadHolograph.raiseMetalevel();
             result = (ClassMirror)HolographInternalUtils.mirrorInvoke(thread, method, (InstanceMirror)originalLoader, makeString(vm, name));
+            ThreadHolograph.lowerMetalevel();
         }
         if (result == null) {
             throw new ClassNotFoundException(name);

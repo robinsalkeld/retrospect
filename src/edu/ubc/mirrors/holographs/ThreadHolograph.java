@@ -14,6 +14,20 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     private int runningThreadCount = 0;
     private static ThreadLocal<ThreadHolograph> currentThreadMirror = new ThreadLocal<ThreadHolograph>();
     
+    public static ThreadLocal<Integer> metalevel = new ThreadLocal<Integer>() {
+        protected Integer initialValue() {
+            return 0;
+        };
+    };
+    
+    public static void raiseMetalevel() {
+        metalevel.set(metalevel.get() + 1);
+    }
+    
+    public static void lowerMetalevel() {
+        metalevel.set(metalevel.get() - 1);
+    }
+    
     public ThreadHolograph(VirtualMachineHolograph vm, ThreadMirror wrappedThread) {
         super(vm, wrappedThread);
         this.wrappedThread = wrappedThread;
@@ -63,5 +77,9 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
 //        StackTraceElement[] holographicTrace = runningThread.getStackTrace();
         
         return originalStack;
+    }
+
+    public static boolean inMetalevel() {
+        return metalevel.get().intValue() != 0;
     }
 }

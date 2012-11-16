@@ -4,15 +4,17 @@ import java.io.File;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.ThreadStartEvent;
+import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.ThreadStartRequest;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -31,35 +33,34 @@ public class DebuggingTest {
         	"tracing.ExampleMain", 
         	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"");
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
-        ThreadStartRequest r = jdiVM.eventRequestManager().createThreadStartRequest();
+        ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
         r.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        r.addClassFilter("tracing.ExampleMain");
         r.enable();
         jdiVM.resume();
         EventQueue q = jdiVM.eventQueue();
         // Ignore the VMStartEvent
         q.remove();
         EventSet es = q.remove();
-        ThreadStartEvent tse = (ThreadStartEvent)es.eventIterator().next();
-        final ThreadReference threadRef = tse.thread();
-        
-        JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
-	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM,
-                Reflection.getBootstrapPath(),
-                Collections.singletonMap("/", "/"));
-        final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));
+        ClassPrepareEvent cpe = (ClassPrepareEvent)es.eventIterator().next();
+        final ThreadReference threadRef = cpe.thread();
         
         File binDir = new File("/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
         URL urlPath = binDir.toURI().toURL();
+        
+        JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
+	List<URL> bootstrapPath = Reflection.getBootstrapPath();
+	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM,
+                bootstrapPath,
+                Collections.singletonMap("/", "/"));
+        final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));
+        
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath});
         Reflection.withThread(thread, new Callable<Void>() {
             public Void call() throws Exception {
         	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);
         	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
         	
-//        	InstanceMirror baos = vm.findBootstrapClassMirror(ByteArrayOutputStream.class.getName())
-//        		.getConstructor().newInstance(thread);
-//        	InstanceMirror stream = vm.findBootstrapClassMirror(PrintStream.class.getName())
-//        		.getConstructor(vm.findBootstrapClassMirror(OutputStream.class.getName())).newInstance(thread, baos);
         	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
                 InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("out"));
         	MethodMirror method = traceClass.getMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
@@ -67,8 +68,6 @@ public class DebuggingTest {
         	
         	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version1.TraceMyClasses", true, loader);
                 RetroactiveWeaver.weave(aspect, thread);
-                
-//                System.out.println(Reflection.toString(baos));
                 
                 return null;
             }
