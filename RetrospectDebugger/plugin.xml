@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   
+   <extension
+         point="org.eclipse.jdt.launching.vmConnectors">
+      <vmConnector
+            class="edu.ubc.mirrors.holographs.jdi.SocketAttachConnector"
+            id="edu.ubc.mirrors.holographs.jdi.SocketAttachConnector">
+      </vmConnector>
+   </extension>
+
+</plugin>
