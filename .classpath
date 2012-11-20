@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lib/hat.jar" sourcepath="/hat"/>
-	<classpathentry exported="true" kind="lib" path="lib/bcel-5.2.jar" sourcepath="/Users/robinsalkeld/Documents/UBC/Code/bcel-5.2-src/src"/>
 	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry kind="lib" path="lib/asm-debug-all-4.0.jar" sourcepath="src.zip"/>
 	<classpathentry kind="lib" path="lib/abc.jar" sourcepath="/abc"/>
@@ -10,8 +8,8 @@
 	<classpathentry kind="lib" path="lib/polyglot.jar" sourcepath="/Users/robinsalkeld/Documents/UBC/Code/abc-1.3.0/libs/sootall-2.2.5.jar"/>
 	<classpathentry kind="lib" path="lib/sootclasses.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="lib" path="/JRuby/dist/jruby-complete-1.6.4.jar"/>
 	<classpathentry kind="lib" path="/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/lib/tools.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/jruby-complete-1.6.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

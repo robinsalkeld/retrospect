@@ -103,9 +103,9 @@ public class InstanceHolograph extends WrappingInstanceMirror {
     }
     
     private void debug(FieldMirror field) {
-        if (!(wrapped instanceof NewInstanceMirror) && !ThreadHolograph.inMetalevel()) {
-            System.out.println("set field " + field + " for instance " + this);
-        }
+//        if (!(wrapped instanceof NewInstanceMirror) && !ThreadHolograph.inMetalevel()) {
+//            System.out.println("set field " + field + " for instance " + this);
+//        }
     }
 
     public void setBoolean(FieldMirror field, boolean b) {
