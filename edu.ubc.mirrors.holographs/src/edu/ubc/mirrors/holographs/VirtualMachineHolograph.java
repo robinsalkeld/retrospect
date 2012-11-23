@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.Inflater;
 import java.util.zip.ZipEntry;
@@ -358,10 +359,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         
         String className = holographClass.getClassName();
         
-        if (MirageClassLoader.debug) {
-            MirageClassLoader.printIndent();
-            System.out.println("Fetching original bytecode for: " + holographClass.getClassName());
-        }
         ThreadHolograph.raiseMetalevel();
         
         String resourceName = className.replace('.', '/') + ".class";
@@ -373,6 +370,35 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }, resourceNameMirror);
         if (stream == null) {
             throw new InternalError("Couldn't load bytecode for class " + resourceNameMirror + " from loader: " + holographLoader);
+        }
+        
+        // Optimization - if we get back a FileInputStream, read the data directly from the mapped file it must have come from.
+        if (stream.getClassMirror().getClassName().equals("sun.net.www.protocol.jar.JarURLConnection$JarURLInputStream")) {
+            try {
+                InstanceMirror connection = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("this$0"));
+                InstanceMirror jarFile = (InstanceMirror)connection.get(connection.getClassMirror().getDeclaredField("jarFile"));
+                ClassMirror zipFileClass = findBootstrapClassMirror(ZipFile.class.getName());
+                String fileName = Reflection.getRealStringForMirror((InstanceMirror)jarFile.get(zipFileClass.getDeclaredField("name")));
+               
+                InstanceMirror jarEntry = (InstanceMirror)connection.get(connection.getClassMirror().getDeclaredField("jarEntry"));
+                ClassMirror zipEntryClass = findBootstrapClassMirror(ZipEntry.class.getName());
+                String entryName = Reflection.getRealStringForMirror((InstanceMirror)jarEntry.get(zipEntryClass.getDeclaredField("name")));
+                
+                JarFile mappedJarFile = new JarFile(getMappedFile(new File(fileName), true));
+                InputStream in = mappedJarFile.getInputStream(mappedJarFile.getEntry(entryName));
+                return NativeClassMirror.readFully(in);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        if (MirageClassLoader.debug) {
+            MirageClassLoader.printIndent();
+            System.out.println("Fetching original bytecode for: " + holographClass.getClassName());
         }
         MethodHandle readMethod = new MethodHandle() {
             protected void methodCall() throws Throwable {
