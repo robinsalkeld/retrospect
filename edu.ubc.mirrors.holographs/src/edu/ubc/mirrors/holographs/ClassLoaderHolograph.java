@@ -1,17 +1,13 @@
 package edu.ubc.mirrors.holographs;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import com.sun.jdi.request.ClassPrepareRequest;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.ClassMirrorPrepareEvent;
-import edu.ubc.mirrors.ClassMirrorPrepareRequest;
-import edu.ubc.mirrors.MirrorEvent;
-import edu.ubc.mirrors.EventDispatch.EventCallback;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -34,6 +30,16 @@ public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirr
     
     public MirageClassLoader getMirageClassLoader() {
         return mirageLoader;
+    }
+    
+    @Override
+    public List<ClassMirror> loadedClassMirrors() {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (ClassMirror klass : wrappedLoader.loadedClassMirrors()) {
+            result.add(vm.getWrappedClassMirror(klass));
+        }
+        result.addAll(dynamicallyDefinedClasses.values());
+        return result;
     }
     
     @Override

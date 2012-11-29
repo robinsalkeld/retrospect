@@ -7,7 +7,9 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 
 public class ConstructorHolograph implements ConstructorMirror {
@@ -53,7 +55,7 @@ public class ConstructorHolograph implements ConstructorMirror {
     }
     
     @Override
-    public InstanceMirror newInstance(ThreadMirror thread, Object ... args) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    public InstanceMirror newInstance(ThreadMirror thread, Object ... args) throws IllegalAccessException, MirrorInvocationTargetException {
         if (thread == null) {
             throw new NullPointerException();
         }
@@ -73,8 +75,9 @@ public class ConstructorHolograph implements ConstructorMirror {
             Object result = mirageClassConstructor.newInstance(mirageArgs);
             return (InstanceMirror)ClassHolograph.unwrapMirage(result);
         } catch (InstantiationException e) {
-            ClassHolograph.cleanStackTrace(e);
-            throw e;
+            throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
+        } catch (InvocationTargetException e) {
+            throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
         } finally {
             threadHolograph.exitHologramExecution();
         }

@@ -30,6 +30,11 @@ public abstract class JDIEventRequest extends JDIMirror implements MirrorEventRe
     }
 
     @Override
+    public boolean isEnabled() {
+        return wrapped.isEnabled();
+    }
+    
+    @Override
     public void setEnabled(boolean enabled) {
 	wrapped.setEnabled(enabled);
     }

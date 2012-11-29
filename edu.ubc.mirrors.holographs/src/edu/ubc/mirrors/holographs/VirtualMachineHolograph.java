@@ -1,8 +1,10 @@
 package edu.ubc.mirrors.holographs;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -372,9 +374,31 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             throw new InternalError("Couldn't load bytecode for class " + resourceNameMirror + " from loader: " + holographLoader);
         }
         
-        // Optimization - if we get back a FileInputStream, read the data directly from the mapped file it must have come from.
-        if (stream.getClassMirror().getClassName().equals("sun.net.www.protocol.jar.JarURLConnection$JarURLInputStream")) {
-            try {
+        byte[] result = readBytecodeFromStream(holographClass, stream);
+        
+        ThreadHolograph.lowerMetalevel();
+        
+        return result;
+    }
+    
+    private byte[] readBytecodeFromStream(ClassMirror holographClass, InstanceMirror stream) {
+        try {
+            // Optimizations - if we get back a known InputStream subtype, pull directly from the mapped host file/zip/etc,
+            // since going through holograph execution can be pretty slow for such low-level IO.
+            String className = stream.getClassMirror().getClassName();
+            if (className.equals(BufferedInputStream.class.getName())) {
+                ClassMirror fisClass = findBootstrapClassMirror(FilterInputStream.class.getName());
+                InstanceMirror in = (InstanceMirror)stream.get(fisClass.getDeclaredField("in"));
+                return readBytecodeFromStream(holographClass, in);
+            } else if (className.equals(FileInputStream.class.getName())) {
+                InstanceMirror fileDescriptor = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("fd"));
+                int fd = fileDescriptor.getInt(fileDescriptor.getClassMirror().getDeclaredField("fd"));
+                InputStream in = fileInputStreams.get(fd);
+                return NativeClassMirror.readFully(in);
+            } else if (className.equals("org.eclipse.osgi.baseadaptor.bundlefile.ZipBundleEntry$ZipBundleEntryInputStream")) {
+                InstanceMirror wrapped = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("stream"));
+                return readBytecodeFromStream(holographClass, wrapped);
+            } else if (className.equals("sun.net.www.protocol.jar.JarURLConnection$JarURLInputStream")) {
                 InstanceMirror connection = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("this$0"));
                 InstanceMirror jarFile = (InstanceMirror)connection.get(connection.getClassMirror().getDeclaredField("jarFile"));
                 ClassMirror zipFileClass = findBootstrapClassMirror(ZipFile.class.getName());
@@ -387,13 +411,13 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 JarFile mappedJarFile = new JarFile(getMappedFile(new File(fileName), true));
                 InputStream in = mappedJarFile.getInputStream(mappedJarFile.getEntry(entryName));
                 return NativeClassMirror.readFully(in);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
         
         if (MirageClassLoader.debug) {
@@ -411,18 +435,16 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         ByteArrayMirror remoteBuffer = (ByteArrayMirror)getPrimitiveClass("byte").newArray(4096);
         int read;
         while ((read = (Integer)Reflection.invokeMethodHandle(stream, ThreadHolograph.currentThreadMirror(), 
-        	readMethod, remoteBuffer, 0, remoteBuffer.length())) != -1) {
+                readMethod, remoteBuffer, 0, remoteBuffer.length())) != -1) {
             SystemStubs.arraycopyMirrors(remoteBuffer, 0, localBufferMirror, 0, remoteBuffer.length());
             baos.write(localBuffer, 0, read);
         }
         byte[] result = baos.toByteArray();
-        
+
         if (MirageClassLoader.debug) {
             MirageClassLoader.printIndent();
             System.out.println("Fetched original bytecode for: " + holographClass.getClassName());
         }
-        ThreadHolograph.lowerMetalevel();
-        
         return result;
     }
     

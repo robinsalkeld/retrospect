@@ -22,6 +22,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
@@ -236,6 +237,16 @@ public class ClassHolograph extends WrappingClassMirror {
         Throwable cause = t.getCause();
         if (cause != null && cause != t) {
             cleanStackTrace(cause);
+        }
+    }
+    
+    public static MirrorInvocationTargetException causeAsMirrorInvocationTargetException(Throwable t) {
+        cleanStackTrace(t);
+        Throwable cause = t.getCause();
+        if (cause instanceof Mirage) {
+            return new MirrorInvocationTargetException((InstanceMirror)((Mirage)cause).getMirror());
+        } else {
+            throw (InternalError)new InternalError().initCause(cause);
         }
     }
     

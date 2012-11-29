@@ -4,6 +4,7 @@ import com.sun.jdi.event.MethodEntryEvent;
 
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodMirrorEntryEvent {
 
@@ -14,6 +15,11 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
 	this.wrapped = wrapped;
     }
 
+    @Override
+    public ThreadMirror thread() {
+        return new JDIThreadMirror(vm, wrapped.thread());
+    }
+    
     @Override
     public MethodMirror method() {
         return new JDIMethodMirror(vm, wrapped.method());

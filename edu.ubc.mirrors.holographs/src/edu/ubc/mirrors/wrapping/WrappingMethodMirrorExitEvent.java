@@ -2,6 +2,7 @@ package edu.ubc.mirrors.wrapping;
 
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingMethodMirrorExitEvent extends WrappingMirrorEvent implements MethodMirrorExitEvent {
 
@@ -12,6 +13,11 @@ public class WrappingMethodMirrorExitEvent extends WrappingMirrorEvent implement
 	this.wrapped = wrapped;
     }
 
+    @Override
+    public ThreadMirror thread() {
+        return (ThreadMirror)vm.wrapMirror(wrapped.thread());
+    }
+    
     @Override
     public MethodMirror method() {
 	return vm.wrapMethod(wrapped.method());

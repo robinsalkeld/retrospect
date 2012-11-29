@@ -1,7 +1,11 @@
 package edu.ubc.mirrors.jdi;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.eclipse.mat.snapshot.model.IClass;
 
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ReferenceType;
@@ -30,6 +34,15 @@ public class JDIClassLoaderMirror extends JDIInstanceMirror implements ClassMirr
         return vm.makeClassMirror(loadedClasses.get(name));
     }
 
+    @Override
+    public List<ClassMirror> loadedClassMirrors() {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (ReferenceType klass : loadedClasses.values()) {
+            result.add((ClassMirror)vm.makeMirror(klass.classObject()));
+        }
+        return result;
+    }
+    
     @Override
     public ClassMirror defineClass1(String name, ByteArrayMirror b, int off,
             int len, InstanceMirror pd, InstanceMirror source) {

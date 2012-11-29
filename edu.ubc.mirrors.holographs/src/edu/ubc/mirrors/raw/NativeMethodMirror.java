@@ -8,6 +8,7 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -22,7 +23,7 @@ public class NativeMethodMirror implements MethodMirror {
     @Override
     public Object invoke(ThreadMirror thread, ObjectMirror obj, Object... args)
             throws IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException {
+            MirrorInvocationTargetException {
 
         if (!thread.equals(NativeInstanceMirror.makeMirror(Thread.currentThread()))) {
             throw new IllegalThreadStateException("The native VM can only invoke methods on the current thread");
@@ -33,7 +34,12 @@ public class NativeMethodMirror implements MethodMirror {
             nativeArgs[i] = getNativeObject(args[i]);
         }
         Object nativeObj = getNativeObject(obj);
-        Object result = nativeMethod.invoke(nativeObj, nativeArgs);
+        Object result;
+        try {
+            result = nativeMethod.invoke(nativeObj, nativeArgs);
+        } catch (InvocationTargetException e) {
+            throw new MirrorInvocationTargetException((InstanceMirror)NativeInstanceMirror.makeMirror(e.getCause()));
+        }
         return wrapNativeObject(result);
     }
 

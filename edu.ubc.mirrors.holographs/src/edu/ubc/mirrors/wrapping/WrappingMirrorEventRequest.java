@@ -29,6 +29,11 @@ public class WrappingMirrorEventRequest implements MirrorEventRequest {
     }
 
     @Override
+    public boolean isEnabled() {
+        return wrapped.isEnabled();
+    }
+    
+    @Override
     public void setEnabled(boolean enabled) {
 	wrapped.setEnabled(enabled);
     }

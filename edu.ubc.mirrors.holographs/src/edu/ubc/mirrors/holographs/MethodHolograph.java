@@ -5,9 +5,12 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class MethodHolograph implements MethodMirror {
@@ -54,7 +57,7 @@ public class MethodHolograph implements MethodMirror {
     }
     
     @Override
-    public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalAccessException, InvocationTargetException {
+    public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalAccessException, MirrorInvocationTargetException {
         if (thread == null) {
             throw new NullPointerException();
         }
@@ -77,8 +80,7 @@ public class MethodHolograph implements MethodMirror {
                 return ClassHolograph.unwrapMirage(result);
             }
         } catch (InvocationTargetException e) {
-            ClassHolograph.cleanStackTrace(e);
-            throw e;
+            throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
         } finally {
             threadHolograph.exitHologramExecution();
         }

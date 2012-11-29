@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.raw;
 
+import java.util.List;
+
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -27,6 +29,12 @@ public class NativeClassMirrorLoader extends NativeInstanceMirror implements Cla
     @Override
     public int hashCode() {
         return 17 + classLoader.hashCode();
+    }
+    
+    @Override
+    public List<ClassMirror> loadedClassMirrors() {
+        // TODO-RS: Bah, no time...
+        throw new UnsupportedOperationException();
     }
     
     @Override

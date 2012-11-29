@@ -1,6 +1,8 @@
 package edu.ubc.mirrors.raw;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.objectweb.asm.Type;
@@ -10,7 +12,6 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.test.Breakpoint;
 
 public class BytecodeClassMirrorLoader extends NativeInstanceMirror implements ClassMirrorLoader {
 
@@ -65,14 +66,17 @@ public class BytecodeClassMirrorLoader extends NativeInstanceMirror implements C
     }
     
     @Override
+    public List<ClassMirror> loadedClassMirrors() {
+        return new ArrayList<ClassMirror>(classes.values());
+    }
+    
+    @Override
     public ClassMirror findLoadedClassMirror(final String name) {
         ClassMirror result = classes.get(name);
         if (result != null) {
             return result;
         }
-        if (name.equals(ClassLoader.class.getName())) {
-            Breakpoint.bp();
-        }
+
         result = loadBytecodeClassMirror(vm, this, loader, Type.getObjectType(name.replace('.', '/')));
         classes.put(name, result);
         return result;

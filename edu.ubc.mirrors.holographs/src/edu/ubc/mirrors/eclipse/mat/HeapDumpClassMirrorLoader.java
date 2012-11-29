@@ -1,6 +1,8 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.mat.SnapshotException;
@@ -36,10 +38,19 @@ public class HeapDumpClassMirrorLoader extends HeapDumpInstanceMirror implements
     }
     
     @Override
+    public List<ClassMirror> loadedClassMirrors() {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (IClass klass : loadedClasses.values()) {
+            result.add((ClassMirror)vm.makeMirror(klass));
+        }
+        return result;
+    }
+    
+    @Override
     public HeapDumpClassMirror findLoadedClassMirror(String name) {
         IClass klass = loadedClasses.get(name);
         if (klass != null) {
-            return new HeapDumpClassMirror(vm, klass);
+            return (HeapDumpClassMirror)vm.makeMirror(klass);
         }
 
         return null;

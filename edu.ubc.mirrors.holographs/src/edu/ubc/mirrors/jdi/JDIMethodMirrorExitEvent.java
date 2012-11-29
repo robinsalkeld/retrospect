@@ -4,6 +4,7 @@ import com.sun.jdi.event.MethodExitEvent;
 
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIMethodMirrorExitEvent extends JDIMirrorEvent implements MethodMirrorExitEvent {
 
@@ -14,6 +15,11 @@ public class JDIMethodMirrorExitEvent extends JDIMirrorEvent implements MethodMi
 	this.wrapped = wrapped;
     }
 
+    @Override
+    public ThreadMirror thread() {
+        return (ThreadMirror)vm.makeMirror(wrapped.thread());
+    }
+    
     @Override
     public MethodMirror method() {
         return new JDIMethodMirror(vm, wrapped.method());

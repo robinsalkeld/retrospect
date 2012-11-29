@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
@@ -21,7 +22,7 @@ public class NativeMethodAccessorImplStubs extends NativeStubs {
 	super(klass);
     }
 
-    public Mirage invoke0(Mirage method, Mirage target, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    public Mirage invoke0(Mirage method, Mirage target, Mirage arguments) throws IllegalArgumentException, InstantiationException, IllegalAccessException, MirrorInvocationTargetException {
         InstanceMirror m = (InstanceMirror)method.getMirror();
         
         MethodMirror methodMirror = Reflection.methodMirrorForMethodInstance(m);

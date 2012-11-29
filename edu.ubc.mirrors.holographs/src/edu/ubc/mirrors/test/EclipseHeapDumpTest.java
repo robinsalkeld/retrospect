@@ -24,6 +24,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -94,7 +95,7 @@ public class EclipseHeapDumpTest implements IApplication {
         }
     }
     
-    public static void printBundles(ThreadMirror thread, ArrayMirror bundles) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public static void printBundles(ThreadMirror thread, ArrayMirror bundles) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, MirrorInvocationTargetException {
         ClassMirror classMirror = bundles.getClassMirror();
         VirtualMachineMirror vm = classMirror.getVM();
         ClassMirrorLoader loader = classMirror.getLoader();
@@ -110,7 +111,7 @@ public class EclipseHeapDumpTest implements IApplication {
         System.out.println(System.currentTimeMillis() - before);
     }
     
-    public static void printBundlesFromRepository(InstanceMirror bundleRepository) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    public static void printBundlesFromRepository(InstanceMirror bundleRepository) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, MirrorInvocationTargetException {
         // Note we need a class loader that can see the classes in the OSGi API 
         // as well as our additional code (i.e. PrintOSGiBundles).
         ClassMirror bundleRepositoryClass = bundleRepository.getClassMirror();
@@ -119,15 +120,6 @@ public class EclipseHeapDumpTest implements IApplication {
         ThreadMirror thread = vm.getThreads().get(0);
         ClassMirror printerClass = Reflection.injectBytecode(vm, thread, bundleRepositoryClass.getLoader(), 
                 new NativeClassMirror(PrintOSGiBundles.class));
-        
-        Aspect a = PrintOSGiBundles.class.getAnnotation(Aspect.class);
-        
-//        ObjectArrayMirror annotationsMirror = (ObjectArrayMirror)Reflection.invokeMethodHandle(printerClass, new MethodHandle() {
-//            protected void methodCall() throws Throwable {
-//                ((Class<?>)null).getAnnotations();
-//            }
-//        });
-        
         MethodMirror method = printerClass.getMethod("print", bundleRepositoryClass);
         
         // Invoke PrintOSGiBundles#print reflectively.

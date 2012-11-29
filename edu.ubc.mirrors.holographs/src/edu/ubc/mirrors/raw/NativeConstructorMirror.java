@@ -9,7 +9,9 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 
 public class NativeConstructorMirror extends NativeInstanceMirror implements ConstructorMirror {
 
@@ -27,8 +29,7 @@ public class NativeConstructorMirror extends NativeInstanceMirror implements Con
     
     @Override
     public InstanceMirror newInstance(ThreadMirror thread, Object... args)
-            throws InstantiationException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException {
+            throws IllegalAccessException, IllegalArgumentException, MirrorInvocationTargetException {
         
         if (!thread.equals(NativeInstanceMirror.makeMirror(Thread.currentThread()))) {
             throw new IllegalThreadStateException("The native VM can only invoke methods on the current thread");
@@ -38,7 +39,14 @@ public class NativeConstructorMirror extends NativeInstanceMirror implements Con
         for (int i = 0; i < args.length; i++) {
             nativeArgs[i] = NativeMethodMirror.getNativeObject(args[i]);
         }
-        Object result = nativeConstructor.newInstance(nativeArgs);
+        Object result;
+        try {
+            result = nativeConstructor.newInstance(nativeArgs);
+        } catch (InvocationTargetException e) {
+            throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
+        } catch (InstantiationException e) {
+            throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
+        }
         return (InstanceMirror)NativeInstanceMirror.makeMirror(result);
     }
     

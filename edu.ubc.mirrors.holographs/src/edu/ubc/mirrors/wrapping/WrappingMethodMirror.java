@@ -4,7 +4,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -21,7 +23,7 @@ public class WrappingMethodMirror implements MethodMirror {
     @Override
     public Object invoke(ThreadMirror thread, ObjectMirror obj, Object... args)
             throws IllegalArgumentException, IllegalAccessException,
-            InvocationTargetException {
+            MirrorInvocationTargetException {
 
         Object[] unwrappedArgs = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
@@ -29,7 +31,12 @@ public class WrappingMethodMirror implements MethodMirror {
         }
         ObjectMirror unwrappedObj = vm.unwrapMirror(obj);
         ThreadMirror unwrappedThread = (ThreadMirror)vm.unwrapMirror(thread);
-        Object result = wrapped.invoke(unwrappedThread, unwrappedObj, unwrappedArgs);
+        Object result;
+        try {
+            result = wrapped.invoke(unwrappedThread, unwrappedObj, unwrappedArgs);
+        } catch (MirrorInvocationTargetException e) {
+            throw new MirrorInvocationTargetException((InstanceMirror)vm.wrapMirror(e.getTargetException()));
+        }
         return vm.wrapValue(result);
     }
     

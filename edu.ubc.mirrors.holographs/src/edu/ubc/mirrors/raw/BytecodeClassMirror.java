@@ -42,6 +42,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -191,7 +192,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         @Override
         public Object invoke(ThreadMirror thread, ObjectMirror obj,
                 Object... args) throws IllegalArgumentException,
-                IllegalAccessException, InvocationTargetException {
+                IllegalAccessException, MirrorInvocationTargetException {
             throw new UnsupportedOperationException();
         }
 
@@ -202,8 +203,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         
         @Override
         public InstanceMirror newInstance(ThreadMirror thread, Object... args)
-        	throws InstantiationException, IllegalAccessException,
-        	IllegalArgumentException, InvocationTargetException {
+        	throws IllegalAccessException, IllegalArgumentException, MirrorInvocationTargetException {
             throw new UnsupportedOperationException();
         }
 

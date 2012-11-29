@@ -18,7 +18,7 @@ public interface MethodMirror {
     public String getSignature();
     
     // TODO-RS: Should we have a different InvocationTargetException that has a mirror as a cause instead?
-    public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException;
+    public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalArgumentException, IllegalAccessException, MirrorInvocationTargetException;
     
     public void setAccessible(boolean flag);
     

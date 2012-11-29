@@ -92,6 +92,7 @@ import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -184,7 +185,7 @@ public class AspectJMirrors {
 		    parameterNamesString = Reflection.getRealStringForMirror((InstanceMirror)annotation.getClassMirror().getMethod("argNames").invoke(thread, annotation));
 		} catch (IllegalAccessException e) {
 		    throw new RuntimeException(e);
-		} catch (InvocationTargetException e) {
+		} catch (MirrorInvocationTargetException e) {
 		    throw new RuntimeException(e);
 		} catch (NoSuchMethodException e) {
 		    throw new RuntimeException(e);
@@ -389,7 +390,7 @@ public class AspectJMirrors {
 			    break;
 			} catch (IllegalAccessException e) {
 			    throw new RuntimeException(e);
-			} catch (InvocationTargetException e) {
+			} catch (MirrorInvocationTargetException e) {
 			    // TODO-RS: Think about exceptions in general. Advice throwing exceptions
 			    // would perturb the original execution so they need to be handled specially.
 			    throw new RuntimeException(e);
@@ -404,11 +405,9 @@ public class AspectJMirrors {
 		try {
 		    ConstructorMirror constructor = klass.getConstructor();
 		    instance = constructor.newInstance(thread);
-		} catch (InstantiationException e) {
-		    throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
 		    throw new RuntimeException(e);
-		} catch (InvocationTargetException e) {
+		} catch (MirrorInvocationTargetException e) {
 		    throw new RuntimeException(e);
 		} catch (NoSuchMethodException e) {
 		    throw new RuntimeException(e);
@@ -813,9 +812,7 @@ public class AspectJMirrors {
 		factory = factoryConstructor.newInstance(thread, null, classMirror);
 	    } catch (IllegalAccessException e) {
 		throw new RuntimeException(e);
-	    } catch (InvocationTargetException e) {
-		throw new RuntimeException(e);
-	    } catch (InstantiationException e) {
+	    } catch (MirrorInvocationTargetException e) {
 		throw new RuntimeException(e);
 	    }
 	    ajFactories.put(classMirror, factory);

@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.fieldmap;
 
+import java.util.Collections;
+import java.util.List;
+
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -11,6 +14,11 @@ public class FieldMapClassMirrorLoader extends FieldMapMirror implements ClassMi
         super(classMirror);
     }
 
+    @Override
+    public List<ClassMirror> loadedClassMirrors() {
+        return Collections.emptyList();
+    }
+    
     @Override
     public ClassMirror findLoadedClassMirror(String name) {
         return null;

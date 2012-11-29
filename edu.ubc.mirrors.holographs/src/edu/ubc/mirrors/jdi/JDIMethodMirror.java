@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import com.sun.jdi.Method;
 
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -23,7 +24,7 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
     
     public Object invoke(ThreadMirror thread, ObjectMirror obj, Object... args)
 	    throws IllegalArgumentException, IllegalAccessException,
-	    InvocationTargetException {
+	    MirrorInvocationTargetException {
 
 	// TODO-RS: Implementable but not needed.
 	throw new UnsupportedOperationException();

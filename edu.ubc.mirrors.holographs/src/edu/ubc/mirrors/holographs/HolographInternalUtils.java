@@ -7,6 +7,7 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -104,7 +105,7 @@ public class HolographInternalUtils {
             IllegalAccessError error = new IllegalAccessError(e.getMessage());
             error.initCause(e);
             throw error;
-        } catch (InvocationTargetException e) {
+        } catch (MirrorInvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
@@ -116,16 +117,8 @@ public class HolographInternalUtils {
             IllegalAccessError error = new IllegalAccessError(e.getMessage());
             error.initCause(e);
             throw error;
-        } catch (InvocationTargetException e) {
+        } catch (MirrorInvocationTargetException e) {
             throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            InstantiationError error = new InstantiationError(e.getMessage());
-            error.initCause(e);
-            throw error;
         }
     }
-
-    
-     
-    
 }
