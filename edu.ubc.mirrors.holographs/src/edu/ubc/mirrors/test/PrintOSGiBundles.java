@@ -28,7 +28,6 @@ public class PrintOSGiBundles {
     }
     
     public static String print(BundleRepository repository) throws IOException {
-        new Socket("0.0.0.1", 7777).getOutputStream().write(42);
         Appendable builder = System.out; //new StringBuilder();
         for (Bundle b : repository.getBundles()) {
             builder.append(b + "\n");

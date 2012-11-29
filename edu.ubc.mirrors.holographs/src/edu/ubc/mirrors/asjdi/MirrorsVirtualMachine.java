@@ -10,6 +10,7 @@ import java.util.Set;
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteValue;
 import com.sun.jdi.CharValue;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.DoubleValue;
 import com.sun.jdi.Field;
 import com.sun.jdi.FloatValue;
@@ -29,6 +30,7 @@ import com.sun.jdi.VoidValue;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.request.EventRequestManager;
 
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
@@ -44,6 +46,8 @@ public class MirrorsVirtualMachine implements VirtualMachine {
     
     private final Map<ObjectMirror, ObjectReference> mirrors = 
             new HashMap<ObjectMirror, ObjectReference>();
+
+    private final Map<String, Type> primitiveTypes = new HashMap<String, Type>();
     
     public MirrorsVirtualMachine(VirtualMachineMirror vm) {
         this.vm = vm;
@@ -62,6 +66,17 @@ public class MirrorsVirtualMachine implements VirtualMachine {
             result = new MirrorsClassLoaderReference(this, (ClassMirrorLoader)mirror);
         } else if (mirror instanceof ClassMirror) {
             result = new MirrorsClassObjectReference(this, (ClassMirror)mirror);
+        } else if (mirror instanceof InstanceMirror) {
+            String className = mirror.getClassMirror().getClassName();
+            if (className.equals(ThreadGroup.class.getName())) {
+                result = new MirrorsThreadGroupReference(this, (InstanceMirror)mirror);
+            } else if (className.equals(String.class.getName())) {
+                result = new MirrorsStringReference(this, (InstanceMirror)mirror);
+            } else {
+                result = new MirrorsObjectReference(this, (ClassMirror)mirror);
+            }
+        } else if (mirror instanceof ArrayMirror) {
+            result = new MirrorsArrayReference(this, (ArrayMirror)mirror);
         } else {
             throw new IllegalArgumentException("Unrecognized mirror class: " + mirror);
         }
@@ -71,7 +86,38 @@ public class MirrorsVirtualMachine implements VirtualMachine {
     }
     
     public Type typeForClassMirror(ClassMirror classMirror) {
-        return (ReferenceType)wrapMirror(classMirror);
+        if (classMirror.isPrimitive()) {
+            String className = classMirror.getClassName();
+            Type result = primitiveTypes.get(className);
+            if (result != null) {
+                return result;
+            }
+            
+            if (className.equals("boolean")) {
+                result = new MirrorsBooleanType(this, classMirror);
+            } else if (className.equals("byte")) {
+                result = new MirrorsByteType(this, classMirror);
+            } else if (className.equals("char")) {
+                result = new MirrorsCharType(this, classMirror);
+            } else if (className.equals("short")) {
+                result = new MirrorsShortType(this, classMirror);
+            } else if (className.equals("int")) {
+                result = new MirrorsIntegerType(this, classMirror);
+            } else if (className.equals("long")) {
+                result = new MirrorsLongType(this, classMirror);
+            } else if (className.equals("float")) {
+                result = new MirrorsFloatType(this, classMirror);
+            } else if (className.equals("double")) {
+                result = new MirrorsDoubleType(this, classMirror);
+            } else if (className.equals("void")) {
+                result = new MirrorsVoidType(this, classMirror);
+            }
+            
+            primitiveTypes.put(className, result);
+            return result;
+        } else {
+            return ((ClassObjectReference)wrapMirror(classMirror)).reflectedType();
+        }
     }
 
     @Override

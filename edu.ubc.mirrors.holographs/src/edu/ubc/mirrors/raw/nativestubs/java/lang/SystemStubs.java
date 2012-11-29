@@ -37,7 +37,7 @@ public class SystemStubs extends NativeStubs {
         }
     }
     
-    private static Object getArrayElement(ObjectMirror am, int index) {
+    public static Object getArrayElement(ObjectMirror am, int index) {
         String className = am.getClassMirror().getClassName();
         if (className.equals("[Z")) {
             return ((BooleanArrayMirror)am).getBoolean(index);
@@ -60,7 +60,7 @@ public class SystemStubs extends NativeStubs {
         }
     }
     
-    private static void setArrayElement(ObjectMirror am, int index, Object o) {
+    public static void setArrayElement(ObjectMirror am, int index, Object o) {
         String className = am.getClassMirror().getClassName();
         if (className.equals("[Z")) {
             ((BooleanArrayMirror)am).setBoolean(index, (Boolean)o);
