@@ -187,9 +187,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public MirrorEventRequestManager eventRequestManager() {
-	// Could return an event manager that creates a "VM terminated" event
-	// immediately after resuming, but there's no point for now.
-	throw new UnsupportedOperationException(); 
+        return new HeapDumpEventRequestManager();
     }
 
     @Override

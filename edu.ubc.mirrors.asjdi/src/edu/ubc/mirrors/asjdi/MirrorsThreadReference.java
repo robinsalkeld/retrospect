@@ -16,8 +16,8 @@ import com.sun.jdi.Value;
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 public class MirrorsThreadReference extends MirrorsInstanceReference implements ThreadReference {
 
@@ -83,7 +83,7 @@ public class MirrorsThreadReference extends MirrorsInstanceReference implements 
         try {
             CharArrayMirror nameChars = (CharArrayMirror)wrapped.get(wrapped.getClassMirror().getDeclaredField("name"));
             char[] chars = new char[nameChars.length()];
-            SystemStubs.arraycopyMirrors(nameChars, 0, new NativeCharArrayMirror(chars), 0, chars.length);
+            Reflection.arraycopy(nameChars, 0, new NativeCharArrayMirror(chars), 0, chars.length);
             return new String(chars);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);

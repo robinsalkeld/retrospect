@@ -67,11 +67,4 @@
             impl="edu.ubc.mirrors.eclipse.mat.plugins.SystemPropertiesQuery">
       </query>
    </extension>
-   <extension
-         point="org.eclipse.jdt.launching.vmConnectors">
-      <vmConnector
-            class="edu.ubc.mirrors.eclipse.mat.HeapDumpHolographConnector"
-            id="edu.ubc.mirrors.eclipse.mat.HeapDumpHolographConnector">
-      </vmConnector>
-   </extension>
 </plugin>

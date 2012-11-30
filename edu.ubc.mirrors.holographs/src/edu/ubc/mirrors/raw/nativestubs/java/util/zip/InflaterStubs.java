@@ -12,11 +12,9 @@ import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 public class InflaterStubs extends NativeStubs {
 
@@ -113,7 +111,7 @@ public class InflaterStubs extends NativeStubs {
         inflatorMirror.setBoolean(klass.getDeclaredField("finished"), finishedField.getBoolean(hostInflater));
         inflatorMirror.setBoolean(klass.getDeclaredField("needDict"), needDictField.getBoolean(hostInflater));
         
-        SystemStubs.arraycopyMirrors(nativeBMirror, 0, bMirror, 0, bMirror.length());
+        Reflection.arraycopy(nativeBMirror, 0, bMirror, 0, bMirror.length());
         
         return result;
     }

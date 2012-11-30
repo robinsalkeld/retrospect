@@ -21,7 +21,6 @@ import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 public class ZipFileStubs extends NativeStubs {
 
@@ -73,7 +72,7 @@ public class ZipFileStubs extends NativeStubs {
         
         int result = (Integer)getHostNativeMethod(ZipFile.class, "read", Long.TYPE, Long.TYPE, Long.TYPE, byte[].class, Integer.TYPE, Integer.TYPE).invoke(null, hostJzfile, jzentry, pos, nativeB, off, len);
         
-        SystemStubs.arraycopyMirrors(nativeBMirror, 0, bMirror, 0, bMirror.length());
+        Reflection.arraycopy(nativeBMirror, 0, bMirror, 0, bMirror.length());
         
         return result;
     }

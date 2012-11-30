@@ -14,7 +14,6 @@ import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 public class FileInputStreamStubs extends NativeStubs {
 
@@ -56,7 +55,7 @@ public class FileInputStreamStubs extends NativeStubs {
         int result = hostFIS.read(buffer, 0, buffer.length);
         if (result >= 0) {
             ByteArrayMirror bMirror = (ByteArrayMirror)b.getMirror();
-            SystemStubs.arraycopyMirrors(new NativeByteArrayMirror(buffer), 0, bMirror, off, result);
+            Reflection.arraycopy(new NativeByteArrayMirror(buffer), 0, bMirror, off, result);
         }
         return result;
     }

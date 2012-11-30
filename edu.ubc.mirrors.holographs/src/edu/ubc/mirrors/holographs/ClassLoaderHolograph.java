@@ -10,8 +10,8 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirrorLoader {
 
@@ -61,7 +61,7 @@ public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirr
         }
         
         final byte[] realBytecode = new byte[len];
-        SystemStubs.arraycopyMirrors(b, off, new NativeByteArrayMirror(realBytecode), 0, len);
+        Reflection.arraycopy(b, off, new NativeByteArrayMirror(realBytecode), 0, len);
         
         ClassMirror newClass = new DefinedClassMirror(vm, this, name, realBytecode);
         final ClassHolograph newClassHolograph = (ClassHolograph)vm.getWrappedClassMirror(newClass);

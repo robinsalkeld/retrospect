@@ -8,8 +8,8 @@ import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.mirages.Mirage;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 public class FileOutputStreamStubs extends NativeStubs {
 
@@ -23,7 +23,7 @@ public class FileOutputStreamStubs extends NativeStubs {
 	int fd = HolographInternalUtils.getIntField(fdMirror, "fd");
 	byte[] nativeBytes = new byte[len];
 	ArrayMirror nativeBytesMirror = new NativeByteArrayMirror(nativeBytes);
-	SystemStubs.arraycopyMirrors(b.getMirror(), off, nativeBytesMirror, 0, len);
+	Reflection.arraycopy(b.getMirror(), off, nativeBytesMirror, 0, len);
 	if (fd == 1) {
 	    System.out.write(nativeBytes);
 	} else if (fd == 2) {

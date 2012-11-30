@@ -9,7 +9,7 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.ArrayMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
+import edu.ubc.mirrors.mirages.Reflection;
 
 public class MirrorsArrayReference extends MirrorsObjectReference implements ArrayReference {
 
@@ -22,7 +22,7 @@ public class MirrorsArrayReference extends MirrorsObjectReference implements Arr
 
     @Override
     public Value getValue(int index) {
-        return vm.valueForObject(SystemStubs.getArrayElement(wrapped, index));
+        return vm.valueForObject(Reflection.getArrayElement(wrapped, index));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class MirrorsArrayReference extends MirrorsObjectReference implements Arr
 
     @Override
     public void setValue(int index, Value value) throws InvalidTypeException, ClassNotLoadedException {
-        SystemStubs.setArrayElement(wrapped, index, vm.objectForValue(value));
+        Reflection.setArrayElement(wrapped, index, vm.objectForValue(value));
     }
 
     @Override

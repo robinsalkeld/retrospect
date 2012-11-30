@@ -38,6 +38,35 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.asjdi.MirrorsArrayReference;
+import edu.ubc.mirrors.asjdi.MirrorsBooleanType;
+import edu.ubc.mirrors.asjdi.MirrorsBooleanValue;
+import edu.ubc.mirrors.asjdi.MirrorsByteType;
+import edu.ubc.mirrors.asjdi.MirrorsByteValue;
+import edu.ubc.mirrors.asjdi.MirrorsCharType;
+import edu.ubc.mirrors.asjdi.MirrorsCharValue;
+import edu.ubc.mirrors.asjdi.MirrorsClassLoaderReference;
+import edu.ubc.mirrors.asjdi.MirrorsClassObjectReference;
+import edu.ubc.mirrors.asjdi.MirrorsDoubleType;
+import edu.ubc.mirrors.asjdi.MirrorsDoubleValue;
+import edu.ubc.mirrors.asjdi.MirrorsEventQueue;
+import edu.ubc.mirrors.asjdi.MirrorsEventRequestManager;
+import edu.ubc.mirrors.asjdi.MirrorsField;
+import edu.ubc.mirrors.asjdi.MirrorsFloatType;
+import edu.ubc.mirrors.asjdi.MirrorsFloatValue;
+import edu.ubc.mirrors.asjdi.MirrorsIntegerType;
+import edu.ubc.mirrors.asjdi.MirrorsIntegerValue;
+import edu.ubc.mirrors.asjdi.MirrorsLongType;
+import edu.ubc.mirrors.asjdi.MirrorsLongValue;
+import edu.ubc.mirrors.asjdi.MirrorsObjectReference;
+import edu.ubc.mirrors.asjdi.MirrorsReferenceType;
+import edu.ubc.mirrors.asjdi.MirrorsShortType;
+import edu.ubc.mirrors.asjdi.MirrorsShortValue;
+import edu.ubc.mirrors.asjdi.MirrorsStringReference;
+import edu.ubc.mirrors.asjdi.MirrorsThreadGroupReference;
+import edu.ubc.mirrors.asjdi.MirrorsThreadReference;
+import edu.ubc.mirrors.asjdi.MirrorsVoidType;
+import edu.ubc.mirrors.asjdi.MirrorsVoidValue;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class MirrorsVirtualMachine implements VirtualMachine {
@@ -295,7 +324,7 @@ public class MirrorsVirtualMachine implements VirtualMachine {
     }
 
     @Override
-    public long[] instanceCounts(List<? extends ReferenceType> types) {
+    public long[] instanceCounts(List types) {
         long[] result = new long[types.size()];
         for (int i = 0; i < result.length; i++) {
             ClassMirror klass = ((MirrorsReferenceType)types.get(i)).wrapped;
@@ -365,7 +394,7 @@ public class MirrorsVirtualMachine implements VirtualMachine {
     }
 
     @Override
-    public void redefineClasses(Map<? extends ReferenceType, byte[]> arg0) {
+    public void redefineClasses(Map bytecodes) {
         throw new UnsupportedOperationException();
     }
 
@@ -376,7 +405,7 @@ public class MirrorsVirtualMachine implements VirtualMachine {
 
     @Override
     public void setDebugTraceMode(int arg0) {
-        throw new UnsupportedOperationException();
+        // Implementations are allowed to ignore this
     }
 
     @Override
@@ -488,10 +517,10 @@ public class MirrorsVirtualMachine implements VirtualMachine {
         }
     }
     
-    public Object[] objectsForValues(List<? extends Value> values) {
+    public Object[] objectsForValues(List values) {
         Object[] objects = new Object[values.size()];
         for (int i = 0; i < objects.length; i++) {
-            objects[i] = objectForValue(values.get(i));
+            objects[i] = objectForValue((Value)values.get(i));
         }
         return objects;
     }

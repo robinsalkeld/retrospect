@@ -1,9 +1,10 @@
-package edu.ubc.mirrors.eclipse.mat;
+package edu.ubc.mirrors.eclipse.mat.aseclipsejdi;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -19,7 +20,9 @@ import org.eclipse.mat.util.ConsoleProgressListener;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.Connector;
 
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Reflection;
 
@@ -29,7 +32,7 @@ public class HeapDumpHolographConnector implements IVMConnector {
 
         private static final long serialVersionUID = 6669351099678827867L;
 
-        private String value;
+        private String value = "<...>";
         
         @Override
         public String description() {
@@ -69,8 +72,8 @@ public class HeapDumpHolographConnector implements IVMConnector {
     }
     
     @Override
-    public void connect(Map arguments, IProgressMonitor monitor, ILaunch launch) throws CoreException {
-        String snapshotPath = ((Connector.StringArgument)arguments.get("Path")).value();
+    public void connect(Map arguments, IProgressMonitor monitor, final ILaunch launch) throws CoreException {
+        String snapshotPath = (String)arguments.get("Path");
         ISnapshot snapshot;
         try {
             snapshot = SnapshotFactory.openSnapshot(
@@ -90,9 +93,21 @@ public class HeapDumpHolographConnector implements IVMConnector {
                 Reflection.getStandardMappedFiles());
         
         // Finally, adapt to the JDI model
-        VirtualMachine jdiVM = new MirrorsVirtualMachine(holographVM);
-        IDebugTarget debugTarget= JDIDebugModel.newDebugTarget(launch, jdiVM, jdiVM.name(), null, true, true);
-        launch.addDebugTarget(debugTarget);
+        final VirtualMachine jdiVM = new MirrorsVirtualMachine(holographVM);
+        
+        ThreadMirror thread = holographVM.getThreads().get(0);
+        try {
+            Reflection.withThread(thread, new Callable<Void>() {
+                public Void call() throws Exception {
+                    IDebugTarget debugTarget= JDIDebugModel.newDebugTarget(launch, jdiVM, jdiVM.name(), null, true, true);
+                    launch.addDebugTarget(debugTarget);
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        
     }
 
     @Override

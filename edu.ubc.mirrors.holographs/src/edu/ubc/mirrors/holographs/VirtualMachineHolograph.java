@@ -436,7 +436,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         int read;
         while ((read = (Integer)Reflection.invokeMethodHandle(stream, ThreadHolograph.currentThreadMirror(), 
                 readMethod, remoteBuffer, 0, remoteBuffer.length())) != -1) {
-            SystemStubs.arraycopyMirrors(remoteBuffer, 0, localBufferMirror, 0, remoteBuffer.length());
+            Reflection.arraycopy(remoteBuffer, 0, localBufferMirror, 0, remoteBuffer.length());
             baos.write(localBuffer, 0, read);
         }
         byte[] result = baos.toByteArray();
@@ -485,7 +485,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
         
         final byte[] realBytecode = new byte[len];
-        SystemStubs.arraycopyMirrors(b, off, new NativeByteArrayMirror(realBytecode), 0, len);
+        Reflection.arraycopy(b, off, new NativeByteArrayMirror(realBytecode), 0, len);
         
         ClassMirror newClass = new DefinedClassMirror(this, null, name, realBytecode);
         ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(newClass);

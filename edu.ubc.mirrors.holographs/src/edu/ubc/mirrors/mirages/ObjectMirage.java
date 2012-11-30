@@ -273,7 +273,7 @@ public class ObjectMirage implements Mirage {
             
             ArrayMirror result = mirror.getClassMirror().getComponentClassMirror().newArray(length);
             
-            SystemStubs.arraycopyMirrors(objectArrayMirror, 0, result, 0, length);
+            Reflection.arraycopy(objectArrayMirror, 0, result, 0, length);
             
             return make(result);
         } else {    
