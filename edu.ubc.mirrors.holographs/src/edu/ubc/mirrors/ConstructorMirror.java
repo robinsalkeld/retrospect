@@ -10,8 +10,9 @@ public interface ConstructorMirror {
     
     public int getModifiers();
     
+    public List<String> getParameterTypeNames();
     public List<ClassMirror> getParameterTypes();
-    
+    public List<String> getExceptionTypeNames();
     public List<ClassMirror> getExceptionTypes();
     
     public String getSignature();

@@ -23,6 +23,7 @@ import org.eclipse.mat.util.IProgressListener;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Reflection;
@@ -37,7 +38,8 @@ public class SystemPropertiesQuery implements IQuery
     {
         VirtualMachineMirror vm = HolographVMRegistry.getHolographVM(snapshot);
         ClassMirror systemClass = vm.findAllClasses(System.class.getName(), false).get(0);
-        ObjectMirror propertiesMirror = (ObjectMirror)Reflection.invokeStaticMethodHandle(systemClass, new MethodHandle() {
+        ThreadMirror thread = vm.getThreads().get(0);
+        ObjectMirror propertiesMirror = (ObjectMirror)Reflection.invokeStaticMethodHandle(thread, systemClass, new MethodHandle() {
             protected void methodCall() throws Throwable {
                 System.getProperties();
             }

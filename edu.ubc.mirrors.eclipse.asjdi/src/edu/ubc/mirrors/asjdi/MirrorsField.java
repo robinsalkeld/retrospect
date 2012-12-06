@@ -61,7 +61,7 @@ public class MirrorsField extends MirrorsMirrorWithModifiers implements Field {
 
     @Override
     public String typeName() {
-        return wrapped.getType().getClassName();
+        return wrapped.getTypeName();
     }
 
 }

@@ -3,12 +3,15 @@ package edu.ubc.mirrors.asjdi;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassObjectReference;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.Location;
@@ -27,6 +30,7 @@ import edu.ubc.mirrors.mirages.Reflection;
 public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements ReferenceType {
 
     protected final ClassMirror wrapped;
+    private List<Field> allFields;
     
     public MirrorsReferenceType(MirrorsVirtualMachine vm, ClassMirror wrapped) {
         super(vm, wrapped);
@@ -55,9 +59,25 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
 
     @Override
     public List<Field> allFields() {
-        throw new UnsupportedOperationException();
+        if (allFields == null) {
+            allFields = new ArrayList<Field>();
+            addAllFields(vm, wrapped, allFields);
+        }
+        return allFields;
     }
 
+    private static void addAllFields(MirrorsVirtualMachine vm, ClassMirror klass, List<Field> fields) {
+        for (FieldMirror field : klass.getDeclaredFields()) {
+            fields.add(new MirrorsField(vm, field));
+        }
+        if (klass.getSuperClassMirror() != null) {
+            addAllFields(vm, klass.getSuperClassMirror(), fields);
+        }
+        for (ClassMirror i : klass.getInterfaceMirrors()) {
+            addAllFields(vm, i, fields);
+        }
+    }
+    
     @Override
     public List<Location> allLineLocations() throws AbsentInformationException {
         throw new AbsentInformationException();
@@ -100,7 +120,7 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
 
     @Override
     public String defaultStratum() {
-        throw new UnsupportedOperationException();
+        return "Java";
     }
 
     @Override
@@ -239,9 +259,48 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
 
     @Override
     public List<Field> visibleFields() {
-        throw new UnsupportedOperationException();
+        return new ArrayList<Field>(visibleFieldsByName().values());
     }
 
+    protected Map<String, Field> visibleFieldsByName() {
+        Map<String, Field> result = new HashMap<String, Field>();
+        Set<String> ambiguous = new HashSet<String>();
+        
+        for (InterfaceType i : interfaces()) {
+            mergeVisibleFields(result, ((MirrorsReferenceType)i).visibleFieldsByName(), ambiguous);
+        }
+        
+        if (this instanceof ClassType) {
+            MirrorsClassType superclass = (MirrorsClassType)((ClassType)this).superclass();
+            if (superclass != null) {
+                mergeVisibleFields(result, superclass.visibleFieldsByName(), ambiguous);
+            }
+        }
+        
+        for (Field field : fields()) {
+            result.put(field.name(), field);
+        }
+        
+        return result;
+    }
+    
+    private void mergeVisibleFields(Map<String, Field> result, Map<String, Field> others, Set<String> ambiguous) {
+        for (Map.Entry<String, Field> entry : others.entrySet()) {
+            String name = entry.getKey();
+            Field f = result.get(name);
+            Field otherField = entry.getValue();
+            if (!ambiguous.contains(name)) {
+                if (f == null) {
+                    result.put(name, otherField);
+                } else if (!f.equals(otherField)) {
+                    // Ambiguous
+                    result.remove(name);
+                    ambiguous.add(name);
+                }
+            }
+        }
+    }
+    
     @Override
     public List<Method> visibleMethods() {
         throw new UnsupportedOperationException();

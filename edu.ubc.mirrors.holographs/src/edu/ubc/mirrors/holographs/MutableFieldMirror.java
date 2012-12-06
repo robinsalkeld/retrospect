@@ -25,6 +25,15 @@ public class MutableFieldMirror extends WrappingFieldMirror {
     }
     
     @Override
+    public String getTypeName() {
+        try {
+            return super.getTypeName();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeField().getTypeName();
+        }
+    }
+    
+    @Override
     public int getModifiers() {
         try {
             return super.getModifiers();

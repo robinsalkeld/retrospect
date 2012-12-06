@@ -5,6 +5,7 @@ import com.sun.jdi.StackFrame;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.MethodMirror;
 
 public class JDIFrameMirror extends JDIMirror implements FrameMirror {
 
@@ -17,12 +18,17 @@ public class JDIFrameMirror extends JDIMirror implements FrameMirror {
 
     @Override
     public ClassMirror declaringClass() {
-	return vm.makeClassMirror(frame.location().declaringType());
+        return vm.makeClassMirror(frame.location().declaringType());
     }
-
+    
     @Override
     public String methodName() {
-	return frame.location().method().name();
+        return frame.location().method().name();
+    }
+    
+    @Override
+    public MethodMirror method() {
+	return new JDIMethodMirror(vm, frame.location().method());
     }
 
     @Override

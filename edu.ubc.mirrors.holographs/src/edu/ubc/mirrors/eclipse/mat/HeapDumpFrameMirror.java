@@ -6,11 +6,10 @@ import java.util.regex.Pattern;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.MethodMirror;
 
 public class HeapDumpFrameMirror implements FrameMirror {
 
-    private final HeapDumpVirtualMachineMirror vm;
-    
     private static final Pattern FRAME_PATTERN = Pattern.compile("at (.*)\\.(.*)\\(.*\\).* \\((?:(.*):(\\d*)|(.*))\\)");
     
     private final ClassMirror declaringClass;
@@ -19,7 +18,6 @@ public class HeapDumpFrameMirror implements FrameMirror {
     private final int lineNumber;
     
     public HeapDumpFrameMirror(HeapDumpVirtualMachineMirror vm, String text) {
-	this.vm = vm;
 	Matcher m = FRAME_PATTERN.matcher(text);
         if (m.matches()) {
             String className = m.group(1);
@@ -47,12 +45,17 @@ public class HeapDumpFrameMirror implements FrameMirror {
     
     @Override
     public ClassMirror declaringClass() {
-	return declaringClass;
+        return declaringClass;
     }
-
+    
     @Override
     public String methodName() {
-	return methodName;
+        return methodName;
+    }
+    
+    @Override
+    public MethodMirror method() {
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +25,8 @@ import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
-import edu.ubc.mirrors.raw.NativeClassMirror;
-import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 import edu.ubc.mirrors.raw.PrimitiveClassMirror;
 
 public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
@@ -34,6 +34,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     private final ISnapshot snapshot;
     
     public HeapDumpVirtualMachineMirror(ISnapshot snapshot) {
+        Reflection.checkNull(snapshot);
         this.snapshot = snapshot;
         initPrimitiveClasses();
     }
@@ -155,8 +156,11 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
         List<ClassMirror> result = new ArrayList<ClassMirror>();
         try {
-            for (IClass klass : snapshot.getClassesByName(name, includeSubclasses)) {
-                result.add((ClassMirror)makeMirror(klass));
+            Collection<IClass> matches = snapshot.getClassesByName(name, includeSubclasses);
+            if (matches != null) {
+                for (IClass klass : matches) {
+                    result.add((ClassMirror)makeMirror(klass));
+                }
             }
         } catch (SnapshotException e) {
             throw new RuntimeException(e);
@@ -187,12 +191,12 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public MirrorEventRequestManager eventRequestManager() {
-        return new HeapDumpEventRequestManager();
+        return new HeapDumpEventRequestManager(this);
     }
 
     @Override
     public MirrorEventQueue eventQueue() {
-	throw new UnsupportedOperationException(); 
+	return new HeapDumpEventQueue(this); 
     }
 
     @Override

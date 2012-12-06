@@ -34,4 +34,8 @@ public abstract class MirrorsMirror implements Mirror {
     public int hashCode() {
         return 47 * wrapped.hashCode();
     }
+    
+    public Object getWrapped() {
+        return wrapped;
+    }
 }

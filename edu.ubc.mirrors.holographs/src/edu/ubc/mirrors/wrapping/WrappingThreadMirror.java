@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ubc.mirrors.FrameMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingThreadMirror extends WrappingInstanceMirror implements ThreadMirror {
@@ -19,7 +18,7 @@ public class WrappingThreadMirror extends WrappingInstanceMirror implements Thre
     public static List<FrameMirror> getWrappedStackTrace(WrappingVirtualMachine vm, ThreadMirror wrappedThread) {
         List<FrameMirror> result = new ArrayList<FrameMirror>();
         for (FrameMirror frame : wrappedThread.getStackTrace()) {
-            result.add(new WrappingFrameMirror(vm, frame));
+            result.add(vm.wrapFrameMirror(vm, frame));
         }
         return result;
     }

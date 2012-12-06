@@ -62,11 +62,31 @@ public class NativeConstructorMirror extends NativeInstanceMirror implements Con
     }
     
     @Override
+    public List<String> getParameterTypeNames() {
+        List<String> result = new ArrayList<String>();
+        Class<?>[] parameterTypes = nativeConstructor.getParameterTypes();
+        for (Class<?> klass : parameterTypes) {
+            result.add(klass.getName());
+        }
+        return result;
+    }
+    
+    @Override
     public List<ClassMirror> getParameterTypes() {
         List<ClassMirror> result = new ArrayList<ClassMirror>();
         Class<?>[] parameterTypes = nativeConstructor.getParameterTypes();
         for (Class<?> klass : parameterTypes) {
             result.add((ClassMirror)NativeInstanceMirror.make(klass));
+        }
+        return result;
+    }
+    
+    @Override
+    public List<String> getExceptionTypeNames() {
+        List<String> result = new ArrayList<String>();
+        Class<?>[] parameterTypes = nativeConstructor.getExceptionTypes();
+        for (Class<?> klass : parameterTypes) {
+            result.add(klass.getName());
         }
         return result;
     }

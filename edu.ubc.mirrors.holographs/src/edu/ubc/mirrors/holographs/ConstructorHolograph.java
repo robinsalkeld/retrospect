@@ -84,6 +84,11 @@ public class ConstructorHolograph implements ConstructorMirror {
     }
     
     @Override
+    public List<String> getParameterTypeNames() {
+        return wrapped.getParameterTypeNames();
+    }
+    
+    @Override
     public List<ClassMirror> getParameterTypes() {
         return wrapped.getParameterTypes();
     }
@@ -113,6 +118,15 @@ public class ConstructorHolograph implements ConstructorMirror {
         return wrapped.getModifiers();
     }
 
+    @Override
+    public List<String> getExceptionTypeNames() {
+        try {
+            return wrapped.getExceptionTypeNames();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeConstructor().getExceptionTypeNames();
+        }
+    }
+    
     @Override
     public List<ClassMirror> getExceptionTypes() {
 	try {

@@ -33,6 +33,10 @@ public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
 	return method.modifiers();
     }
 
+    public List<String> getParameterTypeNames() {
+        return method.argumentTypeNames();
+    }
+    
     public List<ClassMirror> getParameterTypes() {
 	try {
 	    return vm.makeClassMirrorList(method.argumentTypes());
@@ -40,11 +44,19 @@ public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
 	    throw new UnsupportedOperationException();
 	}
     }
+    
+    public List<String> getExceptionTypeNames() {
+        throw new UnsupportedOperationException();
+    }
 
     public List<ClassMirror> getExceptionTypes() {
 	throw new UnsupportedOperationException();
     }
 
+    public String getReturnTypeName() {
+        return method.returnTypeName();
+    }
+    
     public ClassMirror getReturnType() {
 	try {
 	    return vm.makeClassMirror(method.returnType());

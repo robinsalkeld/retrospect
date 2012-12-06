@@ -65,6 +65,11 @@ public class HeapDumpFieldMirror implements FieldMirror {
     }
     
     @Override
+    public String getTypeName() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public int getModifiers() {
         throw new UnsupportedOperationException();
     }

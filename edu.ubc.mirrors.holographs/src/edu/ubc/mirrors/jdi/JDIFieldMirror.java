@@ -41,6 +41,11 @@ public class JDIFieldMirror extends JDIMirror implements FieldMirror {
     }
 
     @Override
+    public String getTypeName() {
+        return field.typeName();
+    }
+    
+    @Override
     public ClassMirror getType() {
         try {
             return vm.makeClassMirror(field.type());

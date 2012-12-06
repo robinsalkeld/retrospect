@@ -6,6 +6,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.jdt.debug.core.IJavaDebugTarget;
+import org.eclipse.jdt.debug.core.JDIDebugModel;
+import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteValue;
@@ -38,35 +44,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.asjdi.MirrorsArrayReference;
-import edu.ubc.mirrors.asjdi.MirrorsBooleanType;
-import edu.ubc.mirrors.asjdi.MirrorsBooleanValue;
-import edu.ubc.mirrors.asjdi.MirrorsByteType;
-import edu.ubc.mirrors.asjdi.MirrorsByteValue;
-import edu.ubc.mirrors.asjdi.MirrorsCharType;
-import edu.ubc.mirrors.asjdi.MirrorsCharValue;
-import edu.ubc.mirrors.asjdi.MirrorsClassLoaderReference;
-import edu.ubc.mirrors.asjdi.MirrorsClassObjectReference;
-import edu.ubc.mirrors.asjdi.MirrorsDoubleType;
-import edu.ubc.mirrors.asjdi.MirrorsDoubleValue;
-import edu.ubc.mirrors.asjdi.MirrorsEventQueue;
-import edu.ubc.mirrors.asjdi.MirrorsEventRequestManager;
-import edu.ubc.mirrors.asjdi.MirrorsField;
-import edu.ubc.mirrors.asjdi.MirrorsFloatType;
-import edu.ubc.mirrors.asjdi.MirrorsFloatValue;
-import edu.ubc.mirrors.asjdi.MirrorsIntegerType;
-import edu.ubc.mirrors.asjdi.MirrorsIntegerValue;
-import edu.ubc.mirrors.asjdi.MirrorsLongType;
-import edu.ubc.mirrors.asjdi.MirrorsLongValue;
-import edu.ubc.mirrors.asjdi.MirrorsObjectReference;
-import edu.ubc.mirrors.asjdi.MirrorsReferenceType;
-import edu.ubc.mirrors.asjdi.MirrorsShortType;
-import edu.ubc.mirrors.asjdi.MirrorsShortValue;
-import edu.ubc.mirrors.asjdi.MirrorsStringReference;
-import edu.ubc.mirrors.asjdi.MirrorsThreadGroupReference;
-import edu.ubc.mirrors.asjdi.MirrorsThreadReference;
-import edu.ubc.mirrors.asjdi.MirrorsVoidType;
-import edu.ubc.mirrors.asjdi.MirrorsVoidValue;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class MirrorsVirtualMachine implements VirtualMachine {
@@ -82,6 +60,22 @@ public class MirrorsVirtualMachine implements VirtualMachine {
         this.vm = vm;
     }
 
+    public static JDIDebugTarget makeDebugTarget(ThreadMirror thread, final VirtualMachine jdiVM, final ILaunch launch) {
+        try {
+            return Reflection.withThread(thread, new Callable<JDIDebugTarget>() {
+                public JDIDebugTarget call() throws Exception {
+                    JDIDebugTarget debugTarget = (JDIDebugTarget)JDIDebugModel.newDebugTarget(launch, jdiVM, jdiVM.name(), null, true, true);
+                    if (launch != null) {
+                        launch.addDebugTarget(debugTarget);
+                    }
+                    return debugTarget;
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     public ObjectReference wrapMirror(ObjectMirror mirror) {
         if (mirror == null) {
             return null;
@@ -102,7 +96,7 @@ public class MirrorsVirtualMachine implements VirtualMachine {
             } else if (className.equals(String.class.getName())) {
                 result = new MirrorsStringReference(this, (InstanceMirror)mirror);
             } else {
-                result = new MirrorsObjectReference(this, (ClassMirror)mirror);
+                result = new MirrorsObjectReference(this, (InstanceMirror)mirror);
             }
         } else if (mirror instanceof ArrayMirror) {
             result = new MirrorsArrayReference(this, (ArrayMirror)mirror);
@@ -114,7 +108,11 @@ public class MirrorsVirtualMachine implements VirtualMachine {
         return result;
     }
     
-    public Type typeForClassMirror(ClassMirror classMirror) {
+    public Type typeForClassMirror(final ClassMirror classMirror) {
+        if (classMirror == null) {
+            return null;
+        }
+        
         if (classMirror.isPrimitive()) {
             String className = classMirror.getClassName();
             Type result = primitiveTypes.get(className);
@@ -145,7 +143,15 @@ public class MirrorsVirtualMachine implements VirtualMachine {
             primitiveTypes.put(className, result);
             return result;
         } else {
-            return ((ClassObjectReference)wrapMirror(classMirror)).reflectedType();
+            if (ThreadHolograph.currentThreadMirror.get() == null) {
+                return Reflection.withThread(vm.getThreads().get(0), new Callable<Type>() {
+                    public Type call() throws Exception {
+                        return ((ClassObjectReference)wrapMirror(classMirror)).reflectedType();
+                    }
+                });
+            } else {
+                return ((ClassObjectReference)wrapMirror(classMirror)).reflectedType();
+            }
         }
     }
 

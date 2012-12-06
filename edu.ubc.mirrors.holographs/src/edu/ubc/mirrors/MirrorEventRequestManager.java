@@ -28,6 +28,8 @@ public interface MirrorEventRequestManager {
     
     List<ClassMirrorPrepareRequest> classMirrorPrepareRequests();
     
+    ThreadMirrorDeathRequest createThreadMirrorDeathRequest();
+    
     void deleteMirrorEventRequest(MirrorEventRequest request);
 
 }

@@ -51,8 +51,7 @@ public class MirrorsStackFrame extends MirrorsMirror implements StackFrame {
 
     @Override
     public Location location() {
-        // TODO-RS: Add MethodMirror to FrameMirror (tricky for heap dump - need to infer method)
-        return new MirrorsLocation(vm, frame.declaringClass(), frame.fileName(), frame.lineNumber());
+        return new MirrorsLocation(vm, frame.method(), frame.fileName(), frame.lineNumber());
     }
 
     @Override
@@ -63,7 +62,7 @@ public class MirrorsStackFrame extends MirrorsMirror implements StackFrame {
 
     @Override
     public ObjectReference thisObject() {
-        // TODO Auto-generated method stub
+        // TODO-RS: Not available at all in heap dump model, or at least not the Eclipse MAT version.
         return null;
     }
 

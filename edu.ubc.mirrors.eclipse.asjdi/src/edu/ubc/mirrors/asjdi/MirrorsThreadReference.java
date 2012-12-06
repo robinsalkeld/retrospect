@@ -84,7 +84,7 @@ public class MirrorsThreadReference extends MirrorsInstanceReference implements 
     @Override
     public String name() {
         try {
-            CharArrayMirror nameChars = (CharArrayMirror)wrapped.get(wrapped.getClassMirror().getDeclaredField("name"));
+            CharArrayMirror nameChars = (CharArrayMirror)wrapped.get(vm.vm.findBootstrapClassMirror(Thread.class.getName()).getDeclaredField("name"));
             char[] chars = new char[nameChars.length()];
             Reflection.arraycopy(nameChars, 0, new NativeCharArrayMirror(chars), 0, chars.length);
             return new String(chars);
@@ -119,7 +119,7 @@ public class MirrorsThreadReference extends MirrorsInstanceReference implements 
 
     @Override
     public int status() {
-        throw new UnsupportedOperationException();
+        return THREAD_STATUS_RUNNING;
     }
 
     @Override

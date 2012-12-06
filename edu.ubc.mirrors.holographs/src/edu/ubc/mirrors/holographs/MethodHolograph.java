@@ -96,8 +96,18 @@ public class MethodHolograph implements MethodMirror {
     }
     
     @Override
+    public List<String> getParameterTypeNames() {
+        return wrapped.getParameterTypeNames();
+    }
+    
+    @Override
     public List<ClassMirror> getParameterTypes() {
         return wrapped.getParameterTypes();
+    }
+    
+    @Override
+    public String getReturnTypeName() {
+        return wrapped.getReturnTypeName();
     }
     
     @Override
@@ -140,6 +150,15 @@ public class MethodHolograph implements MethodMirror {
         return wrapped.getModifiers();
     }
 
+    @Override
+    public List<String> getExceptionTypeNames() {
+        try {
+            return wrapped.getExceptionTypeNames();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMethod().getExceptionTypeNames();
+        }
+    }
+    
     @Override
     public List<ClassMirror> getExceptionTypes() {
 	try {

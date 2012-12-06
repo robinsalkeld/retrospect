@@ -32,7 +32,7 @@ public class ConstructorMirrorMethod extends MirrorsMirrorWithModifiers implemen
 
     @Override
     public String genericSignature() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
@@ -62,11 +62,7 @@ public class ConstructorMirrorMethod extends MirrorsMirrorWithModifiers implemen
 
     @Override
     public List<String> argumentTypeNames() {
-        List<String> result = new ArrayList<String>();
-        for (ClassMirror argType : wrapped.getParameterTypes()) {
-            result.add(argType.getClassName());
-        }
-        return result;
+        return wrapped.getParameterTypeNames();
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.sun.jdi.Field;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.ClassPrepareRequest;
@@ -14,6 +15,7 @@ import com.sun.jdi.request.ClassUnloadRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.ExceptionRequest;
+import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
@@ -72,7 +74,7 @@ public class MirrorsEventRequestManager extends MirrorsMirror implements EventRe
 
     @Override
     public ClassPrepareRequest createClassPrepareRequest() {
-        throw new UnsupportedOperationException();
+        return new MirrorsClassPrepareRequest(vm, wrapped.createClassMirrorPrepareRequest());
     }
 
     @Override
@@ -127,12 +129,12 @@ public class MirrorsEventRequestManager extends MirrorsMirror implements EventRe
 
     @Override
     public ThreadDeathRequest createThreadDeathRequest() {
-        throw new UnsupportedOperationException();
+        return new MirrorsThreadDeathRequest(vm, wrapped.createThreadMirrorDeathRequest());
     }
 
     @Override
     public ThreadStartRequest createThreadStartRequest() {
-        throw new UnsupportedOperationException();
+        return new MirrorsThreadStartRequest(vm);
     }
 
     @Override

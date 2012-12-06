@@ -12,7 +12,7 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     private final ThreadMirror wrappedThread;
     private Thread runningThread = null;
     private int runningThreadCount = 0;
-    private static ThreadLocal<ThreadHolograph> currentThreadMirror = new ThreadLocal<ThreadHolograph>();
+    public static ThreadLocal<ThreadHolograph> currentThreadMirror = new ThreadLocal<ThreadHolograph>();
     
     public static ThreadLocal<Integer> metalevel = new ThreadLocal<Integer>() {
         protected Integer initialValue() {

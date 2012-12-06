@@ -42,7 +42,7 @@ public class MethodMirrorMethod extends MirrorsMirrorWithModifiers implements Me
 
     @Override
     public String genericSignature() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
@@ -77,11 +77,7 @@ public class MethodMirrorMethod extends MirrorsMirrorWithModifiers implements Me
 
     @Override
     public List<String> argumentTypeNames() {
-        List<String> result = new ArrayList<String>();
-        for (ClassMirror argType : wrapped.getParameterTypes()) {
-            result.add(argType.getClassName());
-        }
-        return result;
+        return wrapped.getParameterTypeNames();
     }
 
     @Override
@@ -141,7 +137,7 @@ public class MethodMirrorMethod extends MirrorsMirrorWithModifiers implements Me
 
     @Override
     public String returnTypeName() {
-        return wrapped.getReturnType().getClassName();
+        return wrapped.getReturnTypeName();
     }
 
     @Override
@@ -163,9 +159,9 @@ public class MethodMirrorMethod extends MirrorsMirrorWithModifiers implements Me
             List args, int options) throws InvalidTypeException,
             ClassNotLoadedException, IncompatibleThreadStateException,
             InvocationException {
-        if (options != ObjectReference.INVOKE_SINGLE_THREADED) {
-            throw new IllegalArgumentException("Unsupported options: " + options);
-        }
+//        if (options != ObjectReference.INVOKE_SINGLE_THREADED) {
+//            throw new IllegalArgumentException("Unsupported options: " + options);
+//        }
         
         ThreadMirror threadMirror = ((MirrorsThreadReference)thread).wrapped;
         Object[] mirrorArgs = vm.objectsForValues(args);

@@ -93,21 +93,9 @@ public class HeapDumpHolographConnector implements IVMConnector {
                 Reflection.getStandardMappedFiles());
         
         // Finally, adapt to the JDI model
-        final VirtualMachine jdiVM = new MirrorsVirtualMachine(holographVM);
-        
         ThreadMirror thread = holographVM.getThreads().get(0);
-        try {
-            Reflection.withThread(thread, new Callable<Void>() {
-                public Void call() throws Exception {
-                    IDebugTarget debugTarget= JDIDebugModel.newDebugTarget(launch, jdiVM, jdiVM.name(), null, true, true);
-                    launch.addDebugTarget(debugTarget);
-                    return null;
-                }
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        
+        MirrorsVirtualMachine jdiVM = new MirrorsVirtualMachine(holographVM);
+        MirrorsVirtualMachine.makeDebugTarget(thread, jdiVM, launch);
     }
 
     @Override

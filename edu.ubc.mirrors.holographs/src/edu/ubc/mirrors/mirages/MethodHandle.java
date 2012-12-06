@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.mirages;
 
+import java.util.concurrent.Callable;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -108,14 +110,14 @@ public abstract class MethodHandle {
     public Object invoke(ObjectMirror obj, ThreadMirror thread, Object ... args) {
         ClassMirror klass = obj.getClassMirror();
         VirtualMachineMirror vm = klass.getVM();
-        ClassMirror targetClass;
+        final ClassMirror targetClass;
         try {
             targetClass = Reflection.classMirrorForName(vm, thread, getMethod().owner, false, klass.getLoader());
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(e.getMessage());
         }
         Type[] paramTypes = Type.getArgumentTypes(getMethod().desc);
-        ClassMirror[] paramClasses = new ClassMirror[paramTypes.length];
+        final ClassMirror[] paramClasses = new ClassMirror[paramTypes.length];
         for (int i = 0; i < paramTypes.length; i++) {
             try {
                 paramClasses[i] = Reflection.classMirrorForType(vm, thread, paramTypes[i], false, klass.getLoader());
@@ -123,7 +125,13 @@ public abstract class MethodHandle {
                 throw new NoClassDefFoundError(e.getMessage());
             }
         }
-        MethodMirror method = HolographInternalUtils.getMethod(targetClass, getMethod().name, paramClasses);
+        MethodMirror method = Reflection.withThread(thread, new Callable<MethodMirror>() {
+            @Override
+            public MethodMirror call() throws Exception {
+                return HolographInternalUtils.getMethod(targetClass, getMethod().name, paramClasses);
+            }
+        });
+                
         return HolographInternalUtils.mirrorInvoke(thread, method, obj, args);
     }
 }

@@ -11,8 +11,15 @@ import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.ThreadMirrorDeathRequest;
 
 public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
+
+    private final HeapDumpVirtualMachineMirror vm;
+    
+    public HeapDumpEventRequestManager(HeapDumpVirtualMachineMirror vm) {
+        this.vm = vm;
+    }
 
     @Override
     public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
@@ -77,8 +84,7 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public ClassMirrorPrepareRequest createClassMirrorPrepareRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        return new HeapDumpClassMirrorPrepareRequest(vm);
     }
 
     @Override
@@ -87,6 +93,11 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
         return null;
     }
 
+    @Override
+    public ThreadMirrorDeathRequest createThreadMirrorDeathRequest() {
+        return new HeapDumpThreadMirrorDeathRequest(vm);
+    }
+    
     @Override
     public void deleteMirrorEventRequest(MirrorEventRequest request) {
         // TODO Auto-generated method stub

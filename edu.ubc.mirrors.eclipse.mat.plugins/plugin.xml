@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.mat.report.query">
+      <query
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.CollectionValuesQuery">
+      </query>
+      <query
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.HashEntriesQuery">
+      </query>
+      <query
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.SystemPropertiesQuery">
+      </query>
+      <query
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery">
+      </query>
+   </extension>
+</plugin>

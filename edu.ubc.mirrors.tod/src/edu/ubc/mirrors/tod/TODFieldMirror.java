@@ -26,6 +26,11 @@ public class TODFieldMirror implements FieldMirror {
     }
 
     @Override
+    public String getTypeName() {
+        return field.getType().getName();
+    }
+    
+    @Override
     public ClassMirror getType() {
         return vm.makeMirror(field.getType());
     }

@@ -14,6 +14,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.DoubleArrayMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FloatArrayMirror;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
@@ -239,5 +240,9 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     @Override
     public boolean canBeModified() {
         return wrappedVM.canBeModified();
+    }
+
+    public FrameMirror wrapFrameMirror(WrappingVirtualMachine vm, FrameMirror frame) {
+        return new WrappingFrameMirror(vm, frame);
     }
 }

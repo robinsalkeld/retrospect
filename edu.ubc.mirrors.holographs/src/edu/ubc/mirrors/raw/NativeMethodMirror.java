@@ -70,6 +70,15 @@ public class NativeMethodMirror implements MethodMirror {
     }
 
     @Override
+    public List<String> getParameterTypeNames() {
+        List<String> result = new ArrayList<String>();
+        for (Class<?> klass : nativeMethod.getParameterTypes()) {
+            result.add(klass.getName());
+        }
+        return result;
+    }
+    
+    @Override
     public List<ClassMirror> getParameterTypes() {
         List<ClassMirror> result = new ArrayList<ClassMirror>();
         for (Class<?> klass : nativeMethod.getParameterTypes()) {
@@ -78,6 +87,11 @@ public class NativeMethodMirror implements MethodMirror {
         return result;
     }
 
+    @Override
+    public String getReturnTypeName() {
+        return nativeMethod.getReturnType().getName();
+    }
+    
     @Override
     public ClassMirror getReturnType() {
         return new NativeClassMirror(nativeMethod.getReturnType());
@@ -115,6 +129,12 @@ public class NativeMethodMirror implements MethodMirror {
 
     @Override
     public int getModifiers() {
+        // TODO For now
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public List<String> getExceptionTypeNames() {
         // TODO For now
         throw new UnsupportedOperationException();
     }

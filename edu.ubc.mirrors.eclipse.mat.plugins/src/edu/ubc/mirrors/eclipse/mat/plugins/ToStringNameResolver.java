@@ -5,7 +5,6 @@ import org.eclipse.mat.snapshot.extension.IClassSpecificNameResolver;
 import org.eclipse.mat.snapshot.extension.Subject;
 import org.eclipse.mat.snapshot.model.IObject;
 
-import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
 @Subject("java.lang.Object")

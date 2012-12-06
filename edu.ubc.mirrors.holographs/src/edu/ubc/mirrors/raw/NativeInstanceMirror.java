@@ -84,6 +84,11 @@ public class NativeInstanceMirror extends NativeObjectMirror implements Instance
         }
         
         @Override
+        public String getTypeName() {
+            return field.getType().getName();
+        }
+        
+        @Override
         public ClassMirror getType() {
             return (ClassMirror)NativeInstanceMirror.makeMirror(field.getType());
         }

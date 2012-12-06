@@ -43,8 +43,18 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     }
     
     @Override
+    public List<String> getParameterTypeNames() {
+        return wrapped.getParameterTypeNames();
+    }
+    
+    @Override
     public List<ClassMirror> getParameterTypes() {
         return vm.getWrappedClassMirrorList(wrapped.getParameterTypes());
+    }
+    
+    @Override
+    public List<String> getExceptionTypeNames() {
+        return wrapped.getExceptionTypeNames();
     }
     
     @Override

@@ -6,7 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -47,11 +49,10 @@ import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 public class Reflection {
 
-    public static <T> T withThread(ThreadMirror t, Callable<T> c) throws Exception {
+    public static <T> T withThread(ThreadMirror t, Callable<T> c) {
         ThreadHolograph threadHolograph = (ThreadHolograph)t;
         threadHolograph.enterHologramExecution();
         try {
@@ -62,6 +63,22 @@ public class Reflection {
         } finally {
             threadHolograph.exitHologramExecution();
         }
+    }
+    
+    public static <T> T proxyWithThread(Class<T> interfaceClass, final ThreadMirror thread, final T original) {
+        return interfaceClass.cast(Proxy.newProxyInstance(original.getClass().getClassLoader(), new Class<?>[] {interfaceClass}, new InvocationHandler() {
+            public Object invoke(Object proxy, final Method method, final Object[] args) throws Throwable {
+                if (ThreadHolograph.currentThreadMirror.get() == null) {
+                    return withThread(thread, new Callable<Object>() {
+                        public Object call() throws Exception {
+                            return method.invoke(original, args);
+                        }
+                    });
+                } else {
+                    return method.invoke(original, args);
+                }
+            }
+        }));
     }
     
     public static ObjectMirror getMirror(Object o) {
@@ -181,9 +198,14 @@ public class Reflection {
         if (originalLoader == null || name.equals(String.class.getName()) || name.equals(getMirageBinaryClassName(String.class.getName(), false))) {
             result = vm.findBootstrapClassMirror(name);
         } else {
-            ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
-            ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
-            MethodMirror method = HolographInternalUtils.getMethod(classLoaderClass, "loadClass", stringClass);
+            final ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
+            final ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
+            MethodMirror method = Reflection.withThread(thread, new Callable<MethodMirror>() {
+                public MethodMirror call() throws Exception {
+                    return HolographInternalUtils.getMethod(classLoaderClass, "loadClass", stringClass);
+                }
+            });
+                    
             
             ThreadHolograph.raiseMetalevel();
             result = (ClassMirror)HolographInternalUtils.mirrorInvoke(thread, method, (InstanceMirror)originalLoader, makeString(vm, name));
@@ -300,6 +322,10 @@ public class Reflection {
     }
     
     public static String toString(ObjectMirror mirror) {
+        if (mirror == null) {
+            return "null";
+        }
+        
         VirtualMachineMirror vm = mirror.getClassMirror().getVM();
         ClassMirror vmObjectClass = vm.findBootstrapClassMirror(Object.class.getName());
         MethodMirror toStringMethod = HolographInternalUtils.getMethod(vmObjectClass, "toString");
@@ -317,9 +343,8 @@ public class Reflection {
         return m.invoke(obj, thread, args);
     }
     
-    public static Object invokeStaticMethodHandle(ClassMirror targetClass, MethodHandle m, Object ... args) {
+    public static Object invokeStaticMethodHandle(ThreadMirror thread, ClassMirror targetClass, MethodHandle m, Object ... args) {
         VirtualMachineMirror vm = targetClass.getVM();
-        ThreadMirror thread = vm.getThreads().get(0);
         Type[] paramTypes = Type.getArgumentTypes(m.getMethod().desc);
         ClassMirror[] paramClasses = new ClassMirror[paramTypes.length];
         for (int i = 0; i < paramTypes.length; i++) {

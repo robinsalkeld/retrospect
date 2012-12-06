@@ -2,6 +2,7 @@ package edu.ubc.mirrors.wrapping;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.MethodMirror;
 
 public class WrappingFrameMirror implements FrameMirror {
 
@@ -14,11 +15,15 @@ public class WrappingFrameMirror implements FrameMirror {
     
     @Override
     public ClassMirror declaringClass() {
-	return vm.getWrappedClassMirror(wrapped.declaringClass());
+        return (ClassMirror)vm.wrapMirror(wrapped.declaringClass());
     }
     @Override
     public String methodName() {
-	return wrapped.methodName();
+        return wrapped.methodName();
+    }
+    @Override
+    public MethodMirror method() {
+	return vm.wrapMethod(wrapped.method());
     }
     @Override
     public String fileName() {

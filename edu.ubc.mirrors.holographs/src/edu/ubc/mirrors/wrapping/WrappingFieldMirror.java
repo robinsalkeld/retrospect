@@ -48,6 +48,11 @@ public class WrappingFieldMirror implements FieldMirror {
     }
 
     @Override
+    public String getTypeName() {
+        return wrapped.getTypeName();
+    }
+    
+    @Override
     public int getModifiers() {
         return wrapped.getModifiers();
     }

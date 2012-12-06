@@ -2,7 +2,6 @@ package edu.ubc.mirrors.raw;
 
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,19 +49,20 @@ import edu.ubc.mirrors.mirages.Reflection;
 
 public abstract class BytecodeClassMirror extends BoxingInstanceMirror implements ClassMirror {
 
-    public static class BytecodeFieldMirror implements FieldMirror {
+    public class BytecodeFieldMirror implements FieldMirror {
 
         private final BytecodeClassMirror klass;
         private final String name;
-        private final ClassMirror type;
+        private final String desc;
+        private ClassMirror type;
         private final int access;
         private final Object value;
         
-        public BytecodeFieldMirror(BytecodeClassMirror klass, int access, String name, ClassMirror type, Object value) {
+        public BytecodeFieldMirror(BytecodeClassMirror klass, int access, String name, String desc, Object value) {
             this.klass = klass;
             this.access = access;
             this.name = name;
-            this.type = type;
+            this.desc = desc;
             this.value = value;
         }
 
@@ -92,7 +92,15 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
 
         @Override
+        public String getTypeName() {
+            return Type.getType(desc).getClassName();
+        }
+        
+        @Override
         public ClassMirror getType() {
+            if (type == null) {
+                type = loadClassMirrorInternal(Type.getType(desc));
+            }
             return type;
         }
 
@@ -213,6 +221,15 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
 
         @Override
+        public List<String> getParameterTypeNames() {
+            List<String> result = new ArrayList<String>();
+            for (Type parameterType : Type.getArgumentTypes(method.desc)) {
+                result.add(parameterType.getClassName());
+            }
+            return result;
+        }
+        
+        @Override
         public List<ClassMirror> getParameterTypes() {
             List<ClassMirror> result = new ArrayList<ClassMirror>();
             for (Type parameterType : Type.getArgumentTypes(method.desc)) {
@@ -221,6 +238,11 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
             return result;
         }
 
+        @Override
+        public String getReturnTypeName() {
+            return Type.getReturnType(method.desc).getClassName();
+        }
+        
         @Override
         public ClassMirror getReturnType() {
             return loadClassMirrorInternal(Type.getReturnType(method.desc));
@@ -257,6 +279,15 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
 
         @Override
+        public List<String> getExceptionTypeNames() {
+            List<String> result = new ArrayList<String>();
+            for (String exception : method.exceptions) {
+                result.add(exception.replace('/', '.'));
+            }
+            return result;
+        }
+        
+        @Override
         public List<ClassMirror> getExceptionTypes() {
             List<ClassMirror> result = new ArrayList<ClassMirror>();
             for (String exception : method.exceptions) {
@@ -267,7 +298,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
 
         @Override
         public String getSignature() {
-            return method.signature;
+            return method.desc;
         }
         
         @Override
@@ -279,8 +310,10 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     private boolean resolved = false;
     
     private int access;
-    private ClassMirror superclassNode;
-    private List<ClassMirror> interfaceNodes;
+    private String superclassName;
+    private ClassMirror superclass;
+    private String[] interfaceNames;
+    private List<ClassMirror> interfaces;
     private boolean isInterface;
     private List<BytecodeFieldMirror> fields = new ArrayList<BytecodeFieldMirror>();
     private final List<BytecodeMethodMirror> methods = new ArrayList<BytecodeMethodMirror>();
@@ -336,13 +369,8 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             BytecodeClassMirror.this.access = access;
             isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
-            
-            superclassNode = superName == null ? null : loadClassMirrorInternal(Type.getObjectType(superName));
-            
-            interfaceNodes = new ArrayList<ClassMirror>(interfaces.length);
-            for (String i : interfaces) {
-                interfaceNodes.add(loadClassMirrorInternal(Type.getObjectType(i)));
-            }
+            superclassName = superName;
+            interfaceNames = interfaces;
         }
         
         @Override
@@ -352,7 +380,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            BytecodeFieldMirror field = new BytecodeFieldMirror(BytecodeClassMirror.this, access, name, loadClassMirrorInternal(Type.getType(desc)), value);
+            BytecodeFieldMirror field = new BytecodeFieldMirror(BytecodeClassMirror.this, access, name, desc, value);
             fields.add(field);
             return null;
         }
@@ -876,7 +904,10 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     @Override
     public ClassMirror getSuperClassMirror() {
         resolve();
-        return superclassNode;
+        if (superclassName != null && superclass == null) {
+            superclass = loadClassMirrorInternal(Type.getObjectType(superclassName));
+        }
+        return superclass;
     }
 
     @Override
@@ -888,7 +919,13 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     @Override
     public List<ClassMirror> getInterfaceMirrors() {
         resolve();
-        return interfaceNodes;
+        if (interfaces == null) {
+            interfaces = new ArrayList<ClassMirror>(interfaceNames.length);
+            for (String interfaceName : interfaceNames) {
+                interfaces.add(loadClassMirrorInternal(Type.getObjectType(interfaceName)));
+            }
+        }
+        return interfaces;
     }
 
     @Override

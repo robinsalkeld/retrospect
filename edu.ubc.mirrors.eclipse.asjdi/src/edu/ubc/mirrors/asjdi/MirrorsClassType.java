@@ -37,8 +37,18 @@ public class MirrorsClassType extends MirrorsReferenceType implements ClassType 
     }
 
     @Override
-    public Method concreteMethodByName(String arg0, String arg1) {
-        throw new UnsupportedOperationException();
+    public Method concreteMethodByName(String name, String signature) {
+        for (Method method : methods()) {
+            if (method.name().equals(name) && method.signature().equals(signature)) {
+                return method.isAbstract() ? null : method;
+            }
+        }
+        
+        if (superclass() != null) {
+                return superclass().concreteMethodByName(name, signature);
+        }
+        
+        return null;
     }
 
     @Override

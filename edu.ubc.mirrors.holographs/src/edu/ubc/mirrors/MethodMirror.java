@@ -1,6 +1,5 @@
 package edu.ubc.mirrors;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public interface MethodMirror {
@@ -12,8 +11,11 @@ public interface MethodMirror {
     public int getModifiers();
     
     public String getName();
+    public List<String> getParameterTypeNames();
     public List<ClassMirror> getParameterTypes();
+    public List<String> getExceptionTypeNames();
     public List<ClassMirror> getExceptionTypes();
+    public String getReturnTypeName();
     public ClassMirror getReturnType();
     public String getSignature();
     

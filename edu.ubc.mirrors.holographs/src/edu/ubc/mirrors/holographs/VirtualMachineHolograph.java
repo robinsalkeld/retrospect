@@ -40,6 +40,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.FloatArrayMirror;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
@@ -365,7 +366,13 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         
         String resourceName = className.replace('.', '/') + ".class";
         InstanceMirror resourceNameMirror = Reflection.makeString(this, resourceName);
-        InstanceMirror stream = (InstanceMirror)Reflection.invokeMethodHandle(holographLoader, ThreadHolograph.currentThreadMirror(), new MethodHandle() {
+        // This isn't a "legit" execution, so cheat and choose a thread if we're not already in holograph execution.
+        ThreadMirror thread = ThreadHolograph.currentThreadMirror.get();
+        if (thread == null) {
+            thread = getThreads().get(0);
+        }
+        
+        InstanceMirror stream = (InstanceMirror)Reflection.invokeMethodHandle(holographLoader, thread, new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((ClassLoader)null).getResourceAsStream((String)null);
             }
@@ -374,14 +381,14 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             throw new InternalError("Couldn't load bytecode for class " + resourceNameMirror + " from loader: " + holographLoader);
         }
         
-        byte[] result = readBytecodeFromStream(holographClass, stream);
+        byte[] result = readBytecodeFromStream(thread, holographClass, stream);
         
         ThreadHolograph.lowerMetalevel();
         
         return result;
     }
     
-    private byte[] readBytecodeFromStream(ClassMirror holographClass, InstanceMirror stream) {
+    private byte[] readBytecodeFromStream(ThreadMirror thread, ClassMirror holographClass, InstanceMirror stream) {
         try {
             // Optimizations - if we get back a known InputStream subtype, pull directly from the mapped host file/zip/etc,
             // since going through holograph execution can be pretty slow for such low-level IO.
@@ -389,7 +396,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             if (className.equals(BufferedInputStream.class.getName())) {
                 ClassMirror fisClass = findBootstrapClassMirror(FilterInputStream.class.getName());
                 InstanceMirror in = (InstanceMirror)stream.get(fisClass.getDeclaredField("in"));
-                return readBytecodeFromStream(holographClass, in);
+                return readBytecodeFromStream(thread, holographClass, in);
             } else if (className.equals(FileInputStream.class.getName())) {
                 InstanceMirror fileDescriptor = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("fd"));
                 int fd = fileDescriptor.getInt(fileDescriptor.getClassMirror().getDeclaredField("fd"));
@@ -397,7 +404,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 return NativeClassMirror.readFully(in);
             } else if (className.equals("org.eclipse.osgi.baseadaptor.bundlefile.ZipBundleEntry$ZipBundleEntryInputStream")) {
                 InstanceMirror wrapped = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("stream"));
-                return readBytecodeFromStream(holographClass, wrapped);
+                return readBytecodeFromStream(thread, holographClass, wrapped);
             } else if (className.equals("sun.net.www.protocol.jar.JarURLConnection$JarURLInputStream")) {
                 InstanceMirror connection = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("this$0"));
                 InstanceMirror jarFile = (InstanceMirror)connection.get(connection.getClassMirror().getDeclaredField("jarFile"));
@@ -434,7 +441,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ByteArrayMirror remoteBuffer = (ByteArrayMirror)getPrimitiveClass("byte").newArray(4096);
         int read;
-        while ((read = (Integer)Reflection.invokeMethodHandle(stream, ThreadHolograph.currentThreadMirror(), 
+        while ((read = (Integer)Reflection.invokeMethodHandle(stream, thread, 
                 readMethod, remoteBuffer, 0, remoteBuffer.length())) != -1) {
             Reflection.arraycopy(remoteBuffer, 0, localBufferMirror, 0, remoteBuffer.length());
             baos.write(localBuffer, 0, read);
@@ -510,5 +517,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     public boolean canBeModified() {
         return wrappedVM.canBeModified();
     }
-    
+ 
+    @Override
+    public FrameMirror wrapFrameMirror(WrappingVirtualMachine vm, FrameMirror frame) {
+        return new FrameHolograph(vm, frame);
+    }
 }

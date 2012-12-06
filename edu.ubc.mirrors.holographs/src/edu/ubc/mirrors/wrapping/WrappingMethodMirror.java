@@ -1,6 +1,5 @@
 package edu.ubc.mirrors.wrapping;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -51,10 +50,20 @@ public class WrappingMethodMirror implements MethodMirror {
     }
 
     @Override
+    public List<String> getParameterTypeNames() {
+        return wrapped.getParameterTypeNames();
+    }
+    
+    @Override
     public List<ClassMirror> getParameterTypes() {
         return vm.getWrappedClassMirrorList(wrapped.getParameterTypes());
     }
 
+    @Override
+    public String getReturnTypeName() {
+        return wrapped.getReturnTypeName();
+    }
+    
     @Override
     public ClassMirror getReturnType() {
         return vm.getWrappedClassMirror(wrapped.getReturnType());
@@ -90,6 +99,11 @@ public class WrappingMethodMirror implements MethodMirror {
         return wrapped.getModifiers();
     }
 
+    @Override
+    public List<String> getExceptionTypeNames() {
+        return wrapped.getExceptionTypeNames();
+    }
+    
     @Override
     public List<ClassMirror> getExceptionTypes() {
         return vm.getWrappedClassMirrorList(wrapped.getExceptionTypes());

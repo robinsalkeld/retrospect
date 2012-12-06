@@ -20,6 +20,7 @@ import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.ThreadMirrorDeathRequest;
 
 public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 
@@ -133,5 +134,10 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     public void deleteMirrorEventRequest(MirrorEventRequest request) {
 	EventRequest unwrapped = ((JDIEventRequest)request).wrapped;
 	wrapped.deleteEventRequest(unwrapped);
+    }
+
+    @Override
+    public ThreadMirrorDeathRequest createThreadMirrorDeathRequest() {
+        return new JDIThreadMirrorDeathRequest(vm, wrapped.createThreadDeathRequest());
     }
 }
