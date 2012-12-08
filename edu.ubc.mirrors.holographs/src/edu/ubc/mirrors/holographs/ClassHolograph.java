@@ -121,6 +121,11 @@ public class ClassHolograph extends WrappingClassMirror {
             memberFieldsDelegate = new MutableInstanceMirror(memberFieldsDelegate);
             staticFieldValues = new MutableInstanceMirror(staticFieldValues);
         }
+        
+        if (wrapped.getClassName().equals("org.eclipse.ui.internal.Workbench")) {
+            int bp =4;
+            bp++;
+        }
     }
     
     public ClassMirror getWrappedClassMirror() {

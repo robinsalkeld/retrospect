@@ -11,7 +11,6 @@ import com.sun.jdi.InvocationException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
-import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
@@ -22,9 +21,6 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.asjdi.MirrorsMirrorWithModifiers;
-import edu.ubc.mirrors.asjdi.MirrorsThreadReference;
-import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 
 public class MethodMirrorMethod extends MirrorsMirrorWithModifiers implements Method {
 
@@ -33,6 +29,7 @@ public class MethodMirrorMethod extends MirrorsMirrorWithModifiers implements Me
     public MethodMirrorMethod(MirrorsVirtualMachine vm, MethodMirror method) {
         super(vm, method);
         this.wrapped = method;
+        wrapped.setAccessible(true);
     }
 
     @Override

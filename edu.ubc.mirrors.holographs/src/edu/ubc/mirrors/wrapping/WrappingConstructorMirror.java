@@ -32,7 +32,7 @@ public class WrappingConstructorMirror implements ConstructorMirror {
         try {
             result = wrapped.newInstance(unwrappedThread, unwrappedArgs);
         } catch (MirrorInvocationTargetException e) {
-            throw new MirrorInvocationTargetException((InstanceMirror)vm.wrapMirror(e.getTargetException()));
+            throw new MirrorInvocationTargetException((InstanceMirror)vm.getWrappedMirror(e.getTargetException()));
         }
         return (InstanceMirror)vm.getWrappedMirror(result);
     }

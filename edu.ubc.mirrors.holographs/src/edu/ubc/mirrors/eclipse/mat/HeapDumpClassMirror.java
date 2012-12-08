@@ -183,7 +183,7 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
 
     @Override
     public ClassMirror getSuperClassMirror() {
-        return klass.getSuperClass() == null ? null : new HeapDumpClassMirror(vm, klass.getSuperClass());
+        return vm.makeClassMirror(klass.getSuperClass());
     }
 
     @Override

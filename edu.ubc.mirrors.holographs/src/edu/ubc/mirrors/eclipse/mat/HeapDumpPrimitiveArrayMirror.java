@@ -31,7 +31,7 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements H
     }
     
     public HeapDumpClassMirror getClassMirror() {
-        return new HeapDumpClassMirror(vm, array.getClazz());
+        return vm.makeClassMirror(array.getClazz());
     }
     public int length() {
         return array.getLength();

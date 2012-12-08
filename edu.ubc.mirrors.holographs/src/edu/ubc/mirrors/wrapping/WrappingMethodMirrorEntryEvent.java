@@ -15,7 +15,7 @@ public class WrappingMethodMirrorEntryEvent extends WrappingMirrorEvent implemen
 
     @Override
     public ThreadMirror thread() {
-        return (ThreadMirror)vm.wrapMirror(wrapped.thread());
+        return (ThreadMirror)vm.getWrappedMirror(wrapped.thread());
     }
     
     @Override

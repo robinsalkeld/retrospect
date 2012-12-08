@@ -34,7 +34,7 @@ public class WrappingMethodMirror implements MethodMirror {
         try {
             result = wrapped.invoke(unwrappedThread, unwrappedObj, unwrappedArgs);
         } catch (MirrorInvocationTargetException e) {
-            throw new MirrorInvocationTargetException((InstanceMirror)vm.wrapMirror(e.getTargetException()));
+            throw new MirrorInvocationTargetException((InstanceMirror)vm.getWrappedMirror(e.getTargetException()));
         }
         return vm.wrapValue(result);
     }

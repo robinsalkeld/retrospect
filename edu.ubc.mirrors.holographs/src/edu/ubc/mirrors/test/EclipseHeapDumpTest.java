@@ -76,9 +76,15 @@ public class EclipseHeapDumpTest implements IApplication {
         Reflection.withThread(holographVM.getThreads().get(0), new Callable<Void>() {
             @Override
             public Void call() throws Exception {
+                if (MirageClassLoader.debug) {
+                    System.out.println("Finding target class...");
+                }
         	ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);
-                InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
-                printBundlesFromRepository(bundleRepository);
+        	if (MirageClassLoader.debug) {
+                    System.out.println("Finding target instance...");
+                }
+        	InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
+        	printBundlesFromRepository(bundleRepository);
                 return null;
             }
 	});
@@ -118,11 +124,18 @@ public class EclipseHeapDumpTest implements IApplication {
         VirtualMachineMirror vm = bundleRepositoryClass.getVM();
         // TODO-RS: Does this make sense?
         ThreadMirror thread = vm.getThreads().get(0);
+        if (MirageClassLoader.debug) {
+            System.out.println("Injecting bytecode...");
+        }
+        
         ClassMirror printerClass = Reflection.injectBytecode(vm, thread, bundleRepositoryClass.getLoader(), 
                 new NativeClassMirror(PrintOSGiBundles.class));
         MethodMirror method = printerClass.getMethod("print", bundleRepositoryClass);
         
         // Invoke PrintOSGiBundles#print reflectively.
+        if (MirageClassLoader.debug) {
+            System.out.println("Invoking...");
+        }
         long before = System.currentTimeMillis();
         InstanceMirror result = (InstanceMirror)method.invoke(thread, null, bundleRepository);
         System.out.println(Reflection.getRealStringForMirror(result));

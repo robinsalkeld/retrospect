@@ -15,12 +15,12 @@ public class WrappingFieldMirrorSetEvent extends WrappingMirrorEvent implements 
 
     @Override
     public InstanceMirror instance() {
-	return (InstanceMirror)vm.wrapMirror(wrapped.instance());
+	return (InstanceMirror)vm.getWrappedMirror(wrapped.instance());
     }
 
     @Override
     public ClassMirror classMirror() {
-	return (ClassMirror)vm.wrapMirror(wrapped.classMirror());
+	return (ClassMirror)vm.getWrappedMirror(wrapped.classMirror());
     }
 
     @Override

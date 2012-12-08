@@ -14,6 +14,6 @@ public class WrappingClassMirrorPrepareEvent extends WrappingMirrorEvent impleme
 
     @Override
     public ClassMirror classMirror() {
-	return (ClassMirror)vm.wrapMirror(wrapped.classMirror());
+	return (ClassMirror)vm.getWrappedMirror(wrapped.classMirror());
     }
 }

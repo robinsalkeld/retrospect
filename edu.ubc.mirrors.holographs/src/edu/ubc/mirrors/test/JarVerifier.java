@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -25,6 +26,7 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
@@ -66,10 +68,11 @@ public class JarVerifier implements IApplication {
     int illegal = 0;
     int implemented = 0;
     
-    public void verifyJars(VirtualMachineHolograph vm) throws Exception {
+    public void verifyJars(final VirtualMachineHolograph vm) throws Exception {
         String bootPath = (String)System.getProperties().get("sun.boot.class.path");
         String[] paths = bootPath.split(File.pathSeparator);
         NativeMethodCounter counter = new NativeMethodCounter();
+        ThreadMirror thread = vm.getThreads().get(0);
         for (String path : paths) {
             if (new File(path).exists()) {
                 JarFile jarFile = new JarFile(path);
@@ -79,15 +82,21 @@ public class JarVerifier implements IApplication {
                         classes++;
                         new ClassReader(jarFile.getInputStream(entry)).accept(counter, 0);
                         
-                        String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
+                        final String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
                         try {
-                            ClassMirror classMirror = vm.findBootstrapClassMirror(className);
-                            if (classMirror == null) {
-                                noBytecode++;
-                                continue;
-                            }
-                            MirageClassLoader loader = ClassHolograph.getMirageClassLoader(classMirror);
-                            loader.getMirageClass(classMirror, true);
+                            Reflection.withThread(thread, new Callable<Void>() {
+                                @Override
+                                public Void call() throws Exception {
+                                    ClassMirror classMirror = vm.findBootstrapClassMirror(className);
+                                    if (classMirror == null) {
+                                        noBytecode++;
+                                        return null;
+                                    }
+                                    MirageClassLoader loader = ClassHolograph.getMirageClassLoader(classMirror);
+                                    loader.getMirageClass(classMirror, true);
+                                    return null;
+                                }
+                            });
                         } catch (Exception e) {
                             errors++;
                             e.printStackTrace();

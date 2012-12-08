@@ -15,7 +15,7 @@ public class WrappingFrameMirror implements FrameMirror {
     
     @Override
     public ClassMirror declaringClass() {
-        return (ClassMirror)vm.wrapMirror(wrapped.declaringClass());
+        return (ClassMirror)vm.getWrappedMirror(wrapped.declaringClass());
     }
     @Override
     public String methodName() {
