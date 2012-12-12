@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.sun.jdi.ThreadReference;
@@ -12,7 +11,6 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
-import com.sun.jdi.event.ThreadStartEvent;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
 
@@ -49,9 +47,7 @@ public class DebuggingTest {
         URL urlPath = binDir.toURI().toURL();
         
         JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
-	List<URL> bootstrapPath = Reflection.getBootstrapPath();
 	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM,
-                bootstrapPath,
                 Collections.singletonMap("/", "/"));
         final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));
         

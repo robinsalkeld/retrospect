@@ -1,9 +1,7 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
-import java.net.URL;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -13,7 +11,6 @@ import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
 import org.jruby.Ruby;
-import org.jruby.RubyModule;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -21,7 +18,6 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
@@ -46,15 +42,13 @@ public class HeapDumpTest2 implements IApplication {
     // Create a holograph VM
     Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
     String jrubyJar = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/lib/jruby.jar";
+    // TODO-RS: Haxxors to avoid handling "." correctly.
+    mappedFiles.put("./jruby-1.6.4/lib/jruby.jar", jrubyJar);
     mappedFiles.put(jrubyJar, jrubyJar);
     String javaExtDir = "/System/Library/Java/Extensions";
     mappedFiles.put(javaExtDir, javaExtDir);
   
-    List<URL> bootstrapPath = Reflection.getBootstrapPath();
-    bootstrapPath.add(new File(jrubyJar).toURL());
-    
     final VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
-            bootstrapPath,
             mappedFiles);
     
     Reflection.withThread(holographVM.getThreads().get(0), new Callable<Void>() {

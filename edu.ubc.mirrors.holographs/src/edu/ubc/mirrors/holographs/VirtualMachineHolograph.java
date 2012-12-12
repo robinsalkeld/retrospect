@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.zip.ZipFile;
 import org.objectweb.asm.Type;
 
 import sun.misc.FileURLMapper;
+import sun.misc.Launcher;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
@@ -82,7 +84,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     public Map<Long, Inflater> inflaterByAddress = new HashMap<Long, Inflater>();
     
-    public VirtualMachineHolograph(VirtualMachineMirror wrappedVM, List<URL> bootstrapPath, Map<String, String> mappedFiles) {
+    public VirtualMachineHolograph(VirtualMachineMirror wrappedVM, Map<String, String> mappedFiles) {
         super(wrappedVM);
         if (MirageClassLoader.debug) {
             System.out.println("Creating VM holograph...");
@@ -93,9 +95,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         this.mappedFiles = mappedFiles;
         this.dispatch = new EventDispatch(this);
         
-        // Ignore invalid paths as the VM would
+        List<URL> bootstrapPath = extractBootstrapPath(wrappedVM);
         List<URL> filteredURLs = new ArrayList<URL>();
         for (URL url : bootstrapPath) {
+            // Ignore invalid paths as the VM would
             if (new FileURLMapper(url).exists()) {
         	filteredURLs.add(url);
             }
@@ -119,27 +122,28 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	return dispatch;
     }
     
-//    private List<URL> extractBootstrapPath(VirtualMachineMirror wrappedVM) {
-//	try {
-//	    ClassMirror launcherClass = wrappedVM.findBootstrapClassMirror(Launcher.class.getName());
-//	    InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.get(launcherClass.getDeclaredField("bootClassPath"));
-//	    ClassMirror fileClass = wrappedVM.findBootstrapClassMirror(File.class.getName());
-//	    char pathSeparator = fileClass.getChar(fileClass.getDeclaredField("pathSeparator"));
-//	    String bootClassPath = Reflection.getRealStringForMirror(bootClassPathMirror);
-//	    String[] paths = bootClassPath.split("" + pathSeparator);
-//	    List<URL> urls = new ArrayList<URL>();
-//	    for (int i = 0; i < paths.length; i++) {
-//	        urls.add(new URL(paths[i]));
-//	    }
-//	    return urls;
-//	} catch (MalformedURLException e) {
-//	    throw new RuntimeException(e);
-//	} catch (IllegalAccessException e) {
-//	    throw new RuntimeException(e);
-//	} catch (NoSuchFieldException e) {
-//	    throw new RuntimeException(e);
-//	}
-//    }
+    private List<URL> extractBootstrapPath(VirtualMachineMirror wrappedVM) {
+	try {
+	    ClassMirror launcherClass = wrappedVM.findBootstrapClassMirror(Launcher.class.getName());
+	    InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.getStaticFieldValues().get(launcherClass.getDeclaredField("bootClassPath"));
+	    ClassMirror fileClass = wrappedVM.findBootstrapClassMirror(File.class.getName());
+	    char pathSeparator = fileClass.getStaticFieldValues().getChar(fileClass.getDeclaredField("pathSeparatorChar"));
+	    String bootClassPath = Reflection.getRealStringForMirror(bootClassPathMirror);
+	    String[] paths = bootClassPath.split("" + pathSeparator);
+	    List<URL> urls = new ArrayList<URL>();
+	    for (int i = 0; i < paths.length; i++) {
+	        File mappedFile = getMappedFile(new File(paths[i]), true);
+	        urls.add(mappedFile.toURI().toURL());
+	    }
+	    return urls;
+	} catch (MalformedURLException e) {
+	    throw new RuntimeException(e);
+	} catch (IllegalAccessException e) {
+	    throw new RuntimeException(e);
+	} catch (NoSuchFieldException e) {
+	    throw new RuntimeException(e);
+	}
+    }
 
     private void collectZipFiles() {
         try {
@@ -230,7 +234,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     public File getMappedFile(File mirrorFile, boolean errorOnUnmapped) {
-        String path = mirrorFile.getAbsolutePath();
+        // TODO-RS: getAbsolutePath() is not right, as "." will be expanded incorrectly!
+        // We need to handle ".." without that side-effect somehow.
+        String path = mirrorFile.getPath();
         for (Map.Entry<String, String> entry : mappedFiles.entrySet()) {
             String key = entry.getKey();
             if (path.startsWith(key)) {
@@ -381,7 +387,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             }
         }, resourceNameMirror);
         if (stream == null) {
-            throw new InternalError("Couldn't load bytecode for class " + resourceNameMirror + " from loader: " + holographLoader);
+            throw new InternalError("Couldn't load bytecode for class " + resourceName + " from loader: " + holographLoader);
         }
         
         byte[] result = readBytecodeFromStream(thread, holographClass, stream);

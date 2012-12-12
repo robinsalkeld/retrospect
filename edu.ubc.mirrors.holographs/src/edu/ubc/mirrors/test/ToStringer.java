@@ -3,44 +3,26 @@ package edu.ubc.mirrors.test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
-import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.util.ConsoleProgressListener;
 
-import sun.misc.Unsafe;
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpInstanceMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.mirages.Stopwatch;
-import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
 
 public class ToStringer implements IApplication {
 
@@ -92,7 +74,6 @@ public class ToStringer implements IApplication {
         
         
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
-                Reflection.getBootstrapPath(),
                 mappedFiles);
         
 //        int id2 = snapshot.mapAddressToId(0x7e332dfd8l);

@@ -27,7 +27,6 @@ import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpObjectMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.wrapping.WrappingMirror;
 
 public class HolographVMRegistry {
@@ -57,8 +56,13 @@ public class HolographVMRegistry {
             HeapDumpVirtualMachineMirror hdvm = new HeapDumpVirtualMachineMirror(snapshot);
             
             // TODO-RS: proper configuration
-            vm = new VirtualMachineHolograph(hdvm, Reflection.getBootstrapPath(),
-                    Collections.singletonMap("/", "/"));
+            Map<String, String> mappedFiles = new HashMap<String, String>(Collections.singletonMap("/", "/"));
+            
+            // TODO-RS: Haxxors to avoid handling "." correctly.
+            String jrubyJar = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/lib/jruby.jar";
+            mappedFiles.put("./jruby-1.6.4/lib/jruby.jar", jrubyJar);
+            
+            vm = new VirtualMachineHolograph(hdvm, mappedFiles);
             
             vms.put(snapshot, vm);
         }

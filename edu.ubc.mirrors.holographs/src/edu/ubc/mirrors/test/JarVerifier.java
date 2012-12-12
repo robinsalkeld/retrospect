@@ -5,17 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
@@ -32,11 +29,7 @@ import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.MirageClassMirrorLoader;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.raw.NativeClassMirror;
-import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
-import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class JarVerifier implements IApplication {
     public static void main(String[] args) throws Exception {
@@ -54,7 +47,6 @@ public class JarVerifier implements IApplication {
         Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
         
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
-                Reflection.getBootstrapPath(),
                 mappedFiles);
         
         new JarVerifier().verifyJars(holographVM);

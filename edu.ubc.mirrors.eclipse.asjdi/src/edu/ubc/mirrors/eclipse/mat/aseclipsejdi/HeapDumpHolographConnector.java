@@ -4,20 +4,16 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.model.IDebugTarget;
-import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.launching.IVMConnector;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
 
-import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.connect.Connector;
 
 import edu.ubc.mirrors.ThreadMirror;
@@ -89,7 +85,6 @@ public class HeapDumpHolographConnector implements IVMConnector {
         
         // Create a holograph VM
         final VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
-                Reflection.getBootstrapPath(),
                 Reflection.getStandardMappedFiles());
         
         // Finally, adapt to the JDI model
