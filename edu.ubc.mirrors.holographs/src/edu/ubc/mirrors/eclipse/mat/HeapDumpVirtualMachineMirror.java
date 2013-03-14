@@ -157,6 +157,22 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     @Override
+    public List<ClassMirror> findAllClasses() {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        try {
+            Collection<IClass> matches = snapshot.getClasses();
+            if (matches != null) {
+                for (IClass klass : matches) {
+                    result.add((ClassMirror)makeMirror(klass));
+                }
+            }
+        } catch (SnapshotException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+    
+    @Override
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
         List<ClassMirror> result = new ArrayList<ClassMirror>();
         try {
@@ -175,9 +191,9 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public List<ThreadMirror> getThreads() {
         ClassMirror threadMirror = findBootstrapClassMirror(Thread.class.getName());
-        List<InstanceMirror> instances = threadMirror.getInstances();
+        List<ObjectMirror> instances = threadMirror.getInstances();
         List<ThreadMirror> threads = new ArrayList<ThreadMirror>(instances.size());
-        for (InstanceMirror instance : instances) {
+        for (ObjectMirror instance : instances) {
             threads.add((ThreadMirror)instance);
         }
         return threads;

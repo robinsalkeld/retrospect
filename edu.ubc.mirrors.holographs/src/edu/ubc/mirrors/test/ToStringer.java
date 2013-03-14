@@ -3,6 +3,8 @@ package edu.ubc.mirrors.test;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -17,7 +19,14 @@ import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.util.ConsoleProgressListener;
 
+import com.sun.jdi.ArrayType;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ReferenceType;
+
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
@@ -32,25 +41,7 @@ public class ToStringer implements IApplication {
         
         MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         
-        Method method = Package.class.getDeclaredMethod("getSystemPackage0", String.class);
-        method.setAccessible(true);
-        String result = (String)method.invoke(null, "java.lang.instrument");
-        
-        
-//        Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
-//        unsafeField.setAccessible(true);
-//        Unsafe unsafe = (Unsafe)unsafeField.get(null);
-//        byte[] bytes = { 1, 2, 3, 4 };
-//        System.out.println(unsafe.getInt(bytes, (long)16));
-//        ByteBuffer buffer = ByteBuffer.allocate(4);
-//        buffer.order(ByteOrder.LITTLE_ENDIAN);
-//        buffer.put(0, bytes[0]);
-//        buffer.put(1, bytes[1]);
-//        buffer.put(2, bytes[2]);
-//        buffer.put(3, bytes[3]);     
-//        System.out.println(buffer.getInt(0));
-        
-     // Open memory snapshot and find the Bundle class
+        // Open memory snapshot and find the Bundle class
         ISnapshot snapshot = SnapshotFactory.openSnapshot(
                 new File(snapshotPath), 
                 Collections.<String, String>emptyMap(), 
@@ -76,52 +67,45 @@ public class ToStringer implements IApplication {
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
                 mappedFiles);
         
-//        int id2 = snapshot.mapAddressToId(0x7e332dfd8l);
-//        IObject obj2 = snapshot.getObject(id2);
-//        ObjectMirror mirror2 = vm.makeMirror(obj2);
-//        ObjectMirror holograph2 = holographVM.getWrappedMirror(mirror2);
-//        
-//        System.out.println("***");
-//        System.out.println(Reflection.toString(holograph2
-//                .getClassMirror()));
-//        System.out.println(Reflection.toString(holograph2));
-//
-//        System.exit(0);
-        
-        
-        int numObjects = snapshot.getSnapshotInfo().getNumberOfObjects();
-        Stopwatch sw = new Stopwatch();
-        sw.start();
-//        int firstId = 37625 + 91225 + 82525;
-//        int lastId = numObjects;
-        int firstId = numObjects - 20000;
-        int lastId = firstId + 2000;
-        int count = 0;
-        int charCount = 0;
-        List<String> timesOver500ms = new ArrayList<String>();
-        long maxTime = 0;
-        float maxTimePerChar = 0;
-        int errors = 0;
+        toStringAllTheObjects(holographVM);
+    }
+
+    private static List<Integer> readSample(String samplePath) throws NumberFormatException, IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(new File(samplePath))));
         String line;
         List<Integer> sample = new ArrayList<Integer>();
         while ((line = in.readLine()) != null) {
             sample.add(Integer.parseInt(line));
         }
+        return sample;
+    }
+    
+    // toString() ALL the objects!!!
+    private static void toStringAllTheObjects(VirtualMachineMirror vm) {
+        int count = 0;
+        int charCount = 0;
+        List<String> timesOver500ms = new ArrayList<String>();
+        long maxTime = 0;
+        float maxTimePerChar = 0;
+        int errors = 0;
+       
+        Stopwatch sw = new Stopwatch();
+        sw.start();
         try {
-            for (int id : sample.subList(0, 15000)) {
-                IObject obj = snapshot.getObject(id);
-                ObjectMirror mirror = vm.makeMirror(obj);
-                if (mirror != null) {
-                    ObjectMirror holograph = holographVM.getWrappedMirror(mirror);
+            for (ClassMirror klass : vm.findAllClasses()) {
+                if (klass.isArray()) {
+                    continue;
+                }
+                
+                for (ObjectMirror object : klass.getInstances()) {
                     try {
                         Stopwatch perObjectSW = new Stopwatch();
                         perObjectSW.start();
-                        String s = Reflection.toString(holograph);
+                        String s = Reflection.toString(object);
                         long time = perObjectSW.stop();
                         
                         if (time > 500) {
-                            timesOver500ms.add("" + Long.toHexString(obj.getObjectAddress()) + ": " + time);
+                            timesOver500ms.add("" + object + ": " + time);
                         }
                         maxTime = Math.max(maxTime, time);
                         
@@ -133,11 +117,9 @@ public class ToStringer implements IApplication {
                         if (count % 25 == 0) {
                             System.out.println(count + ": " + s);
                         }
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         errors++;
-                        System.out.println("Error on object #" + id + " ("
-                                + Long.toHexString(obj.getObjectAddress())
-                                + ")");
+                        System.out.println("Error on object " + object);
                         e.printStackTrace();
                     }
                 }
@@ -158,7 +140,7 @@ public class ToStringer implements IApplication {
             MirageClassLoader.printStats();
         }
     }
-
+    
     public Object start(IApplicationContext context) throws Exception {
         String[] args = (String[])context.getArguments().get(IApplicationContext.APPLICATION_ARGS);
         main(args);

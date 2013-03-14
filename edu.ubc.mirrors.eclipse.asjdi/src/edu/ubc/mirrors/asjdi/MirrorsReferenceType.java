@@ -25,6 +25,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements ReferenceType {
@@ -154,7 +155,7 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
     @Override
     public List<ObjectReference> instances(long maxInstances) {
         List<ObjectReference> result = new ArrayList<ObjectReference>((int)maxInstances);
-        for (InstanceMirror instance : wrapped.getInstances().subList(0, (int)maxInstances)) {
+        for (ObjectMirror instance : wrapped.getInstances().subList(0, (int)maxInstances)) {
             result.add((ObjectReference)vm.wrapMirror(instance));
         }
         return result;

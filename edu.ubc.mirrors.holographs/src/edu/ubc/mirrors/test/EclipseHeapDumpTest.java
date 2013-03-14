@@ -82,7 +82,7 @@ public class EclipseHeapDumpTest implements IApplication {
         	if (MirageClassLoader.debug) {
                     System.out.println("Finding target instance...");
                 }
-        	InstanceMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
+        	ObjectMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
         	printBundlesFromRepository(bundleRepository);
                 return null;
             }
@@ -116,7 +116,7 @@ public class EclipseHeapDumpTest implements IApplication {
         System.out.println(System.currentTimeMillis() - before);
     }
     
-    public static void printBundlesFromRepository(InstanceMirror bundleRepository) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, MirrorInvocationTargetException {
+    public static void printBundlesFromRepository(ObjectMirror bundleRepository) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, MirrorInvocationTargetException {
         // Note we need a class loader that can see the classes in the OSGi API 
         // as well as our additional code (i.e. PrintOSGiBundles).
         ClassMirror bundleRepositoryClass = bundleRepository.getClassMirror();

@@ -10,6 +10,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class WrappingClassMirror extends WrappingInstanceMirror implements ClassMirror {
@@ -94,11 +95,11 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
     
     @Override
-    public List<InstanceMirror> getInstances() {
-        List<InstanceMirror> instances = wrapped.getInstances();
-        List<InstanceMirror> result = new ArrayList<InstanceMirror>(instances.size());
-        for (InstanceMirror instance : instances) {
-            result.add((InstanceMirror)vm.getWrappedMirror(instance));
+    public List<ObjectMirror> getInstances() {
+        List<ObjectMirror> instances = wrapped.getInstances();
+        List<ObjectMirror> result = new ArrayList<ObjectMirror>(instances.size());
+        for (ObjectMirror instance : instances) {
+            result.add(vm.getWrappedMirror(instance));
         }
         return result;
     }

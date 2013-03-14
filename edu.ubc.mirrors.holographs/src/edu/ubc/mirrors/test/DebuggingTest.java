@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import com.sun.jdi.ThreadReference;
@@ -26,7 +28,24 @@ import edu.ubc.retrospect.RetroactiveWeaver;
 
 public class DebuggingTest {
 
+    private static class Thing {
+        public Map<String, String> properties;
+        public String toString() {
+            return "Hi, I'm a Thing named 'Fred'";
+        }
+    }
+    
     public static void main(String[] args) throws Exception {
+        Thing thing = new Thing();
+        thing.properties = new HashMap<String, String>();
+        
+        thing.properties.put("foo", "bar");
+        thing.properties.put("qaz", "quz");
+        thing.properties.put("arfle", "barfle");
+        thing.properties.put("blip", "blop");
+        thing.properties.put("something", "else");
+        thing.properties.put("who", "knows");
+        
         VirtualMachine jdiVM = JDIVirtualMachineMirror.commandLineLaunch(
         	"tracing.ExampleMain", 
         	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"");

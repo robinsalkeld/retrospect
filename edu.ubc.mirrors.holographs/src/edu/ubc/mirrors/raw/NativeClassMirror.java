@@ -232,7 +232,7 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
         }
     }
     @Override
-    public List<InstanceMirror> getInstances() {
+    public List<ObjectMirror> getInstances() {
         throw new UnsupportedOperationException();
     }
     

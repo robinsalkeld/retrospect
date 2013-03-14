@@ -12,6 +12,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirror {
@@ -106,7 +107,7 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
     }
 
     @Override
-    public List<InstanceMirror> getInstances() {
+    public List<ObjectMirror> getInstances() {
         throw new UnsupportedOperationException();
     }
 

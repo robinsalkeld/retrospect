@@ -152,7 +152,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 public Object call() throws Exception {
                     ClassMirror zipFileClass = findBootstrapClassMirror(ZipFile.class.getName());
                     for (ClassMirror zipFileSubclass : findAllClasses(ZipFile.class.getName(), true)) {
-                        for (InstanceMirror zipFileMirror : zipFileSubclass.getInstances()) {
+                        for (ObjectMirror zipFileObjectMirror : zipFileSubclass.getInstances()) {
+                            InstanceMirror zipFileMirror = (InstanceMirror)zipFileObjectMirror;
                             long address;
                             String name;
                             try {
@@ -448,10 +449,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             throw new RuntimeException(e);
         }
         
-        if (MirageClassLoader.debug) {
-            MirageClassLoader.printIndent();
-            System.out.println("Fetching original bytecode for: " + holographClass.getClassName() + " (from instance of " + className + ")");
-        }
+//        if (MirageClassLoader.debug) {
+//            MirageClassLoader.printIndent();
+//            System.out.println("Fetching original bytecode for: " + holographClass.getClassName() + " (from instance of " + className + ")");
+//        }
         MethodHandle readMethod = new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((InputStream)null).read(null, 0, 0);
@@ -469,10 +470,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
         byte[] result = baos.toByteArray();
 
-        if (MirageClassLoader.debug) {
-            MirageClassLoader.printIndent();
-            System.out.println("Fetched original bytecode for: " + holographClass.getClassName());
-        }
+//        if (MirageClassLoader.debug) {
+//            MirageClassLoader.printIndent();
+//            System.out.println("Fetched original bytecode for: " + holographClass.getClassName());
+//        }
         return result;
     }
     

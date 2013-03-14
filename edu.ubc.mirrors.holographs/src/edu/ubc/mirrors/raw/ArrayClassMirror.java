@@ -18,6 +18,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
@@ -139,7 +140,7 @@ public class ArrayClassMirror extends BlankClassMirror {
     }
     
     @Override
-    public List<InstanceMirror> getInstances() {
+    public List<ObjectMirror> getInstances() {
         throw new UnsupportedOperationException();
     }
     

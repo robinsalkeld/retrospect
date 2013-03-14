@@ -133,6 +133,15 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     @Override
+    public List<ClassMirror> findAllClasses() {
+        List<ClassMirror> classes = new ArrayList<ClassMirror>();
+        for (ReferenceType t : jdiVM.allClasses()) {
+            classes.add(((ClassMirror)makeMirror(t.classObject())));
+        }
+        return classes;
+    }
+    
+    @Override
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
         List<ClassMirror> classes = new ArrayList<ClassMirror>();
         for (ReferenceType t : jdiVM.classesByName(name)) {

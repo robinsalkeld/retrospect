@@ -15,6 +15,7 @@ import org.jruby.Ruby;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
@@ -66,7 +67,7 @@ public class HeapDumpTest2 implements IApplication {
 
             // For each class instance (in this case we only expect one)...
             MethodMirror method = printerClass.getMethod("printStackTraces", rubyClass);
-            for (InstanceMirror ruby : rubyClass.getInstances()) {
+            for (ObjectMirror ruby : rubyClass.getInstances()) {
         	// Invoke JRubyStackTraces#printStackTraces reflectively.
         	method.invoke(thread, null, ruby);
         	System.out.println(Reflection.toString(baos));

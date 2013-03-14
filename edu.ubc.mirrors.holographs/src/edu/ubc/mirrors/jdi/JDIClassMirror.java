@@ -23,6 +23,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
@@ -146,9 +147,9 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
     
     @Override
-    public List<InstanceMirror> getInstances() {
-        List<InstanceMirror> result = new ArrayList<InstanceMirror>();
-        for (ObjectReference or : refType.instances(Integer.MAX_VALUE)) {
+    public List<ObjectMirror> getInstances() {
+        List<ObjectMirror> result = new ArrayList<ObjectMirror>();
+        for (ObjectReference or : refType.instances(0)) {
             result.add((InstanceMirror)vm.makeMirror(or));
         }
         return result;

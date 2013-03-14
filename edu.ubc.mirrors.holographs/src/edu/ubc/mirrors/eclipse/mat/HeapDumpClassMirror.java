@@ -19,6 +19,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.Reflection;
@@ -111,24 +112,24 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         return (HeapDumpClassMirrorLoader)vm.makeMirror(loader);
     }
 
-    public List<InstanceMirror> getInstances() {
-        List<InstanceMirror> result = new ArrayList<InstanceMirror>();
+    public List<ObjectMirror> getInstances() {
+        List<ObjectMirror> result = new ArrayList<ObjectMirror>();
         try {
             // TODO-RS: Handle interfaces as well
             addDirectInstances(result, klass);
-            for (IClass subclass : klass.getAllSubclasses()) {
-                addDirectInstances(result, subclass);
-            }
+//            for (IClass subclass : klass.getAllSubclasses()) {
+//                addDirectInstances(result, subclass);
+//            }
         } catch (SnapshotException e) {
             throw new RuntimeException(e);
         }
         return result;
     }
 
-    private void addDirectInstances(List<InstanceMirror> list, IClass klass) throws SnapshotException {
+    private void addDirectInstances(List<ObjectMirror> list, IClass klass) throws SnapshotException {
         for (int id : klass.getObjectIds()) {
             IObject object = (IObject)klass.getSnapshot().getObject(id);
-            InstanceMirror mirror = (InstanceMirror)vm.makeMirror(object);
+            ObjectMirror mirror = vm.makeMirror(object);
             if (mirror != null) {
                 list.add(mirror);
             }

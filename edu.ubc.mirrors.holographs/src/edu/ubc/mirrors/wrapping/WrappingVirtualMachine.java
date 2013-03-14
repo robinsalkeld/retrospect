@@ -151,6 +151,11 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     }
     
     @Override
+    public List<ClassMirror> findAllClasses() {
+        return getWrappedClassMirrorList(wrappedVM.findAllClasses());
+    }
+    
+    @Override
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
         return getWrappedClassMirrorList(wrappedVM.findAllClasses(name, includeSubclasses));
     }

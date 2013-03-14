@@ -1054,7 +1054,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     }
     
     @Override
-    public List<InstanceMirror> getInstances() {
+    public List<ObjectMirror> getInstances() {
         throw new UnsupportedOperationException();
     }
     

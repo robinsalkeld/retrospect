@@ -29,7 +29,7 @@ public interface ClassMirror extends InstanceMirror {
     
     public List<FieldMirror> getDeclaredFields();
     
-    public List<InstanceMirror> getInstances();
+    public List<ObjectMirror> getInstances();
 
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
 
