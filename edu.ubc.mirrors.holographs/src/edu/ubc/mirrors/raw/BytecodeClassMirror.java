@@ -140,6 +140,11 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
 
         @Override
+        public int identityHashCode() {
+            return 0;
+        }
+        
+        @Override
         public Object getBoxedValue(FieldMirror field) {
             return ((BytecodeFieldMirror)field).value;
         }
@@ -886,6 +891,12 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     @Override
     public ClassMirror getClassMirror() {
         return getVM().findBootstrapClassMirror(Class.class.getName());
+    }
+    
+    @Override
+    public int identityHashCode() {
+        // Should never be called
+        throw new UnsupportedOperationException();
     }
     
     @Override

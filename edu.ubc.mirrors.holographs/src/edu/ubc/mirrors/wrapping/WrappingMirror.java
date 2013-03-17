@@ -40,6 +40,11 @@ public class WrappingMirror implements ObjectMirror {
     }
     
     @Override
+    public int identityHashCode() {
+        return wrapped.identityHashCode();
+    }
+    
+    @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + wrapped;
     }

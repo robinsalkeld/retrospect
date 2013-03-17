@@ -25,6 +25,11 @@ public class NativeObjectMirror implements ObjectMirror {
     }
     
     @Override
+    public int identityHashCode() {
+        return System.identityHashCode(object);
+    }
+    
+    @Override
     public int hashCode() {
         return 17 + System.identityHashCode(object);
     }

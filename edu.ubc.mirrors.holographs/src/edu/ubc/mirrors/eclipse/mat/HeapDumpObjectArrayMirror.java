@@ -36,6 +36,11 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
     }
 
     @Override
+    public int identityHashCode() {
+        return vm.identityHashCode(array);
+    }
+    
+    @Override
     public IObject getHeapDumpObject() {
         return array;
     }

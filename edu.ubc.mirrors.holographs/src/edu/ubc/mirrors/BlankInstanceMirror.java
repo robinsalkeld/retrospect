@@ -11,5 +11,9 @@ public abstract class BlankInstanceMirror extends BoxingInstanceMirror {
     public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
         throw new UnsupportedOperationException();
     }
-
+    
+    @Override
+    public int identityHashCode() {
+        return hashCode();
+    }
 }

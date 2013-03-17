@@ -23,6 +23,11 @@ public class HeapDumpClassStaticValues extends BoxingInstanceMirror {
     }
 
     @Override
+    public int identityHashCode() {
+        return 0;
+    }
+    
+    @Override
     public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
         HeapDumpFieldMirror hdfm = (HeapDumpFieldMirror)field;
         return ((Field)hdfm.fieldDescriptor).getValue();

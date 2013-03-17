@@ -47,4 +47,9 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements H
     public IObject getHeapDumpObject() {
         return array;
     }
+    
+    @Override
+    public int identityHashCode() {
+        return vm.identityHashCode(array);
+    }
 }

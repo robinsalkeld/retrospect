@@ -62,6 +62,10 @@ public class ObjectMirage implements Mirage {
         return mirror.getClassMirror();
     }
     
+    public int identityHashCode() {
+        return mirror.identityHashCode();
+    }
+    
     /**
      * Redefined here so we can correct getClass() - otherwise we hit the
      * definition in Object.class which we can't rewrite.

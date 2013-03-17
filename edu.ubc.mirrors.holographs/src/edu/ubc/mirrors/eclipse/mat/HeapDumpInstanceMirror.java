@@ -43,6 +43,11 @@ public class HeapDumpInstanceMirror extends BoxingInstanceMirror implements Heap
     }
     
     @Override
+    public int identityHashCode() {
+        return vm.identityHashCode(heapDumpObject);
+    }
+    
+    @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + heapDumpObject;
     }

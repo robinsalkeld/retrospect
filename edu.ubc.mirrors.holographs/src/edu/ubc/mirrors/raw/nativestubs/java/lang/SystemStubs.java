@@ -13,7 +13,7 @@ public class SystemStubs extends NativeStubs {
     }
 
     public int identityHashCode(Mirage o) {
-        return System.identityHashCode(o);
+        return o.getMirror().identityHashCode();
     }
     
     public void arraycopy(Mirage src, int srcPos, Mirage dest, int destPos, int length) {

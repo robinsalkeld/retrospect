@@ -322,6 +322,10 @@ public class Reflection {
     }
     
     public static String toString(ObjectMirror mirror) {
+        return toString(mirror, mirror.getClassMirror().getVM().getThreads().get(0));
+    }    
+    
+    public static String toString(ObjectMirror mirror, ThreadMirror thread) {
         if (mirror == null) {
             return "null";
         }
@@ -329,7 +333,7 @@ public class Reflection {
         VirtualMachineMirror vm = mirror.getClassMirror().getVM();
         ClassMirror vmObjectClass = vm.findBootstrapClassMirror(Object.class.getName());
         MethodMirror toStringMethod = HolographInternalUtils.getMethod(vmObjectClass, "toString");
-        InstanceMirror stringMirror = (InstanceMirror)HolographInternalUtils.mirrorInvoke(vm.getThreads().get(0), toStringMethod, mirror);
+        InstanceMirror stringMirror = (InstanceMirror)HolographInternalUtils.mirrorInvoke(thread, toStringMethod, mirror);
         return getRealStringForMirror(stringMirror);
     }
     

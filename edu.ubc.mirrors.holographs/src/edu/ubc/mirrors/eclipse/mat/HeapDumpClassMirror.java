@@ -281,4 +281,9 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public int identityHashCode() {
+        return vm.identityHashCode(klass);
+    }
 }

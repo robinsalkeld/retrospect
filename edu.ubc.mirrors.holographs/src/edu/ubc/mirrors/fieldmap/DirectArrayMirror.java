@@ -51,6 +51,11 @@ public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayM
         return classMirror;
     }
 
+    @Override
+    public int identityHashCode() {
+        return hashCode();
+    }
+    
     public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
         return (ObjectMirror)array[index];
     }

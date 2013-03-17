@@ -26,6 +26,7 @@ import com.sun.jdi.ReferenceType;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
@@ -67,7 +68,7 @@ public class ToStringer implements IApplication {
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
                 mappedFiles);
         
-        toStringAllTheObjects(holographVM);
+        toStringAllTheObjects(holographVM, holographVM.getThreads().get(0));
     }
 
     private static List<Integer> readSample(String samplePath) throws NumberFormatException, IOException {
@@ -81,7 +82,12 @@ public class ToStringer implements IApplication {
     }
     
     // toString() ALL the objects!!!
-    private static void toStringAllTheObjects(VirtualMachineMirror vm) {
+    public static void toStringAllTheObjects(VirtualMachineMirror vm, ThreadMirror thread) {
+//        ClassMirror barClass = vm.findAllClasses(Bar.class.getName(), false).get(0);
+//        ObjectMirror bar = barClass.getInstances().get(0);
+//        System.out.println(bar.identityHashCode());
+//        if (true) return;
+        
         int count = 0;
         int charCount = 0;
         List<String> timesOver500ms = new ArrayList<String>();
@@ -101,7 +107,7 @@ public class ToStringer implements IApplication {
                     try {
                         Stopwatch perObjectSW = new Stopwatch();
                         perObjectSW.start();
-                        String s = Reflection.toString(object);
+                        String s = Reflection.toString(object, thread);
                         long time = perObjectSW.stop();
                         
                         if (time > 500) {

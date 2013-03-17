@@ -323,8 +323,53 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 	}
     }
     
+    public Value toValue(Object object) {
+        if (object instanceof Boolean) {
+            return jdiVM.mirrorOf(((Boolean)object).booleanValue());
+        } else if (object instanceof Byte) {
+            return jdiVM.mirrorOf(((Byte)object).byteValue());
+        } else if (object instanceof Character) {
+            return jdiVM.mirrorOf(((Character)object).charValue());
+        } else if (object instanceof Short) {
+            return jdiVM.mirrorOf(((Short)object).shortValue());
+        } else if (object instanceof Integer) {
+            return jdiVM.mirrorOf(((Integer)object).intValue());
+        } else if (object instanceof Long) {
+            return jdiVM.mirrorOf(((Long)object).longValue());
+        } else if (object instanceof Float) {
+            return jdiVM.mirrorOf(((Float)object).floatValue());
+        } else if (object instanceof Double) {
+            return jdiVM.mirrorOf(((Float)object).doubleValue());
+        } else {
+            return ((JDIObjectMirror)object).mirror;
+        }
+    }
+    
     @Override
     public boolean canBeModified() {
         return false; //jdiVM.canBeModified();
+    }
+    
+    int identityHashCode(ObjectReference object) {
+        // Unfortunately we need to run code to get at these.
+        // The method should be completely side-effect free though.
+        ReferenceType objectType = jdiVM.classesByName(Object.class.getName()).get(0);
+        Method method = objectType.methodsByName("hashCode").get(0);
+        ThreadHolograph currentThread = ThreadHolograph.currentThreadMirror();
+        ThreadReference threadRef = ((JDIThreadMirror)currentThread.getWrapped()).thread;
+        try {
+            Value result = object.invokeMethod(threadRef, method, Collections.<Value>emptyList(), ObjectReference.INVOKE_SINGLE_THREADED);
+            return ((IntegerValue)result).intValue();
+        } catch (InvalidTypeException e) {
+            throw new InternalError(e.getMessage());
+        } catch (ClassNotLoadedException e) {
+            // Should never happen
+            throw new RuntimeException(e);
+        } catch (IncompatibleThreadStateException e) {
+            // Should never happen
+            throw new RuntimeException(e);
+        } catch (InvocationException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

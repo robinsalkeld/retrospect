@@ -482,7 +482,7 @@ public class ClassHolograph extends WrappingClassMirror {
             }
         }
         
-        throw new UnsupportedOperationException("Unable to infer initialization status of class: " + this);
+        throw new InternalError("Unable to infer initialization status of class: " + this);
     }
     
     /**

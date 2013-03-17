@@ -52,6 +52,11 @@ public class JDIArrayMirror extends BoxingArrayMirror implements ObjectArrayMirr
     }
 
     @Override
+    public int identityHashCode() {
+        return vm.identityHashCode(array);
+    }
+    
+    @Override
     public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
         return vm.makeMirror((ObjectReference)array.getValue(index));
     }

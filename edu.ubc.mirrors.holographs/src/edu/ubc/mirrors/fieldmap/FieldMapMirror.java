@@ -15,4 +15,9 @@ public class FieldMapMirror extends BlankInstanceMirror implements NewInstanceMi
     public ClassMirror getClassMirror() {
         return classMirror;
     }
+    
+    @Override
+    public int identityHashCode() {
+        return hashCode();
+    }
 }

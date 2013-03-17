@@ -23,6 +23,11 @@ public class MutableInstanceMirror implements InstanceMirror {
     }
     
     @Override
+    public int identityHashCode() {
+        return wrapped.identityHashCode();
+    }
+    
+    @Override
     public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             return (ObjectMirror)newValues.get(field);

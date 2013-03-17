@@ -14,6 +14,9 @@ public class Bar {
     private static final Class<?> VOID_TYPE = Void.TYPE;
     
     public static void main(String[] args) throws InterruptedException {
+        System.out.println(Long.toBinaryString(5514902520l));
+        System.out.println(Integer.toBinaryString(1607546255));
+        
         Thread deadThread = new Thread();
         
         Thread[] threads = new Thread[Thread.activeCount() + 5];
@@ -24,6 +27,7 @@ public class Bar {
         
         
         Bar bar = new Bar(47);
+        System.out.println(bar.hashCode());
         bar.map.put(new String("foo"), new String("bar"));
         Thread.sleep(10000);
         System.out.println("ZZZZZZ");

@@ -2,6 +2,7 @@ package edu.ubc.mirrors.test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.Method;
@@ -15,7 +16,14 @@ import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.request.MethodEntryRequest;
 
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 
 public class LiveToStringer {
     public static void main(String[] args) throws Exception {
@@ -26,24 +34,23 @@ public class LiveToStringer {
         ThreadReference thread = pauseAndGetThread(jdiVM);
 //        ThreadReference thread = getMainThread(jdiVM);
         
+        final JDIVirtualMachineMirror vm = new JDIVirtualMachineMirror(jdiVM);
+        ThreadMirror threadMirror = (ThreadMirror)vm.makeMirror(thread);
+//      final VirtualMachineHolograph holographicVM = new VirtualMachineHolograph(vm, Reflection.getStandardMappedFiles());
+//        ThreadHolograph threadHolograph = (ThreadHolograph)holographicVM.getWrappedMirror(threadMirror);
+//        Reflection.withThread(threadHolograph, new Callable<Object>() {
+//            @Override
+//            public Object call() throws Exception {
+//                ClassMirror barClass = vm.findAllClasses(Bar.class.getName(), false).get(0);
+//                ObjectMirror bar = barClass.getInstances().get(0);
+//                System.out.println(bar.identityHashCode());
+//                return null;
+//            }
+//        });
+//        
+//        if (true) return;
         
-        List<ReferenceType> allClasses = jdiVM.allClasses();
-        int count = 0;
-        for (ReferenceType rt : allClasses) {
-            if (rt instanceof ArrayType) {
-                continue;
-            }
-            
-            for (ObjectReference o : rt.instances(0)) {
-                StringReference s = (StringReference)o.invokeMethod(thread, toStringMethod, Collections.<Value>emptyList(), ThreadReference.INVOKE_SINGLE_THREADED);
-                
-                count++;
-                if (count % 25 == 0) {
-                    System.out.println(count + ": " + s.value());
-                }
-            }
-        }
-        System.out.println("Total: " + count);
+        ToStringer.toStringAllTheObjects(vm, threadMirror);
     }
     
     private static ThreadReference getMainThread(final VirtualMachine jdiVM) throws InterruptedException {
