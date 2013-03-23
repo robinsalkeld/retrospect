@@ -29,9 +29,10 @@ public class Bar {
         Bar bar = new Bar(47);
         System.out.println(bar.hashCode());
         bar.map.put(new String("foo"), new String("bar"));
-        Thread.sleep(10000);
-        System.out.println("ZZZZZZ");
-        Thread.sleep(1000000000);
+
+        while (true) {
+            bar.bar(12);
+        }
     }
     
     int f;

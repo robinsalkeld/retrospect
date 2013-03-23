@@ -54,6 +54,7 @@ import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.MirageVirtualMachine;
 import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.mirages.Stopwatch;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -369,7 +370,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             }
             return result;
         }
-        
+        Stopwatch timer = new Stopwatch();
+        timer.start();
         String className = holographClass.getClassName();
         
         ThreadHolograph.raiseMetalevel();
@@ -391,10 +393,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             throw new InternalError("Couldn't load bytecode for class " + resourceName + " from loader: " + holographLoader);
         }
         
+        System.out.println("Loaded bytecode stream for " + holographClass.getClassName() + ": " + timer.lap());
         byte[] result = readBytecodeFromStream(thread, holographClass, stream);
         
         ThreadHolograph.lowerMetalevel();
-        
+        System.out.println("Loaded bytecode for " + holographClass.getClassName() + ": " + timer.stop());
         return result;
     }
     

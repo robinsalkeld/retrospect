@@ -8,12 +8,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.mat.internal.acquire.HeapDumpProviderDescriptor;
+import org.eclipse.mat.internal.acquire.HeapDumpProviderRegistry;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.snapshot.model.IObject;
@@ -37,6 +40,11 @@ import edu.ubc.mirrors.mirages.Stopwatch;
 public class ToStringer implements IApplication {
 
     public static void main(String[] args) throws Exception {
+        
+        Collection<HeapDumpProviderDescriptor> dumpProviders = HeapDumpProviderRegistry.instance().getHeapDumpProviders();
+        
+        HeapDumpProviderDescriptor descriptor = dumpProviders.iterator().next();
+        
         String snapshotPath = args[0];
         String samplePath = args[1];
         
@@ -52,18 +60,19 @@ public class ToStringer implements IApplication {
         HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
         
         // Create a holograph VM
-        Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
-//        String launchFolder = "/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/Eclipse + holograph connector (java 7)";
-//        mappedFiles.put(launchFolder, launchFolder);
-//        String jrubyBuildLib = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/build_lib";
-//        mappedFiles.put(jrubyBuildLib, jrubyBuildLib);
-//        String workspace = "/Users/robinsalkeld/Documents/workspace";
-//        mappedFiles.put(workspace, workspace);
-//        String jrubyJar = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/dist/jruby-complete-1.6.4.jar";
-//        mappedFiles.put(jrubyJar, jrubyJar);
-        String javaExtDir = "/System/Library/Java/Extensions";
-        mappedFiles.put(javaExtDir, javaExtDir);
+//        Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
+////        String launchFolder = "/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/Eclipse + holograph connector (java 7)";
+////        mappedFiles.put(launchFolder, launchFolder);
+////        String jrubyBuildLib = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/build_lib";
+////        mappedFiles.put(jrubyBuildLib, jrubyBuildLib);
+////        String workspace = "/Users/robinsalkeld/Documents/workspace";
+////        mappedFiles.put(workspace, workspace);
+////        String jrubyJar = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/dist/jruby-complete-1.6.4.jar";
+////        mappedFiles.put(jrubyJar, jrubyJar);
+//        String javaExtDir = "/System/Library/Java/Extensions";
+//        mappedFiles.put(javaExtDir, javaExtDir);
         
+        Map<String, String> mappedFiles = Collections.singletonMap("/", "/");
         
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
                 mappedFiles);
@@ -110,8 +119,11 @@ public class ToStringer implements IApplication {
                         String s = Reflection.toString(object, thread);
                         long time = perObjectSW.stop();
                         
+                        if (count < 20) {
+                            System.out.println(time);
+                        }
                         if (time > 500) {
-                            timesOver500ms.add("" + object + ": " + time);
+                            timesOver500ms.add("" + object + "(" + time + "): " + s);
                         }
                         maxTime = Math.max(maxTime, time);
                         
@@ -121,7 +133,10 @@ public class ToStringer implements IApplication {
                         
                         count++;
                         if (count % 25 == 0) {
-                            System.out.println(count + ": " + s);
+                            System.out.print(".");
+                        }
+                        if (count % 1000 == 0) {
+                            System.out.println(count);
                         }
                     } catch (Throwable e) {
                         errors++;
@@ -132,13 +147,17 @@ public class ToStringer implements IApplication {
             }
         } finally {
             long time = sw.stop();
+            System.out.println();
             System.out.println("Num objects toString-ed: " + count);
             System.out.println("Errors: " + errors);
             if (count != 0) {
                 System.out.println("Total time: " + time);
                 System.out.println("Average time per object: " + ((float)time) / count);
                 System.out.println("Max time per object: " + maxTime);
-                System.out.println("Objects taking more than 1/2 second: " + timesOver500ms);
+                System.out.println("Objects taking more than 1/2 second ("+timesOver500ms.size()+"):");
+                for (String s : timesOver500ms) {
+                    System.out.println(s);
+                }
                 System.out.println("Average string length: " + ((float)charCount) / count);
                 System.out.println("Average time per character: " + ((float)time) / charCount);
                 System.out.println("Max time per character: " + maxTimePerChar);

@@ -40,6 +40,7 @@ public class SystemStubs extends NativeStubs {
     // and also seems necessary in the read-only mapped fs.
     // It's probably actually okay, because this will just look like a very long
     // system delay to the original process, which is fairly reasonable.
+    // That is, it's okay in type 1 time-travel programming, but not type 2!
     public long nanoTime() {
         return System.nanoTime();
     }

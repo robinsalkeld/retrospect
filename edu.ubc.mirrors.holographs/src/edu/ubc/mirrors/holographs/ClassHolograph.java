@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
+import java.net.URLClassLoader;
+import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -403,6 +405,8 @@ public class ClassHolograph extends WrappingClassMirror {
     private static final Set<String> idempotentClassInits = new HashSet<String>(Arrays.asList(
             Modifier.class.getName(),
             PatternSyntaxException.class.getName(),
+            URLClassLoader.class.getName(),
+            SecureClassLoader.class.getName(),
             "org.eclipse.osgi.internal.permadmin.EquinoxSecurityManager",
             "java.lang.invoke.MethodHandleNatives",
             "sun.reflect.UnsafeStaticFieldAccessorImpl",

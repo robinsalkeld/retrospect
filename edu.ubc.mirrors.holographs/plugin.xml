@@ -49,4 +49,16 @@
          </run>
       </application>
    </extension>
+   <extension
+         id="livetostringer"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="edu.ubc.mirrors.test.LiveToStringer">
+         </run>
+      </application>
+   </extension>
 </plugin>

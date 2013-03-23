@@ -121,7 +121,9 @@ public class MirageClassGenerator extends ClassVisitor {
         // Force everything to be public, since MirageClassLoader has to reflectively
         // construct mirages. Again, not a problem because the VM will see the original flags on the ClassMirror instead.
         // Also remove enum flags.
-        int mirageAccess = (~(Opcodes.ACC_ENUM | Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED) & access) | Opcodes.ACC_PUBLIC;
+        // Also remove abstract flag. Shouldn't be necessary, but the VM (OpenJDK at least)
+        // creates objects that claim to be an instance of VirtualMachineError, which is abstract.
+        int mirageAccess = (~(Opcodes.ACC_ENUM | Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED | Opcodes.ACC_ABSTRACT) & access) | Opcodes.ACC_PUBLIC;
         
         // We need at least 49 to use class literal constants
         // TODO-RS: Work out a better way to interpret 45.X numbers correctly

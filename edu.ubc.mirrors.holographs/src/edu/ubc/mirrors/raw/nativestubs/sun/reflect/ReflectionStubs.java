@@ -19,8 +19,8 @@ public class ReflectionStubs extends NativeStubs {
 	super(klass);
     }
 
-    public Mirage getCallerClass(int depth) {
-        // Filter out any non-holographic frames
+    public static ClassMirror getCallerClassMirror(int depth) {
+     // Filter out any non-holographic frames
         int nativeDepth = 1;
         Class<?> klass = sun.reflect.Reflection.getCallerClass(nativeDepth);
         while (klass != null) {
@@ -29,7 +29,7 @@ public class ReflectionStubs extends NativeStubs {
                 if (depth == 0) {
                     MirageClassLoader mirageClassLoader = (MirageClassLoader)klass.getClassLoader();
                     String className = MirageClassGenerator.getOriginalBinaryClassName(klass.getName());
-                    return mirageClassLoader.makeMirage(mirageClassLoader.loadOriginalClassMirror(className));
+                    return mirageClassLoader.loadOriginalClassMirror(className);
                 }
                 depth--;
             }
@@ -45,7 +45,11 @@ public class ReflectionStubs extends NativeStubs {
             return null;
         }
         FrameMirror frame = stack.get(frameIndex);
-        return ObjectMirage.make(frame.method().getDeclaringClass());
+        return frame.method().getDeclaringClass();
+    }
+    
+    public Mirage getCallerClass(int depth) {
+        return ObjectMirage.make(getCallerClassMirror(depth));
     }
     
     public int getClassAccessFlags(Mirage klass) {

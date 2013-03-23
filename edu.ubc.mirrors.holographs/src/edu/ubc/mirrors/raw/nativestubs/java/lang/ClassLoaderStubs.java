@@ -9,6 +9,7 @@ import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.raw.nativestubs.sun.reflect.ReflectionStubs;
 
 public class ClassLoaderStubs extends NativeStubs {
     
@@ -53,5 +54,10 @@ public class ClassLoaderStubs extends NativeStubs {
         return defineClass(classLoader, name, b, off, len, pd, source);
     }
     
-    
+    // Note: the specification of this method seems broken: it implies the result should
+    // always extend ClassLoader but I don't see how that's true.
+    public Mirage getCaller(int depth) {
+        ClassMirror callerClass = ReflectionStubs.getCallerClassMirror(depth);
+        return ObjectMirage.make(callerClass);
+    }
 }

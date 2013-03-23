@@ -11,7 +11,8 @@ Bundle-ClassPath: lib/asm-debug-all-4.0.jar,
  lib/abc.jar,
  lib/java_cup.jar,
  lib/polyglot.jar,
- lib/sootclasses.jar
+ lib/sootclasses.jar,
+ lib/tools.jar
 Premain-Class: edu.ubc.mirrors.ObjectMirageAgent
 Created-By: 1.6.0_26-b03-383-11M3527 (Apple Inc.)
 Ant-Version: Apache Ant 1.8.2
@@ -23,6 +24,7 @@ Import-Package: com.ibm.icu.text;version="4.4.2.1",
  org.eclipse.mat,
  org.eclipse.mat.collect,
  org.eclipse.mat.hprof.extension,
+ org.eclipse.mat.internal.acquire,
  org.eclipse.mat.jruby.resolver,
  org.eclipse.mat.parser,
  org.eclipse.mat.parser.index,
@@ -31,6 +33,7 @@ Import-Package: com.ibm.icu.text;version="4.4.2.1",
  org.eclipse.mat.query,
  org.eclipse.mat.query.annotations,
  org.eclipse.mat.snapshot,
+ org.eclipse.mat.snapshot.acquire,
  org.eclipse.mat.snapshot.extension,
  org.eclipse.mat.snapshot.model,
  org.eclipse.mat.snapshot.query,
