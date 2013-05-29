@@ -1,0 +1,2497 @@
+Task: Reopening parsed heap dump file
+[.........]
+........................................40
+........................................80
+........................................120
+........................................160
+........................................200
+........................................240
+........................................280
+........................................320
+........................................360
+........................................400
+........................................440
+........................................480
+........................................520
+........................................560
+........................................600
+........................................640
+........................................680
+........................................720
+........................................760
+........................................800
+........................................840
+........................................880
+........................................920
+........................................960
+........................................1000
+........................................1040
+........................................1080
+........................................1120
+...............................java.lang.RuntimeException: Error caught while generating bytecode for mirage.sun.reflect.GeneratedConstructorAccessor2..
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:172)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getMirageClass(ClassHolograph.java:221)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getMirageClass(ClassHolograph.java:228)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:581)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.mirages.Reflection.withThread(Reflection.java:59)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:571)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:60)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedConstructorAccessor2.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@543471090()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:298)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getBytecode(MirageClassLoader.java:280)
+	at edu.ubc.mirrors.mirages.MirageClassMirror.getBytecode(MirageClassMirror.java:43)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:166)
+	... 21 more
+.......1160
+........................................1200
+........................................1240
+........................................1280
+........................................1320
+....................java.lang.RuntimeException: Error caught while generating bytecode for mirage.org.eclipse.ui.internal.ide.ChooseWorkspaceWithSettingsDialog
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:172)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getMirageClass(ClassHolograph.java:221)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getMirageClass(ClassHolograph.java:228)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:581)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.mirages.Reflection.withThread(Reflection.java:59)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:571)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:60)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.RuntimeException: createSettingsControls(Lorg/eclipse/swt/widgets/Composite;)V
+00000 ChooseWorkspaceWithSettingsDialog Composite . . . . .  :  :    L0
+00001 ChooseWorkspaceWithSettingsDialog Composite . . . . .  :  :     LINENUMBER 115 L0
+00002 ChooseWorkspaceWithSettingsDialog Composite . . . . .  :  :     NEW org/eclipse/ui/forms/widgets/FormToolkit
+00003 ChooseWorkspaceWithSettingsDialog Composite . . . . .  : (U)FormToolkit  :     DUP
+00004 ChooseWorkspaceWithSettingsDialog Composite . . . . .  : (U)FormToolkit (U)FormToolkit  :     ALOAD 1
+00005 ChooseWorkspaceWithSettingsDialog Composite . . . . .  : (U)FormToolkit (U)FormToolkit Composite  :     INVOKEVIRTUAL org/eclipse/swt/widgets/Composite.getDisplay ()Lorg/eclipse/swt/widgets/Display;
+00006 ChooseWorkspaceWithSettingsDialog Composite . . . . .  : (U)FormToolkit (U)FormToolkit Display  :     INVOKESPECIAL org/eclipse/ui/forms/widgets/FormToolkit.<init> (Lorg/eclipse/swt/widgets/Display;)V
+00007 ChooseWorkspaceWithSettingsDialog Composite . . . . .  : FormToolkit  :     ASTORE 2
+00008 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  :  :    L1
+00009 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  :  :     LINENUMBER 116 L1
+00010 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  :  :     ALOAD 1
+00011 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  : Composite  :     NEW org/eclipse/ui/internal/ide/ChooseWorkspaceWithSettingsDialog$1
+00012 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  : Composite (U)ChooseWorkspaceWithSettingsDialog$1  :     DUP
+00013 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  : Composite (U)ChooseWorkspaceWithSettingsDialog$1 (U)ChooseWorkspaceWithSettingsDialog$1  :     ALOAD 0
+00014 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  : Composite (U)ChooseWorkspaceWithSettingsDialog$1 (U)ChooseWorkspaceWithSettingsDialog$1 ChooseWorkspaceWithSettingsDialog  :     ALOAD 2
+00015 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  : Composite (U)ChooseWorkspaceWithSettingsDialog$1 (U)ChooseWorkspaceWithSettingsDialog$1 ChooseWorkspaceWithSettingsDialog FormToolkit  :     INVOKESPECIAL org/eclipse/ui/internal/ide/ChooseWorkspaceWithSettingsDialog$1.<init> (Lorg/eclipse/ui/internal/ide/ChooseWorkspaceWithSettingsDialog;Lorg/eclipse/ui/forms/widgets/FormToolkit;)V
+00016 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  : Composite ChooseWorkspaceWithSettingsDialog$1  :     INVOKEVIRTUAL org/eclipse/swt/widgets/Composite.addDisposeListener (Lorg/eclipse/swt/events/DisposeListener;)V
+00017 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  :  :    L2
+00018 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  :  :     LINENUMBER 122 L2
+00019 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  :  :     ALOAD 2
+00020 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  : FormToolkit  :     ALOAD 1
+00021 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  : FormToolkit Composite  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/FormToolkit.createScrolledForm (Lorg/eclipse/swt/widgets/Composite;)Lorg/eclipse/ui/forms/widgets/ScrolledForm;
+00022 ChooseWorkspaceWithSettingsDialog Composite FormToolkit . . . .  : ScrolledForm  :     ASTORE 3
+00023 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  :  :    L3
+00024 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  :  :     LINENUMBER 123 L3
+00025 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  :  :     ALOAD 3
+00026 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : ScrolledForm  :     ALOAD 1
+00027 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : ScrolledForm Composite  :     INVOKEVIRTUAL org/eclipse/swt/widgets/Composite.getBackground ()Lorg/eclipse/swt/graphics/Color;
+00028 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : ScrolledForm Color  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ScrolledForm.setBackground (Lorg/eclipse/swt/graphics/Color;)V
+00029 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  :  :    L4
+00030 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  :  :     LINENUMBER 124 L4
+00031 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  :  :     ALOAD 3
+00032 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : ScrolledForm  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ScrolledForm.getBody ()Lorg/eclipse/swt/widgets/Composite;
+00033 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : Composite  :     NEW org/eclipse/swt/layout/GridLayout
+00034 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : Composite (U)GridLayout  :     DUP
+00035 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : Composite (U)GridLayout (U)GridLayout  :     INVOKESPECIAL org/eclipse/swt/layout/GridLayout.<init> ()V
+00036 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : Composite GridLayout  :     INVOKEVIRTUAL org/eclipse/swt/widgets/Composite.setLayout (Lorg/eclipse/swt/widgets/Layout;)V
+00037 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  :  :    L5
+00038 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  :  :     LINENUMBER 126 L5
+00039 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  :  :     NEW org/eclipse/swt/layout/GridData
+00040 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : (U)GridData  :     DUP
+00041 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : (U)GridData (U)GridData  :     ICONST_4
+00042 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : (U)GridData (U)GridData I  :     ICONST_4
+00043 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : (U)GridData (U)GridData I I  :     ICONST_1
+00044 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : (U)GridData (U)GridData I I I  :     ICONST_1
+00045 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : (U)GridData (U)GridData I I I I  :     INVOKESPECIAL org/eclipse/swt/layout/GridData.<init> (IIZZ)V
+00046 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm . . .  : GridData  :     ASTORE 4
+00047 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  :  :    L6
+00048 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  :  :     LINENUMBER 127 L6
+00049 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  :  :     ALOAD 3
+00050 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : ScrolledForm  :     ALOAD 4
+00051 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : ScrolledForm GridData  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ScrolledForm.setLayoutData (Ljava/lang/Object;)V
+00052 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  :  :    L7
+00053 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  :  :     LINENUMBER 128 L7
+00054 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  :  :     ALOAD 2
+00055 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit  :    L8
+00056 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit  :     LINENUMBER 129 L8
+00057 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit  :     ALOAD 3
+00058 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit ScrolledForm  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ScrolledForm.getBody ()Lorg/eclipse/swt/widgets/Composite;
+00059 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit Composite  :    L9
+00060 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit Composite  :     LINENUMBER 130 L9
+00061 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit Composite  :     ICONST_2
+00062 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit Composite I  :    L10
+00063 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit Composite I  :     LINENUMBER 129 L10
+00064 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : FormToolkit Composite I  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/FormToolkit.createExpandableComposite (Lorg/eclipse/swt/widgets/Composite;I)Lorg/eclipse/ui/forms/widgets/ExpandableComposite;
+00065 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : ExpandableComposite  :    L11
+00066 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : ExpandableComposite  :     LINENUMBER 128 L11
+00067 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData . .  : ExpandableComposite  :     ASTORE 5
+00068 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :    L12
+00069 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     LINENUMBER 131 L12
+00070 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     ALOAD 5
+00071 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite  :    L13
+00072 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite  :     LINENUMBER 132 L13
+00073 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite  :     GETSTATIC org/eclipse/ui/internal/ide/IDEWorkbenchMessages.ChooseWorkspaceWithSettingsDialog_SettingsGroupName : Ljava/lang/String;
+00074 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite String  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ExpandableComposite.setText (Ljava/lang/String;)V
+00075 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :    L14
+00076 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     LINENUMBER 133 L14
+00077 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     ALOAD 5
+00078 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite  :     ALOAD 1
+00079 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite Composite  :     INVOKEVIRTUAL org/eclipse/swt/widgets/Composite.getBackground ()Lorg/eclipse/swt/graphics/Color;
+00080 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite Color  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ExpandableComposite.setBackground (Lorg/eclipse/swt/graphics/Color;)V
+00081 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :    L15
+00082 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     LINENUMBER 134 L15
+00083 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     ALOAD 5
+00084 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite  :     NEW org/eclipse/swt/layout/GridLayout
+00085 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)GridLayout  :     DUP
+00086 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)GridLayout (U)GridLayout  :     INVOKESPECIAL org/eclipse/swt/layout/GridLayout.<init> ()V
+00087 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite GridLayout  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ExpandableComposite.setLayout (Lorg/eclipse/swt/widgets/Layout;)V
+00088 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :    L16
+00089 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     LINENUMBER 135 L16
+00090 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     ALOAD 5
+00091 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite  :     NEW org/eclipse/swt/layout/GridData
+00092 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)GridData  :     DUP
+00093 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)GridData (U)GridData  :     ICONST_4
+00094 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)GridData (U)GridData I  :     ICONST_4
+00095 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)GridData (U)GridData I I  :     ICONST_1
+00096 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)GridData (U)GridData I I I  :     ICONST_1
+00097 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)GridData (U)GridData I I I I  :     INVOKESPECIAL org/eclipse/swt/layout/GridData.<init> (IIZZ)V
+00098 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite GridData  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ExpandableComposite.setLayoutData (Ljava/lang/Object;)V
+00099 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :    L17
+00100 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     LINENUMBER 136 L17
+00101 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  :  :     ALOAD 5
+00102 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite  :     NEW org/eclipse/ui/internal/ide/ChooseWorkspaceWithSettingsDialog$2
+00103 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)ChooseWorkspaceWithSettingsDialog$2  :     DUP
+00104 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)ChooseWorkspaceWithSettingsDialog$2 (U)ChooseWorkspaceWithSettingsDialog$2  :     ALOAD 0
+00105 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)ChooseWorkspaceWithSettingsDialog$2 (U)ChooseWorkspaceWithSettingsDialog$2 ChooseWorkspaceWithSettingsDialog  :     ALOAD 3
+00106 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite (U)ChooseWorkspaceWithSettingsDialog$2 (U)ChooseWorkspaceWithSettingsDialog$2 ChooseWorkspaceWithSettingsDialog ScrolledForm  :     INVOKESPECIAL org/eclipse/ui/internal/ide/ChooseWorkspaceWithSettingsDialog$2.<init> (Lorg/eclipse/ui/internal/ide/ChooseWorkspaceWithSettingsDialog;Lorg/eclipse/ui/forms/widgets/ScrolledForm;)V
+00107 ChooseWorkspaceWithSettingsDialog Composite FormToolkit ScrolledForm GridData ExpandableComposite .  : ExpandableComposite ChooseWorkspaceWithSettingsDialog$2  :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ExpandableComposite.addExpansionListener (Lorg/eclipse/ui/forms/events/IExpansionListener;)V
+00108 ?               :    L18
+00109 ?               :     LINENUMBER 173 L18
+00110 ?               :     ALOAD 2
+00111 ?               :     ALOAD 5
+00112 ?               :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/FormToolkit.createComposite (Lorg/eclipse/swt/widgets/Composite;)Lorg/eclipse/swt/widgets/Composite;
+00113 ?               :     ASTORE 6
+00114 ?               :    L19
+00115 ?               :     LINENUMBER 174 L19
+00116 ?               :     ALOAD 6
+00117 ?               :     NEW org/eclipse/swt/layout/GridLayout
+00118 ?               :     DUP
+00119 ?               :     INVOKESPECIAL org/eclipse/swt/layout/GridLayout.<init> ()V
+00120 ?               :     INVOKEVIRTUAL org/eclipse/swt/widgets/Composite.setLayout (Lorg/eclipse/swt/widgets/Layout;)V
+00121 ?               :    L20
+00122 ?               :     LINENUMBER 175 L20
+00123 ?               :     ALOAD 6
+00124 ?               :     ALOAD 1
+00125 ?               :     INVOKEVIRTUAL org/eclipse/swt/widgets/Composite.getBackground ()Lorg/eclipse/swt/graphics/Color;
+00126 ?               :     INVOKEVIRTUAL org/eclipse/swt/widgets/Composite.setBackground (Lorg/eclipse/swt/graphics/Color;)V
+00127 ?               :    L21
+00128 ?               :     LINENUMBER 177 L21
+00129 ?               :     ALOAD 0
+00130 ?               :     ALOAD 2
+00131 ?               :     ALOAD 6
+00132 ?               :     INVOKESPECIAL org/eclipse/ui/internal/ide/ChooseWorkspaceWithSettingsDialog.createButtons (Lorg/eclipse/ui/forms/widgets/FormToolkit;Lorg/eclipse/swt/widgets/Composite;)Z
+00133 ?               :     IFEQ L22
+00134 ?               :    L23
+00135 ?               :     LINENUMBER 178 L23
+00136 ?               :     ALOAD 5
+00137 ?               :     ICONST_1
+00138 ?               :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ExpandableComposite.setExpanded (Z)V
+00139 ?               :    L22
+00140 ?               :     LINENUMBER 180 L22
+00141 ?               :     ALOAD 5
+00142 ?               :     ALOAD 6
+00143 ?               :     INVOKEVIRTUAL org/eclipse/ui/forms/widgets/ExpandableComposite.setClient (Lorg/eclipse/swt/widgets/Control;)V
+00144 ?               :    L24
+00145 ?               :     LINENUMBER 182 L24
+00146 ?               :     RETURN
+00147 ?               :    L25
+
+
+	at edu.ubc.mirrors.mirages.FrameAnalyzerAdaptor$1.visitEnd(FrameAnalyzerAdaptor.java:128)
+	at org.objectweb.asm.tree.MethodNode.accept(MethodNode.java:644)
+	at org.objectweb.asm.commons.JSRInlinerAdapter.visitEnd(JSRInlinerAdapter.java:181)
+	at org.objectweb.asm.ClassReader.accept(ClassReader.java:1625)
+	at org.objectweb.asm.ClassReader.accept(ClassReader.java:533)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.generateBytecode(MirageClassLoader.java:421)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getBytecode(MirageClassLoader.java:312)
+	at edu.ubc.mirrors.mirages.MirageClassMirror.getBytecode(MirageClassMirror.java:43)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:166)
+	... 21 more
+Caused by: java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.loadClassMirror(Reflection.java:211)
+	at edu.ubc.mirrors.mirages.Reflection.classMirrorForType(Reflection.java:244)
+	at edu.ubc.mirrors.mirages.Reflection.classMirrorForName(Reflection.java:278)
+	at edu.ubc.mirrors.mirages.BetterVerifier.getClassMirror(BetterVerifier.java:82)
+	at edu.ubc.mirrors.mirages.BetterVerifier.isAssignableFrom(BetterVerifier.java:104)
+	at org.objectweb.asm.tree.analysis.SimpleVerifier.isSubTypeOf(SimpleVerifier.java:215)
+	at edu.ubc.mirrors.mirages.BetterVerifier.isSubTypeOf(BetterVerifier.java:116)
+	at org.objectweb.asm.tree.analysis.BasicVerifier.naryOperation(BasicVerifier.java:421)
+	at edu.ubc.mirrors.mirages.FrameVerifier.naryOperation(FrameVerifier.java:96)
+	at edu.ubc.mirrors.mirages.FrameVerifier.naryOperation(FrameVerifier.java:1)
+	at org.objectweb.asm.tree.analysis.Frame.execute(Frame.java:592)
+	at edu.ubc.mirrors.mirages.FrameAnalyzer$ContextFrame.execute(FrameAnalyzer.java:93)
+	at org.objectweb.asm.tree.analysis.Analyzer.analyze(Analyzer.java:197)
+	at edu.ubc.mirrors.mirages.FrameAnalyzerAdaptor$1.visitEnd(FrameAnalyzerAdaptor.java:108)
+	... 29 more
+Caused by: java.lang.InternalError: Unsupported native method: mirage/org/eclipse/swt/internal/cocoa/OS#objc_getClass(Lmirage/java/lang/String;)J
+	at org.eclipse.swt.internal.cocoa.OS.objc_getClass(OS.java)
+	at org.eclipse.swt.internal.cocoa.id.objc_getClass(id.java:43)
+	at org.eclipse.swt.internal.cocoa.NSObject.alloc(NSObject.java:28)
+	at org.eclipse.swt.widgets.Display.wakeThread(Display.java:4790)
+	at org.eclipse.swt.widgets.Synchronizer.addLast(Synchronizer.java:71)
+	at org.eclipse.swt.widgets.Synchronizer.asyncExec(Synchronizer.java:93)
+	at org.eclipse.ui.internal.UISynchronizer.asyncExec(UISynchronizer.java:129)
+	at org.eclipse.swt.widgets.Display.asyncExec(Display.java:582)
+	at org.eclipse.ui.plugin.AbstractUIPlugin.refreshPluginActions(AbstractUIPlugin.java:484)
+	at org.eclipse.ui.plugin.AbstractUIPlugin$2.bundleChanged(AbstractUIPlugin.java:602)
+	at org.eclipse.osgi.framework.internal.core.BundleContextImpl.dispatchEvent(BundleContextImpl.java:847)
+	at org.eclipse.osgi.framework.eventmgr.EventManager.dispatchEvent(EventManager.java:230)
+	at org.eclipse.osgi.framework.eventmgr.ListenerQueue.dispatchEventSynchronous(ListenerQueue.java:148)
+	at org.eclipse.osgi.framework.internal.core.Framework.publishBundleEventPrivileged(Framework.java:1522)
+	at org.eclipse.osgi.framework.internal.core.Framework.publishBundleEvent(Framework.java:1458)
+	at org.eclipse.osgi.framework.internal.core.Framework.publishBundleEvent(Framework.java:1453)
+	at org.eclipse.osgi.framework.internal.core.BundleHost.startWorker(BundleHost.java:391)
+	at org.eclipse.osgi.framework.internal.core.AbstractBundle.start(AbstractBundle.java:299)
+	at org.eclipse.osgi.framework.util.SecureAction.start(SecureAction.java:440)
+	at org.eclipse.osgi.internal.loader.BundleLoader.setLazyTrigger(BundleLoader.java:268)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseLazyStarter.postFindLocalClass(EclipseLazyStarter.java:107)
+	at org.eclipse.osgi.baseadaptor.loader.ClasspathManager.findLocalClass(ClasspathManager.java:462)
+	at org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader.findLocalClass(DefaultClassLoader.java:216)
+	at org.eclipse.osgi.internal.loader.BundleLoader.findLocalClass(BundleLoader.java:400)
+	at org.eclipse.osgi.internal.loader.SingleSourcePackage.loadClass(SingleSourcePackage.java:35)
+	at org.eclipse.osgi.internal.loader.BundleLoader.findClassInternal(BundleLoader.java:473)
+	at org.eclipse.osgi.internal.loader.BundleLoader.findClass(BundleLoader.java:429)
+	at org.eclipse.osgi.internal.loader.BundleLoader.findClass(BundleLoader.java:417)
+	at org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader.loadClass(DefaultClassLoader.java:107)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:356)
+	at sun.reflect.GeneratedMethodAccessor6.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 44 more
+....................1360
+........................................1400
+........................................1440
+........................................1480
+........................................1520
+........................................1560
+........................................1600
+........................................1640
+........................................1680
+........................................1720
+........................................1760
+........................................1800
+........................................1840
+........................................1880
+........................................1920
+........................................1960
+........................................2000
+........................................2040
+........................................2080
+........................................2120
+........................................2160
+........................................2200
+........................................2240
+........................................2280
+........................................2320
+........................................2360
+........................................2400
+........................................2440
+........................................2480
+........................................2520
+........................................2560
+........................................2600
+........................................2640
+........................................2680
+........................................2720
+........................................2760
+..........java.lang.RuntimeException: Error caught while generating bytecode for mirage.sun.reflect.GeneratedMethodAccessor1
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:172)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getMirageClass(ClassHolograph.java:221)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getMirageClass(ClassHolograph.java:228)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:581)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.mirages.Reflection.withThread(Reflection.java:59)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:571)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:60)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedMethodAccessor1.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@1206328924()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:298)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getBytecode(MirageClassLoader.java:280)
+	at edu.ubc.mirrors.mirages.MirageClassMirror.getBytecode(MirageClassMirror.java:43)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:166)
+	... 21 more
+..............................2800
+........................................2840
+........................................2880
+........................................2920
+........................................2960
+........................................3000
+........................................3040
+........................................3080
+........................................3120
+........................................3160
+........................................3200
+........................................3240
+........................................3280
+........................................3320
+........................................3360
+........................................3400
+........................................3440
+........................................3480
+........................................3520
+........................................3560
+........................................3600
+........................................3640
+........................................3680
+........................................3720
+........................................3760
+........................................3800
+........................................3840
+........................................3880
+........................................3920
+........................................3960
+........................................4000
+........................................4040
+........................................4080
+........................................4120
+........................................4160
+........................................4200
+........................................4240
+........................................4280
+........................................4320
+........................................4360
+........................................4400
+....................java.lang.RuntimeException: Error caught while generating bytecode for mirage.sun.reflect.GeneratedConstructorAccessor1.
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:172)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getMirageClass(ClassHolograph.java:221)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getMirageClass(ClassHolograph.java:228)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:581)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.mirages.Reflection.withThread(Reflection.java:59)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:571)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:60)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedConstructorAccessor1.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@258409539()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:298)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getBytecode(MirageClassLoader.java:280)
+	at edu.ubc.mirrors.mirages.MirageClassMirror.getBytecode(MirageClassMirror.java:43)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:166)
+	... 21 more
+...................4440
+........................................4480
+........................................4520
+........................................4560
+........................................4600
+........................................4640
+........................................4680
+........................................4720
+........................................4760
+...........
+Prepared 4771 classes in 917167ms
+Errors on classes: [sun.reflect.GeneratedMethodAccessor1, sun.reflect.GeneratedConstructorAccessor1, sun.reflect.GeneratedConstructorAccessor2, org.eclipse.ui.internal.ide.ChooseWorkspaceWithSettingsDialog]
+........................................40
+........................................80
+........................................120
+........................................160
+........................................200
+........................................240
+........................................280
+........................................320
+........................................360
+........................................400
+........................................440
+........................................480
+........................................520
+........................................560
+........................................600
+........................................640
+........................................680
+........................................720
+........................................760
+........................................800
+........................................840
+........................................880
+........................................920
+........................................960
+........................................1000
+........................................1040
+........................................1080
+........................................1120
+........................................1160
+........................................1200
+........................................1240
+........................................1280
+........................................1320
+........................................1360
+........................................1400
+........................................1440
+........................................1480
+........................................1520
+........................................1560
+........................................1600
+........................................1640
+........................................1680
+........................................1720
+........................................1760
+........................................1800
+........................................1840
+........................................1880
+........................................1920
+........................................1960
+........................................2000
+........................................2040
+........................................2080
+........................................2120
+........................................2160
+........................................2200
+........................................2240
+........................................2280
+........................................2320
+........................................2360
+........................................2400
+........................................2440
+........................................2480
+........................................2520
+........................................2560
+........................................2600
+........................................2640
+........................................2680
+........................................2720
+........................................2760
+........................................2800
+........................................2840
+........................................2880
+........................................2920
+........................................2960
+........................................3000
+........................................3040
+........................................3080
+........................................3120
+........................................3160
+........................................3200
+........................................3240
+........................................3280
+........................................3320
+........................................3360
+........................................3400
+........................................3440
+........................................3480
+........................................3520
+........................................3560
+........................................3600
+........................................3640
+........................................3680
+........................................3720
+........................................3760
+........................................3800
+........................................3840
+........................................3880
+........................................3920
+........................................3960
+........................................4000
+........................................4040
+........................................4080
+........................................4120
+........................................4160
+........................................4200
+........................................4240
+........................................4280
+........................................4320
+........................................4360
+........................................4400
+........................................4440
+........................................4480
+........................................4520
+................
+Total classes: 4536
+Total objects: 210951
+........................................1000
+........................................2000
+........................................3000
+........................................4000
+........................................5000
+........................................6000
+........................................7000
+.........................Error on object ClassHolograph on HeapDumpClassMirror: java.lang.Class [id=0x11eacc4e8;name=sun.reflect.GeneratedMethodAccessor1]
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedMethodAccessor1.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@1206328924()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.isInterface(ClassHolograph.java:307)
+	at edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs.isInterface(ClassStubs.java:47)
+	at java.lang.Class.isInterface(Class.java)
+	at java.lang.Class.toString(Class.java:148)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedConstructorAccessor2.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@543471090()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.isInterface(ClassHolograph.java:307)
+	at edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs.isInterface(ClassStubs.java:47)
+	at java.lang.Class.isInterface(Class.java)
+	at java.lang.Class.toString(Class.java:148)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object ClassHolograph on HeapDumpClassMirror: java.lang.Class [id=0x11e5a3930;name=sun.reflect.GeneratedConstructorAccessor2]
+...............8000
+................................Error on object ClassHolograph on HeapDumpClassMirror: java.lang.Class [id=0x11e054ae0;name=sun.reflect.GeneratedConstructorAccessor1]
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedConstructorAccessor1.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@258409539()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.isInterface(ClassHolograph.java:307)
+	at edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs.isInterface(ClassStubs.java:47)
+	at java.lang.Class.isInterface(Class.java)
+	at java.lang.Class.toString(Class.java:148)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+........9000
+..........................Error on object InstanceHolograph[org.eclipse.core.internal.registry.HashtableOfStringAndInt]@1116457570()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.ClassCastException: org.eclipse.mat.snapshot.model.FieldDescriptor cannot be cast to org.eclipse.mat.snapshot.model.Field
+	at edu.ubc.mirrors.eclipse.mat.HeapDumpClassStaticValues.getBoxedValue(HeapDumpClassStaticValues.java:33)
+	at edu.ubc.mirrors.BoxingInstanceMirror.getInt(BoxingInstanceMirror.java:33)
+	at edu.ubc.mirrors.wrapping.WrappingInstanceMirror.getInt(WrappingInstanceMirror.java:44)
+	at edu.ubc.mirrors.holographs.InstanceHolograph.getInt(InstanceHolograph.java:72)
+	at edu.ubc.mirrors.holographs.MutableInstanceMirror.getInt(MutableInstanceMirror.java:80)
+	at edu.ubc.mirrors.mirages.InstanceMirage.getIntField(InstanceMirage.java:61)
+	at java.lang.String.<init>(String.java:165)
+	at org.eclipse.core.internal.registry.HashtableOfStringAndInt.toString(HashtableOfStringAndInt.java:140)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+..............10000
+........................................11000
+........................................12000
+........................................13000
+........................................14000
+........................................15000
+........................................16000
+.................................Error on object InstanceHolograph[java.util.HashMap]@1242387296()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredSelection, method: toArray signature: ()Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at java.lang.Object.make(ObjectMirage.java:142)
+	at edu.ubc.mirrors.mirages.InstanceMirage.getField(InstanceMirage.java:23)
+	at java.util.HashMap$Entry.getValue(HashMap.java:708)
+	at java.util.AbstractMap.toString(AbstractMap.java:520)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+..Error on object InstanceHolograph[java.util.HashMap]@1794779564()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredSelection, method: toArray signature: ()Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at java.lang.Object.make(ObjectMirage.java:142)
+	at edu.ubc.mirrors.mirages.InstanceMirage.getField(InstanceMirage.java:23)
+	at java.util.HashMap$Entry.getValue(HashMap.java:708)
+	at java.util.AbstractMap.toString(AbstractMap.java:520)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.....17000
+........................................18000
+........................................19000
+........................................20000
+........................................21000
+........................................22000
+........................................23000
+.................................Error on object InstanceHolograph[java.util.HashMap$Entry]@345256872()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredSelection, method: toArray signature: ()Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at java.lang.Object.make(ObjectMirage.java:142)
+	at edu.ubc.mirrors.mirages.InstanceMirage.getField(InstanceMirage.java:23)
+	at java.util.HashMap$Entry.getValue(HashMap.java:708)
+	at java.util.HashMap$Entry.toString(HashMap.java:738)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.......24000
+........................................25000
+.....Error on object InstanceHolograph[java.util.HashMap$Entry]@3542480()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredSelection, method: toArray signature: ()Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at java.lang.Object.make(ObjectMirage.java:142)
+	at edu.ubc.mirrors.mirages.InstanceMirage.getField(InstanceMirage.java:23)
+	at java.util.HashMap$Entry.getValue(HashMap.java:708)
+	at java.util.HashMap$Entry.toString(HashMap.java:738)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+...................................26000
+........................................27000
+........................................28000
+........................................29000
+........................................30000
+........................................31000
+........................................32000
+........................................33000
+........................................34000
+...Error on object InstanceHolograph[java.util.HashMap$EntrySet]@61627522()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredSelection, method: toArray signature: ()Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at java.lang.Object.make(ObjectMirage.java:142)
+	at edu.ubc.mirrors.mirages.InstanceMirage.getField(InstanceMirage.java:23)
+	at java.util.HashMap$Entry.getValue(HashMap.java:708)
+	at java.util.HashMap$Entry.toString(HashMap.java:738)
+	at java.lang.String.valueOf(String.java:2902)
+	at java.lang.StringBuilder.append(StringBuilder.java:128)
+	at java.util.AbstractCollection.toString(AbstractCollection.java:450)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.Error on object InstanceHolograph[java.util.HashMap$EntrySet]@1263302737()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredSelection, method: toArray signature: ()Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at java.lang.Object.make(ObjectMirage.java:142)
+	at edu.ubc.mirrors.mirages.InstanceMirage.getField(InstanceMirage.java:23)
+	at java.util.HashMap$Entry.getValue(HashMap.java:708)
+	at java.util.HashMap$Entry.toString(HashMap.java:738)
+	at java.lang.String.valueOf(String.java:2902)
+	at java.lang.StringBuilder.append(StringBuilder.java:128)
+	at java.util.AbstractCollection.toString(AbstractCollection.java:450)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+....................................35000
+........................................36000
+........................................37000
+........................................38000
+........................................39000
+........................................40000
+........................................41000
+........................................42000
+........................................43000
+........................................44000
+........................................45000
+........................................46000
+........................................47000
+........................................48000
+........................................49000
+........................................50000
+........................................51000
+........................................52000
+........................................53000
+........................................54000
+........................................55000
+........................................56000
+........................................57000
+........................................58000
+........................................59000
+........................................60000
+.............................Error on object InstanceHolograph[org.eclipse.ui.internal.views.markers.MarkersTreeViewer]@473111776()
+.java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredViewer, method: getSortedChildren signature: (Ledu/ubc/mirrors/mirages/Mirage;)Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at edu.ubc.mirrors.holographs.ClassHolograph.makeMirage(ClassHolograph.java:263)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:74)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+..........61000
+........................................62000
+........................................63000
+........................................64000
+........................................65000
+........................................66000
+........................................67000
+..................java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredViewer, method: getSortedChildren signature: (Ledu/ubc/mirrors/mirages/Mirage;)Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected dataError on object InstanceHolograph[org.eclipse.ui.internal.progress.ProgressCanvasViewer]@1202407356()
+
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at edu.ubc.mirrors.holographs.ClassHolograph.makeMirage(ClassHolograph.java:263)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:74)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+......................68000
+........................................69000
+........................................70000
+........................................71000
+........................................72000
+.................Error on object InstanceHolograph[sun.reflect.GeneratedMethodAccessor1]@494572849()
+java.lang.RuntimeException: Error caught while generating bytecode for mirage.sun.reflect.GeneratedMethodAccessor1
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:172)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getMirageClass(ClassHolograph.java:221)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.loadClass(MirageClassLoader.java:184)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:356)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:238)
+	at edu.ubc.mirrors.holographs.ClassHolograph.makeMirage(ClassHolograph.java:263)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:74)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedMethodAccessor1.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@1206328924()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:298)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getBytecode(MirageClassLoader.java:280)
+	at edu.ubc.mirrors.mirages.MirageClassMirror.getBytecode(MirageClassMirror.java:43)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.getMirageClass(MirageClassLoader.java:166)
+	... 24 more
+.......................73000
+......................................Error on object InstanceHolograph[java.util.Vector]@320843827()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedMethodAccessor1.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@1206328924()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.isInterface(ClassHolograph.java:307)
+	at edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs.isInterface(ClassStubs.java:47)
+	at java.lang.Class.isInterface(Class.java)
+	at java.lang.Class.toString(Class.java:148)
+	at java.lang.String.valueOf(String.java:2902)
+	at java.lang.StringBuilder.append(StringBuilder.java:128)
+	at java.util.AbstractCollection.toString(AbstractCollection.java:450)
+	at java.util.Vector.toString(Vector.java:996)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Vector]@1835221030()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedConstructorAccessor2.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@543471090()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.isInterface(ClassHolograph.java:307)
+	at edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs.isInterface(ClassStubs.java:47)
+	at java.lang.Class.isInterface(Class.java)
+	at java.lang.Class.toString(Class.java:148)
+	at java.lang.String.valueOf(String.java:2902)
+	at java.lang.StringBuilder.append(StringBuilder.java:128)
+	at java.util.AbstractCollection.toString(AbstractCollection.java:450)
+	at java.util.Vector.toString(Vector.java:996)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Vector]@2142861663()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedConstructorAccessor1.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@258409539()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:407)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:348)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:287)
+	at edu.ubc.mirrors.holographs.ClassHolograph.isInterface(ClassHolograph.java:307)
+	at edu.ubc.mirrors.raw.nativestubs.java.lang.ClassStubs.isInterface(ClassStubs.java:47)
+	at java.lang.Class.isInterface(Class.java)
+	at java.lang.Class.toString(Class.java:148)
+	at java.lang.String.valueOf(String.java:2902)
+	at java.lang.StringBuilder.append(StringBuilder.java:128)
+	at java.util.AbstractCollection.toString(AbstractCollection.java:450)
+	at java.util.Vector.toString(Vector.java:996)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+..74000
+........................Error on object InstanceHolograph[java.util.Hashtable$Entry]@1338168139()
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@2088058512(value=null)java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.Error on object InstanceHolograph[java.util.Hashtable$Entry]@84283148(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1851225076(value=null)
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1175367126(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.Error on object InstanceHolograph[java.util.Hashtable$Entry]@1274975293(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@164985124(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@911678924(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1827586659(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.Error on object InstanceHolograph[java.util.Hashtable$Entry]@1202817715(value=null)java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1789811180(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.Error on object InstanceHolograph[java.util.Hashtable$Entry]@572021180(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1759818844(value=null)
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@367882574(value=null)
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@789174764(value=null)
+.Error on object InstanceHolograph[java.util.Hashtable$Entry]@2022507854(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1357118955(value=null)
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@2061471210(value=null)
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1990558700(value=null)
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1718096717(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1854613467(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1002260550(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.Error on object InstanceHolograph[java.util.Hashtable$Entry]@1401198816(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1959216608(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@903308087(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@2103072818(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.java.lang.InternalErrorError on object InstanceHolograph[java.util.Hashtable$Entry]@753195333(value=null)
+
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.Error on object InstanceHolograph[java.util.Hashtable$Entry]@681399083(value=null)
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@358962010(value=null)
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1925103953(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@1863784035(value=null)
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@238243829(value=null)
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@698038474(value=null)
+.Error on object InstanceHolograph[java.util.Hashtable$Entry]@590849518(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+Error on object InstanceHolograph[java.util.Hashtable$Entry]@2041575280(value=null)
+java.lang.InternalError
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:256)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.NullPointerException
+	at java.util.Hashtable$Entry.toString(Hashtable.java:1002)
+	at sun.reflect.GeneratedMethodAccessor21.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:75)
+	... 18 more
+.......75000
+........................................76000
+........................................77000
+........................................78000
+.............Error on object InstanceHolograph[org.eclipse.jface.viewers.TreeSelection]@1590113613()
+java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredSelection, method: toArray signature: ()Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at edu.ubc.mirrors.holographs.ClassHolograph.makeMirage(ClassHolograph.java:263)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:74)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+........Error on object InstanceHolograph[org.eclipse.jface.viewers.StructuredSelection]@532943342()
+Error on object InstanceHolograph[org.eclipse.jface.viewers.StructuredSelection]@2090974066()
+.java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredSelection, method: toArray signature: ()Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at edu.ubc.mirrors.holographs.ClassHolograph.makeMirage(ClassHolograph.java:263)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:74)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+java.lang.VerifyError: (class: mirage/org/eclipse/jface/viewers/StructuredSelection, method: toArray signature: ()Ledu/ubc/mirrors/ObjectArrayMirror;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at edu.ubc.mirrors.holographs.ClassHolograph.makeMirage(ClassHolograph.java:263)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:74)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+..................79000
+........................................80000
+.....Error on object InstanceHolograph[org.eclipse.ui.internal.layout.TrimLayout]@123745534()
+java.lang.VerifyError: (class: mirage/org/eclipse/ui/internal/layout/TrimLayout, method: getAreaIds signature: ()Ledu/ubc/mirrors/mirages/IntArrayMirage;) Bad access to protected data
+	at java.lang.Class.getDeclaredConstructors0(Native Method)
+	at java.lang.Class.privateGetDeclaredConstructors(Class.java:2404)
+	at java.lang.Class.getConstructor0(Class.java:2714)
+	at java.lang.Class.getConstructor(Class.java:1674)
+	at edu.ubc.mirrors.mirages.MirageClassLoader.makeMirage(MirageClassLoader.java:239)
+	at edu.ubc.mirrors.holographs.ClassHolograph.makeMirage(ClassHolograph.java:263)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:74)
+	at edu.ubc.mirrors.holographs.HolographInternalUtils.mirrorInvoke(HolographInternalUtils.java:101)
+	at edu.ubc.mirrors.mirages.Reflection.toString(Reflection.java:343)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:122)
+	at edu.ubc.mirrors.test.ToStringer.main(ToStringer.java:62)
+	at edu.ubc.mirrors.test.ToStringer.start(ToStringer.java:192)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+...................................81000
+........................................82000
+........................................83000
+........................................84000
+........................................85000
+........................................86000
+........................................87000
+........................................88000
+........................................89000
+........................................90000
+........................................91000
+........................................92000
+........................................93000
+........................................94000
+........................................95000
+........................................96000
+........................................97000
+........................................98000
+........................................99000
+........................................100000
+........................................101000
+........................................102000
+........................................103000
+........................................104000
+........................................105000
+........................................106000
+........................................107000
+........................................108000
+........................................109000
+........................................110000
+........................................111000
+........................................112000
+........................................113000
+........................................114000
+........................................115000
+........................................116000
+........................................117000
+........................................118000
+........................................119000
+........................................120000
+........................................121000
+........................................122000
+........................................123000
+........................................124000
+........................................125000
+........................................126000
+........................................127000
+........................................128000
+........................................129000
+........................................130000
+........................................131000
+........................................132000
+........................................133000
+........................................134000
+........................................135000
+........................................136000
+........................................137000
+........................................138000
+........................................139000
+........................................140000
+........................................141000
+........................................142000
+........................................143000
+........................................144000
+........................................145000
+........................................146000
+........................................147000
+........................................148000
+........................................149000
+........................................150000
+........................................151000
+........................................152000
+........................................153000
+........................................154000
+........................................155000
+........................................156000
+........................................157000
+........................................158000
+........................................159000
+........................................160000
+........................................161000
+........................................162000
+........................................163000
+........................................164000
+........................................165000
+........................................166000
+........................................167000
+........................................168000
+........................................169000
+........................................170000
+........................................171000
+........................................172000
+........................................173000
+........................................174000
+........................................175000
+........................................176000
+........................................177000
+........................................178000
+........................................179000
+........................................180000
+........................................181000
+........................................182000
+........................................183000
+........................................184000
+........................................185000
+........................................186000
+........................................187000
+........................................188000
+........................................189000
+........................................190000
+........................................191000
+........................................192000
+........................................193000
+........................................194000
+........................................195000
+........................................196000
+........................................197000
+........................................198000
+........................................199000
+........................................200000
+........................................201000
+........................................202000
+........................................203000
+........................................204000
+........................................205000
+........................................206000
+........................................207000
+........................................208000
+........................................209000
+........................................210000
+...................................
+Num objects toString-ed: 210896
+Errors: 55
+Total time: 776032
+Average time per object: 3.6796904
+Max time per object: 20498
+Objects taking more than 1/2 second (159):
+Average string length: 109.45597
+Average time per character: 0.033617996
+Max time per character: 0.9444444
+Count: 5475
+Total: 779690
+Average: 142

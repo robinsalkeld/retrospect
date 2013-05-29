@@ -150,7 +150,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     public List<ObjectMirror> getInstances() {
         List<ObjectMirror> result = new ArrayList<ObjectMirror>();
         for (ObjectReference or : refType.instances(0)) {
-            result.add((InstanceMirror)vm.makeMirror(or));
+            result.add(vm.makeMirror(or));
         }
         return result;
     }

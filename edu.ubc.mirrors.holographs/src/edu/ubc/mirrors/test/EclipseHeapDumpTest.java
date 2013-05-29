@@ -43,7 +43,6 @@ public class EclipseHeapDumpTest implements IApplication {
 
     public static void main(String[] args) throws Exception {
         String snapshotPath = args[0];
-        MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
         
 //        Bundle thisBundle = FrameworkUtil.getBundle(EclipseHeapDumpTest.class);
 //        thisBundle.start();

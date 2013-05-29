@@ -321,6 +321,9 @@ public class Reflection {
         return result;
     }
     
+    private static final Map<VirtualMachineMirror, MethodMirror> TO_STRING_METHODS =
+                 new HashMap<VirtualMachineMirror, MethodMirror>();
+    
     public static String toString(ObjectMirror mirror) {
         return toString(mirror, mirror.getClassMirror().getVM().getThreads().get(0));
     }    
@@ -331,8 +334,12 @@ public class Reflection {
         }
         
         VirtualMachineMirror vm = mirror.getClassMirror().getVM();
-        ClassMirror vmObjectClass = vm.findBootstrapClassMirror(Object.class.getName());
-        MethodMirror toStringMethod = HolographInternalUtils.getMethod(vmObjectClass, "toString");
+        MethodMirror toStringMethod = TO_STRING_METHODS.get(vm);
+        if (toStringMethod == null) {
+            ClassMirror vmObjectClass = vm.findBootstrapClassMirror(Object.class.getName());
+            toStringMethod = HolographInternalUtils.getMethod(vmObjectClass, "toString");
+            TO_STRING_METHODS.put(vm, toStringMethod);
+        }
         InstanceMirror stringMirror = (InstanceMirror)HolographInternalUtils.mirrorInvoke(thread, toStringMethod, mirror);
         return getRealStringForMirror(stringMirror);
     }

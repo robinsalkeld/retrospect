@@ -234,8 +234,10 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     int identityHashCode(IObject object) {
-        // TODO-RS
-        System.out.println(object.getObjectAddress());
-        throw new UnsupportedOperationException();
+        return System.identityHashCode(object);
+    }
+    
+    public ISnapshot getSnapshot() {
+        return snapshot;
     }
 }

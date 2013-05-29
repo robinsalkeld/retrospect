@@ -9,6 +9,7 @@ import java.net.URLClassLoader;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -385,40 +386,89 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     private Boolean initialized = null;
+    private boolean initializedResolved = false;
     
     @Override
     public boolean initialized() {
         try {
             return super.initialized();
         } catch (UnsupportedOperationException e) {
+            resolveInitialized();
             if (initialized == null) {
-                if (isArray()) {
-                    initialized = true;
-                } else {
-                    initialized = inferInitialized();
-                }
+                throw new InternalError("Unable to infer initialization status of class: " + this);
             }
             return initialized;
         }
     }
 
+    Boolean resolveInitialized() {
+        try {
+            return super.initialized();
+        } catch (UnsupportedOperationException e) {
+            // Fall through and infer
+        }
+        
+        if (!initializedResolved) {
+            initialized = inferInitialized();
+            initializedResolved = true;
+            
+            if (initialized != null) {
+                setInitialized(initialized);
+            }
+        }
+        return initialized;
+    }
+    
+    private void setInitialized(boolean initialized) {
+        if (initializedResolved) {
+            if (this.initialized != initialized) {
+                throw new InternalError("Inconsistent initialization inference on class " + getClassName() + ": " + this.initialized + " != " + initialized);
+            }
+            return;
+        }
+        
+        this.initialized = initialized;
+        this.initializedResolved = true;
+        
+        if (initialized) {
+            // Propogate
+            BytecodeClassMirror bytecodeClassMirror = (BytecodeClassMirror)getBytecodeMirror();
+            StaticsInfo classInitInfo = bytecodeClassMirror.classInitInfo();
+            for (String touchedClass : classInitInfo.touchedClasses()) {
+                ClassMirror touchedClassMirror = HolographInternalUtils.loadClassMirrorInternal(this, touchedClass.replace('/', '.'));
+                if (touchedClassMirror instanceof ClassHolograph) {
+                    ((ClassHolograph)touchedClassMirror).setInitialized(true);
+                }
+            }
+        }
+    }
+    
     private static final Set<String> idempotentClassInits = new HashSet<String>(Arrays.asList(
             Modifier.class.getName(),
-            PatternSyntaxException.class.getName(),
+//            PatternSyntaxException.class.getName(),
             URLClassLoader.class.getName(),
             SecureClassLoader.class.getName(),
-            "org.eclipse.osgi.internal.permadmin.EquinoxSecurityManager",
-            "java.lang.invoke.MethodHandleNatives",
-            "sun.reflect.UnsafeStaticFieldAccessorImpl",
-            // Hits illegal native methods anyway - this makes the classes untouchable
-            "sun.nio.ch.NativeThread",
-            "sun.reflect.ConstantPool",
-            "java.lang.Compiler",
-            "org.eclipse.swt.internal.cocoa.CGRect",
-            // This one would be solved via inter-class analysis
-            "org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor"));
+//            "org.eclipse.core.internal.runtime.CompatibilityHelper",
+//            "com.ibm.icu.impl.ICUService",
+//            "org.eclipse.ui.internal.misc.Policy",
+            "org.eclipse.equinox.weaving.hooks.AbstractWeavingHook"
+//            "org.eclipse.osgi.internal.permadmin.EquinoxSecurityManager",
+//            "java.lang.invoke.MethodHandleNatives",
+//            "sun.reflect.UnsafeStaticFieldAccessorImpl",
+//            // Hits illegal native methods anyway - this makes the classes untouchable
+//            "sun.nio.ch.NativeThread",
+//            "sun.reflect.ConstantPool",
+//            "java.lang.Compiler",
+//            "org.eclipse.swt.internal.cocoa.CGRect",
+//            // This one would be solved via inter-class analysis
+//            "org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor"
+            ));
     
-    private boolean inferInitialized() {
+    private Boolean inferInitialized() {
+        if (isArray()) {
+            return true;
+        }
+     
         BytecodeClassMirror bytecodeClassMirror = (BytecodeClassMirror)getBytecodeMirror();
         
         // TODO-RS: Make this pluggable
@@ -480,13 +530,14 @@ public class ClassHolograph extends WrappingClassMirror {
         // TODO-RS: Apply the contra-positive too: if another class has been initialized and touches this class,
         // this class must be initialized.
         for (String touchedClass : classInitInfo.touchedClasses()) {
-            ClassMirror touchedClassMirror = HolographInternalUtils.loadClassMirrorInternal(this, touchedClass.replace('/', '.'));
-            if (!touchedClassMirror.initialized()) {
+            ClassHolograph touchedClassMirror = (ClassHolograph)HolographInternalUtils.loadClassMirrorInternal(this, touchedClass.replace('/', '.'));
+            Boolean touchedInitialized = touchedClassMirror.resolveInitialized();
+            if (touchedInitialized != null && touchedInitialized.booleanValue() == false) {
                 return false;
             }
         }
         
-        throw new InternalError("Unable to infer initialization status of class: " + this);
+        return null;
     }
     
     /**

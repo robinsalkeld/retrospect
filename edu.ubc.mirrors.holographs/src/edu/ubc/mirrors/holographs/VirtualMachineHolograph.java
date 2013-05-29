@@ -12,8 +12,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.jar.JarFile;
 import java.util.zip.Inflater;
@@ -50,6 +52,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.MirageVirtualMachine;
@@ -63,6 +66,8 @@ import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class VirtualMachineHolograph extends WrappingVirtualMachine {
 
+    private final File bytecodeCacheDir;
+    
     private final MirageVirtualMachine mirageVM;
     
     // TODO-RS: Expose this more generally?
@@ -89,6 +94,15 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         super(wrappedVM);
         if (MirageClassLoader.debug) {
             System.out.println("Creating VM holograph...");
+        }
+        
+        if (wrappedVM instanceof HeapDumpVirtualMachineMirror) {
+            HeapDumpVirtualMachineMirror hdVM = (HeapDumpVirtualMachineMirror)wrappedVM;
+            String snapshotPath = hdVM.getSnapshot().getSnapshotInfo().getPath();
+            int lastDot = snapshotPath.lastIndexOf('.');
+            bytecodeCacheDir = new File(snapshotPath.substring(0, lastDot) + "_hologram_classes");
+        } else {
+            bytecodeCacheDir = null;
         }
         
         this.mirageVM = new MirageVirtualMachine(this);
@@ -393,11 +407,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             throw new InternalError("Couldn't load bytecode for class " + resourceName + " from loader: " + holographLoader);
         }
         
-        System.out.println("Loaded bytecode stream for " + holographClass.getClassName() + ": " + timer.lap());
+//        System.out.println("Loaded bytecode stream for " + holographClass.getClassName() + ": " + timer.lap());
         byte[] result = readBytecodeFromStream(thread, holographClass, stream);
         
         ThreadHolograph.lowerMetalevel();
-        System.out.println("Loaded bytecode for " + holographClass.getClassName() + ": " + timer.stop());
+//        System.out.println("Loaded bytecode for " + holographClass.getClassName() + ": " + timer.stop());
         return result;
     }
     
@@ -546,5 +560,44 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     @Override
     public FrameMirror wrapFrameMirror(WrappingVirtualMachine vm, FrameMirror frame) {
         return new FrameHolograph(vm, frame);
+    }
+    
+    public File getBytecodeCacheDir() {
+        return bytecodeCacheDir;
+    }
+    
+    public void prepare() {
+        ThreadMirror thread = getThreads().get(0);
+        Reflection.withThread(thread, new Callable<Void>() {
+           @Override
+            public Void call() throws Exception {
+               Stopwatch sw = new Stopwatch();
+               sw.start();
+               int classCount = 0;
+               Set<String> errors = new HashSet<String>();
+               for (ClassMirror klass : findAllClasses()) {
+                   ClassHolograph classHolograph = (ClassHolograph)klass;
+                   try {
+                    classHolograph.getMirageClass(true);
+                    classHolograph.getMirageClass(false);
+                    classHolograph.resolveInitialized();
+                } catch (Throwable e) {
+                    // TODO: for now
+                    e.printStackTrace();
+                    errors.add(klass.getClassName());
+                }
+                classCount++;
+                   System.out.print(".");
+                   if (classCount % 40 == 0) {
+                       System.out.println(classCount);
+                   }
+               }
+               long time = sw.stop();
+               System.out.println();
+               System.out.println("Prepared " + classCount + " classes in " + time + "ms");
+               System.out.println("Errors on classes: " + errors);
+               return null;
+            } 
+        });
     }
 }

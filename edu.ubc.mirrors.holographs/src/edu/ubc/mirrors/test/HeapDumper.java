@@ -31,6 +31,7 @@ public class HeapDumper {
         final VmInfo theInfo = info;
         
         final File preferredLocation = new File("/Users/robinsalkeld/Documents/UBC/Code/snapshots/" + pid + ".hprof/");
+        preferredLocation.delete();
         
 //        Process p = Runtime.getRuntime().exec("jmap -dump:format=b,file=" + preferredLocation.getAbsolutePath() + " " + pid);
 //        System.out.println(p.waitFor());

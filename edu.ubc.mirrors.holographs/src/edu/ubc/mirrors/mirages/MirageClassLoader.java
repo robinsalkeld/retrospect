@@ -47,13 +47,6 @@ import edu.ubc.mirrors.test.Breakpoint;
 
 public class MirageClassLoader extends ClassLoader {
     public static String traceClass = null;
-    public static File traceDir;
-    static {
-        String path = System.getProperty("edu.ubc.mirrors.mirages.tracepath");
-        if (path != null) {
-            traceDir = new File(path);
-        }
-    }
     public static boolean debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
     public static boolean preverify = Boolean.getBoolean("edu.ubc.mirrors.mirages.preverify");
     
@@ -95,8 +88,8 @@ public class MirageClassLoader extends ClassLoader {
         this.mirageClassMirrorLoader = new MirageClassMirrorLoader(vm.getMirageVM(), new NativeClassMirrorLoader(getParent()), originalLoader);
     }
     
-    public static File createClassFile(int index, String internalName) {
-        File classFile = new File(new File(traceDir, index + ""), internalName);
+    public File createClassFile(int index, String internalName) {
+        File classFile = new File(new File(vm.getBytecodeCacheDir(), index + ""), internalName);
         createDirRecursive(classFile.getParentFile());
         return classFile;
     }
@@ -287,7 +280,7 @@ public class MirageClassLoader extends ClassLoader {
         byte[] originalBytecode = classMirrorForCacheKey.getBytecode();
         String originalInternalName = MirageClassGenerator.getOriginalInternalClassName(classMirrorForCacheKey.getClassName().replace('.', '/'));
         int cacheIndex = 0;
-        if (traceDir != null) {
+        if (vm.getBytecodeCacheDir() != null) {
             cacheIndex = findCacheIndex(originalInternalName, originalBytecode);
             byte[] result = readFromBytecodeCache(cacheIndex, internalName);
             if (result != null) {
@@ -318,7 +311,7 @@ public class MirageClassLoader extends ClassLoader {
         try {
             byte[] result = generateBytecode(cacheIndex, mirageClassMirror);
             
-            if (traceDir != null) {
+            if (vm.getBytecodeCacheDir() != null) {
         	writeToBytecodeCache(cacheIndex, internalName, result);
             }
             
@@ -338,7 +331,7 @@ public class MirageClassLoader extends ClassLoader {
         }
     }
     
-    private static int findCacheIndex(String className, byte[] bytecode) {
+    private int findCacheIndex(String className, byte[] bytecode) {
         int cacheIndex = 0;
         if (bytecode == null) {
             return cacheIndex;
@@ -356,7 +349,7 @@ public class MirageClassLoader extends ClassLoader {
         return cacheIndex;
     }
     
-    private static byte[] readFromBytecodeCache(int cacheIndex, String className) {
+    private byte[] readFromBytecodeCache(int cacheIndex, String className) {
 	try {
 	    File classFile = createClassFile(cacheIndex, className + ".class");
 	    if (classFile.exists()) {
@@ -369,7 +362,7 @@ public class MirageClassLoader extends ClassLoader {
         }
     }
     
-    private static void writeToBytecodeCache(int cacheIndex, String className, byte[] bytecode) {
+    private void writeToBytecodeCache(int cacheIndex, String className, byte[] bytecode) {
 	try {
 	    OutputStream classFile = new FileOutputStream(createClassFile(cacheIndex, className + ".class"));
             classFile.write(bytecode);
@@ -399,7 +392,7 @@ public class MirageClassLoader extends ClassLoader {
         if (preverify) {
             visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, false, true);
         }
-        if (traceDir != null) {
+        if (vm.getBytecodeCacheDir() != null) {
             File txtFile = createClassFile(cacheIndex, internalName + ".txt");
             PrintWriter textFileWriter;
             try {
@@ -411,7 +404,7 @@ public class MirageClassLoader extends ClassLoader {
         }
         visitor = new MirageClassGenerator(original, visitor);
         visitor = new RemappingClassAdapter(visitor, MirageClassGenerator.REMAPPER);
-        if (traceDir != null) {
+        if (vm.getBytecodeCacheDir() != null) {
             File txtFile = createClassFile(cacheIndex, internalName + ".afterframes.txt");
             PrintWriter textFileWriter;
             try {
@@ -428,7 +421,7 @@ public class MirageClassLoader extends ClassLoader {
             new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
         }
         visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true, false);
-        if (traceDir != null) {
+        if (vm.getBytecodeCacheDir() != null) {
             File txtFile = createClassFile(cacheIndex, internalName + ".original.txt");
             PrintWriter textFileWriter;
             try {

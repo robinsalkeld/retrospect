@@ -3,21 +3,14 @@ package edu.ubc.mirrors.test;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.mat.SnapshotException;
-import org.eclipse.mat.internal.acquire.HeapDumpProviderDescriptor;
-import org.eclipse.mat.internal.acquire.HeapDumpProviderRegistry;
-import org.eclipse.mat.internal.acquire.VmInfoDescriptor;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
-import org.eclipse.mat.snapshot.acquire.IHeapDumpProvider;
-import org.eclipse.mat.snapshot.acquire.VmInfo;
-import org.eclipse.mat.util.ConsoleProgressListener;
 import org.eclipse.mat.util.VoidProgressListener;
 
 import com.sun.jdi.ClassObjectReference;
@@ -28,23 +21,24 @@ import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.LocatableEvent;
-import com.sun.jdi.event.MethodEntryEvent;
+import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.MethodEntryRequest;
 
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.mirages.Stopwatch;
 
 public class LiveToStringer implements IApplication {
     public static void main(String[] args) throws Exception {
-        final ConsoleProgressListener listener = new ConsoleProgressListener(System.out);
         final VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
+        System.out.println("Connected.");
         
         EventSet eventSet = pauseAndGetThread(jdiVM);
         LocatableEvent event = (LocatableEvent)eventSet.iterator().next();
@@ -53,16 +47,12 @@ public class LiveToStringer implements IApplication {
         final JDIVirtualMachineMirror liveVM = new JDIVirtualMachineMirror(jdiVM);
         
         ThreadMirror threadMirror = (ThreadMirror)liveVM.makeMirror(thread);
-//        ToStringer.toStringAllTheObjects(liveVM, threadMirror);
-        
-//      final VirtualMachineHolograph holographicVM = new VirtualMachineHolograph(vm, Reflection.getStandardMappedFiles());
-//        ThreadHolograph threadHolograph = (ThreadHolograph)holographicVM.getWrappedMirror(threadMirror);
+//        final VirtualMachineHolograph holograpOnLiveVM = new VirtualMachineHolograph(liveVM, Reflection.getStandardMappedFiles());
+//        final ThreadHolograph threadHolograph = (ThreadHolograph)holograpOnLiveVM.getWrappedMirror(threadMirror);
 //        Reflection.withThread(threadHolograph, new Callable<Object>() {
 //            @Override
 //            public Object call() throws Exception {
-//                ClassMirror barClass = vm.findAllClasses(Bar.class.getName(), false).get(0);
-//                ObjectMirror bar = barClass.getInstances().get(0);
-//                System.out.println(bar.identityHashCode());
+                ToStringer.toStringAllTheObjects(liveVM, threadMirror);
 //                return null;
 //            }
 //        });
@@ -72,13 +62,11 @@ public class LiveToStringer implements IApplication {
         eventSet.resume();
         File snapshotPath = HeapDumper.dumpHeap(pid, new VoidProgressListener());
         
-        MirageClassLoader.traceDir = new File(System.getProperty("edu.ubc.mirrors.mirages.tracepath"));
-        
         // Open memory snapshot
         ISnapshot snapshot = SnapshotFactory.openSnapshot(
                 snapshotPath, 
                 Collections.<String, String>emptyMap(), 
-                listener);
+                new VoidProgressListener());
         
         // Create an instance of the mirrors API backed by the snapshot
         HeapDumpVirtualMachineMirror heapDumpVM = new HeapDumpVirtualMachineMirror(snapshot);
@@ -87,6 +75,8 @@ public class LiveToStringer implements IApplication {
         Map<String, String> mappedFiles = Collections.singletonMap("/", "/");
         
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(heapDumpVM, mappedFiles);
+
+        holographVM.prepare();
         
         ToStringer.toStringAllTheObjects(holographVM, holographVM.getThreads().get(0));
     }
@@ -102,6 +92,7 @@ public class LiveToStringer implements IApplication {
     
     private static EventSet pauseAndGetThread(final VirtualMachine jdiVM) throws InterruptedException {
         MethodEntryRequest mer = jdiVM.eventRequestManager().createMethodEntryRequest();
+        mer.setSuspendPolicy(EventRequest.SUSPEND_ALL);
         mer.enable();
         
         final EventSet es = jdiVM.eventQueue().remove();

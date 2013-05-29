@@ -14,9 +14,6 @@ public class Bar {
     private static final Class<?> VOID_TYPE = Void.TYPE;
     
     public static void main(String[] args) throws InterruptedException {
-        System.out.println(Long.toBinaryString(5514902520l));
-        System.out.println(Integer.toBinaryString(1607546255));
-        
         Thread deadThread = new Thread();
         
         Thread[] threads = new Thread[Thread.activeCount() + 5];
