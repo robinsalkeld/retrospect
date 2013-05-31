@@ -3,6 +3,7 @@ package edu.ubc.mirrors.raw.nativestubs.java.security;
 
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
@@ -11,6 +12,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
+import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
@@ -21,12 +23,18 @@ public class AccessControllerStubs extends NativeStubs {
 	super(klass);
     }
 
+    private static MethodHandle PA_RUN_HANDLE = new MethodHandle() {
+        protected void methodCall() throws Throwable {
+            ((PrivilegedAction<?>)null).run();
+        }
+    };
+    
     public ObjectMirror doPrivileged(final InstanceMirror action) throws Throwable {
         try {
             return (ObjectMirror)AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
                 @Override
                 public Object run() throws Exception {
-                    return action.getClass().getMethod("run").invoke(action);
+                    return Reflection.invokeMethodHandle(action, PA_RUN_HANDLE);
                 }
             });
         } catch (PrivilegedActionException t) {

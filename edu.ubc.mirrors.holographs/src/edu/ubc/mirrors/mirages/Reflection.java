@@ -580,13 +580,14 @@ public class Reflection {
     public static Type getMirrorType(Type type) {
         switch (type.getSort()) {
         case Type.OBJECT: {
-            if (type.getDescriptor().equals("java/lang/Object")) {
+            String internalName = type.getInternalName();
+            if (internalName.equals("java/lang/Object")) {
                 return Type.getType(ObjectMirror.class);
-            } else if (type.getDescriptor().equals("java/lang/Class")) {
+            } else if (internalName.equals("java/lang/Class")) {
                 return Type.getType(ClassMirror.class);
-            } else if (type.getDescriptor().equals("java/lang/ClassLoader")) {
+            } else if (internalName.equals("java/lang/ClassLoader")) {
                 return Type.getType(ClassMirrorLoader.class);
-            } else if (type.getDescriptor().equals("java/lang/Thread")) {
+            } else if (internalName.equals("java/lang/Thread")) {
                 return Type.getType(ThreadMirror.class);
             } else {
                 return Type.getType(InstanceMirror.class);

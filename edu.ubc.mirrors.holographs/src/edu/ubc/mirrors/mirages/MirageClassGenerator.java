@@ -448,7 +448,7 @@ public class MirageClassGenerator extends ClassVisitor {
             Type exceptionType = Type.getType(InternalError.class); 
             generator.anew(exceptionType);
             generator.dup();
-            String message = "Unsupported native method: " + this.name + "#" + name + desc;
+            String message = "Unsupported native method: " + this.name + "#" + methodDesc.getName() + methodDesc.getDescriptor();
             generator.aconst(message);
             generator.invokespecial(exceptionType.getInternalName(), 
                                     "<init>", 
@@ -467,15 +467,18 @@ public class MirageClassGenerator extends ClassVisitor {
         Type methodType = Type.getMethodType(desc);
         Type[] argumentTypes = methodType.getArgumentTypes();
         List<Type> stubArgumentTypes = new ArrayList<Type>(argumentTypes.length + 1);
-        stubArgumentTypes.add(Type.getType(Class.class));
         if ((Opcodes.ACC_STATIC & access) == 0) {
-            stubArgumentTypes.add(getMirrorType(Type.getObjectType(owner)));
+            stubArgumentTypes.add(getMirrorTypeForMirageType(Type.getObjectType(owner)));
         }
         for (int i = 0; i < argumentTypes.length; i++) {
-            stubArgumentTypes.add(getMirrorType(argumentTypes[i]));
+            stubArgumentTypes.add(getMirrorTypeForMirageType(argumentTypes[i]));
         }
-        Type stubReturnType = getMirrorType(methodType.getReturnType());
+        Type stubReturnType = getMirrorTypeForMirageType(methodType.getReturnType());
         return new org.objectweb.asm.commons.Method(name, stubReturnType, stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
+    }
+    
+    public static Type getMirrorTypeForMirageType(Type mirageType) {
+        return getMirrorType(getOriginalType(mirageType));
     }
     
     public void generateNativeThunk(MethodVisitor visitor, String owner, String desc, Method method) {

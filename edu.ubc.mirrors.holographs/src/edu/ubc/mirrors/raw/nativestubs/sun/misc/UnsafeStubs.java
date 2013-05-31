@@ -201,7 +201,7 @@ public class UnsafeStubs extends NativeStubs {
         return ClassLoaderStubs.defineClass(classLoader, className, b, off, len, pd, null);
     }
     
-    public InstanceMirror allocateInstance(InstanceMirror unsafe, ClassMirror classMirror) {
+    public ObjectMirror allocateInstance(InstanceMirror unsafe, ClassMirror classMirror) {
         return classMirror.newRawInstance();
     }
 }

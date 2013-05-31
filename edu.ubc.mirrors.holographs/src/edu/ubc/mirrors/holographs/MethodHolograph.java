@@ -72,15 +72,18 @@ public class MethodHolograph implements MethodMirror {
                 mirageArgs[i] = ClassHolograph.makeMirage(args[i]);
             }
             Object mirageObj = ClassHolograph.makeMirage(obj);
-            Object result = mirageClassMethod.invoke(mirageObj, mirageArgs);
-            // Account for the fact that toString() has to return a real String here
-            if (result instanceof String) {
-                return Reflection.makeString(klass.getVM(), (String)result);
-            } else {
-                return ClassHolograph.unwrapMirage(result);
+            try {
+                Object result = mirageClassMethod.invoke(mirageObj, mirageArgs);
+                // Account for the fact that toString() has to return a real String here
+                if (result instanceof String) {
+                    return Reflection.makeString(klass.getVM(), (String)result);
+                } else {
+                    return ClassHolograph.unwrapMirage(result);
+                }
+            
+            } catch (InvocationTargetException e) {
+                throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
             }
-        } catch (InvocationTargetException e) {
-            throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
         } finally {
             threadHolograph.exitHologramExecution();
         }

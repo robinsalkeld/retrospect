@@ -12,6 +12,7 @@ import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
+import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class ThrowableStubs extends NativeStubs {
@@ -22,7 +23,9 @@ public class ThrowableStubs extends NativeStubs {
 
     public InstanceMirror fillInStackTrace(InstanceMirror throwable) {
 	try {
-	    throwable.getClass().getMethod("superFillInStackTrace").invoke(throwable);
+	    // TODO-RS: The abstraction leaks a bit here since Throwable is a tricky special case.
+	    Object mirage = ObjectMirage.make(throwable);
+	    mirage.getClass().getMethod("superFillInStackTrace").invoke(mirage);
 	} catch (IllegalAccessException e) {
 	    throw new IllegalAccessError(e.getMessage());
 	} catch (InvocationTargetException e) {
