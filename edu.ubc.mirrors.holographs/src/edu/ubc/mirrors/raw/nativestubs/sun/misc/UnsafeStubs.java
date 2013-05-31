@@ -7,6 +7,7 @@ import java.nio.ByteOrder;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
@@ -15,8 +16,6 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.NativeStubs;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassLoaderStubs;
 
@@ -26,24 +25,27 @@ public class UnsafeStubs extends NativeStubs {
 	super(klass);
     }
 
-    public Mirage getObject(Mirage unsafe, Mirage object, int offset) {
+    public ObjectMirror getObject(InstanceMirror unsafe, ObjectMirror object, int offset) {
+        // TODO-RS: Will be different when concurrent access is supported.
         return getObjectVolatile(unsafe, object, offset);
     }
     
-    public Mirage getObject(Mirage unsafe, Mirage object, long offset) {
+    public ObjectMirror getObject(InstanceMirror unsafe, ObjectMirror object, long offset) {
+        // TODO-RS: Will be different when concurrent access is supported.
         return getObjectVolatile(unsafe, object, offset);
     }
     
-    public Mirage getObjectVolatile(Mirage unsafe, Mirage object, long offset) {
-        ObjectArrayMirror array = (ObjectArrayMirror)object.getMirror();
-        // TODO-RS: Need to be much more careful about this!
-        ObjectMirror element = array.get((int)((offset - 16) / 4));
-        return ObjectMirage.make(element);
+    public ObjectMirror getObjectVolatile(InstanceMirror unsafe, ObjectMirror object, long offset) {
+        ObjectArrayMirror array = (ObjectArrayMirror)object;
+        // TODO-RS: Here (and several other similar places in this class)
+        // these offset calculations need to be verified.
+        return array.get((int)((offset - 16) / 4));
     }
     
-    public int getInt(Mirage unsafe, Mirage object, long offset) {
-        ArrayMirror array = (ArrayMirror)object.getMirror();
-        // TODO-RS: Need to be more careful about offset calculations!
+    public int getInt(InstanceMirror unsafe, ObjectMirror object, long offset) {
+        ArrayMirror array = (ArrayMirror)object;
+        // TODO-RS: Just supporting enough for the common usage of this function
+        // in ConcurrentHashMap - to be completed.
         String className = array.getClassMirror().getClassName();
         if (className.equals("[I")) {
             int index = (int)((offset - 16) / 4);
@@ -62,9 +64,10 @@ public class UnsafeStubs extends NativeStubs {
         }
     }
     
-    public void putInt(Mirage unsafe, Mirage object, long offset, int value) {
-        ArrayMirror array = (ArrayMirror)object.getMirror();
-        // TODO-RS: Need to be much more careful about this!
+    public void putInt(InstanceMirror unsafe, ObjectMirror object, long offset, int value) {
+        ArrayMirror array = (ArrayMirror)object;
+        // TODO-RS: Just supporting enough for the common usage of this function
+        // in ConcurrentHashMap - to be completed.
         String className = array.getClassMirror().getClassName();
         if (className.equals("[I")) {
             int index = (int)((offset - 16) / 4);
@@ -83,23 +86,21 @@ public class UnsafeStubs extends NativeStubs {
         }
     }
     
-    public void putOrderedObject(Mirage unsafe, Mirage object, long offset, Mirage element) throws IllegalAccessException, NoSuchFieldException {
-        ObjectMirror mirror = object.getMirror();
+    public void putOrderedObject(InstanceMirror unsafe, ObjectMirror mirror, long offset, ObjectMirror element) throws IllegalAccessException, NoSuchFieldException {
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
             // TODO-RS: Need to be much more careful about this!
-            array.set((int)((offset - 16) / 4), ObjectMirage.getMirror(element));
+            array.set((int)((offset - 16) / 4), element);
         } else if (mirror instanceof InstanceMirror) {
             InstanceMirror instance = (InstanceMirror)mirror;
             FieldMirror field = fieldForOffset(instance, offset);
-            instance.set(field, ObjectMirage.getMirror(element));
+            instance.set(field, element);
         } else {
             throw new InternalError();
         }
     }
     
-    public long objectFieldOffset(Mirage unsafe, Mirage field) {
-        InstanceMirror fieldMirror = (InstanceMirror)field.getMirror();
+    public long objectFieldOffset(InstanceMirror unsafe, InstanceMirror fieldMirror) {
         ClassMirror klass = (ClassMirror)HolographInternalUtils.getField(fieldMirror, "clazz");
         String fieldName = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(fieldMirror, "name"));
         long fieldOffset = 12;
@@ -154,15 +155,14 @@ public class UnsafeStubs extends NativeStubs {
         throw new InternalError("offset overflow???");
     }
     
-    public boolean compareAndSwapObject(Mirage unsafe, Mirage object, long offset, Mirage oldValue, Mirage newValue) throws IllegalAccessException, NoSuchFieldException {
-        ObjectMirror mirror = object.getMirror();
+    public boolean compareAndSwapObject(InstanceMirror unsafe, ObjectMirror mirror, long offset, ObjectMirror oldValue, ObjectMirror newValue) throws IllegalAccessException, NoSuchFieldException {
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
             // TODO-RS: Need to be much more careful about this!
             int index = (int)((offset - 16) / 4);
             ObjectMirror current = array.get(index);
-            if (current == ObjectMirage.getMirror(oldValue)) {
-                array.set(index, newValue.getMirror());
+            if (current == oldValue) {
+                array.set(index, newValue);
                 return true;
             } else {
                 return false;
@@ -172,8 +172,8 @@ public class UnsafeStubs extends NativeStubs {
             FieldMirror field = fieldForOffset(instance, offset);
 
             ObjectMirror current = instance.get(field);
-            if (current == ObjectMirage.getMirror(oldValue)) {
-                instance.set(field, newValue.getMirror());
+            if (current == oldValue) {
+                instance.set(field, newValue);
                 return true;
             } else {
                 return false;
@@ -183,27 +183,25 @@ public class UnsafeStubs extends NativeStubs {
         }
     }
     
-    public long getLong(Mirage unsafe, long address) {
+    public long getLong(InstanceMirror unsafe, long address) {
         // TODO-RS: Need to figure this one out...
         return 0;
     }
-    public void putLong(Mirage unsafe, long address, long value) {
+    public void putLong(InstanceMirror unsafe, long address, long value) {
         // TODO-RS: Need to figure this one out...
     }
     
-    public Mirage defineClass(Mirage unsafe, Mirage internalName, Mirage b, int off, int len,
-            Mirage classLoader, Mirage pd) {
+    public ClassMirror defineClass(InstanceMirror unsafe, InstanceMirror internalName, ByteArrayMirror b, int off, int len,
+            ClassMirrorLoader classLoader, InstanceMirror pd) {
 
-        String realInternalName = Reflection.getRealStringForMirror((InstanceMirror)internalName.getMirror());
+        String realInternalName = Reflection.getRealStringForMirror(internalName);
         String realClassName = realInternalName.replace('/', '.');
-        Mirage className = ObjectMirage.make(Reflection.makeString(getVM(), realClassName));
+        InstanceMirror className = Reflection.makeString(getVM(), realClassName);
         
         return ClassLoaderStubs.defineClass(classLoader, className, b, off, len, pd, null);
     }
     
-    public Mirage allocateInstance(Mirage unsafe, Mirage klass) {
-        ClassMirror classMirror = (ClassMirror)klass.getMirror();
-        InstanceMirror result = classMirror.newRawInstance();
-        return ObjectMirage.make(result);
+    public InstanceMirror allocateInstance(InstanceMirror unsafe, ClassMirror classMirror) {
+        return classMirror.newRawInstance();
     }
 }

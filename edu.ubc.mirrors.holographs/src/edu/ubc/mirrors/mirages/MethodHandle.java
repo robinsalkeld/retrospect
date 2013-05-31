@@ -19,11 +19,10 @@ import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public abstract class MethodHandle {
-    public static MethodHandle MIRAGE_GET_MIRROR = new MethodHandle() {
-        Mirage mirage;
+    public static MethodHandle OBJECT_MIRAGE_GET_MIRROR = new MethodHandle() {
         @Override 
         public void methodCall() {
-            mirage.getMirror();
+            ObjectMirage.getMirror(null);
         }
     };
     

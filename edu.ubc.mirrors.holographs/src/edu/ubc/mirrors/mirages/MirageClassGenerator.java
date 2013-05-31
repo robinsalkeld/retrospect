@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.mirages;
 
+import static edu.ubc.mirrors.mirages.Reflection.getMirrorType;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -434,18 +436,7 @@ public class MirageClassGenerator extends ClassVisitor {
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
-        Type methodType = Type.getMethodType(desc);
-        Type[] argumentTypes = methodType.getArgumentTypes();
-        List<Type> stubArgumentTypes = new ArrayList<Type>(argumentTypes.length + 1);
-        if ((Opcodes.ACC_STATIC & access) == 0) {
-            stubArgumentTypes.add(getStubType(Type.getObjectType(this.name)));
-        }
-        for (int i = 0; i < argumentTypes.length; i++) {
-            stubArgumentTypes.add(getStubType(argumentTypes[i]));
-        }
-        Type stubReturnType = getStubType(methodType.getReturnType());
-        org.objectweb.asm.commons.Method methodDesc = new org.objectweb.asm.commons.Method(name, stubReturnType, 
-                stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
+        org.objectweb.asm.commons.Method methodDesc = getStubMethodDesc(this.name, name, access, desc);
         Method mirrorMethod = mirrorMethods.get(methodDesc);
         if (mirrorMethod != null) {
             generateNativeThunk(superVisitor, this.name, desc, mirrorMethod);
@@ -472,30 +463,21 @@ public class MirageClassGenerator extends ClassVisitor {
         return lvs;
     }
     
-    public static Type getStubMethodType(String owner, int access, Type methodType) {
+    public static org.objectweb.asm.commons.Method getStubMethodDesc(String owner, String name, int access, String desc) {
+        Type methodType = Type.getMethodType(desc);
         Type[] argumentTypes = methodType.getArgumentTypes();
         List<Type> stubArgumentTypes = new ArrayList<Type>(argumentTypes.length + 1);
         stubArgumentTypes.add(Type.getType(Class.class));
         if ((Opcodes.ACC_STATIC & access) == 0) {
-            stubArgumentTypes.add(getStubType(Type.getObjectType(owner)));
+            stubArgumentTypes.add(getMirrorType(Type.getObjectType(owner)));
         }
         for (int i = 0; i < argumentTypes.length; i++) {
-            stubArgumentTypes.add(getStubType(argumentTypes[i]));
+            stubArgumentTypes.add(getMirrorType(argumentTypes[i]));
         }
-        Type stubReturnType = getStubType(methodType.getReturnType());
-        return Type.getMethodType(stubReturnType, stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
+        Type stubReturnType = getMirrorType(methodType.getReturnType());
+        return new org.objectweb.asm.commons.Method(name, stubReturnType, stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
     }
     
-    private static Type getStubType(Type type) {
-        switch (type.getSort()) {
-        case Type.OBJECT:
-        case Type.ARRAY:
-            return mirageType;
-        default:
-            return type;
-        }
-    }
-
     public void generateNativeThunk(MethodVisitor visitor, String owner, String desc, Method method) {
 	Class<?>[] parameterClasses = method.getParameterTypes();
         visitor.visitCode();
@@ -505,6 +487,9 @@ public class MirageClassGenerator extends ClassVisitor {
         for (int param = 0; param < parameterClasses.length; param++) {
             Type paramType = Type.getType(parameterClasses[param]);
             visitor.visitVarInsn(paramType.getOpcode(Opcodes.ILOAD), var);
+            if (isRefType(paramType)) {
+                MethodHandle.OBJECT_MIRAGE_GET_MIRROR.invoke(visitor);
+            }
             var += paramType.getSize();
         }
         
@@ -513,6 +498,7 @@ public class MirageClassGenerator extends ClassVisitor {
         visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, nativeStubsType.getInternalName(), method.getName(), Type.getMethodDescriptor(method));
         
         if (isRefType(returnType)) {
+            MethodHandle.OBJECT_MIRAGE_MAKE.invoke(visitor);
             visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getReturnType(desc).getInternalName());
         }
         visitor.visitInsn(returnType.getOpcode(Opcodes.IRETURN));

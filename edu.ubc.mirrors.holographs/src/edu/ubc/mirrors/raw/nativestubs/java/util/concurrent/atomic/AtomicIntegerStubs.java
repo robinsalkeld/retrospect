@@ -13,9 +13,8 @@ public class AtomicIntegerStubs extends NativeStubs {
     }
 
     // TODO-RS: Complete UnsafeStubs and remove this higher-level version.
-    public boolean compareAndSet(Mirage thiz, int expect, int update) {
+    public boolean compareAndSet(InstanceMirror instance, int expect, int update) {
         try {
-            InstanceMirror instance = (InstanceMirror)thiz.getMirror();
             FieldMirror field = klass.getDeclaredField("value");
             if (instance.getInt(field) == expect) {
                 instance.setInt(field, update);

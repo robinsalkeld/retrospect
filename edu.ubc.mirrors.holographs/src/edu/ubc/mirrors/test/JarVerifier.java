@@ -105,13 +105,14 @@ public class JarVerifier implements IApplication {
         StringBuilder missingMethods = new StringBuilder();
         StringBuilder unclassifiedMethods = new StringBuilder();
         for (Map.Entry<String, Set<MethodNode>> entry : counter.classesWithNativeMethods.entrySet()) {
-            String fullName = entry.getKey().replace('/', '.');
+            String fullInternalName = entry.getKey();
+            String fullName = fullInternalName.replace('/', '.');
             
             Class<?> stubsClass = ClassHolograph.getNativeStubsClass(fullName);
             Map<Method, java.lang.reflect.Method> stubsMethods = MirageClassGenerator.indexStubMethods(stubsClass);
             
             for (MethodNode method : entry.getValue()) {
-                Method stubMethod = new Method(method.name, MirageClassGenerator.getStubMethodType(fullName, method.access, Type.getType(method.desc)).getDescriptor());
+                Method stubMethod = MirageClassGenerator.getStubMethodDesc(fullInternalName, method.name, method.access, method.desc);
                 if (stubsMethods.containsKey(stubMethod)) {
                     implemented++;
                     continue;

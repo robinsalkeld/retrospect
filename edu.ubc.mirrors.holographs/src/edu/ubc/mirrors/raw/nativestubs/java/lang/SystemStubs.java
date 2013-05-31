@@ -1,9 +1,10 @@
 package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
-import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class SystemStubs extends NativeStubs {
@@ -12,27 +13,27 @@ public class SystemStubs extends NativeStubs {
 	super(klass);
     }
 
-    public int identityHashCode(Mirage o) {
-        return o.getMirror().identityHashCode();
+    public int identityHashCode(ObjectMirror o) {
+        return o.identityHashCode();
     }
     
-    public void arraycopy(Mirage src, int srcPos, Mirage dest, int destPos, int length) {
-        Reflection.arraycopy(src.getMirror(), srcPos, dest.getMirror(), destPos, length);
+    public void arraycopy(ObjectMirror src, int srcPos, ObjectMirror dest, int destPos, int length) {
+        Reflection.arraycopy(src, srcPos, dest, destPos, length);
     }
     
-    public void setIn0(Mirage stream) throws IllegalAccessException, NoSuchFieldException {
+    public void setIn0(InstanceMirror stream) throws IllegalAccessException, NoSuchFieldException {
         ClassMirror systemClass = getVM().findBootstrapClassMirror(System.class.getName());
-        systemClass.getStaticFieldValues().set(systemClass.getDeclaredField("in"), stream.getMirror());
+        systemClass.getStaticFieldValues().set(systemClass.getDeclaredField("in"), stream);
     }
     
-    public void setOut0(Mirage stream) throws IllegalAccessException, NoSuchFieldException {
+    public void setOut0(InstanceMirror stream) throws IllegalAccessException, NoSuchFieldException {
         ClassMirror systemClass = getVM().findBootstrapClassMirror(System.class.getName());
-        systemClass.getStaticFieldValues().set(systemClass.getDeclaredField("out"), stream.getMirror());
+        systemClass.getStaticFieldValues().set(systemClass.getDeclaredField("out"), stream);
     }
     
-    public void setErr0(Mirage stream) throws IllegalAccessException, NoSuchFieldException {
+    public void setErr0(InstanceMirror stream) throws IllegalAccessException, NoSuchFieldException {
         ClassMirror systemClass = getVM().findBootstrapClassMirror(System.class.getName());
-        systemClass.getStaticFieldValues().set(systemClass.getDeclaredField("err"), stream.getMirror());
+        systemClass.getStaticFieldValues().set(systemClass.getDeclaredField("err"), stream);
     }
     
     // TODO-RS: I don't like this as a general rule, but it's called from 

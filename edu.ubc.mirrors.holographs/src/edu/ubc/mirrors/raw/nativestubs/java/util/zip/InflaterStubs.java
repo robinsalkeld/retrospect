@@ -11,7 +11,6 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
@@ -79,14 +78,13 @@ public class InflaterStubs extends NativeStubs {
         resetMethod.invoke(null, hostAddress);
     }
 
-    public int inflateBytes(Mirage inflater, long addr, Mirage b, int off, int len) throws DataFormatException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
+    public int inflateBytes(InstanceMirror inflatorMirror, long addr, ByteArrayMirror b, int off, int len) throws DataFormatException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
         VirtualMachineHolograph vm = getVM();
         
         Inflater hostInflater = vm.getHostInflator(addr);
         long hostAddress = addressField.getLong(zsRefField.get(hostInflater));
         
         // Transfer the relevant fields onto the host inflater
-        InstanceMirror inflatorMirror = (InstanceMirror)inflater.getMirror();
         ByteArrayMirror bufMirror = (ByteArrayMirror)inflatorMirror.get(klass.getDeclaredField("buf"));
         NativeByteArrayMirror nativeBufMirror = (NativeByteArrayMirror)Reflection.copyArray(NativeVirtualMachineMirror.INSTANCE, bufMirror);
         byte[] buf = (byte[])nativeBufMirror.getNativeObject();
@@ -99,8 +97,7 @@ public class InflaterStubs extends NativeStubs {
         needDictField.setBoolean(hostInflater, needsDict);
         
         
-        ByteArrayMirror bMirror = (ByteArrayMirror)b.getMirror();
-        NativeByteArrayMirror nativeBMirror = (NativeByteArrayMirror)Reflection.copyArray(NativeVirtualMachineMirror.INSTANCE, bMirror);
+        NativeByteArrayMirror nativeBMirror = (NativeByteArrayMirror)Reflection.copyArray(NativeVirtualMachineMirror.INSTANCE, b);
         byte[] nativeB = (byte[])nativeBMirror.getNativeObject();
         
         int result = (Integer)inflateBytesMethod.invoke(hostInflater, hostAddress, nativeB, off, len);
@@ -111,7 +108,7 @@ public class InflaterStubs extends NativeStubs {
         inflatorMirror.setBoolean(klass.getDeclaredField("finished"), finishedField.getBoolean(hostInflater));
         inflatorMirror.setBoolean(klass.getDeclaredField("needDict"), needDictField.getBoolean(hostInflater));
         
-        Reflection.arraycopy(nativeBMirror, 0, bMirror, 0, bMirror.length());
+        Reflection.arraycopy(nativeBMirror, 0, b, 0, b.length());
         
         return result;
     }

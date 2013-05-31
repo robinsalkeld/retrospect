@@ -6,8 +6,6 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 
 public class ArrayStubs extends NativeStubs {
     
@@ -15,18 +13,16 @@ public class ArrayStubs extends NativeStubs {
 	super(klass);
     }
 
-    public Mirage newArray(Mirage componentType, int length) {
-        ClassMirror componentClassMirror = (ClassMirror)componentType.getMirror();
-        ArrayMirror result = componentClassMirror.newArray(length);
-        return ObjectMirage.make(result);
+    public ObjectMirror newArray(ClassMirror componentClassMirror, int length) {
+        return componentClassMirror.newArray(length);
     }
     
-    public int getLength(Mirage array) {
-        return ((ArrayMirror)array.getMirror()).length();
+    public int getLength(ObjectMirror array) {
+        return ((ArrayMirror)array).length();
     }
-    
-    public Mirage get(Mirage array, int index) {
-        ObjectMirror mirror = ((ObjectArrayMirror)array.getMirror()).get(index);
-        return (Mirage)ObjectMirage.make(mirror);
+
+    // TODO-RS: This should work for primitive arrays too! Need to explicitly box.
+    public ObjectMirror get(ObjectMirror array, int index) {
+        return ((ObjectArrayMirror)array).get(index);
     }
 }

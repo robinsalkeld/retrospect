@@ -6,9 +6,6 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class PackageStubs extends NativeStubs {
@@ -17,13 +14,13 @@ public class PackageStubs extends NativeStubs {
 	super(klass);
     }
 
-    public Mirage getSystemPackage(Mirage name) {
+    public InstanceMirror getSystemPackage(InstanceMirror name) {
         VirtualMachineHolograph vm = getVM();
         
-        String realName = Reflection.getRealStringForMirror((InstanceMirror)name.getMirror());
+        String realName = Reflection.getRealStringForMirror(name);
         URL url = vm.getBootstrapBytecodeLoader().getResource(realName.replace('.', '/') + ".package_info.java");
         if (url != null && url.getProtocol().equals("file")) {
-            return ObjectMirage.make(Reflection.makeString(vm, url.getPath()));
+            return Reflection.makeString(vm, url.getPath());
         } else {
             return null;
         }

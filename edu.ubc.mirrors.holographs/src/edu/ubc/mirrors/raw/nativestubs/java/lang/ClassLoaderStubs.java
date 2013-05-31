@@ -6,8 +6,6 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.nativestubs.sun.reflect.ReflectionStubs;
 
@@ -17,47 +15,41 @@ public class ClassLoaderStubs extends NativeStubs {
 	super(klass);
     }
 
-    public Mirage findLoadedClass0(Mirage classLoader, Mirage name) {
-        String realName = ObjectMirage.getRealStringForMirage((ObjectMirage)name);
-        ClassMirror klass = ((ClassMirrorLoader)classLoader.getMirror()).findLoadedClassMirror(realName);
-        return (Mirage)ObjectMirage.make(klass);
+    public ClassMirror findLoadedClass0(ClassMirrorLoader classLoader, InstanceMirror name) {
+        String realName = Reflection.getRealStringForMirror(name);
+        return classLoader.findLoadedClassMirror(realName);
     }
     
-    public Mirage findBootstrapClass(Mirage classLoader, Mirage name) {
-        String realName = ObjectMirage.getRealStringForMirage((ObjectMirage)name);
-        ClassMirror result = klass.getVM().findBootstrapClassMirror(realName);
-        return (Mirage)ObjectMirage.make(result);
+    public ClassMirror findBootstrapClass(ClassMirrorLoader classLoader, InstanceMirror name) {
+        String realName = Reflection.getRealStringForMirror(name);
+        return klass.getVM().findBootstrapClassMirror(realName);
     }
     
     // JDK 6 version
-    public Mirage defineClass1(Mirage classLoader, Mirage name, Mirage b, int off, int len,
-            Mirage pd, Mirage source, boolean verify) {
+    public ClassMirror defineClass1(ClassMirrorLoader classLoader, InstanceMirror name, ByteArrayMirror b, int off, int len,
+            InstanceMirror pd, InstanceMirror source, boolean verify) {
         return defineClass1(classLoader, name, b, off, len, pd, source);
     }
     
-    public static Mirage defineClass(Mirage classLoader, Mirage name, Mirage b, int off, int len,
-            Mirage pd, Mirage source) {
+    public static ClassMirror defineClass(ClassMirrorLoader classLoader, InstanceMirror name, ByteArrayMirror b, int off, int len,
+            InstanceMirror pd, InstanceMirror source) {
 	
-	ClassMirrorLoader classLoaderMirror = (ClassMirrorLoader)classLoader.getMirror();
-        String realName = ObjectMirage.getRealStringForMirage((ObjectMirage)name);
-        InstanceMirror pdMirror = ((InstanceMirror)Reflection.getMirror(pd));
-        InstanceMirror sourceMirror = ((InstanceMirror)Reflection.getMirror(source));
+        String realName = Reflection.getRealStringForMirror(name);
         
-        ClassMirror newClass = classLoaderMirror.defineClass1(realName, (ByteArrayMirror)b, off, len, pdMirror, sourceMirror);
-        return (Mirage)ObjectMirage.make(newClass);
+        return classLoader.defineClass1(realName, b, off, len, pd, source);
     }
     
     // JDK 7 version
-    public Mirage defineClass1(Mirage classLoader, Mirage name, Mirage b, int off, int len,
-            Mirage pd, Mirage source) {
+    public ClassMirror defineClass1(ClassMirrorLoader classLoader, InstanceMirror name, ByteArrayMirror b, int off, int len,
+            InstanceMirror pd, InstanceMirror source) {
         
         return defineClass(classLoader, name, b, off, len, pd, source);
     }
     
-    // Note: the specification of this method seems broken: it implies the result should
-    // always extend ClassLoader but I don't see how that's true.
-    public Mirage getCaller(int depth) {
-        ClassMirror callerClass = ReflectionStubs.getCallerClassMirror(depth);
-        return ObjectMirage.make(callerClass);
+    // Note: the generic return type Class<? extends ClassLoader> of this method seems broken: it implies the result should
+    // always extend ClassLoader but I don't see how that's true. Alternatively it could mean "loader of the class at the given depth"
+    // but then the method wouldn't have the correct semantics for the one place it's called.
+    public ClassMirror getCaller(int depth) {
+        return ReflectionStubs.getCallerClassMirror(depth);
     }
 }

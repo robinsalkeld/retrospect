@@ -3,9 +3,7 @@ package edu.ubc.mirrors.raw.nativestubs.java.lang;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.List;
-import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
@@ -22,8 +20,6 @@ import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ConstantPoolReader;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -35,45 +31,40 @@ public class ClassStubs extends NativeStubs {
 	super(klass);
     }
 
-    public Mirage getName0(Mirage mirage) {
-        String name = ((ClassMirror)mirage.getMirror()).getClassName();
+    public InstanceMirror getName0(ClassMirror klass) {
+        String name = klass.getClassName();
         if (name == null) {
             throw new NullPointerException();
         }
-        return ObjectMirage.makeStringMirage(name, klass);
+        return Reflection.makeString(getVM(), name);
     }
     
-    public boolean isInterface(Mirage mirage) {
-        return ((ClassMirror)mirage.getMirror()).isInterface();
+    public boolean isInterface(ClassMirror klass) {
+        return klass.isInterface();
     }
     
-    public boolean isPrimitive(Mirage mirage) {
-        return ((ClassMirror)mirage.getMirror()).isPrimitive();
+    public boolean isPrimitive(ClassMirror klass) {
+        return klass.isPrimitive();
     }
     
-    public boolean isArray(Mirage mirage) {
-        return ((ClassMirror)mirage.getMirror()).isArray();
+    public boolean isArray(ClassMirror klass) {
+        return klass.isArray();
     }
     
-    public Mirage getComponentType(Mirage mirage) {
-        ClassMirror result = ((ClassMirror)mirage.getMirror()).getComponentClassMirror();
-        return ObjectMirage.make(result);
+    public ClassMirror getComponentType(ClassMirror klass) {
+        return klass.getComponentClassMirror();
     }
     
-    public Mirage getClassLoader0(Mirage klass) {
-        ClassMirror klassMirror = (ClassMirror)klass.getMirror();
-        return (Mirage)ObjectMirage.make(klassMirror.getLoader());
+    public ClassMirrorLoader getClassLoader0(ClassMirror klass) {
+        return klass.getLoader();
     }
     
-    public Mirage forName0(Mirage name, boolean resolve, Mirage loader) throws ClassNotFoundException {
-        String realName = Reflection.getRealStringForMirror((InstanceMirror)name.getMirror()); 
-        ClassMirrorLoader loaderMirror = loader == null ? null : (ClassMirrorLoader)loader.getMirror();
-        ClassMirror klassMirror = Reflection.classMirrorForName(getVM(), ThreadHolograph.currentThreadMirror(), realName, resolve, loaderMirror);
-        return (Mirage)ObjectMirage.make(klassMirror);
+    public ClassMirror forName0(InstanceMirror name, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException {
+        String realName = Reflection.getRealStringForMirror(name); 
+        return Reflection.classMirrorForName(getVM(), ThreadHolograph.currentThreadMirror(), realName, resolve, loader);
     }
     
-    public Mirage getDeclaredConstructors0(Mirage theClass, boolean publicOnly) {
-        ClassMirror classMirror = (ClassMirror)theClass.getMirror();
+    public ObjectArrayMirror getDeclaredConstructors0(ClassMirror classMirror, boolean publicOnly) {
         List<ConstructorMirror> constructors = classMirror.getDeclaredConstructors(publicOnly);
         ClassMirror classClass = getVM().findBootstrapClassMirror(Class.class.getName());
         ClassMirror constructorClass = getVM().findBootstrapClassMirror(Constructor.class.getName());
@@ -93,11 +84,10 @@ public class ClassStubs extends NativeStubs {
             
             result.set(i++, inst);
         }
-        return ObjectMirage.make(result);
+        return result;
     }
     
-    public Mirage getDeclaredMethods0(Mirage klass, boolean publicOnly) {
-        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+    public ObjectArrayMirror getDeclaredMethods0(ClassMirror classMirror, boolean publicOnly) {
         List<MethodMirror> methods = classMirror.getDeclaredMethods(publicOnly);
         ClassMirror classClass = getVM().findBootstrapClassMirror(Class.class.getName());
         ClassMirror methodClass = getVM().findBootstrapClassMirror(Method.class.getName());
@@ -120,11 +110,10 @@ public class ClassStubs extends NativeStubs {
             
             result.set(i++, inst);
         }
-        return ObjectMirage.make(result);
+        return result;
     }
     
-    public Mirage getDeclaredFields0(Mirage klass, boolean publicOnly) {
-        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+    public ObjectArrayMirror getDeclaredFields0(ClassMirror classMirror, boolean publicOnly) {
         List<FieldMirror> fields = classMirror.getDeclaredFields();
         ClassMirror constructorClass = getVM().findBootstrapClassMirror(Field.class.getName());
         ObjectArrayMirror result = (ObjectArrayMirror)constructorClass.newArray(fields.size());
@@ -144,64 +133,57 @@ public class ClassStubs extends NativeStubs {
             
             result.set(i++, inst);
         }
-        return ObjectMirage.make(result);
+        return result;
     }
     
-    public int getModifiers(Mirage klass) {
-        return ((ClassMirror)klass.getMirror()).getModifiers();
+    public int getModifiers(ClassMirror classMirror) {
+        return classMirror.getModifiers();
     }
     
-    public Mirage getSuperclass(Mirage klass) {
-        return ObjectMirage.make(((ClassMirror)klass.getMirror()).getSuperClassMirror());
+    public ClassMirror getSuperclass(ClassMirror classMirror) {
+        return classMirror.getSuperClassMirror();
     }
     
-    public Mirage getInterfaces(Mirage klass) {
+    public ObjectArrayMirror getInterfaces(ClassMirror classMirror) {
         VirtualMachineMirror vm = getVM();
         
-        List<ClassMirror> interfaces = ((ClassMirror)klass.getMirror()).getInterfaceMirrors();
-        ObjectArrayMirror result = Reflection.toArray(vm.findBootstrapClassMirror(Class.class.getName()), interfaces);
-        return ObjectMirage.make(result);
+        List<ClassMirror> interfaces = classMirror.getInterfaceMirrors();
+        return  Reflection.toArray(vm.findBootstrapClassMirror(Class.class.getName()), interfaces);
     }
     
-    public boolean isInstance(Mirage klass, Mirage o) {
-        ClassMirror classMirror = (ClassMirror)klass.getMirror();
-        ObjectMirror oMirror = o.getMirror();
-        return Reflection.isInstance(classMirror, oMirror);
+    public boolean isInstance(ClassMirror classMirror, ObjectMirror o) {
+        return Reflection.isInstance(classMirror, o);
     }
     
-    public boolean isAssignableFrom(Mirage thiz, Mirage other) {
-        return Reflection.isAssignableFrom((ClassMirror)thiz.getMirror(), (ClassMirror)other.getMirror());
+    public boolean isAssignableFrom(ClassMirror thiz, ClassMirror other) {
+        return Reflection.isAssignableFrom(thiz, other);
     }
     
-    public void setSigners(Mirage thiz, Mirage signers) {
+    public void setSigners(ClassMirror thiz, ObjectArrayMirror signers) {
         // TODO-RS
     }
     
-    public boolean desiredAssertionStatus0(Mirage klass) {
+    public boolean desiredAssertionStatus0(ClassMirror klass) {
         // TODO-RS
         return false;
     }
     
-    public Mirage getRawAnnotations(Mirage klass) {
-        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+    public ByteArrayMirror getRawAnnotations(ClassMirror classMirror) {
         byte[] bytes = classMirror.getRawAnnotations();
-        ByteArrayMirror result = (ByteArrayMirror)Reflection.copyArray(classMirror.getVM(), new NativeByteArrayMirror(bytes));
-        return ObjectMirage.make(result);
+        return (ByteArrayMirror)Reflection.copyArray(classMirror.getVM(), new NativeByteArrayMirror(bytes));
     }
     
-    public Mirage getConstantPool(Mirage klass) {
-        ClassMirror classMirror = (ClassMirror)klass.getMirror();
+    public InstanceMirror getConstantPool(ClassMirror classMirror) {
         ConstantPoolReader reader = new ConstantPoolReader(classMirror);
         InstanceMirror result = classMirror.getVM().findBootstrapClassMirror("sun.reflect.ConstantPool").newRawInstance();
         HolographInternalUtils.setField(result, "constantPoolOop", reader);
-        return ObjectMirage.make(result);
+        return result;
     }
     
-    public Mirage getPrimitiveClass(Mirage name) {
+    public ClassMirror getPrimitiveClass(InstanceMirror name) {
         VirtualMachineMirror vm = getVM();
         
-        String realName = Reflection.getRealStringForMirror((InstanceMirror)ObjectMirage.getMirror(name));
-	ClassMirror result = vm.getPrimitiveClass(realName);
-	return ObjectMirage.make(result);
+        String realName = Reflection.getRealStringForMirror(name);
+	return vm.getPrimitiveClass(realName);
     }
 }

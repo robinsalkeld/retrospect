@@ -3,15 +3,13 @@ package edu.ubc.mirrors.raw.nativestubs.sun.misc;
 import java.nio.ByteBuffer;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 
 public class PerfStubs extends NativeStubs {
 
@@ -23,12 +21,12 @@ public class PerfStubs extends NativeStubs {
 	// No need to do anything
     }
     
-    public Mirage createLong(Mirage perf, Mirage name, int derp, int florp, long blong) {
+    public InstanceMirror createLong(InstanceMirror perf, InstanceMirror name, int derp, int florp, long blong) {
 	VirtualMachineHolograph vm = getVM();
 	
+	// Just create an arbitrary buffer - this VM doesn't expose any performance tracking API.
 	ClassMirror byteBufferClass = vm.findBootstrapClassMirror(ByteBuffer.class.getName());
 	MethodMirror method = HolographInternalUtils.getMethod(byteBufferClass, "allocate", vm.getPrimitiveClass("int"));
-	ObjectMirror bb = (ObjectMirror)HolographInternalUtils.mirrorInvoke(ThreadHolograph.currentThreadMirror(), method, null, 16);
-	return ObjectMirage.make(bb);
+	return (InstanceMirror)HolographInternalUtils.mirrorInvoke(ThreadHolograph.currentThreadMirror(), method, null, 16);
     }
 }

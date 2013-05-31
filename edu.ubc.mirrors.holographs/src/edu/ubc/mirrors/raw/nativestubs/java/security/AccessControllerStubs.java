@@ -21,9 +21,9 @@ public class AccessControllerStubs extends NativeStubs {
 	super(klass);
     }
 
-    public Mirage doPrivileged(final Mirage action) throws Throwable {
+    public ObjectMirror doPrivileged(final InstanceMirror action) throws Throwable {
         try {
-            return (Mirage)AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+            return (ObjectMirror)AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
                 @Override
                 public Object run() throws Exception {
                     return action.getClass().getMethod("run").invoke(action);
@@ -49,13 +49,14 @@ public class AccessControllerStubs extends NativeStubs {
         }
     }
     
-    public Mirage doPrivileged(final Mirage action, final Mirage context) throws Throwable {
-        // TODO-RS: Hoping the context doesn't matter for my examples...
+    public ObjectMirror doPrivileged(final InstanceMirror action, final InstanceMirror context) throws Throwable {
+        // TODO-RS: Need to implement the context behaviour, although it's possible holographic execution
+        // can safely ignore it...
 	return doPrivileged(action);
     }
     
     public Mirage getStackAccessControlContext() {
-        // TODO-RS: Not correct in general, but adequate for now
+        // TODO-RS: See above.
         return null;
     }
 }

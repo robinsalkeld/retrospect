@@ -9,8 +9,6 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 import edu.ubc.mirrors.mirages.Reflection;
 
 public class JarFileStubs extends NativeStubs {
@@ -29,10 +27,9 @@ public class JarFileStubs extends NativeStubs {
         }
     }
     
-    public Mirage getMetaInfEntryNames(Mirage jarFile) throws IllegalAccessException, NoSuchFieldException, IllegalArgumentException, InvocationTargetException {
+    public ObjectArrayMirror getMetaInfEntryNames(InstanceMirror jarFileMirror) throws IllegalAccessException, NoSuchFieldException, IllegalArgumentException, InvocationTargetException {
         VirtualMachineHolograph vm = getVM();
         
-        InstanceMirror jarFileMirror = (InstanceMirror)jarFile.getMirror();
         long jzfile = jarFileMirror.getLong(klass.getSuperClassMirror().getDeclaredField("jzfile"));
         JarFile hostJarFile = (JarFile)getVM().getZipFileForAddress(jzfile);
         
@@ -43,7 +40,7 @@ public class JarFileStubs extends NativeStubs {
             resultMirror.set(i, Reflection.makeString(vm, result[i]));
         }
         
-        return ObjectMirage.make(resultMirror);
+        return resultMirror;
     }
     
 

@@ -8,10 +8,8 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.mirages.Mirage;
 import edu.ubc.mirrors.mirages.MirageClassGenerator;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.ObjectMirage;
 
 public class ReflectionStubs extends NativeStubs {
 
@@ -20,7 +18,7 @@ public class ReflectionStubs extends NativeStubs {
     }
 
     public static ClassMirror getCallerClassMirror(int depth) {
-     // Filter out any non-holographic frames
+        // Filter out any non-holographic frames
         int nativeDepth = 1;
         Class<?> klass = sun.reflect.Reflection.getCallerClass(nativeDepth);
         while (klass != null) {
@@ -48,11 +46,11 @@ public class ReflectionStubs extends NativeStubs {
         return frame.method().getDeclaringClass();
     }
     
-    public Mirage getCallerClass(int depth) {
-        return ObjectMirage.make(getCallerClassMirror(depth));
+    public ClassMirror getCallerClass(int depth) {
+        return getCallerClassMirror(depth);
     }
     
-    public int getClassAccessFlags(Mirage klass) {
-        return ((ClassMirror)klass.getMirror()).getModifiers();
+    public int getClassAccessFlags(ClassMirror klass) {
+        return klass.getModifiers();
     }
 }

@@ -81,14 +81,6 @@ public class Reflection {
         }));
     }
     
-    public static ObjectMirror getMirror(Object o) {
-        if (o instanceof Mirage) {
-            return ((Mirage)o).getMirror();
-        } else {
-            return NativeInstanceMirror.makeMirror(o);
-        }
-    }
-    
     public static ClassMirror injectBytecode(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader parent, ClassMirror newClass) {
         ClassMirror secureClassLoaderClass = vm.findBootstrapClassMirror(SecureClassLoader.class.getName());
         ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
@@ -581,6 +573,43 @@ public class Reflection {
             ((DoubleArrayMirror)am).setDouble(index, (Double)o);
         } else {
             ((ObjectArrayMirror)am).set(index, (ObjectMirror)o);
+        }
+    }
+    
+    // Returns the ObjectMirror subclass (or primitive class) that represents the given type.
+    public static Type getMirrorType(Type type) {
+        switch (type.getSort()) {
+        case Type.OBJECT: {
+            if (type.getDescriptor().equals("java/lang/Object")) {
+                return Type.getType(ObjectMirror.class);
+            } else if (type.getDescriptor().equals("java/lang/Class")) {
+                return Type.getType(ClassMirror.class);
+            } else if (type.getDescriptor().equals("java/lang/ClassLoader")) {
+                return Type.getType(ClassMirrorLoader.class);
+            } else if (type.getDescriptor().equals("java/lang/Thread")) {
+                return Type.getType(ThreadMirror.class);
+            } else {
+                return Type.getType(InstanceMirror.class);
+            }
+        }
+        case Type.ARRAY: {
+                if (type.getDimensions() > 1) {
+                    return Type.getType(ObjectArrayMirror.class);
+                } else {
+                    switch (type.getElementType().getSort()) {
+                    case Type.BOOLEAN: return Type.getType(BooleanArrayMirror.class);
+                    case Type.BYTE: return Type.getType(ByteArrayMirror.class);
+                    case Type.CHAR: return Type.getType(CharArrayMirror.class);
+                    case Type.SHORT: return Type.getType(ShortArrayMirror.class);
+                    case Type.INT: return Type.getType(IntArrayMirror.class);
+                    case Type.LONG: return Type.getType(LongArrayMirror.class);
+                    case Type.FLOAT: return Type.getType(FloatArrayMirror.class);
+                    case Type.DOUBLE: return Type.getType(DoubleArrayMirror.class);
+                    default: return Type.getType(ObjectArrayMirror.class);
+                    }
+                }
+            }
+        default: return type;
         }
     }
 }

@@ -120,7 +120,7 @@ public class HolographObjectReference extends Holograph implements ObjectReferen
     }
 
     public ObjectReference getObjectMirror() {
-        return (ObjectReference)vm.invokeMethodHandle(wrapped, MethodHandle.MIRAGE_GET_MIRROR);
+        return (ObjectReference)vm.invokeMethodHandle(wrapped, MethodHandle.OBJECT_MIRAGE_GET_MIRROR);
     }
     
     /**
