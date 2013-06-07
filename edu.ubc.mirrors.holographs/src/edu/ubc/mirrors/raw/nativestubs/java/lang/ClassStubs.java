@@ -13,6 +13,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -59,7 +60,7 @@ public class ClassStubs extends NativeStubs {
         return klass.getLoader();
     }
     
-    public ClassMirror forName0(InstanceMirror name, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException {
+    public ClassMirror forName0(InstanceMirror name, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException, MirrorInvocationTargetException {
         String realName = Reflection.getRealStringForMirror(name); 
         return Reflection.classMirrorForName(getVM(), ThreadHolograph.currentThreadMirror(), realName, resolve, loader);
     }

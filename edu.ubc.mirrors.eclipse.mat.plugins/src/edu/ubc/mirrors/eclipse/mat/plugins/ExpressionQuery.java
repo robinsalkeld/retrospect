@@ -1,7 +1,6 @@
 package edu.ubc.mirrors.eclipse.mat.plugins;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
@@ -29,6 +28,7 @@ import org.eclipse.mat.util.IProgressListener;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
 
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -67,7 +67,11 @@ public class ExpressionQuery implements IQuery {
         }
         
         public String getString() {
-            return Reflection.toString(mirror);
+            try {
+                return Reflection.toString(mirror);
+            } catch (MirrorInvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
     

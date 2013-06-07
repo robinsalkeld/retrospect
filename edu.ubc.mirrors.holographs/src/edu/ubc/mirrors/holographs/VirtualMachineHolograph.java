@@ -361,11 +361,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             }
             @Override
             protected ClassMirror loadClassMirrorInternal(Type type) {
-                try {
-                    return Reflection.classMirrorForType(VirtualMachineHolograph.this, ThreadHolograph.currentThreadMirror(), type, false, holographLoader);
-                } catch (ClassNotFoundException e) {
-                    throw new NoClassDefFoundError(e.getMessage());
-                }
+                return HolographInternalUtils.classMirrorForType(VirtualMachineHolograph.this, ThreadHolograph.currentThreadMirror(), type, false, holographLoader);
             }
             
             @Override

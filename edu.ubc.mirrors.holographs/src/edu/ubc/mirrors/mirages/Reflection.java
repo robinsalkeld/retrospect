@@ -183,7 +183,7 @@ public class Reflection {
         return target;
     }
     
-    public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException {
+    public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException, MirrorInvocationTargetException {
         // String must be special-cased, because we can't call loadClass(String) to load String itself! We just make the
         // assumption that the VM defines the class, which is legitimate since the VM must also create string constants at the bytecode level.
         ClassMirror result;
@@ -200,7 +200,13 @@ public class Reflection {
                     
             
             ThreadHolograph.raiseMetalevel();
-            result = (ClassMirror)HolographInternalUtils.mirrorInvoke(thread, method, (InstanceMirror)originalLoader, makeString(vm, name));
+            try {
+                result = (ClassMirror) method.invoke(thread,
+                        (InstanceMirror) originalLoader, makeString(vm, name));
+            } catch (IllegalAccessException e) {
+                // Can't happen - can't reduce visibility of ClassLoader.loadClass()
+                throw new RuntimeException(e);
+            }
             ThreadHolograph.lowerMetalevel();
         }
         if (result == null) {
@@ -209,7 +215,7 @@ public class Reflection {
         return result;
     }
     
-    public static ClassMirror classMirrorForType(VirtualMachineMirror vm, ThreadMirror thread, Type type, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException {
+    public static ClassMirror classMirrorForType(VirtualMachineMirror vm, ThreadMirror thread, Type type, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException, MirrorInvocationTargetException {
         if (type.getSort() == Type.ARRAY) {
             Type elementType = type.getElementType();
             ClassMirror elementClassMirror = classMirrorForType(vm, thread, elementType, resolve, loader);
@@ -266,7 +272,7 @@ public class Reflection {
         }
     }
     
-    public static ClassMirror classMirrorForName(VirtualMachineMirror vm, ThreadMirror thread, String name, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException {
+    public static ClassMirror classMirrorForName(VirtualMachineMirror vm, ThreadMirror thread, String name, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException, MirrorInvocationTargetException {
         return classMirrorForType(vm, thread, Type.getObjectType(name), resolve, loader);
     }
     
@@ -316,11 +322,11 @@ public class Reflection {
     private static final Map<VirtualMachineMirror, MethodMirror> TO_STRING_METHODS =
                  new HashMap<VirtualMachineMirror, MethodMirror>();
     
-    public static String toString(ObjectMirror mirror) {
+    public static String toString(ObjectMirror mirror) throws MirrorInvocationTargetException {
         return toString(mirror, mirror.getClassMirror().getVM().getThreads().get(0));
     }    
     
-    public static String toString(ObjectMirror mirror, ThreadMirror thread) {
+    public static String toString(ObjectMirror mirror, ThreadMirror thread) throws MirrorInvocationTargetException {
         if (mirror == null) {
             return "null";
         }
@@ -332,8 +338,14 @@ public class Reflection {
             toStringMethod = HolographInternalUtils.getMethod(vmObjectClass, "toString");
             TO_STRING_METHODS.put(vm, toStringMethod);
         }
-        InstanceMirror stringMirror = (InstanceMirror)HolographInternalUtils.mirrorInvoke(thread, toStringMethod, mirror);
-        return getRealStringForMirror(stringMirror);
+        try {
+            InstanceMirror stringMirror = (InstanceMirror) toStringMethod
+                    .invoke(thread, mirror);
+            return getRealStringForMirror(stringMirror);
+        } catch (IllegalAccessException e) {
+            // Should never happen - can't reduce the visibility of Object.toString()
+            throw new RuntimeException(e);
+        }
     }
     
     public static Object invokeMethodHandle(ObjectMirror obj, MethodHandle m, Object ... args) {
@@ -346,7 +358,7 @@ public class Reflection {
         return m.invoke(obj, thread, args);
     }
     
-    public static Object invokeStaticMethodHandle(ThreadMirror thread, ClassMirror targetClass, MethodHandle m, Object ... args) {
+    public static Object invokeStaticMethodHandle(ThreadMirror thread, ClassMirror targetClass, MethodHandle m, Object ... args) throws IllegalAccessException, MirrorInvocationTargetException {
         VirtualMachineMirror vm = targetClass.getVM();
         Type[] paramTypes = Type.getArgumentTypes(m.getMethod().desc);
         ClassMirror[] paramClasses = new ClassMirror[paramTypes.length];
@@ -358,7 +370,7 @@ public class Reflection {
             }
         }
         MethodMirror method = HolographInternalUtils.getMethod(targetClass, m.getMethod().name, paramClasses);
-        return HolographInternalUtils.mirrorInvoke(thread, method, null, args);
+        return method.invoke(thread, null, args);
     }
     
     public static List<URL> getBootstrapPath() {

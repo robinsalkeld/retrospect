@@ -869,6 +869,8 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
             return Reflection.classMirrorForType(getVM(), ThreadHolograph.currentThreadMirror(), type, false, getLoader());
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(e.getMessage());
+        } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
     

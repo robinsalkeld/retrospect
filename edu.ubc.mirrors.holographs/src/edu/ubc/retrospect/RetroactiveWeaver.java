@@ -2,6 +2,7 @@ package edu.ubc.retrospect;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
@@ -9,7 +10,7 @@ import edu.ubc.retrospect.AspectJMirrors.AspectMirror;
 
 public class RetroactiveWeaver {
     
-    public static void weave(ClassMirror aspect, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, InterruptedException {
+    public static void weave(ClassMirror aspect, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, InterruptedException, MirrorInvocationTargetException {
         VirtualMachineHolograph vm = (VirtualMachineHolograph)aspect.getVM();
         ThreadHolograph threadHolograph = (ThreadHolograph)thread;
         threadHolograph.enterHologramExecution();

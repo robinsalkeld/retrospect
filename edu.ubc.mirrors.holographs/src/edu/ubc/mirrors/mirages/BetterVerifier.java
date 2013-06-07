@@ -8,6 +8,7 @@ import org.objectweb.asm.tree.analysis.SimpleVerifier;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 
@@ -84,6 +85,8 @@ public class BetterVerifier extends SimpleVerifier {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);
             throw error;
+        } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
     

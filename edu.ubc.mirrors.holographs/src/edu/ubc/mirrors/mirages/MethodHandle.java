@@ -11,6 +11,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -107,6 +108,16 @@ public abstract class MethodHandle {
     }
 	
     public Object invoke(ObjectMirror obj, ThreadMirror thread, Object ... args) {
+        try {
+            return invokeWithErrors(obj, thread, args);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public Object invokeWithErrors(ObjectMirror obj, ThreadMirror thread, Object ... args) throws IllegalAccessException, MirrorInvocationTargetException {
         ClassMirror klass = obj.getClassMirror();
         VirtualMachineMirror vm = klass.getVM();
         final ClassMirror targetClass;
@@ -131,6 +142,6 @@ public abstract class MethodHandle {
             }
         });
                 
-        return HolographInternalUtils.mirrorInvoke(thread, method, obj, args);
+        return method.invoke(thread, obj, args);
     }
 }

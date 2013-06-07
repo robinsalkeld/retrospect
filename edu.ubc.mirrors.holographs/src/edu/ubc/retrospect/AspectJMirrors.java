@@ -129,7 +129,9 @@ public class AspectJMirrors {
 	    return Reflection.classMirrorForName(vm, thread, kind.annotationClass.getName(), true, loader);
 	} catch (ClassNotFoundException e) {
 	    throw new RuntimeException(e);
-	}
+	} catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
     
 	
@@ -438,7 +440,7 @@ public class AspectJMirrors {
         }
     }
     
-    public AspectJMirrors(VirtualMachineHolograph vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException {
+    public AspectJMirrors(VirtualMachineHolograph vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.loader = loader;
 	this.vm = vm;
 	this.thread = thread;

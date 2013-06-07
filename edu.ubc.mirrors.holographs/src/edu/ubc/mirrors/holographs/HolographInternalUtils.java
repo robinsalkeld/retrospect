@@ -2,6 +2,8 @@ package edu.ubc.mirrors.holographs;
 
 import java.lang.reflect.InvocationTargetException;
 
+import org.objectweb.asm.Type;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
@@ -73,9 +75,23 @@ public class HolographInternalUtils {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);
             throw error;
+        } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
 
+    public static ClassMirror classMirrorForType(VirtualMachineMirror vm, ThreadMirror thread, Type type, boolean resolve, ClassMirrorLoader loader) {
+        try {
+            return Reflection.classMirrorForType(vm, ThreadHolograph.currentThreadMirror(), type, false, loader);
+        } catch (ClassNotFoundException e) {
+            NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
+            error.initCause(e);
+            throw error;
+        } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     public static MethodMirror getMethod(ClassMirror klass, String name, ClassMirror... parameterTypes) {
         try {
             return klass.getMethod(name, parameterTypes);

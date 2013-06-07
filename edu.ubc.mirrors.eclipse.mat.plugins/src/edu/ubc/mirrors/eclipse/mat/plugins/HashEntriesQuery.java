@@ -28,6 +28,7 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.query.IHeapObjectArgument;
 import org.eclipse.mat.util.IProgressListener;
 
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Reflection;
@@ -119,19 +120,20 @@ public class HashEntriesQuery implements IQuery
 
 		public Object getColumnValue(Object row, int columnIndex)
 		{
-			Entry entry = (Entry) row;
-
-			switch (columnIndex)
-			{
-			case 0:
-				return Reflection.toString(entry.collection);
-			case 1:
-				return Reflection.toString(entry.getKey());
-			case 2:
-			        return Reflection.toString(entry.getValue());
-			}
-
-			return null;
+			try {
+                            Entry entry = (Entry) row;
+                            switch (columnIndex) {
+                            case 0:
+                                return Reflection.toString(entry.collection);
+                            case 1:
+                                return Reflection.toString(entry.getKey());
+                            case 2:
+                                return Reflection.toString(entry.getValue());
+                            }
+                            return null;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
 		}
 
 		public int getRowCount()
@@ -185,7 +187,7 @@ public class HashEntriesQuery implements IQuery
                     }
                 };
                 
-		public String getString(String key, IProgressListener listener)
+		public String getString(String key, IProgressListener listener) throws MirrorInvocationTargetException
 		{
 			ObjectMirror value = (ObjectMirror)Reflection.invokeMethodHandle(collection, mapGet, key);
 			return Reflection.toString(value);

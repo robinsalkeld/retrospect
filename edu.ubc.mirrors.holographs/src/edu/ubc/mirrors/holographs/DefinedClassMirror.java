@@ -9,7 +9,6 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.EventDispatch.EventCallback;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 
@@ -38,12 +37,7 @@ public class DefinedClassMirror extends BytecodeClassMirror implements NewInstan
     
     @Override
     protected ClassMirror loadClassMirrorInternal(Type type) {
-        ClassMirror classHolograph;
-        try {
-            classHolograph = Reflection.classMirrorForType(vm, ThreadHolograph.currentThreadMirror(), type, false, loader);
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(e.getMessage());
-        }
+        ClassMirror classHolograph = HolographInternalUtils.classMirrorForType(vm, ThreadHolograph.currentThreadMirror(), type, false, loader);
         return unwrapClassMirror(classHolograph);
     }
     

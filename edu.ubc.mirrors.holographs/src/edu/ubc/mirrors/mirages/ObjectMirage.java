@@ -18,7 +18,6 @@ import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.SystemStubs;
 
 /**
  * Superclass for all mirage classes.
@@ -165,11 +164,7 @@ public class ObjectMirage implements Mirage {
     public static ClassMirror getClassMirrorForType(ClassMirror callingClass, String descriptor) {
 	Type mirageType = Type.getType(descriptor);
 	Type type = MirageClassGenerator.getOriginalType(mirageType);
-	try {
-            return Reflection.classMirrorForType(callingClass.getVM(), ThreadHolograph.currentThreadMirror(), type, false, callingClass.getLoader());
-        } catch (ClassNotFoundException e) {
-            throw new NoClassDefFoundError(e.getMessage());
-        }
+        return HolographInternalUtils.classMirrorForType(callingClass.getVM(), ThreadHolograph.currentThreadMirror(), type, false, callingClass.getLoader());
     }
     
     public static Object getNativeStubsInstanceForClassMirror(ClassMirror classMirror) {

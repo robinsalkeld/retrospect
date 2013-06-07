@@ -325,11 +325,7 @@ public class ClassHolograph extends WrappingClassMirror {
 	} catch (UnsupportedOperationException e) {
 	    Type type = Reflection.typeForClassMirror(this);
 	    Type componentType = MirageClassGenerator.makeArrayType(type.getDimensions() - 1, type.getElementType());
-	    try {
-		return Reflection.classMirrorForType(getVM(), ThreadHolograph.currentThreadMirror(), componentType, false, getLoader());
-	    } catch (ClassNotFoundException e1) {
-		throw new NoClassDefFoundError(e1.toString());
-	    }
+	    return HolographInternalUtils.classMirrorForType(getVM(), ThreadHolograph.currentThreadMirror(), componentType, false, getLoader());
         }
     }
     
