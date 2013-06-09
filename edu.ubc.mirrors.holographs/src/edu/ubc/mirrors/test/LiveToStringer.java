@@ -38,21 +38,21 @@ import edu.ubc.mirrors.mirages.Stopwatch;
 public class LiveToStringer implements IApplication {
     public static void main(String[] args) throws Exception {
         final VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
-        final JDIVirtualMachineMirror liveVM = new JDIVirtualMachineMirror(jdiVM);
-        
         System.out.println("Connected.");
         
         EventSet eventSet = pauseAndGetThread(jdiVM);
         LocatableEvent event = (LocatableEvent)eventSet.iterator().next();
         ThreadReference thread = event.thread();
          
+        final JDIVirtualMachineMirror liveVM = new JDIVirtualMachineMirror(jdiVM);
+        
         ThreadMirror threadMirror = (ThreadMirror)liveVM.makeMirror(thread);
 //        final VirtualMachineHolograph holograpOnLiveVM = new VirtualMachineHolograph(liveVM, Reflection.getStandardMappedFiles());
 //        final ThreadHolograph threadHolograph = (ThreadHolograph)holograpOnLiveVM.getWrappedMirror(threadMirror);
 //        Reflection.withThread(threadHolograph, new Callable<Object>() {
 //            @Override
 //            public Object call() throws Exception {
-                
+                ToStringer.toStringAllTheObjects(liveVM, threadMirror);
 //                return null;
 //            }
 //        });
@@ -61,12 +61,6 @@ public class LiveToStringer implements IApplication {
 
         eventSet.resume();
         File snapshotPath = HeapDumper.dumpHeap(pid, new VoidProgressListener());
-        
-        eventSet = pauseAndGetThread(jdiVM);
-        event = (LocatableEvent)eventSet.iterator().next();
-        thread = event.thread();
-        
-        ToStringer.toStringAllTheObjects(liveVM, threadMirror);
         
         // Open memory snapshot
         ISnapshot snapshot = SnapshotFactory.openSnapshot(

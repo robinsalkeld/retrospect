@@ -1,81 +1,39 @@
-Connected.
-........................................40
-........................................80
-........................................120
-........................................160
-........................................200
-........................................240
-........................................280
-........................................320
-........................................360
-..
-Total classes: 362
-Total objects: 4554
-........................................1000
-........................................2000
-........................................3000
-........................................4000
-........................................5000
-........
-Num objects toString-ed: 5202
-Errors: 0
-Total time: 59770
-Average time per object: 11.489812
-Max time per object: 1577
-Objects taking more than 1/2 second (13):
-Average string length: 50.032295
-Average time per character: 0.2296479
-Max time per character: 4.5
-Count: 0
-Total: 0
-Jun 07, 2013 1:28:32 PM org.eclipse.mat.hprof.acquire.JMapHeapDumpProvider acquireDump
-INFO: Executing { "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/bin/jmap", "-dump:format=b,file=/Users/robinsalkeld/Documents/UBC/Code/snapshots/8726.hprof", "8726" }
-........................................40
-........................................80
-........................................120
-........................................160
-........................................200
-........................................240
-........................................280
-........................................320
-........................................360
-........................................400
-........................................440
-........................................480
-..........
-Prepared 490 classes in 35112ms
-Errors on classes: []
-........................................40
-........................................80
-........................................120
-........................................160
-........................................200
-........................................240
-........................................280
-........................................320
-........................................360
-........................................400
-........................................440
-....................
-Total classes: 460
-Total objects: 7621
-........................................1000
-........................................2000
-........................................3000
-........................................4000
-........................................5000
-........................................6000
-........................................7000
-........................
-Num objects toString-ed: 7621
-Errors: 0
-Total time: 21227
-Average time per object: 2.78533
-Max time per object: 1602
-Objects taking more than 1/2 second (4):
-Average string length: 63.51266
-Average time per character: 0.04385472
-Max time per character: 1.25
-Count: 681
-Total: 32510
-Average: 47
+!SESSION 2013-06-08 23:30:44.275 -----------------------------------------------
+eclipse.buildId=unknown
+java.version=1.7.0_05
+java.vendor=Oracle Corporation
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -application edu.ubc.mirrors.holographs.livetostringer
+Command-line arguments:  -application edu.ubc.mirrors.holographs.livetostringer -data /Users/robinsalkeld/Documents/workspace/../runtime-New_configuration(5) -dev file:/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/LiveToStringer/dev.properties -os macosx -ws cocoa -arch x86_64 -consoleLog
+
+!ENTRY org.eclipse.osgi 4 0 2013-06-08 23:30:46.120
+!MESSAGE Application error
+!STACK 1
+java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:339)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:200)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:182)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:391)
+	at java.net.Socket.connect(Socket.java:579)
+	at com.sun.tools.jdi.SocketTransportService.attach(SocketTransportService.java:222)
+	at com.sun.tools.jdi.GenericAttachingConnector.attach(GenericAttachingConnector.java:116)
+	at com.sun.tools.jdi.SocketAttachingConnector.attach(SocketAttachingConnector.java:90)
+	at edu.ubc.mirrors.jdi.JDIVirtualMachineMirror.connectOnPort(JDIVirtualMachineMirror.java:117)
+	at edu.ubc.mirrors.test.LiveToStringer.main(LiveToStringer.java:40)
+	at edu.ubc.mirrors.test.LiveToStringer.start(LiveToStringer.java:146)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+An error has occurred. See the log file
+/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/LiveToStringer/1370759444835.log.
