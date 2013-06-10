@@ -25,7 +25,11 @@ Export-Package: org.eclipse.mat.ui;x-friends:="org.eclipse.mat.chart.ui,org.ecli
  org.eclipse.mat.ui.internal;x-friends:="org.eclipse.mat.ui.rcp",
  org.eclipse.mat.ui.util;x-friends:="org.eclipse.mat.chart.ui,org.eclipse.mat.ui.rcp"
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
-Import-Package: com.ibm.icu.text;version="3.6.1"
+Import-Package: com.ibm.icu.text;version="3.6.1",
+ edu.ubc.mirrors,
+ edu.ubc.mirrors.eclipse.mat.plugins,
+ edu.ubc.mirrors.holographs,
+ edu.ubc.mirrors.mirages
 Bundle-Localization: plugin
 Bundle-Copyright: Copyright (c) 2008, 2011 SAP AG, IBM Corporation and others. 
  All rights reserved. This program and the accompanying materials 

@@ -101,6 +101,10 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 
+import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.eclipse.mat.plugins.HolographVMRegistry;
+import edu.ubc.mirrors.mirages.Reflection;
+
 public class InspectorView extends ViewPart implements IPartListener, ISelectionChangedListener
 {
     private HeapEditor editor;
@@ -891,7 +895,13 @@ public class InspectorView extends ViewPart implements IPartListener, ISelection
                                     classHierarchyTree.getTree().setRedraw(true);
                                 }
 
-                                String txt = object.getClassSpecificName();
+                                String txt;
+                                try {
+                                    txt = Reflection.toString(HolographVMRegistry.getMirror(object));
+                                } catch (MirrorInvocationTargetException e) {
+                                    e.printStackTrace();
+                                    txt = "";
+                                }
                                 resolvedValue.setText(txt != null ? txt : "");//$NON-NLS-1$
 
                                 if (!pinSelection)// no tab pinned
