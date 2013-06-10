@@ -1,26 +1,60 @@
-!SESSION 2013-06-09 21:46:29.472 -----------------------------------------------
+Connected.
+........................................40
+........................................80
+........................................120
+........................................160
+........................................200
+........................................240
+........................................280
+........................................320
+........................................360
+........................................400
+........................................440
+...............
+Total classes: 455
+Total objects: 8886
+........................................1000
+........................................2000
+........................................3000
+........................................4000
+........................................5000
+........................................6000
+........................................7000
+........................................8000
+........................................9000
+........................
+Num objects toString-ed: 9608
+Errors: 0
+Total time: 152907
+Average time per object: 15.914551
+Max time per object: 2111
+Objects taking more than 1/2 second: 31
+Average string length: 61.69442
+Average time per character: 0.2579577
+Max time per character: 1.5
+Jun 09, 2013 11:31:23 PM org.eclipse.mat.hprof.acquire.JMapHeapDumpProvider acquireDump
+INFO: Executing { "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/bin/jmap", "-dump:format=b,file=/Users/robinsalkeld/snapshots/10910.hprof", "10910" }
+!SESSION 2013-06-09 23:28:33.881 -----------------------------------------------
 eclipse.buildId=unknown
 java.version=1.7.0_05
 java.vendor=Oracle Corporation
 BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
-Framework arguments:  -application edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation 7778
-Command-line arguments:  -application edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation -data /Users/robinsalkeld/Documents/workspace/../runtime-New_configuration(5) -dev file:/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/LiveToStringer/dev.properties -os macosx -ws cocoa -arch x86_64 -consoleLog 7778
+Framework arguments:  -application edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation 7777
+Command-line arguments:  -application edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation -data /Users/robinsalkeld/Documents/workspace/../runtime-New_configuration(5) -dev file:/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/LiveToStringer/dev.properties -os macosx -ws cocoa -arch x86_64 -consoleLog 7777
 
-!ENTRY org.eclipse.osgi 4 0 2013-06-09 21:46:32.288
+!ENTRY org.eclipse.osgi 4 0 2013-06-09 23:31:24.143
 !MESSAGE Application error
 !STACK 1
-java.net.ConnectException: Connection refused
-	at java.net.PlainSocketImpl.socketConnect(Native Method)
-	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:339)
-	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:200)
-	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:182)
-	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:391)
-	at java.net.Socket.connect(Socket.java:579)
-	at com.sun.tools.jdi.SocketTransportService.attach(SocketTransportService.java:222)
-	at com.sun.tools.jdi.GenericAttachingConnector.attach(GenericAttachingConnector.java:116)
-	at com.sun.tools.jdi.SocketAttachingConnector.attach(SocketAttachingConnector.java:90)
-	at edu.ubc.mirrors.jdi.JDIVirtualMachineMirror.connectOnPort(JDIVirtualMachineMirror.java:117)
-	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:37)
+org.eclipse.mat.SnapshotException: Heap dump file was not created. jmap exit code = 0
+stdout:
+Dumping heap to /Users/robinsalkeld/snapshots/10910.hprof ...
+No such file or directory
+
+stderr:
+
+	at org.eclipse.mat.hprof.acquire.JMapHeapDumpProvider.acquireDump(JMapHeapDumpProvider.java:108)
+	at edu.ubc.mirrors.test.HeapDumper.dumpHeap(HeapDumper.java:40)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:60)
 	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:143)
 	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
 	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
@@ -36,4 +70,4 @@ java.net.ConnectException: Connection refused
 	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
 	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
 An error has occurred. See the log file
-/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/LiveToStringer/1370839590661.log.
+/Users/robinsalkeld/Documents/runtime-New_configuration(5)/.metadata/.log.
