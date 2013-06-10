@@ -5,7 +5,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -28,16 +27,14 @@ import com.sun.jdi.request.MethodEntryRequest;
 
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
-import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.mirages.Stopwatch;
 
-public class LiveToStringer implements IApplication {
+public class LiveVersusDeadToStringEvaluation implements IApplication {
     public static void main(String[] args) throws Exception {
-        final VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
+        int port = Integer.valueOf(args[0]);
+        
+        final VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(port);
         System.out.println("Connected.");
         
         EventSet eventSet = pauseAndGetThread(jdiVM);

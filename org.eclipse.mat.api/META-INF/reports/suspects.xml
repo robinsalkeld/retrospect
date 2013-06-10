@@ -1,0 +1,28 @@
+<!--
+    Copyright (c) 2008, 2011 SAP AG and IBM Corporation.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+   
+    Contributors:
+        SAP AG - initial API and implementation
+        Andrew Johnson - add schema
+ -->
+<section name="%suspects.title" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://www.eclipse.org/mat/report.xsd"
+	xsi:schemaLocation="http://www.eclipse.org/mat/report.xsd ../../../org.eclipse.mat.report/schema/report.xsd">
+
+	<param key="html.collapsed" value="false" />
+	<param key="filename_suffix" value="%suspects.suffix" />	
+
+	<section name="%overview.title">
+		<param key="html.separate_file" value="true" />
+		<template>org.eclipse.mat.api:overview</template>
+	</section>
+	
+	<query name="%suspects.leaks">
+		<command>leakhunter</command>
+	</query>
+
+</section>

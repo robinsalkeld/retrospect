@@ -50,14 +50,14 @@
       </application>
    </extension>
    <extension
-         id="livetostringer"
+         id="edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation"
          point="org.eclipse.core.runtime.applications">
       <application
             cardinality="singleton-global"
             thread="main"
             visible="true">
          <run
-               class="edu.ubc.mirrors.test.LiveToStringer">
+               class="edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation">
          </run>
       </application>
    </extension>

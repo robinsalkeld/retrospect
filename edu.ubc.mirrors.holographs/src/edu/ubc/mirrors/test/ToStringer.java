@@ -154,7 +154,7 @@ public class ToStringer implements IApplication {
                 System.out.println("Total time: " + time);
                 System.out.println("Average time per object: " + ((float)time) / count);
                 System.out.println("Max time per object: " + maxTime);
-                System.out.println("Objects taking more than 1/2 second ("+timesOver500ms.size()+"):");
+                System.out.println("Objects taking more than 1/2 second: "+timesOver500ms.size());
 //                for (String s : timesOver500ms) {
 //                    System.out.println(s);
 //                }
@@ -162,7 +162,7 @@ public class ToStringer implements IApplication {
                 System.out.println("Average time per character: " + ((float)time) / charCount);
                 System.out.println("Max time per character: " + maxTimePerChar);
             }
-            MirageClassLoader.printStats();
+//            MirageClassLoader.printStats();
         }
     }
     

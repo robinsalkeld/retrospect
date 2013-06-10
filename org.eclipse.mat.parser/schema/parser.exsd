@@ -1,0 +1,191 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="org.eclipse.mat.parser" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="org.eclipse.mat.parser" id="parser" name="Heap Dump Parser"/>
+      </appInfo>
+      <documentation>
+         The format of heap dumps is specific to the Virtual Machine used.
+This extensions allows to plug in new dump formats. Out of the box, the Memory Analyzer 
+supports HPROF and IBM dumps read via DTFJ. A DTFJ implementation is available from IBM developerWorks.
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appInfo>
+            <meta.element />
+         </appInfo>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="parser"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="parser">
+      <complexType>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Name of the heap dump format. For example, shown in the file selection dialog.
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="fileExtension" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The file extension typically associated witht the file format. Used to filter files in the file selection dialog.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="indexBuilder" type="string" use="required">
+            <annotation>
+               <documentation>
+                  implementor of &lt;a href=&quot;org/eclipse/mat/parser/IIndexBuilder.html&quot;&gt;&lt;samp&gt;org.eclipse.mat.snapshot.adapter.IIndexBuilder&lt;/samp&gt;&lt;/a&gt; which creates the index files, i.e. the structural information of the heap dump like the reference graph
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.eclipse.mat.parser.IIndexBuilder"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="objectReader" type="string" use="required">
+            <annotation>
+               <documentation>
+                  implementor of &lt;a href=&quot;org/eclipse/mat/parser/IObjectReader.html&quot;&gt;&lt;samp&gt;org.eclipse.mat.parser.IObjectReader&lt;/samp&gt;&lt;/a&gt; to read the object details from the heap dump file
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.eclipse.mat.parser.IObjectReader"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="dynamic" type="string">
+            <annotation>
+               <documentation>
+                  This is a class which extends java.util.Map and returns a set of extensions and descriptions, together with ids which replace the attributes &quot;id&quot;, &quot;name&quot;, &quot;fileExtension&quot; in the dynamic parser.
+
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":java.util.Map"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="since"/>
+      </appInfo>
+      <documentation>
+         0.7.0
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="examples"/>
+      </appInfo>
+      <documentation>
+         Following is an example of a name resolver declaration: 
+&lt;p&gt;
+&lt;pre&gt;
+   &lt;extension
+         id=&quot;hprof&quot;
+         name=&quot;HPROF Formatted Dumps&quot;
+         point=&quot;org.eclipse.mat.parser.parser&quot;&gt;
+      &lt;parser
+        name=&quot;HPROF binary heap dumps&quot;
+            fileExtension=&quot;hprof,bin&quot;
+            indexBuilder=&quot;org.eclipse.mat.hprof.HprofIndexBuilder&quot;
+            objectReader=&quot;org.eclipse.mat.hprof.HprofHeapObjectReader&quot;&gt;
+      &lt;/parser&gt;
+   &lt;/extension&gt;
+&lt;/pre&gt;
+&lt;/p&gt;
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="apiInfo"/>
+      </appInfo>
+      <documentation>
+         The value of the indexBuilder attribute must represent an implementor of &lt;samp&gt;org.eclipse.mat.parser.IIndexBuilder&lt;/samp&gt;,
+the objectReader attribute &lt;samp&gt;org.eclipse.mat.parser.IObjectReader&lt;/samp&gt;.
+
+The dynamicParser attribute is a class which extends java.util.Map and returns a set of extensions and descriptions, together with ids which replace the attributes &quot;id&quot;, &quot;name&quot;, &quot;fileExtension&quot; in the dynamic parser.
+&lt;pre&gt;
+Map&lt;String, Map&lt;String, String&gt;&gt;
+&lt;/pre&gt;
+
+&lt;dl&gt;
+&lt;dt&gt;Main id&lt;/dt&gt;
+&lt;dd&gt;fully qualified id for each parser
+&lt;dl&gt;
+  &lt;dt&gt;id&lt;/dt&gt;&lt;dd&gt;fully qualified id for the parser&lt;/dd&gt;
+  &lt;dt&gt;name&lt;/dt&gt;&lt;dd&gt;readable name for the parser&lt;/dd&gt;
+  &lt;dt&gt;fileExtension&lt;/dt&gt;&lt;dd&gt;file extensions for this parser&lt;/dd&gt;
+&lt;/dl&gt;
+&lt;/dd&gt;
+&lt;/dl&gt;
+  
+The subparsers share the indexBuilder and objectReader.
+&lt;p&gt;This is used for example by the DTFJ parser which has to find out at run time which DTFJ implementations are available and to create an MAT parser definition for each one.&lt;/p&gt;
+
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="implementation"/>
+      </appInfo>
+      <documentation>
+         The Memory Analyzer supplies an implementation for HPROF and IBM DTFJ format dumps. Check out the &lt;samp&gt;org.eclipse.mat.hprof&lt;/samp&gt; plug-in and &lt;samp&gt;org.eclipse.mat.dtfj&lt;/samp&gt; plug-in.
+ A DTFJ implementation is available from IBM DeveloperWorks.
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appInfo>
+         <meta.section type="copyright"/>
+      </appInfo>
+      <documentation>
+         Copyright (c) 2008 SAP AG and others.&lt;br&gt;
+All rights reserved. This program and the accompanying materials are made 
+available under the terms of the Eclipse Public License v1.0 which 
+accompanies this distribution, and is available at 
+&lt;a href=&quot;http://www.eclipse.org/legal/epl-v10.html&quot;&gt;http://www.eclipse.org/legal/epl-v10.html&lt;/a&gt;
+      </documentation>
+   </annotation>
+
+</schema>
