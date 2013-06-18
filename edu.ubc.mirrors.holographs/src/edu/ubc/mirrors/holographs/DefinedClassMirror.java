@@ -37,7 +37,10 @@ public class DefinedClassMirror extends BytecodeClassMirror implements NewInstan
     
     @Override
     protected ClassMirror loadClassMirrorInternal(Type type) {
-        ClassMirror classHolograph = HolographInternalUtils.classMirrorForType(vm, ThreadHolograph.currentThreadMirror(), type, false, loader);
+        // Need to use ThreadHolograph.currentThreadMirrorNoError() in case we are trying to load a bootstrap
+        // class and don't have an active thread. This is safe since downstream methods will check for a valid
+        // thread if they need one.
+        ClassMirror classHolograph = HolographInternalUtils.classMirrorForType(vm, ThreadHolograph.currentThreadMirrorNoError(), type, false, loader);
         return unwrapClassMirror(classHolograph);
     }
     

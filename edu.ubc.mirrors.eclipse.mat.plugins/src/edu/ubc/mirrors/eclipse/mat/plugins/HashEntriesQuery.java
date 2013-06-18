@@ -124,11 +124,11 @@ public class HashEntriesQuery implements IQuery
                             Entry entry = (Entry) row;
                             switch (columnIndex) {
                             case 0:
-                                return Reflection.toString(entry.collection);
+                                return HolographVMRegistry.toString(entry.collection);
                             case 1:
-                                return Reflection.toString(entry.getKey());
+                                return HolographVMRegistry.toString(entry.getKey());
                             case 2:
-                                return Reflection.toString(entry.getValue());
+                                return HolographVMRegistry.toString(entry.getValue());
                             }
                             return null;
                         } catch (Exception e) {
@@ -190,7 +190,7 @@ public class HashEntriesQuery implements IQuery
 		public String getString(String key, IProgressListener listener) throws MirrorInvocationTargetException
 		{
 			ObjectMirror value = (ObjectMirror)Reflection.invokeMethodHandle(collection, mapGet, key);
-			return Reflection.toString(value);
+			return HolographVMRegistry.toString(value);
 		}
 
 		public int getObjectId(String key, IProgressListener listener)

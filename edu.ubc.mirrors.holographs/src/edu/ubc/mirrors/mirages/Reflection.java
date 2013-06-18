@@ -323,6 +323,10 @@ public class Reflection {
                  new HashMap<VirtualMachineMirror, MethodMirror>();
     
     public static String toString(ObjectMirror mirror) throws MirrorInvocationTargetException {
+        if (mirror == null) {
+            return "null";
+        }
+        
         return toString(mirror, mirror.getClassMirror().getVM().getThreads().get(0));
     }    
     
@@ -624,5 +628,19 @@ public class Reflection {
             }
         default: return type;
         }
+    }
+    
+    public static String getThreadName(ThreadMirror thread) {
+        try {
+            FieldMirror nameField = thread.getClassMirror().getVM().findBootstrapClassMirror(Thread.class.getName()).getDeclaredField("name");
+            CharArrayMirror nameChars = (CharArrayMirror)thread.get(nameField);
+            char[] chars = new char[nameChars.length()];
+            Reflection.arraycopy(nameChars, 0, new NativeCharArrayMirror(chars), 0, chars.length);
+            return new String(chars);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } 
     }
 }

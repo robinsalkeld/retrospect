@@ -4,6 +4,7 @@ import java.util.List;
 
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
@@ -33,7 +34,7 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         this.wrappedThread = wrappedThread;
     }
 
-    public void enterHologramExecution() {
+    public synchronized void enterHologramExecution() {
         if (runningThread != null && runningThread != Thread.currentThread()) {
             throw new IllegalStateException();
         }
@@ -41,20 +42,25 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         if (thisThreadsMirror != null && thisThreadsMirror != this) {
             throw new IllegalStateException();
         }
+        
         runningThread = Thread.currentThread();
         runningThreadCount++;
         currentThreadMirror.set(this);
     }
     
-    public static ThreadHolograph currentThreadMirror() {
-	ThreadHolograph result = currentThreadMirror.get();
+    public static ThreadHolograph currentThreadMirrorNoError() {
+        return currentThreadMirror.get();
+    }
+    
+    public synchronized static ThreadHolograph currentThreadMirror() {
+	ThreadHolograph result = currentThreadMirrorNoError();
         if (result == null) {
             throw new IllegalStateException("Not in holograph execution.");
         }
         return result;
     }
     
-    public void exitHologramExecution() {
+    public synchronized void exitHologramExecution() {
 	if (runningThreadCount <= 0 || runningThread != Thread.currentThread()) {
             throw new IllegalStateException();
         }
@@ -82,4 +88,8 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     public static boolean inMetalevel() {
         return metalevel.get().intValue() != 0;
     }
+    
+    public String toString() {
+        return getClass().getSimpleName() + " (" + Reflection.getThreadName(this) + ")";
+    };
 }

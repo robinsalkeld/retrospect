@@ -70,7 +70,7 @@ public class HeapDumpTest2 implements IApplication {
             for (ObjectMirror ruby : rubyClass.getInstances()) {
         	// Invoke JRubyStackTraces#printStackTraces reflectively.
         	method.invoke(thread, null, ruby);
-        	System.out.println(Reflection.toString(baos));
+        	System.out.println(Reflection.toString(baos, thread));
             }
             return null;
         }

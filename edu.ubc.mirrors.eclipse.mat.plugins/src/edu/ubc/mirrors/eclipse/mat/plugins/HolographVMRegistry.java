@@ -20,6 +20,7 @@ import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
 
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -27,6 +28,7 @@ import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpObjectMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.wrapping.WrappingMirror;
 
 public class HolographVMRegistry {
@@ -34,6 +36,8 @@ public class HolographVMRegistry {
     private static final Map<ISnapshot, VirtualMachineHolograph> vms = new HashMap<ISnapshot, VirtualMachineHolograph>();
     private static final Map<VirtualMachineMirror, IEvaluationEngine> evalEngines = new HashMap<VirtualMachineMirror, IEvaluationEngine>();
     private static final Map<IObject, ObjectMirror> mirrors = new HashMap<IObject, ObjectMirror>();
+    
+    private static final Map<VirtualMachineMirror, ThreadMirror> threadsForEval = new HashMap<VirtualMachineMirror, ThreadMirror>();
     
     private static final ILaunchConfigurationType remoteJavaLaunchType;
     static {
@@ -65,7 +69,20 @@ public class HolographVMRegistry {
             vm = new VirtualMachineHolograph(hdvm, mappedFiles);
             
             vms.put(snapshot, vm);
+            
+            ThreadMirror match = null;
+            for (ThreadMirror t : vm.getThreads()) {
+                if (Reflection.getThreadName(t).equals("main")) {
+                    match = t;
+                    break;
+                }
+            }
+            if (match == null) {
+                throw new IllegalStateException("Thread named 'main' not found.");
+            }
+            setThreadForEval(vm, match);
         }
+        
         return vm;
     }
     
@@ -109,6 +126,25 @@ public class HolographVMRegistry {
 
     public static IObject fromMirror(ObjectMirror element) {
         return ((HeapDumpObjectMirror)((WrappingMirror)element).getWrapped()).getHeapDumpObject();
+    }
+    
+    public static void setThreadForEval(VirtualMachineMirror vm, ThreadMirror thread) {
+        threadsForEval.put(vm, thread);
+    }
+    
+    public static ThreadMirror getThreadForEval(VirtualMachineMirror vm) {
+        return threadsForEval.get(vm);
+    }
+    
+    public static String toString(ObjectMirror mirror) {
+        if (mirror == null) {
+            return "null";
+        }
+        try {
+            return Reflection.toString(mirror, getThreadForEval(mirror.getClassMirror().getVM()));
+        } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
     
 }

@@ -83,16 +83,7 @@ public class MirrorsThreadReference extends MirrorsInstanceReference implements 
 
     @Override
     public String name() {
-        try {
-            CharArrayMirror nameChars = (CharArrayMirror)wrapped.get(vm.vm.findBootstrapClassMirror(Thread.class.getName()).getDeclaredField("name"));
-            char[] chars = new char[nameChars.length()];
-            Reflection.arraycopy(nameChars, 0, new NativeCharArrayMirror(chars), 0, chars.length);
-            return new String(chars);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } 
+        return Reflection.getThreadName(wrapped);
     }
 
     @Override

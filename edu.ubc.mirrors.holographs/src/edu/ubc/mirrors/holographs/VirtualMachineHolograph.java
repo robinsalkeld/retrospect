@@ -96,7 +96,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             System.out.println("Creating VM holograph...");
         }
         
-        if (wrappedVM instanceof HeapDumpVirtualMachineMirror) {
+        String bcdProperty = System.getProperty("edu.ubc.mirrors.mirages.bytecodeCacheDir");
+        if (bcdProperty != null) {
+            bytecodeCacheDir = new File(bcdProperty);
+        } else if (wrappedVM instanceof HeapDumpVirtualMachineMirror) {
             HeapDumpVirtualMachineMirror hdVM = (HeapDumpVirtualMachineMirror)wrappedVM;
             String snapshotPath = hdVM.getSnapshot().getSnapshotInfo().getPath();
             int lastDot = snapshotPath.lastIndexOf('.');

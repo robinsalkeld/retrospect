@@ -19,6 +19,7 @@ import java.util.Stack;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
@@ -277,6 +278,7 @@ public class MirageClassLoader extends ClassLoader {
             cacheIndex = findCacheIndex(originalInternalName, originalBytecode);
             byte[] result = readFromBytecodeCache(cacheIndex, internalName);
             if (result != null) {
+//                new ClassReader(result).accept(new ClassVisitor(Opcodes.ASM4) {}, null, 0);
                 return result;
             }
         }

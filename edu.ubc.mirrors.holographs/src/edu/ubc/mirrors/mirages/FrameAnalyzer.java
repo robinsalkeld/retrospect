@@ -113,6 +113,8 @@ public class FrameAnalyzer extends Analyzer<FrameValue> {
         int n = m.instructions.size();
         for (int i = 0; i < n; i++) {
             int insnType = insnNode.getType();
+            // Fetch the next node before possibly deleting this one,
+            // since that will clear the links.
             AbstractInsnNode nextNode = insnNode.getNext();
             
             if (insnType == AbstractInsnNode.LABEL

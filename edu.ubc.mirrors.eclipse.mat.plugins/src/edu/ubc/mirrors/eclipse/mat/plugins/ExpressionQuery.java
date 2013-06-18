@@ -6,7 +6,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 
 import org.eclipse.debug.core.DebugEvent;
-import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaThread;
@@ -15,7 +14,6 @@ import org.eclipse.jdt.debug.eval.IEvaluationListener;
 import org.eclipse.jdt.debug.eval.IEvaluationResult;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
-import org.eclipse.jdt.internal.debug.core.model.JDIThread;
 import org.eclipse.jdt.internal.debug.core.model.JDIValue;
 import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.IResult;
@@ -28,12 +26,10 @@ import org.eclipse.mat.util.IProgressListener;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
 
-import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.asjdi.MirrorsObjectReference;
-import edu.ubc.mirrors.asjdi.MirrorsThreadReference;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 import edu.ubc.mirrors.mirages.Reflection;
 
@@ -46,9 +42,6 @@ public class ExpressionQuery implements IQuery {
 
     @Argument(isMandatory = true)
     public String expression = "toString()";
-    
-    @Argument(isMandatory = false)
-    public String threadID = "main";
     
     private List<Value> results;
             
@@ -67,11 +60,7 @@ public class ExpressionQuery implements IQuery {
         }
         
         public String getString() {
-            try {
-                return Reflection.toString(mirror);
-            } catch (MirrorInvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+            return HolographVMRegistry.toString(mirror);
         }
     }
     
@@ -89,19 +78,9 @@ public class ExpressionQuery implements IQuery {
             final IEvaluationEngine engine = HolographVMRegistry.getEvaluationEngine(vm);
             JDIDebugTarget debugTarget = (JDIDebugTarget)engine.getDebugTarget();
             
-            IJavaThread match = null;
-            for (IThread t : debugTarget.getThreads()) {
-                if (t.getName().equals(threadID)) {
-                    match = (IJavaThread)t;
-                    break;
-                }
-            }
-            if (match == null) {
-                throw new IllegalStateException("Thread nameds '" + threadID + "' not found.");
-            }
-            final IJavaThread evalThread = match;
-            ThreadReference jdiThread = ((JDIThread)evalThread).getUnderlyingThread();
-            ThreadMirror threadMirror = (ThreadMirror)((MirrorsThreadReference)jdiThread).getWrapped();
+            ThreadMirror threadMirror = HolographVMRegistry.getThreadForEval(vm);
+            ThreadReference jdiThread = (ThreadReference)jdiVM.wrapMirror(threadMirror);
+            final IJavaThread evalThread = debugTarget.findThread(jdiThread);
             
             listener.subTask("Collecting objects");
             List<IObject> input = new ArrayList<IObject>();
@@ -162,12 +141,7 @@ public class ExpressionQuery implements IQuery {
 
                 };
                 
-                Reflection.withThread(threadMirror, new Callable<Void>() {
-                    public Void call() throws Exception {
-                        engine.evaluate(expression, thisContext, evalThread, thisListener, DebugEvent.EVALUATION, false);
-                        return null;
-                    } 
-                });
+                engine.evaluate(expression, thisContext, evalThread, thisListener, DebugEvent.EVALUATION, false);
                 
                 // Need to synchronize since you can't evaluate multiple expressions against
                 // a single ThreadMirror.
