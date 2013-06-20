@@ -10,8 +10,10 @@ import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -254,7 +256,7 @@ public class ClassHolograph extends WrappingClassMirror {
         if (cause instanceof Mirage) {
             return new MirrorInvocationTargetException((InstanceMirror)((Mirage)cause).getMirror());
         } else {
-            throw (InternalError)new InternalError().initCause(cause);
+            throw (InternalError)new InternalError(cause.getMessage()).initCause(cause);
         }
     }
     
@@ -286,9 +288,40 @@ public class ClassHolograph extends WrappingClassMirror {
                 throw new IllegalStateException();
             } else {
                 bytecodeMirror = getVM().getBytecodeClassMirror(this);
+                validateBytecodeClass();
             }
         }
         return bytecodeMirror;
+    }
+
+    /*
+     * Checks that the class defined by the bytecode mirror matches the definition
+     * of the class from the heap dump. This will catch a lot of version mismatches.
+     */ 
+    private void validateBytecodeClass() {
+        Map<String, FieldMirror> expectedFields = new HashMap<String, FieldMirror>();
+        for (FieldMirror f : getDeclaredFields()) {
+            expectedFields.put(f.getName(), f);
+        }
+        
+        for (FieldMirror bytecodeField : bytecodeMirror.getDeclaredFields()) {
+            FieldMirror expectedField = expectedFields.remove(bytecodeField.getName());
+            if (expectedField == null) {
+                throw new IllegalStateException("Unexpected field found in bytecode class: " + bytecodeField);
+            }
+            // Just use type name - checking actual types across VMs is too complicated and
+            // causes too many side effects to boot.
+            if (!expectedField.getTypeName().equals(bytecodeField.getTypeName())) {
+                throw new IllegalStateException("Type mismatch for field " + expectedField.getName() + ": expected " + expectedField.getTypeName() + " but was " + bytecodeField.getTypeName());
+            }
+            if (expectedField.getModifiers() != bytecodeField.getModifiers()) {
+                throw new IllegalStateException("Modifiers mismatch for field " + expectedField.getName() + ": expected " + expectedField.getModifiers() + " but was " + bytecodeField.getModifiers());
+            }
+        }
+        
+        if (!expectedFields.isEmpty()) {
+            throw new IllegalStateException("Bytecode class missing fields: " + expectedFields);
+        }
     }
 
     @Override

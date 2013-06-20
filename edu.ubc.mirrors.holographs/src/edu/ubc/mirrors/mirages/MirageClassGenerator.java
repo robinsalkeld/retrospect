@@ -103,7 +103,7 @@ public class MirageClassGenerator extends ClassVisitor {
     public static Map<org.objectweb.asm.commons.Method, Method> indexStubMethods(Class<?> nativeStubsClass) {
         if (nativeStubsClass != null) {
             Map<org.objectweb.asm.commons.Method, Method> result = new HashMap<org.objectweb.asm.commons.Method, Method>();
-            for (Method m : nativeStubsClass.getDeclaredMethods()) {
+            for (Method m : nativeStubsClass.getMethods()) {
                 org.objectweb.asm.commons.Method method = org.objectweb.asm.commons.Method.getMethod(m);
                 result.put(method, m);
             }

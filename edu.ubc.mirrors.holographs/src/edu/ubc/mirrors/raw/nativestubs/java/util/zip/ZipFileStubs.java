@@ -95,6 +95,19 @@ public class ZipFileStubs extends NativeStubs {
         }
     }
     
+    // Java 1.6
+    public long getEntry(long jzfile, InstanceMirror name, boolean addSlash) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        ZipFile hostZipFile = getVM().getZipFileForAddress(jzfile);
+        long hostJzfile = getJzfile(hostZipFile);
+        
+        String realString = Reflection.getRealStringForMirror(name);
+        NativeByteArrayMirror nativeNameMirror = new NativeByteArrayMirror(realString.getBytes());
+        Object nativeName = nativeNameMirror.getNativeObject();
+        long hostJzentry = (Long)getHostNativeMethod(ZipFile.class, "getEntry", Long.TYPE, nativeName.getClass(), Boolean.TYPE).invoke(null, hostJzfile, nativeName, addSlash);
+        return hostJzentry;
+    }
+    
+    // Java 1.7
     public long getEntry(long jzfile, ByteArrayMirror name, boolean addSlash) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         ZipFile hostZipFile = getVM().getZipFileForAddress(jzfile);
         long hostJzfile = getJzfile(hostZipFile);
@@ -118,26 +131,41 @@ public class ZipFileStubs extends NativeStubs {
         // TODO-RS: Check that this entry was created within these stub methods, and not open from the original VM!
     }
     
+    public long getTime(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        return getEntryTime(jzentry);
+    }
     public long getEntryTime(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
         return (Long)getHostNativeMethod(ZipFile.class, "getEntryTime", Long.TYPE).invoke(null, jzentry);
     }
     
+    public long getCrc(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        return getEntryCrc(jzentry);
+    }
     public long getEntryCrc(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
         return (Long)getHostNativeMethod(ZipFile.class, "getEntryCrc", Long.TYPE).invoke(null, jzentry);
     }
     
+    public long getCSize(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        return getEntryCSize(jzentry);
+    }
     public long getEntryCSize(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
         return (Long)getHostNativeMethod(ZipFile.class, "getEntryCSize", Long.TYPE).invoke(null, jzentry);
     }
     
+    public long getSize(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        return getEntrySize(jzentry);
+    }
     public long getEntrySize(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
         return (Long)getHostNativeMethod(ZipFile.class, "getEntrySize", Long.TYPE).invoke(null, jzentry);
     }
     
+    public int getMethod(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+        return getEntryMethod(jzentry);
+    }
     public int getEntryMethod(long jzentry) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         checkEntry(jzentry);
         return (Integer)getHostNativeMethod(ZipFile.class, "getEntryMethod", Long.TYPE).invoke(null, jzentry);

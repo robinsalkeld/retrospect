@@ -39,7 +39,7 @@ public class UnsafeStubs extends NativeStubs {
         ObjectArrayMirror array = (ObjectArrayMirror)object;
         // TODO-RS: Here (and several other similar places in this class)
         // these offset calculations need to be verified.
-        return array.get((int)((offset - 16) / 4));
+        return array.get((int)((offset - arrayBaseOffsetByClassName(array.getClassMirror().getClassName())) / 4));
     }
     
     public int getInt(InstanceMirror unsafe, ObjectMirror object, long offset) {
@@ -48,10 +48,10 @@ public class UnsafeStubs extends NativeStubs {
         // in ConcurrentHashMap - to be completed.
         String className = array.getClassMirror().getClassName();
         if (className.equals("[I")) {
-            int index = (int)((offset - 16) / 4);
+            int index = (int)((offset - arrayBaseOffsetByClassName(className)) / 4);
             return ((IntArrayMirror)array).getInt(index);
         } else if (className.equals("[B")) {
-            int index = (int)(offset - 16);
+            int index = (int)(offset - arrayBaseOffsetByClassName(className));
             ByteArrayMirror bam = (ByteArrayMirror)array;
             ByteBuffer buffer = ByteBuffer.allocate(4);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -70,10 +70,10 @@ public class UnsafeStubs extends NativeStubs {
         // in ConcurrentHashMap - to be completed.
         String className = array.getClassMirror().getClassName();
         if (className.equals("[I")) {
-            int index = (int)((offset - 16) / 4);
+            int index = (int)((offset - arrayBaseOffsetByClassName(className)) / 4);
             ((IntArrayMirror)array).setInt(index, value);
         } else if (className.equals("[B")) {
-            int index = (int)offset - 16;
+            int index = (int)offset - arrayBaseOffsetByClassName(className);
             ByteArrayMirror bam = (ByteArrayMirror)array;
             ByteBuffer buffer = ByteBuffer.allocate(4);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -90,7 +90,7 @@ public class UnsafeStubs extends NativeStubs {
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
             // TODO-RS: Need to be much more careful about this!
-            array.set((int)((offset - 16) / 4), element);
+            array.set((int)((offset - arrayBaseOffsetByClassName(mirror.getClassMirror().getClassName())) / 4), element);
         } else if (mirror instanceof InstanceMirror) {
             InstanceMirror instance = (InstanceMirror)mirror;
             FieldMirror field = fieldForOffset(instance, offset);
@@ -100,6 +100,14 @@ public class UnsafeStubs extends NativeStubs {
         }
     }
     
+    public int arrayBaseOffset(InstanceMirror unsafe, ClassMirror klass) {
+        return arrayBaseOffsetByClassName(klass.getClassName());
+    }
+    
+    public int arrayBaseOffsetByClassName(String name) {
+        // TODO-RS: Actually figure out dynamically.
+        return 12;
+    }
     public long objectFieldOffset(InstanceMirror unsafe, InstanceMirror fieldMirror) {
         ClassMirror klass = (ClassMirror)HolographInternalUtils.getField(fieldMirror, "clazz");
         String fieldName = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(fieldMirror, "name"));
@@ -159,7 +167,7 @@ public class UnsafeStubs extends NativeStubs {
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
             // TODO-RS: Need to be much more careful about this!
-            int index = (int)((offset - 16) / 4);
+            int index = (int)((offset - arrayBaseOffsetByClassName(array.getClassMirror().getClassName())) / 4);
             ObjectMirror current = array.get(index);
             if (current == oldValue) {
                 array.set(index, newValue);

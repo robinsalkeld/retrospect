@@ -1,5 +1,10 @@
 package edu.ubc.mirrors.eclipse.mat.plugins;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,13 +64,34 @@ public class HolographVMRegistry {
         if (vm == null) {
             HeapDumpVirtualMachineMirror hdvm = new HeapDumpVirtualMachineMirror(snapshot);
             
-            // TODO-RS: proper configuration
-            Map<String, String> mappedFiles = new HashMap<String, String>(Collections.singletonMap("/", "/"));
-            
-            // TODO-RS: Haxxors to avoid handling "." correctly.
-            String jrubyJar = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/lib/jruby.jar";
-            mappedFiles.put("./jruby-1.6.4/lib/jruby.jar", jrubyJar);
-            
+            String snapshotPath = snapshot.getSnapshotInfo().getPath();
+            int lastDot = snapshotPath.lastIndexOf('.');
+            File holographicFSConfigPath = new File(snapshotPath.substring(0, lastDot) + "_hfs.ini");
+            Map<String, String> mappedFiles = new HashMap<String, String>();
+            try {
+                if (holographicFSConfigPath.exists()) {
+                    BufferedReader br = new BufferedReader(new FileReader(holographicFSConfigPath));
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        int equalsIndex = line.indexOf('=');
+                        String key, value;
+                        if (equalsIndex < 0) {
+                            key = line;
+                            value = line;
+                        } else {
+                            key = line.substring(0, equalsIndex);
+                            value = line.substring(equalsIndex + 1);
+                        }
+                        mappedFiles.put(key, value);
+                    }
+                    br.close();
+                } else {
+                    holographicFSConfigPath.createNewFile();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+                
             vm = new VirtualMachineHolograph(hdvm, mappedFiles);
             
             vms.put(snapshot, vm);
@@ -142,9 +168,11 @@ public class HolographVMRegistry {
         }
         try {
             return Reflection.toString(mirror, getThreadForEval(mirror.getClassMirror().getVM()));
-        } catch (MirrorInvocationTargetException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
     }
     
 }
+

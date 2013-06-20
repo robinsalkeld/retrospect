@@ -26,6 +26,7 @@ import org.objectweb.asm.Type;
 
 import sun.misc.FileURLMapper;
 import sun.misc.Launcher;
+import sun.misc.URLClassPath;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
@@ -62,6 +63,7 @@ import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
+import edu.ubc.mirrors.raw.SandboxedClassLoader;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class VirtualMachineHolograph extends WrappingVirtualMachine {
@@ -121,7 +123,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         	filteredURLs.add(url);
             }
         }
-        this.bootstrapBytecodeLoader = new URLClassLoader(filteredURLs.toArray(new URL[filteredURLs.size()]));
+        this.bootstrapBytecodeLoader = new SandboxedClassLoader(filteredURLs.toArray(new URL[filteredURLs.size()]));
         
         // Start a thread dedicated to debugging, so the debugger has something to
         // execute mirror interface methods on without messing up the rest of the VM.
@@ -143,17 +145,38 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     private List<URL> extractBootstrapPath(VirtualMachineMirror wrappedVM) {
 	try {
 	    ClassMirror launcherClass = wrappedVM.findBootstrapClassMirror(Launcher.class.getName());
-	    InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.getStaticFieldValues().get(launcherClass.getDeclaredField("bootClassPath"));
-	    ClassMirror fileClass = wrappedVM.findBootstrapClassMirror(File.class.getName());
-	    char pathSeparator = fileClass.getStaticFieldValues().getChar(fileClass.getDeclaredField("pathSeparatorChar"));
-	    String bootClassPath = Reflection.getRealStringForMirror(bootClassPathMirror);
-	    String[] paths = bootClassPath.split("" + pathSeparator);
-	    List<URL> urls = new ArrayList<URL>();
-	    for (int i = 0; i < paths.length; i++) {
-	        File mappedFile = getMappedFile(new File(paths[i]), true);
-	        urls.add(mappedFile.toURI().toURL());
+	    try {
+	        // Java 1.7
+	        InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.getStaticFieldValues().get(launcherClass.getDeclaredField("bootClassPath"));
+	        ClassMirror fileClass = wrappedVM.findBootstrapClassMirror(File.class.getName());
+	        char pathSeparator = fileClass.getStaticFieldValues().getChar(fileClass.getDeclaredField("pathSeparatorChar"));
+	        String bootClassPath = Reflection.getRealStringForMirror(bootClassPathMirror);
+	        String[] paths = bootClassPath.split("" + pathSeparator);
+	        List<URL> urls = new ArrayList<URL>();
+	        for (int i = 0; i < paths.length; i++) {
+	            File mappedFile = getMappedFile(new File(paths[i]), true);
+	            urls.add(mappedFile.toURI().toURL());
+	        }
+	        return urls;
+	    } catch (NoSuchFieldException e) {
+	        // Java 1.6
+	        InstanceMirror /* URLClassPath */ bootstrapClassPathMirror = (InstanceMirror)launcherClass.getStaticFieldValues().get(launcherClass.getDeclaredField("bootstrapClassPath"));
+	        ClassMirror urlClassPathClass = wrappedVM.findBootstrapClassMirror(URLClassPath.class.getName());
+	        InstanceMirror /* ArrayList */ listMirror = (InstanceMirror)bootstrapClassPathMirror.get(urlClassPathClass.getDeclaredField("path"));
+	        ClassMirror arrayListClass = wrappedVM.findBootstrapClassMirror(ArrayList.class.getName());
+                ObjectArrayMirror /* URL[] */ arrayMirror = (ObjectArrayMirror)listMirror.get(arrayListClass.getDeclaredField("elementData"));
+                int size = listMirror.getInt(arrayListClass.getDeclaredField("size"));
+                List<URL> urls = new ArrayList<URL>();
+                ClassMirror urlClass = wrappedVM.findBootstrapClassMirror(URL.class.getName());
+                for (int i = 0; i < size; i++) {
+                    InstanceMirror url = (InstanceMirror)arrayMirror.get(i);
+                    String path = Reflection.getRealStringForMirror((InstanceMirror)url.get(urlClass.getDeclaredField("path")));
+                    // TODO-RS: Reconstruct the whole url, not just the path
+                    File mappedFile = getMappedFile(new File(path), true);
+                    urls.add(mappedFile.toURI().toURL());
+                }
+                return urls;
 	    }
-	    return urls;
 	} catch (MalformedURLException e) {
 	    throw new RuntimeException(e);
 	} catch (IllegalAccessException e) {
@@ -259,7 +282,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         for (Map.Entry<String, String> entry : mappedFiles.entrySet()) {
             String key = entry.getKey();
             if (path.startsWith(key)) {
-                return new File(entry.getValue() + path.substring(key.length()));
+                // TODO-RS: Be more general about mapping between file systems w.r.t. separators
+                String suffix = path.substring(key.length()).replace('\\', '/');
+                return new File(entry.getValue() + suffix);
             }
         }
         if (errorOnUnmapped) {

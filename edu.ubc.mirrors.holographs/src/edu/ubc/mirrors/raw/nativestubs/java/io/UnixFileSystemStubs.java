@@ -8,53 +8,9 @@ import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.mirages.Reflection;
 
-// TODO-RS: These should actually do the work themselves so we could theoretically
-// emulate across platforms
-public class UnixFileSystemStubs extends NativeStubs {
+public class UnixFileSystemStubs extends FileSystemStubs {
 
     public UnixFileSystemStubs(ClassHolograph klass) {
 	super(klass);
-    }
-
-    private File getMappedFile(InstanceMirror f, boolean errorOnUnmapped) {
-        return klass.getVM().getMappedFile(f, errorOnUnmapped);
-    }
-    
-    public long getLastModifiedTime(InstanceMirror fs, InstanceMirror f) {
-        File mappedFile = getMappedFile(f, false);
-        return mappedFile != null ? mappedFile.lastModified() : 0;
-    }
-    
-    public InstanceMirror canonicalize0(InstanceMirror fs, InstanceMirror f) throws IOException {
-        String path = Reflection.getRealStringForMirror(f);
-        String result = new File(path).getCanonicalPath();
-        return Reflection.makeString(klass.getVM(), result);
-    }
-    
-    public int getBooleanAttributes0(InstanceMirror fs, InstanceMirror f) {
-        File mappedFile = getMappedFile(f, false);
-        int result = 0;
-        if (mappedFile == null) {
-            return result;
-        }
-        
-        if (mappedFile.exists()) {
-            result |= 0x01;
-        }
-        if (mappedFile.isFile()) {
-            result |= 0x02;
-        }
-        if (mappedFile.isDirectory()) {
-            result |= 0x04;
-        }
-        if (mappedFile.isHidden()) {
-            result |= 0x08;
-        }
-        return result;
-    }
-    
-    public long getLength(InstanceMirror fs, InstanceMirror f) {
-        File mappedFile = getMappedFile(f, false);
-        return mappedFile.length();
     }
 }
