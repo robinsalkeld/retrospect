@@ -10,13 +10,12 @@
  *******************************************************************************/
 package edu.ubc.mirrors.eclipse.mat.plugins;
 
-import java.util.Collection;
-
 import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.annotations.Argument;
+import org.eclipse.mat.query.annotations.Category;
 import org.eclipse.mat.query.annotations.CommandName;
+import org.eclipse.mat.query.annotations.Name;
 import org.eclipse.mat.snapshot.ISnapshot;
-import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.query.SnapshotQuery;
 import org.eclipse.mat.util.IProgressListener;
@@ -29,14 +28,16 @@ import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Reflection;
 
 @CommandName("system_properties")
+@Name("System Properties")
+@Category("Java Basics")
 public class SystemPropertiesQuery implements IQuery
 {
     @Argument
     public ISnapshot snapshot;
 
-    public HashEntriesQuery.Result execute(IProgressListener listener) throws Exception
+    public MapEntriesQuery.Result execute(IProgressListener listener) throws Exception
     {
-        VirtualMachineMirror vm = HolographVMRegistry.getHolographVM(snapshot);
+        VirtualMachineMirror vm = HolographVMRegistry.getHolographVM(snapshot, listener);
         ClassMirror systemClass = vm.findAllClasses(System.class.getName(), false).get(0);
         ThreadMirror thread = vm.getThreads().get(0);
         ObjectMirror propertiesMirror = (ObjectMirror)Reflection.invokeStaticMethodHandle(thread, systemClass, new MethodHandle() {
@@ -46,7 +47,7 @@ public class SystemPropertiesQuery implements IQuery
         });
         IObject properties = HolographVMRegistry.fromMirror(propertiesMirror); 
         
-        return (HashEntriesQuery.Result) SnapshotQuery.lookup("hash_entries", snapshot) //$NON-NLS-1$
+        return (MapEntriesQuery.Result) SnapshotQuery.lookup("map_entries", snapshot) //$NON-NLS-1$
                         .setArgument("objects", properties) //$NON-NLS-1$
                         .execute(listener);
     }

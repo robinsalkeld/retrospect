@@ -15,11 +15,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.WeakHashMap;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
@@ -155,6 +155,10 @@ public class MirageClassLoader extends ClassLoader {
             return c;
         }
         
+        if (debug) {
+            System.out.println("Defining class " + classMirror.getClassName());
+        }
+        
         byte[] b;
         try {
             b = mirageMirror.getBytecode();
@@ -193,7 +197,7 @@ public class MirageClassLoader extends ClassLoader {
         }
     }
     
-    private final Map<ObjectMirror, Mirage> mirages = new HashMap<ObjectMirror, Mirage>();
+    private final Map<ObjectMirror, Mirage> mirages = new WeakHashMap<ObjectMirror, Mirage>();
     
     public Mirage makeMirage(ObjectMirror mirror) {
         if (mirror == null) {

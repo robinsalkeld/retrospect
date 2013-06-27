@@ -1,7 +1,10 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import java.lang.reflect.Modifier;
+
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.Field;
+import org.eclipse.mat.snapshot.model.FieldDescriptor;
 import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.ObjectReference;
 
@@ -55,23 +58,31 @@ public class HeapDumpInstanceMirror extends BoxingInstanceMirror implements Heap
     @Override
     public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
         // Need to account for field shadowing manually
-        ClassMirror thisClass = getClassMirror();
+        HeapDumpClassMirror thisClass = (HeapDumpClassMirror)getClassMirror();
         for (Field f : heapDumpObject.getFields()) {
             if (f.getName().equals(field.getName())) {
                 // Move up the hierarchy until we find the next field of this name
                 for (;;) {
-                    try {
-                        thisClass.getDeclaredField(field.getName());
-                        break;
-                    } catch (NoSuchFieldException e) {
-                        thisClass = thisClass.getSuperClassMirror();
+                    // Don't use getDeclaredField() - we only want instance fields, not static fields!
+                    boolean match = false;
+                    for (FieldDescriptor fd : thisClass.klass.getFieldDescriptors()) {
+                        if (fd.getName().equals(f.getName())) {
+                            match = true;
+                            break;
+                        }
                     }
+                    
+                    if (match) {
+                        break;
+                    }
+                    
+                    thisClass = (HeapDumpClassMirror)thisClass.getSuperClassMirror();
                 }
                 
                 if (thisClass.equals(field.getDeclaringClass())) {
                     return f.getValue();
                 } else {
-                    thisClass = thisClass.getSuperClassMirror();
+                    thisClass = (HeapDumpClassMirror)thisClass.getSuperClassMirror();
                 }
             }
         }

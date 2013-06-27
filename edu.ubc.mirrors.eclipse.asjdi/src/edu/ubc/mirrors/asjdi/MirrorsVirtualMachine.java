@@ -85,7 +85,7 @@ public class MirrorsVirtualMachine implements VirtualMachine {
         
         if (mirror instanceof ThreadMirror) {
             result = new MirrorsThreadReference(this, (ThreadMirror)mirror);
-        } else if (mirror instanceof ClassLoader) {
+        } else if (mirror instanceof ClassMirrorLoader) {
             result = new MirrorsClassLoaderReference(this, (ClassMirrorLoader)mirror);
         } else if (mirror instanceof ClassMirror) {
             result = new MirrorsClassObjectReference(this, (ClassMirror)mirror);

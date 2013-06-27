@@ -989,10 +989,12 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
             }
         }
 
-        try {
-            return getSuperClassMirror().getMethod(name, paramClasses);
-        } catch (NoSuchMethodException e) {
-            // Fall through
+        if (getSuperClassMirror() != null) {
+            try {
+                return getSuperClassMirror().getMethod(name, paramClasses);
+            } catch (NoSuchMethodException e) {
+                // Fall through
+            }
         }
         
         for (ClassMirror interfaceMirror : getInterfaceMirrors()) {

@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.wrapping;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,12 +97,18 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     
     @Override
     public List<ObjectMirror> getInstances() {
-        List<ObjectMirror> instances = wrapped.getInstances();
-        List<ObjectMirror> result = new ArrayList<ObjectMirror>(instances.size());
-        for (ObjectMirror instance : instances) {
-            result.add(vm.getWrappedMirror(instance));
-        }
-        return result;
+        final List<ObjectMirror> instances = wrapped.getInstances();
+        return new AbstractList<ObjectMirror>() {
+            @Override
+            public ObjectMirror get(int index) {
+                return (ObjectMirror)vm.getWrappedMirror(instances.get(index));
+            }
+            
+            @Override
+            public int size() {
+                return instances.size();
+            }
+        };
     }
 
     @Override

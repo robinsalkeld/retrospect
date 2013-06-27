@@ -61,4 +61,16 @@
          </run>
       </application>
    </extension>
+   <extension
+         id="edu.ubc.mirrors.holographs.CDTBugTest"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="edu.ubc.mirrors.test.CDTBugTest">
+         </run>
+      </application>
+   </extension>
 </plugin>

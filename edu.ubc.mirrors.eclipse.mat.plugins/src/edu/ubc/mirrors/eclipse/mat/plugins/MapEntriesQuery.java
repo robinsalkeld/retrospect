@@ -22,7 +22,9 @@ import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.IResultTable;
 import org.eclipse.mat.query.ResultMetaData;
 import org.eclipse.mat.query.annotations.Argument;
+import org.eclipse.mat.query.annotations.Category;
 import org.eclipse.mat.query.annotations.CommandName;
+import org.eclipse.mat.query.annotations.Name;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.query.IHeapObjectArgument;
@@ -33,8 +35,10 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Reflection;
 
-@CommandName("hash_entries")
-public class HashEntriesQuery implements IQuery
+@CommandName("map_entries")
+@Name("Map Entries")
+@Category("Java Collections")
+public class MapEntriesQuery implements IQuery
 {
 	private static final String NULL = "<null>"; //$NON-NLS-1$
 
@@ -212,7 +216,7 @@ public class HashEntriesQuery implements IQuery
 			for (int id : ids)
 			{
 			        IObject obj = snapshot.getObject(id);
-			        ObjectMirror mirror = HolographVMRegistry.getMirror(obj);
+			        ObjectMirror mirror = HolographVMRegistry.getMirror(obj, listener);
 			        ObjectMirror entrySet = (ObjectMirror)Reflection.invokeMethodHandle(mirror, new MethodHandle() {
 			            @Override
 			            protected void methodCall() throws Throwable {

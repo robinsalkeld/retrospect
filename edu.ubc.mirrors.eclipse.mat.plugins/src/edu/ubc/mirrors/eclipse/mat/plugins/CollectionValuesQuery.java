@@ -20,7 +20,9 @@ import org.eclipse.mat.collect.ArrayInt;
 import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.annotations.Argument;
+import org.eclipse.mat.query.annotations.Category;
 import org.eclipse.mat.query.annotations.CommandName;
+import org.eclipse.mat.query.annotations.Name;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.query.ObjectListResult;
@@ -32,6 +34,8 @@ import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Reflection;
 
 @CommandName("collection_values")
+@Name("Collection Values")
+@Category("Java Collections")
 public class CollectionValuesQuery implements IQuery
 {
     @Argument
@@ -44,8 +48,7 @@ public class CollectionValuesQuery implements IQuery
     {
         ArrayInt hashEntries = new ArrayInt();
 
-        VirtualMachineMirror vm = HolographVMRegistry.getHolographVM(snapshot);
-        ObjectMirror collectionMirror = HolographVMRegistry.getMirror(collection);
+        ObjectMirror collectionMirror = HolographVMRegistry.getMirror(collection, listener);
         for (ObjectMirror mirror : getValues(collectionMirror)) {
             hashEntries.add(HolographVMRegistry.fromMirror(mirror).getObjectId());
         }

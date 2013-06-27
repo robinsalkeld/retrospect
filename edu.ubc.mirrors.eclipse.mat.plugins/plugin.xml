@@ -7,7 +7,7 @@
             impl="edu.ubc.mirrors.eclipse.mat.plugins.CollectionValuesQuery">
       </query>
       <query
-            impl="edu.ubc.mirrors.eclipse.mat.plugins.HashEntriesQuery">
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.MapEntriesQuery">
       </query>
       <query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.SystemPropertiesQuery">
@@ -15,5 +15,11 @@
       <query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery">
       </query>
+   </extension>
+   <extension
+         point="org.eclipse.mat.api.factory">
+      <factory
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.SnapshotFactoryWithHolographicVMImpl">
+      </factory>
    </extension>
 </plugin>

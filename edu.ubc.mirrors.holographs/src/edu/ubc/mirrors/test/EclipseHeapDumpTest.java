@@ -126,8 +126,9 @@ public class EclipseHeapDumpTest implements IApplication {
             System.out.println("Injecting bytecode...");
         }
         
+        NativeClassMirror nativePrinterClass = new NativeClassMirror(PrintOSGiBundles.class);
         ClassMirror printerClass = Reflection.injectBytecode(vm, thread, bundleRepositoryClass.getLoader(), 
-                new NativeClassMirror(PrintOSGiBundles.class));
+                nativePrinterClass.getClassName(), nativePrinterClass.getBytecode());
         MethodMirror method = printerClass.getMethod("print", bundleRepositoryClass);
         
         // Invoke PrintOSGiBundles#print reflectively.

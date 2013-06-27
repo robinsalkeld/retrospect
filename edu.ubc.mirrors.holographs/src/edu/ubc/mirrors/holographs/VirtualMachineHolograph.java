@@ -1,9 +1,11 @@
 package edu.ubc.mirrors.holographs;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,6 +24,7 @@ import java.util.zip.Inflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.eclipse.mat.snapshot.ISnapshot;
 import org.objectweb.asm.Type;
 
 import sun.misc.FileURLMapper;
@@ -135,6 +138,39 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         
         if (MirageClassLoader.debug) {
             System.out.println("Done.");
+        }
+    }
+    
+    public static VirtualMachineHolograph fromSnapshotWithIniFile(ISnapshot snapshot) {
+        String snapshotPath = snapshot.getSnapshotInfo().getPath();
+        int lastDot = snapshotPath.lastIndexOf('.');
+        File holographicFSConfigPath = new File(snapshotPath.substring(0, lastDot) + "_hfs.ini");
+        Map<String, String> mappedFiles = new HashMap<String, String>();
+        try {
+            if (holographicFSConfigPath.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(holographicFSConfigPath));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    int equalsIndex = line.indexOf('=');
+                    String key, value;
+                    if (equalsIndex < 0) {
+                        key = line;
+                        value = line;
+                    } else {
+                        key = line.substring(0, equalsIndex);
+                        value = line.substring(equalsIndex + 1);
+                    }
+                    mappedFiles.put(key, value);
+                }
+                br.close();
+            } else {
+                holographicFSConfigPath.createNewFile();
+            }
+            
+            HeapDumpVirtualMachineMirror hdvm = new HeapDumpVirtualMachineMirror(snapshot);
+            return new VirtualMachineHolograph(hdvm, mappedFiles);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
     
@@ -389,7 +425,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             }
             @Override
             protected ClassMirror loadClassMirrorInternal(Type type) {
-                return HolographInternalUtils.classMirrorForType(VirtualMachineHolograph.this, ThreadHolograph.currentThreadMirror(), type, false, holographLoader);
+                return HolographInternalUtils.classMirrorForType(VirtualMachineHolograph.this, ThreadHolograph.currentThreadMirrorNoError(), type, false, holographLoader);
             }
             
             @Override
@@ -600,17 +636,14 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                int classCount = 0;
                Set<String> errors = new HashSet<String>();
                for (ClassMirror klass : findAllClasses()) {
-                   ClassHolograph classHolograph = (ClassHolograph)klass;
                    try {
-                    classHolograph.getMirageClass(true);
-                    classHolograph.getMirageClass(false);
-                    classHolograph.resolveInitialized();
-                } catch (Throwable e) {
-                    // TODO: for now
-                    e.printStackTrace();
-                    errors.add(klass.getClassName());
-                }
-                classCount++;
+                       prepareClass(klass);
+                   } catch (Throwable e) {
+                       // TODO: for now
+                       e.printStackTrace();
+                       errors.add(klass.getClassName());
+                   }
+                   classCount++;
                    System.out.print(".");
                    if (classCount % 40 == 0) {
                        System.out.println(classCount);
@@ -623,5 +656,12 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                return null;
             } 
         });
+    }
+    
+    public void prepareClass(ClassMirror klass) {
+        ClassHolograph classHolograph = (ClassHolograph)klass;
+        classHolograph.getMirageClass(true);
+        classHolograph.getMirageClass(false);
+        classHolograph.resolveInitialized();
     }
 }

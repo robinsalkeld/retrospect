@@ -51,6 +51,9 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return getWrappedClassMirror(wrappedVM.defineBootstrapClass(name, unwrappedB, off, len));
     }
     
+    // It would be great to make this a WeakHashMap, but since the wrapping objects may have state they can't
+    // be soundly thrown away and recreated on demand. Would need to be smarter about permanently storing
+    // wrappers after first modifying them.
     private final Map<ObjectMirror, ObjectMirror> wrappedMirrors = new HashMap<ObjectMirror, ObjectMirror>();
     
     public ObjectMirror getWrappedMirror(ObjectMirror mirror) {
