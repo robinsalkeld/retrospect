@@ -438,7 +438,7 @@ public class MirageClassGenerator extends ClassVisitor {
         
         org.objectweb.asm.commons.Method methodDesc = getStubMethodDesc(this.name, name, access, desc);
         Method mirrorMethod = mirrorMethods.get(methodDesc);
-        if (mirrorMethod != null) {
+        if (mirrorMethod != null && (Opcodes.ACC_ABSTRACT & access) == 0) {
             generateNativeThunk(superVisitor, this.name, desc, mirrorMethod);
             
             return null;

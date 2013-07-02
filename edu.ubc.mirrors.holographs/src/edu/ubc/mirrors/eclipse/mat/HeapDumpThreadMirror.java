@@ -41,4 +41,8 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
         return result;
     }
 
+    @Override
+    public void interrupt() {
+        throw new UnsupportedOperationException(); 
+    }
 }

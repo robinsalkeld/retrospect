@@ -85,6 +85,14 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         return originalStack;
     }
 
+    @Override
+    public void interrupt() {
+        if (runningThread == null) {
+            throw new IllegalStateException("Not in holograph execution.");
+        }
+        runningThread.interrupt(); 
+    }
+    
     public static boolean inMetalevel() {
         return metalevel.get().intValue() != 0;
     }

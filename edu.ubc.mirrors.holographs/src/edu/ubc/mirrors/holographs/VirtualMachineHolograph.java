@@ -5,10 +5,13 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -145,10 +148,16 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         String snapshotPath = snapshot.getSnapshotInfo().getPath();
         int lastDot = snapshotPath.lastIndexOf('.');
         File holographicFSConfigPath = new File(snapshotPath.substring(0, lastDot) + "_hfs.ini");
-        Map<String, String> mappedFiles = new HashMap<String, String>();
+        Map<String, String> mappedFiles = readStringMapFromFile(holographicFSConfigPath);
+        HeapDumpVirtualMachineMirror hdvm = new HeapDumpVirtualMachineMirror(snapshot);
+        return new VirtualMachineHolograph(hdvm, mappedFiles);
+    }
+    
+    public static Map<String, String> readStringMapFromFile(File path) {
+        Map<String, String> result = new HashMap<String, String>();
         try {
-            if (holographicFSConfigPath.exists()) {
-                BufferedReader br = new BufferedReader(new FileReader(holographicFSConfigPath));
+            if (path.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(path));
                 String line;
                 while ((line = br.readLine()) != null) {
                     int equalsIndex = line.indexOf('=');
@@ -160,15 +169,29 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                         key = line.substring(0, equalsIndex);
                         value = line.substring(equalsIndex + 1);
                     }
-                    mappedFiles.put(key, value);
+                    result.put(key, value);
                 }
                 br.close();
             } else {
-                holographicFSConfigPath.createNewFile();
+                path.createNewFile();
             }
             
-            HeapDumpVirtualMachineMirror hdvm = new HeapDumpVirtualMachineMirror(snapshot);
-            return new VirtualMachineHolograph(hdvm, mappedFiles);
+            return result;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static void addEntryToStringMapFile(File path, String key, String value) {
+        try {
+            if (!path.exists()) {
+                path.createNewFile();
+            }
+            
+            PrintStream out = new PrintStream(new FileOutputStream(path, true));
+            out.println(key + "=" + value);
+            out.flush();
+            out.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

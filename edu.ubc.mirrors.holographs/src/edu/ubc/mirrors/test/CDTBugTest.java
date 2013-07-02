@@ -35,6 +35,8 @@ public class CDTBugTest implements IApplication {
     private static final String CPPASTName = "org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTName";
     
     public static void main(String[] args) throws Exception {
+        long before = System.currentTimeMillis();
+        
         String snapshotPath = args[0];
         
         ISnapshot snapshot = SnapshotFactory.openSnapshot(
@@ -58,6 +60,7 @@ public class CDTBugTest implements IApplication {
                 return null;
             }
 	});
+        System.out.println("Total time: " + (System.currentTimeMillis() - before));
         
     }
     
@@ -73,6 +76,7 @@ public class CDTBugTest implements IApplication {
         
         String analyzerClassName = "org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTNameDuplicateAnalysis";
         String path = "/Users/robinsalkeld/Documents/UBC/Code/org.eclipse.cdt.git/core/org.eclipse.cdt.core/bin/" +analyzerClassName.replace('.', '/') + ".class"; 
+        String classPath = "/Users/robinsalkeld/Documents/UBC/Code/org.eclipse.cdt.git/core/org.eclipse.cdt.core/bin/org/eclipse/cdt/internal/core/dom/parser/cpp/CPPASTNameDuplicateAnalysis.class";
         FileInputStream fis = new FileInputStream(path);
         byte[] analyzerClassBytecode = NativeClassMirror.readFully(fis);
         fis.close();
@@ -84,7 +88,7 @@ public class CDTBugTest implements IApplication {
             System.out.println("Building collection...");
         }
         
-        final List<ObjectMirror> instances = nameClass.getInstances().subList(0, 50000);
+        final List<ObjectMirror> instances = nameClass.getInstances().subList(0, 10000);
         int count = instances.size();
         ClassMirror objectArrayClass = vm.getArrayClass(1, vm.findBootstrapClassMirror(Object.class.getName()));
         ClassMirror nameArrayClass = vm.getArrayClass(1, nameClass);

@@ -7,7 +7,7 @@ import com.sun.jdi.Value;
 import com.sun.jdi.event.MethodExitEvent;
 
 import edu.ubc.mirrors.MethodMirrorExitEvent;
-import edu.ubc.mirrors.asjdi.MethodMirrorMethod;
+import edu.ubc.mirrors.asjdi.MirrorsMethod;
 import edu.ubc.mirrors.asjdi.MirrorsEvent;
 import edu.ubc.mirrors.asjdi.MirrorsLocation;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
@@ -33,7 +33,7 @@ public class MirrorsMethodExitEvent extends MirrorsEvent implements MethodExitEv
 
     @Override
     public Method method() {
-        return new MethodMirrorMethod(vm, wrapped.method());
+        return new MirrorsMethod(vm, wrapped.method());
     }
 
     @Override

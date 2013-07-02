@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,6 +76,11 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     
     @Override
     public byte[] getBytecode() {
+        byte[] result = vm.locateBytecode(this);
+        if (result != null) {
+            return result;
+        }
+        
         throw new UnsupportedOperationException();
     }
     
@@ -285,5 +291,9 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     @Override
     public int identityHashCode() {
         return vm.identityHashCode(klass);
+    }
+
+    public void bytecodeLocated(File originalBytecodeLocation) {
+        vm.bytecodeLocated(this, originalBytecodeLocation);
     }
 }

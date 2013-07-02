@@ -1,7 +1,6 @@
 package edu.ubc.mirrors.eclipse.mat.plugins;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
@@ -18,30 +17,22 @@ import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIPrimitiveValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIValue;
-import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.annotations.Argument;
+import org.eclipse.mat.query.annotations.Argument.Advice;
 import org.eclipse.mat.query.annotations.Name;
 import org.eclipse.mat.snapshot.ISnapshot;
-import org.eclipse.mat.snapshot.model.IObject;
-import org.eclipse.mat.snapshot.query.IHeapObjectArgument;
 import org.eclipse.mat.util.IProgressListener;
-import org.eclipse.mat.util.VoidProgressListener;
 
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
 
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.asjdi.MirrorsObjectReference;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
-import edu.ubc.mirrors.fieldmap.CalculatedObjectArrayMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
 @Name("Evaluate Expression")
@@ -49,11 +40,14 @@ public class ExpressionQuery implements IQuery {
     @Argument
     public ISnapshot snapshot;
 
-    @Argument(flag = Argument.UNFLAGGED)
-    public IHeapObjectArgument objects;
+    @Argument(flag = Argument.UNFLAGGED, advice = Advice.HEAP_OBJECT)
+    public int[] objectIds;
 
     @Argument(isMandatory = true)
     public String expression = "toString()";
+    
+    @Argument
+    public boolean inbound = false;
     
     private VirtualMachineMirror vm;
     private MirrorsVirtualMachine jdiVM;
@@ -61,7 +55,6 @@ public class ExpressionQuery implements IQuery {
     private ThreadMirror threadMirror;
     private IJavaThread evalThread;
     private JDIDebugTarget debugTarget;
-    private List<Value> results;
             
     public static class Value {
         
@@ -75,14 +68,6 @@ public class ExpressionQuery implements IQuery {
         
         public void waitForResult() throws InterruptedException {
             semaphore.acquire();
-        }
-        
-        public String getResult() {
-            if (object instanceof ObjectMirror) {
-                return HolographVMRegistry.toString((ObjectMirror)object);
-            } else {
-                return String.valueOf(object);
-            }
         }
     }
     
@@ -98,54 +83,28 @@ public class ExpressionQuery implements IQuery {
             ThreadReference jdiThread = (ThreadReference)jdiVM.wrapMirror(threadMirror);
             evalThread = debugTarget.findThread(jdiThread);
             
-            results = new ArrayList<Value>();
+            List<Object> results = new ArrayList<Object>();
             
-//            if (aggregate) {
-//                listener.beginTask("Evaluating expression", 1);
-//                ObjectMirror allObjectsList = createCalculatedObjectList(objects.getIds(listener));
-//                results.add(evaluate(allObjectsList));
-//            } else {
-                int[] ids = objects.getIds(listener);
-                listener.beginTask("Evaluating expression", ids.length);
-                for (int id : ids) {
-                    IObject obj = snapshot.getObject(id);
-                    ObjectMirror mirror = HolographVMRegistry.getMirror(obj, listener);
-                    results.add(evaluate(mirror));
-                    
-                    listener.worked(1);
-                    if (listener.isCanceled()) throw new IProgressListener.OperationCanceledException();
-                }
-//            }
+            listener.beginTask("Evaluating expression", objectIds.length);
+            for (int id : objectIds) {
+                ObjectMirror mirror = HolographVMRegistry.getObjectMirror(snapshot, id, listener);
+                results.add(evaluate(mirror, listener));
+                
+                listener.worked(1);
+                if (listener.isCanceled()) throw new IProgressListener.OperationCanceledException();
+            }
             
             listener.done();
 
-            return new org.eclipse.mat.query.results.ListResult(Value.class, results, "result");
+            return ObjectMirrorListResult.make(snapshot, results, inbound);
     }
     
-    private ObjectMirror createCalculatedObjectList(final int[] objectIDs) throws IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchMethodException, MirrorInvocationTargetException {
-        final IProgressListener voidListener = new VoidProgressListener();
-        ClassMirror objectArrayClass = vm.getArrayClass(1, vm.findBootstrapClassMirror(Object.class.getName()));
-        ObjectArrayMirror array = new CalculatedObjectArrayMirror(objectArrayClass, objectIDs.length) {
-            @Override
-            public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
-                IObject obj;
-                try {
-                    obj = snapshot.getObject(objectIDs[index]);
-                } catch (SnapshotException e) {
-                    throw new RuntimeException(e);
-                }
-                return HolographVMRegistry.getMirror(obj, voidListener);
-            }
-        };
-        return (ObjectMirror)vm.findBootstrapClassMirror(Arrays.class.getName()).getMethod("asList", objectArrayClass).invoke(threadMirror, null, array);
-    }
-    
-    private Value evaluate(ObjectMirror mirror) throws DebugException, InterruptedException {
+    private Object evaluate(ObjectMirror mirror, IProgressListener listener) throws DebugException, InterruptedException {
         ObjectReference jdiObject = jdiVM.wrapMirror(mirror);
         final IJavaObject thisContext = (IJavaObject)JDIValue.createValue(debugTarget, jdiObject);
         
         final Value value = new Value();
-        final IEvaluationListener thisListener = new IEvaluationListener() {
+        final IEvaluationListener evaluationListener = new IEvaluationListener() {
             public void evaluationComplete(IEvaluationResult result) {
                 Object object = null;
                 try {
@@ -184,6 +143,9 @@ public class ExpressionQuery implements IQuery {
 
         };
         
+        // Create a new thread to watch for cancellation and interrupt the evaluation.
+        final CancellingThread cancellingThread = new CancellingThread(listener, threadMirror);
+        
         // TODO-RS: The whole "secondary thread for eval" thing is to workaround a race condition here if we
         // use the same thread: the actual evaluation can start on the worker thread before this block finishes,
         // making the holographic thread complain about being used by two native threads at once.
@@ -192,15 +154,55 @@ public class ExpressionQuery implements IQuery {
         Reflection.withThread(HolographVMRegistry.getSecondaryThreadForEval(vm), new Callable<Object>() {
             @Override
             public Object call() throws Exception {
-                engine.evaluate(expression, thisContext, evalThread, thisListener, DebugEvent.EVALUATION, false);
+                engine.evaluate(expression, thisContext, evalThread, evaluationListener, DebugEvent.EVALUATION, false);
+                cancellingThread.finished();
                 return null;
             }
         });
+        
+        cancellingThread.start();
         
         // Need to synchronize since you can't evaluate multiple expressions against
         // a single ThreadMirror.
         value.waitForResult();
         
-        return value;
+        return value.object;
+    }
+    
+    private class CancellingThread extends Thread {
+        
+        public CancellingThread(IProgressListener thisListener, ThreadMirror threadMirror) {
+            this.thisListener = thisListener;
+            this.threadMirror = threadMirror;
+        }
+
+        private boolean stopped = false;
+        private final IProgressListener thisListener;
+        private final ThreadMirror threadMirror;
+        
+        @Override
+        public void run() {
+            while (!stopped) {
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                
+                if (thisListener.isCanceled()) {
+                    threadMirror.interrupt();
+                    break;
+                }
+            }
+        }
+        
+        public void finished() {
+            stopped = true;
+            try {
+                join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

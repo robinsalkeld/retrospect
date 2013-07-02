@@ -21,4 +21,9 @@ public class NativeThreadMirror extends NativeInstanceMirror implements ThreadMi
 	return null;
     }
 
+    @Override
+    public void interrupt() {
+        thread.interrupt();
+    }
+    
 }

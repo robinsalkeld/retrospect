@@ -37,4 +37,8 @@ public class JDIThreadMirror extends JDIInstanceMirror implements ThreadMirror {
     public void suspend() {
         thread.suspend();
     }
+    
+    public void interrupt() {
+        thread.interrupt(); 
+    }
 }

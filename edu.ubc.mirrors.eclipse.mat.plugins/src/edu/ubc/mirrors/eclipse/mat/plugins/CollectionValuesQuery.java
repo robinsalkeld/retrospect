@@ -20,6 +20,7 @@ import org.eclipse.mat.collect.ArrayInt;
 import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.annotations.Argument;
+import org.eclipse.mat.query.annotations.Argument.Advice;
 import org.eclipse.mat.query.annotations.Category;
 import org.eclipse.mat.query.annotations.CommandName;
 import org.eclipse.mat.query.annotations.Name;
@@ -29,7 +30,6 @@ import org.eclipse.mat.snapshot.query.ObjectListResult;
 import org.eclipse.mat.util.IProgressListener;
 
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Reflection;
 
@@ -41,14 +41,14 @@ public class CollectionValuesQuery implements IQuery
     @Argument
     public ISnapshot snapshot;
 
-    @Argument(flag = Argument.UNFLAGGED)
-    public IObject collection;
+    @Argument(flag = Argument.UNFLAGGED, advice = Advice.HEAP_OBJECT)
+    public int collectionID;
 
     public IResult execute(IProgressListener listener) throws Exception
     {
         ArrayInt hashEntries = new ArrayInt();
 
-        ObjectMirror collectionMirror = HolographVMRegistry.getMirror(collection, listener);
+        ObjectMirror collectionMirror = HolographVMRegistry.getObjectMirror(snapshot, collectionID, listener);
         for (ObjectMirror mirror : getValues(collectionMirror)) {
             hashEntries.add(HolographVMRegistry.fromMirror(mirror).getObjectId());
         }

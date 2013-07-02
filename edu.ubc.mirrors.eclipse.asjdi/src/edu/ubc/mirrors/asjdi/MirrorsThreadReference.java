@@ -68,7 +68,7 @@ public class MirrorsThreadReference extends MirrorsInstanceReference implements 
 
     @Override
     public void interrupt() {
-        throw new UnsupportedOperationException();
+        wrapped.interrupt();
     }
 
     @Override
@@ -78,6 +78,7 @@ public class MirrorsThreadReference extends MirrorsInstanceReference implements 
 
     @Override
     public boolean isSuspended() {
+        // TODO-RS
         return true;
     }
 

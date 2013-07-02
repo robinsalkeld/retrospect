@@ -4,6 +4,9 @@
    <extension
          point="org.eclipse.mat.report.query">
       <query
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.LoadAndRunAnalysisCodeQuery">
+      </query>
+      <query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.CollectionValuesQuery">
       </query>
       <query

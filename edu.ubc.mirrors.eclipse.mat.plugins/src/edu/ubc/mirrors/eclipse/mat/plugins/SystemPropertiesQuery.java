@@ -27,8 +27,8 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Reflection;
 
-@CommandName("system_properties")
-@Name("System Properties")
+@CommandName("system_properties_holo")
+@Name("System Properties (Holographic)")
 @Category("Java Basics")
 public class SystemPropertiesQuery implements IQuery
 {

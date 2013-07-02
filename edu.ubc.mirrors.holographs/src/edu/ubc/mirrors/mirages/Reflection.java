@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
@@ -650,5 +653,50 @@ public class Reflection {
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         } 
+    }
+    
+    public static Type getMethodType(MethodMirror method) {
+        List<String> parameterTypeNames = method.getParameterTypeNames();
+        Type[] argTypes = new Type[parameterTypeNames.size()];
+        int i = 0;
+        for (String paramTypeName : parameterTypeNames) {
+            argTypes[i++] = Type.getObjectType(paramTypeName.replace('.', '/'));
+            
+        }
+        return Type.getMethodType(Type.getObjectType(method.getReturnTypeName().replace('.', '/')), argTypes);
+    }
+    
+    public static Type getMethodType(ConstructorMirror constructor) {
+        List<String> parameterTypeNames = constructor.getParameterTypeNames();
+        Type[] argTypes = new Type[parameterTypeNames.size()];
+        int i = 0;
+        for (String paramTypeName : parameterTypeNames) {
+            argTypes[i++] = Type.getObjectType(paramTypeName.replace('.', '/'));
+            
+        }
+        return Type.getMethodType(Type.VOID_TYPE, argTypes);
+    }
+    
+    public static String getClassNameFromBytecode(byte[] bytecode) {
+        BytecodeExtractor visitor = new BytecodeExtractor();
+        new ClassReader(bytecode).accept(visitor, 0);
+        return visitor.className;
+    }
+    
+    private static class BytecodeExtractor extends ClassVisitor {
+        
+        public BytecodeExtractor() {
+            super(Opcodes.ASM4);
+        }
+
+        private String className = null;
+        
+        @Override
+        public void visit(int version, int access, String name,
+                String signature, String superName, String[] interfaces) {
+            super.visit(version, access, name, signature, superName, interfaces);
+            
+            className = name.replace('/', '.');
+        }
     }
 }

@@ -16,6 +16,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.NativeStubs;
+import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassLoaderStubs;
 
@@ -211,5 +212,9 @@ public class UnsafeStubs extends NativeStubs {
     
     public ObjectMirror allocateInstance(InstanceMirror unsafe, ClassMirror classMirror) {
         return classMirror.newRawInstance();
+    }
+    
+    public void ensureClassInitialized(InstanceMirror unsafe, ClassMirror classMirror) {
+        MirageClassLoader.initializeClassMirror((ClassHolograph)classMirror);
     }
 }

@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.eclipse.mat.plugins;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +19,15 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.eval.IEvaluationEngine;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
+import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
+import org.eclipse.mat.snapshot.query.Icons;
 import org.eclipse.mat.util.IProgressListener;
 
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -137,7 +142,7 @@ public class HolographVMRegistry {
         return result;
     }
     
-    public static ObjectMirror getMirror(IObject object, IProgressListener listener) {
+    public static ObjectMirror getMirrorForHeapDumpObject(IObject object, IProgressListener listener) {
         if (object == null) {
             return null;
         }
@@ -153,7 +158,12 @@ public class HolographVMRegistry {
     }
 
     public static IObject fromMirror(ObjectMirror element) {
-        return ((HeapDumpObjectMirror)((WrappingMirror)element).getWrapped()).getHeapDumpObject();
+        ObjectMirror wrapped = ((WrappingMirror)element).getWrapped();
+        if (wrapped instanceof HeapDumpObjectMirror) {
+            return ((HeapDumpObjectMirror)wrapped).getHeapDumpObject();
+        } else {
+            return null;
+        }
     }
     
     public static void setThreadsForEval(VirtualMachineMirror vm, ThreadMirror thread, ThreadMirror secondary) {
@@ -178,6 +188,41 @@ public class HolographVMRegistry {
         } catch (Exception e) {
             e.printStackTrace();
             return "";
+        }
+    }
+    
+    public static final URL icon(Object value)
+    {
+        if (value instanceof ArrayMirror)
+            return Icons.ARRAY_INSTANCE;
+        else if (value instanceof ClassMirror)
+            return Icons.CLASS_INSTANCE;
+        else if (value instanceof ClassMirrorLoader)
+            return Icons.CLASSLOADER_INSTANCE;
+        else
+            return Icons.OBJECT_INSTANCE;
+    }
+    
+    
+    
+    private static int nextStashID = -2;
+    private static final Map<Integer, ObjectMirror> stashedObjectMirrors = new HashMap<Integer, ObjectMirror>();
+    
+    public static int stashObjectMirror(ObjectMirror mirror) {
+        int objectId = nextStashID--;
+        stashedObjectMirrors.put(objectId, mirror);
+        return objectId;
+    }
+    
+    public static ObjectMirror getStashedObjectMirror(int objectId) {
+        return stashedObjectMirrors.get(objectId);
+    }
+    
+    public static ObjectMirror getObjectMirror(ISnapshot snapshot, int objectId, IProgressListener listener) throws SnapshotException {
+        if (objectId >= 0) {
+            return getMirrorForHeapDumpObject(snapshot.getObject(objectId), listener);
+        } else {
+            return getStashedObjectMirror(objectId);
         }
     }
     

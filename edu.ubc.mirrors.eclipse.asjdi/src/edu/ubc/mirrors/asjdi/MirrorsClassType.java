@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.asjdi;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sun.jdi.ClassNotLoadedException;
@@ -15,11 +16,13 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.asjdi.ConstructorMirrorMethod;
-import edu.ubc.mirrors.asjdi.MethodMirrorMethod;
+import edu.ubc.mirrors.asjdi.MirrorsMethod;
 import edu.ubc.mirrors.asjdi.MirrorsReferenceType;
 import edu.ubc.mirrors.asjdi.MirrorsThreadReference;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
@@ -50,6 +53,28 @@ public class MirrorsClassType extends MirrorsReferenceType implements ClassType 
         
         return null;
     }
+    
+    @Override
+    public List<Method> methods() {
+        List<Method> result = super.methods();
+        
+        if (wrapped.getSuperClassMirror() != null) {
+            result.addAll(superclass().methods());
+        }
+        
+        return result;
+    }
+    
+    @Override
+    public List<Method> methodsByName(String name) {
+        List<Method> result = super.methodsByName(name);
+        
+        if (wrapped.getSuperClassMirror() != null) {
+            result.addAll(superclass().methodsByName(name));
+        }
+        
+        return result;
+    }
 
     @Override
     public Value invokeMethod(ThreadReference thread, Method method,
@@ -57,7 +82,7 @@ public class MirrorsClassType extends MirrorsReferenceType implements ClassType 
             ClassNotLoadedException, IncompatibleThreadStateException,
             InvocationException {
         
-        return ((MethodMirrorMethod)method).invoke(thread, null, args, options);
+        return ((MirrorsMethod)method).invoke(thread, null, args, options);
     }
 
     @Override

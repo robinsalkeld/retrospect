@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,22 +27,48 @@ import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.PrimitiveClassMirror;
 
 public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
 
     private final ISnapshot snapshot;
     
+    private Map<String, HeapDumpClassMirror> bootstrapClasses;
+    private Map<String, ClassMirror> primitiveClasses;
+    
+    private Map<String, String> cachedBytecode;
+    private File bytecodeMappingPath;
+    
     public HeapDumpVirtualMachineMirror(ISnapshot snapshot) {
         Reflection.checkNull(snapshot);
         this.snapshot = snapshot;
         initPrimitiveClasses();
+        initCachedBytecode();
     }
     
-    private Map<String, HeapDumpClassMirror> bootstrapClasses;
-    private Map<String, ClassMirror> primitiveClasses;
+    private void initCachedBytecode() {
+        String snapshotPath = snapshot.getSnapshotInfo().getPath();
+        int lastDot = snapshotPath.lastIndexOf('.');
+        bytecodeMappingPath = new File(snapshotPath.substring(0, lastDot) + "_bytecode.ini");
+        cachedBytecode = VirtualMachineHolograph.readStringMapFromFile(bytecodeMappingPath);
+    }
+
+    public byte[] locateBytecode(HeapDumpClassMirror classMirror) {
+        String path = cachedBytecode.get(Integer.toString(classMirror.klass.getObjectId()));
+        if (path == null) {
+            return null;
+        }
+        
+        try {
+            return NativeClassMirror.readFully(new FileInputStream(path));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
     
     private void initBootstrapClasses() {
         if (bootstrapClasses == null) {
@@ -239,5 +268,12 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     
     public ISnapshot getSnapshot() {
         return snapshot;
+    }
+
+    public void bytecodeLocated(HeapDumpClassMirror heapDumpClassMirror, File originalBytecodeLocation) {
+        String key = Integer.toString(heapDumpClassMirror.klass.getObjectId());
+        String value = originalBytecodeLocation.getAbsolutePath();
+        cachedBytecode.put(key, value);
+        VirtualMachineHolograph.addEntryToStringMapFile(bytecodeMappingPath, key, value);
     }
 }

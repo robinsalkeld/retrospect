@@ -25,6 +25,7 @@ import org.eclipse.mat.query.annotations.Argument;
 import org.eclipse.mat.query.annotations.Category;
 import org.eclipse.mat.query.annotations.CommandName;
 import org.eclipse.mat.query.annotations.Name;
+import org.eclipse.mat.query.annotations.Argument.Advice;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.query.IHeapObjectArgument;
@@ -45,8 +46,8 @@ public class MapEntriesQuery implements IQuery
 	@Argument
 	public ISnapshot snapshot;
 
-	@Argument(flag = Argument.UNFLAGGED)
-	public IHeapObjectArgument objects;
+	@Argument(flag = Argument.UNFLAGGED, advice = Advice.HEAP_OBJECT)
+	public int[] objectsIds;
 
 	static class Entry
 	{
@@ -211,25 +212,21 @@ public class MapEntriesQuery implements IQuery
 
 		List<Entry> hashEntries = new ArrayList<Entry>();
 		
-		for (int[] ids : objects)
+		for (int id : objectsIds)
 		{
-			for (int id : ids)
-			{
-			        IObject obj = snapshot.getObject(id);
-			        ObjectMirror mirror = HolographVMRegistry.getMirror(obj, listener);
-			        ObjectMirror entrySet = (ObjectMirror)Reflection.invokeMethodHandle(mirror, new MethodHandle() {
-			            @Override
-			            protected void methodCall() throws Throwable {
-			                ((Map<?, ?>)null).entrySet();
-			            }
-			        });
-			        List<ObjectMirror> entryMirrors = CollectionValuesQuery.getValues(entrySet);
-			        for (ObjectMirror element : entryMirrors) {
-			            hashEntries.add(new Entry(mirror, element));
-			        }
+		    ObjectMirror mirror = HolographVMRegistry.getObjectMirror(snapshot, id, listener);
+		    ObjectMirror entrySet = (ObjectMirror)Reflection.invokeMethodHandle(mirror, new MethodHandle() {
+		        @Override
+		        protected void methodCall() throws Throwable {
+		            ((Map<?, ?>)null).entrySet();
+		        }
+		    });
+		    List<ObjectMirror> entryMirrors = CollectionValuesQuery.getValues(entrySet);
+		    for (ObjectMirror element : entryMirrors) {
+		        hashEntries.add(new Entry(mirror, element));
+		    }
 
-				if (listener.isCanceled()) throw new IProgressListener.OperationCanceledException();
-			}
+		    if (listener.isCanceled()) throw new IProgressListener.OperationCanceledException();
 		}
 
 		listener.done();

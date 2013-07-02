@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.objectweb.asm.Type;
+
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassObjectReference;
@@ -197,12 +199,17 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
     public List<Method> methods() {
         List<Method> result = new ArrayList<Method>();
         for (MethodMirror method : wrapped.getDeclaredMethods(false)) {
-            result.add(new MethodMirrorMethod(vm, method));
+            result.add(new MirrorsMethod(vm, method));
         }
         for (ConstructorMirror cons : wrapped.getDeclaredConstructors(false)) {
             result.add(new ConstructorMirrorMethod(vm, cons));
         }
         // TODO-RS: No representation of static initializer in mirrors
+        
+        for (InterfaceType interfaceType : interfaces()) {
+            result.addAll(interfaceType.methods());
+        }
+        
         return result;
     }
 
@@ -216,16 +223,41 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
         } else {
             for (MethodMirror method : wrapped.getDeclaredMethods(false)) {
                 if (method.getName().equals(name)) {
-                    result.add(new MethodMirrorMethod(vm, method));
+                    result.add(new MirrorsMethod(vm, method));
                 }
             }
         }
+        
+        for (InterfaceType interfaceType : interfaces()) {
+            result.addAll(interfaceType.methodsByName(name));
+        }
+        
         return result;
     }
 
     @Override
-    public List<Method> methodsByName(String arg0, String arg1) {
-        throw new UnsupportedOperationException();
+    public List<Method> methodsByName(String name, String signature) {
+        List<Method> result = new ArrayList<Method>();
+        Type methodType = Type.getType(signature);
+        if (name.equals("<init>")) {
+            for (ConstructorMirror cons : wrapped.getDeclaredConstructors(false)) {
+                if (methodType.equals(Reflection.getMethodType(cons))) {
+                    result.add(new ConstructorMirrorMethod(vm, cons));
+                }
+            }
+        } else {
+            for (MethodMirror method : wrapped.getDeclaredMethods(false)) {
+                if (method.getName().equals(name) && methodType.equals(Reflection.getMethodType(method))) {
+                    result.add(new MirrorsMethod(vm, method));
+                }
+            }
+        }
+        
+        for (InterfaceType interfaceType : interfaces()) {
+            result.addAll(interfaceType.methodsByName(name));
+        }
+        
+        return result;
     }
 
     @Override

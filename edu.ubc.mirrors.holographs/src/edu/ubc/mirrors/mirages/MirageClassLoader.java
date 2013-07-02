@@ -38,6 +38,7 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -282,7 +283,6 @@ public class MirageClassLoader extends ClassLoader {
             cacheIndex = findCacheIndex(originalInternalName, originalBytecode);
             byte[] result = readFromBytecodeCache(cacheIndex, internalName);
             if (result != null) {
-//                new ClassReader(result).accept(new ClassVisitor(Opcodes.ASM4) {}, null, 0);
                 return result;
             }
         }
@@ -312,6 +312,14 @@ public class MirageClassLoader extends ClassLoader {
             
             if (vm.getBytecodeCacheDir() != null) {
         	writeToBytecodeCache(cacheIndex, internalName, result);
+
+                // Optimization for heap dumps: let the underlying VM cache the location of bytecode,
+                // since it has stable, persistent object identifiers.
+                ClassMirror wrappedClass = ((ClassHolograph)mirageClassMirror.getOriginal()).getWrappedClassMirror();
+                if (wrappedClass instanceof HeapDumpClassMirror) {
+                    File originalBytecodeLocation = createClassFile(cacheIndex, originalInternalName + ".class");
+                    ((HeapDumpClassMirror)wrappedClass).bytecodeLocated(originalBytecodeLocation);
+                }
             }
             
             long time = sw.stop();

@@ -27,4 +27,9 @@ public class WrappingThreadMirror extends WrappingInstanceMirror implements Thre
     public List<FrameMirror> getStackTrace() {
 	return getWrappedStackTrace(vm, wrappedThread);
     }
+    
+    @Override
+    public void interrupt() {
+        wrappedThread.interrupt();
+    }
 }

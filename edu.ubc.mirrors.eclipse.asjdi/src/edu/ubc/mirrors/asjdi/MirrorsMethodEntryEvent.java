@@ -6,7 +6,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.event.MethodEntryEvent;
 
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
-import edu.ubc.mirrors.asjdi.MethodMirrorMethod;
+import edu.ubc.mirrors.asjdi.MirrorsMethod;
 import edu.ubc.mirrors.asjdi.MirrorsEvent;
 import edu.ubc.mirrors.asjdi.MirrorsLocation;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
@@ -32,7 +32,7 @@ public class MirrorsMethodEntryEvent extends MirrorsEvent implements MethodEntry
 
     @Override
     public Method method() {
-        return new MethodMirrorMethod(vm, wrapped.method());
+        return new MirrorsMethod(vm, wrapped.method());
     }
 
 }

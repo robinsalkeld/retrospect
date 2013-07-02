@@ -6,15 +6,13 @@ import org.eclipse.mat.snapshot.extension.Subject;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.util.VoidProgressListener;
 
-import edu.ubc.mirrors.mirages.Reflection;
-
 @Subject("java.lang.Object")
 public class ToStringNameResolver implements IClassSpecificNameResolver {
 
     @Override
     public String resolve(IObject object) throws SnapshotException {
         try {
-            return HolographVMRegistry.toString(HolographVMRegistry.getMirror(object, new VoidProgressListener()));
+            return HolographVMRegistry.toString(HolographVMRegistry.getMirrorForHeapDumpObject(object, new VoidProgressListener()));
         } catch (Throwable t) {
             System.out.println("Error on object #" + object.getObjectId());
             t.printStackTrace();

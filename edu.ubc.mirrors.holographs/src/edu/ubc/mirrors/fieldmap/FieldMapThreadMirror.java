@@ -16,4 +16,9 @@ public class FieldMapThreadMirror extends FieldMapMirror implements ThreadMirror
     public List<FrameMirror> getStackTrace() {
         return null;
     }
+    
+    @Override
+    public void interrupt() {
+        throw new UnsupportedOperationException(); 
+    }
 }
