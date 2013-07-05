@@ -17,27 +17,27 @@ public class MutableFieldMirror extends WrappingFieldMirror {
     
     @Override
     public ClassMirror getType() {
-        try {
+        if (klass.hasBytecode()) {
             return super.getType();
-        } catch (UnsupportedOperationException e) {
+        } else {
             return getBytecodeField().getType();
         }
     }
     
     @Override
     public String getTypeName() {
-        try {
+        if (klass.hasBytecode()) {
             return super.getTypeName();
-        } catch (UnsupportedOperationException e) {
+        } else {
             return getBytecodeField().getTypeName();
         }
     }
     
     @Override
     public int getModifiers() {
-        try {
+        if (klass.hasBytecode()) {
             return super.getModifiers();
-        } catch (UnsupportedOperationException e) {
+        } else {
             return getBytecodeField().getModifiers();
         }
     }

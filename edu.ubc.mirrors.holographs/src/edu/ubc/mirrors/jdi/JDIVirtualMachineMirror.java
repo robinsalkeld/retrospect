@@ -350,6 +350,18 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         return false; //jdiVM.canBeModified();
     }
     
+    @Override
+    public boolean canGetBytecodes() {
+        // TODO-RS: If I refactored the API to just expose bytecode for individual methods,
+        // this could be true.
+        return false;
+    }
+    
+    @Override
+    public boolean hasClassInitialization() {
+        return true;
+    }
+    
     int identityHashCode(ObjectReference object) {
         // Unfortunately we need to run code to get at these.
         // The method should be completely side-effect free though.

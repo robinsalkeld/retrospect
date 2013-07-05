@@ -18,7 +18,7 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         super(vm, wrappedInstance);
         this.vm = vm;
 
-        if (!vm.canBeModified() || wrapped instanceof NewInstanceMirror) {
+        if (!vm.getWrappedVM().canBeModified() || wrapped instanceof NewInstanceMirror) {
             this.newValues = new HashMap<FieldMirror, Object>();
         } else {
             this.newValues = Collections.emptyMap();

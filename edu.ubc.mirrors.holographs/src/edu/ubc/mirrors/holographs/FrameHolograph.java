@@ -21,9 +21,10 @@ public class FrameHolograph extends WrappingFrameMirror {
     
     @Override
     public MethodMirror method() {
-        try {
+        // TODO-RS: Not quite the right check...
+        if (vm.getWrappedVM().canGetBytecodes()) {
             return super.method();
-        } catch (UnsupportedOperationException e) {
+        } else {
             if (lazyMethod == null) {
                 lazyMethod = new LazyMethodMirror();
             }

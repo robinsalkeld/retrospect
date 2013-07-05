@@ -155,18 +155,18 @@ public class MethodHolograph implements MethodMirror {
 
     @Override
     public List<String> getExceptionTypeNames() {
-        try {
+        if (klass.hasBytecode()) {
             return wrapped.getExceptionTypeNames();
-        } catch (UnsupportedOperationException e) {
+        } else {
             return getBytecodeMethod().getExceptionTypeNames();
         }
     }
     
     @Override
     public List<ClassMirror> getExceptionTypes() {
-	try {
-	    return wrapped.getExceptionTypes();
-	} catch (UnsupportedOperationException e) {
+        if (klass.hasBytecode()) {
+            return wrapped.getExceptionTypes();
+	} else {
 	    return getBytecodeMethod().getExceptionTypes();
 	}
     }

@@ -108,13 +108,18 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
             IInstance primitiveInstance = null;
             for (Field field : boxingType.getStaticFields()) {
                 if (field.getName().equals("TYPE")) {
-                    primitiveInstance = (IInstance)((ObjectReference)field.getValue()).getObject();
-                    break;
+                    ObjectReference objectReference = (ObjectReference)field.getValue();
+                    if (objectReference != null) {
+                        primitiveInstance = (IInstance)objectReference.getObject();
+                        break;
+                    }
                 }
             }
             ClassMirror mirror = new PrimitiveClassMirror(this, typeName);
             primitiveClasses.put(typeName, mirror);
-            mirrors.put(primitiveInstance, mirror);
+            if (primitiveInstance != null) {
+                mirrors.put(primitiveInstance, mirror);
+            }
         } catch (SnapshotException e) {
             throw new RuntimeException(e);
         }
@@ -131,7 +136,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         throw new UnsupportedOperationException();
     }
     
-    private static final Map<IObject, ObjectMirror> mirrors = new HashMap<IObject, ObjectMirror>();
+    private final Map<IObject, ObjectMirror> mirrors = new HashMap<IObject, ObjectMirror>();
     
     public ObjectMirror makeMirror(IObject object) {
         if (object == null) {
@@ -259,6 +264,16 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public boolean canBeModified() {
+        return false;
+    }
+    
+    @Override
+    public boolean canGetBytecodes() {
+        return false;
+    }
+
+    @Override
+    public boolean hasClassInitialization() {
         return false;
     }
     

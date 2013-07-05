@@ -10,7 +10,7 @@ public class WrappingFrameMirror implements FrameMirror {
 	this.vm = vm;
 	this.wrapped = wrapped;
     }
-    private final WrappingVirtualMachine vm;
+    protected final WrappingVirtualMachine vm;
     private final FrameMirror wrapped;
     
     @Override

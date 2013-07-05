@@ -2,7 +2,6 @@ package edu.ubc.retrospect;
 
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -99,7 +98,6 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.raw.nativestubs.java.lang.StringStubs;
 
 public class AspectJMirrors {
 
@@ -873,7 +871,7 @@ public class AspectJMirrors {
 	    protected void methodCall() throws Throwable {
 		((Factory)null).makeSJP(null, null, null);
 	    }
-	}.invoke(factory, StringStubs.internMirror(Reflection.makeString(vm, kind)), signature, null);
+	}.invoke(factory, vm.getInternedString(kind), signature, null);
     }
     
     public InstanceMirror makeStaticJoinPoint(String kind, MethodMirror method) {
@@ -883,7 +881,7 @@ public class AspectJMirrors {
 	    protected void methodCall() throws Throwable {
 		((Factory)null).makeSJP(null, null, null);
 	    }
-	}.invoke(factory, StringStubs.internMirror(Reflection.makeString(vm, kind)), signature, null);
+	}.invoke(factory, vm.getInternedString(kind), signature, null);
     }
     
 

@@ -95,4 +95,14 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     public boolean canBeModified() {
         return false;
     }
+    
+    @Override
+    public boolean canGetBytecodes() {
+        return true;
+    }
+    
+    @Override
+    public boolean hasClassInitialization() {
+        return false;
+    }
 }

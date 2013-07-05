@@ -25,6 +25,8 @@ public interface VirtualMachineMirror {
     public void resume();
     
     public boolean canBeModified();
-
+    // This is also interpreted to mean "can get fields/methods/etc"
+    public boolean canGetBytecodes();
+    public boolean hasClassInitialization();
 
 }

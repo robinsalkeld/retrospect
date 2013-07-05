@@ -84,40 +84,54 @@ public class HolographVMRegistry {
         if (vm == null) {
             listener.beginTask("Creating Holographic VM", IProgressListener.UNKNOWN_TOTAL_WORK);
             vm = VirtualMachineHolograph.fromSnapshotWithIniFile(snapshot);
+            final VirtualMachineHolograph holographVM = vm;
             vms.put(snapshot, vm);
             listener.done();
             
 //            prepareHolographVM(vm, listener);
             
-            ThreadMirror match = null;
-            ThreadMirror secondary = null;
-            for (ThreadMirror t : vm.getThreads()) {
-                if (Reflection.getThreadName(t).equals("main")) {
-                    match = t;
-                } else {
-                    secondary = t;
+            Reflection.withThread(vm.getThreads().get(0), new Callable<Object>() {
+                public Object call() throws Exception {
+                    ThreadMirror match = null;
+                    ThreadMirror secondary = null;
+                    for (ThreadMirror t : holographVM.getThreads()) {
+                        if (Reflection.getThreadName(t).equals("main")) {
+                            match = t;
+                        } else {
+                            secondary = t;
+                        }
+                        
+                        if (match != null && secondary != null) {
+                            break;
+                        }
+                    }
+                    if (match == null) {
+                        throw new IllegalStateException("Thread named 'main' not found.");
+                    }
+                    
+                    setThreadsForEval(holographVM, match, secondary);
+                    
+                    return null;
                 }
-                
-                if (match != null && secondary != null) {
-                    break;
-                }
-            }
-            if (match == null) {
-                throw new IllegalStateException("Thread named 'main' not found.");
-            }
-            setThreadsForEval(vm, match, secondary);
+            });
+            
+            
         }
         
         return vm;
     }
     
     public static void dispose(ISnapshot snapshot) {
-        vms.remove(snapshot);
-        evalEngines.remove(snapshot);
-        threadsForEval.remove(snapshot);
+        VirtualMachineMirror vm = vms.remove(snapshot);
+        if (vm != null) {
+            evalEngines.remove(vm);
+            threadsForEval.remove(vm);
+            secondaryThreadsForEval.remove(vm);
+        }
         
         // TODO-RS: Be more precise
         mirrors.clear();
+        stashedObjectMirrors.clear();
     }
     
     public static IEvaluationEngine getEvaluationEngine(VirtualMachineMirror vm) throws CoreException {

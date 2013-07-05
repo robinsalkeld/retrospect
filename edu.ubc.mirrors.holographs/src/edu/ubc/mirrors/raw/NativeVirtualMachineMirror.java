@@ -131,4 +131,13 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
         // Not really, but I don't want to implement it. :)
         return false;
     }
+    
+    @Override
+    public boolean canGetBytecodes() {
+        return true;
+    }
+    
+    public boolean hasClassInitialization() {
+        return true;
+    };
 }

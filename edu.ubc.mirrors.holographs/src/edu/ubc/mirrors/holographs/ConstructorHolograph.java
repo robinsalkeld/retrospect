@@ -120,18 +120,18 @@ public class ConstructorHolograph implements ConstructorMirror {
 
     @Override
     public List<String> getExceptionTypeNames() {
-        try {
+        if (klass.hasBytecode()) {
             return wrapped.getExceptionTypeNames();
-        } catch (UnsupportedOperationException e) {
+        } else {
             return getBytecodeConstructor().getExceptionTypeNames();
         }
     }
     
     @Override
     public List<ClassMirror> getExceptionTypes() {
-	try {
+        if (klass.hasBytecode()) {
 	    return wrapped.getExceptionTypes();
-	} catch (UnsupportedOperationException e) {
+	} else {
 	    return getBytecodeConstructor().getExceptionTypes();
 	}
     }

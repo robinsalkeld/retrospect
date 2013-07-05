@@ -250,6 +250,16 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return wrappedVM.canBeModified();
     }
 
+    @Override
+    public boolean canGetBytecodes() {
+        return wrappedVM.canGetBytecodes();
+    }
+    
+    @Override
+    public boolean hasClassInitialization() {
+        return wrappedVM.hasClassInitialization();
+    }
+
     public FrameMirror wrapFrameMirror(WrappingVirtualMachine vm, FrameMirror frame) {
         return new WrappingFrameMirror(vm, frame);
     }

@@ -165,9 +165,9 @@ public class ClassHolograph extends WrappingClassMirror {
     }
         
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-        try {
+        if (hasBytecode()) {
             return super.getMethod(name, paramTypes);
-        } catch (UnsupportedOperationException e) {
+        } else {
             return new MethodHolograph(this, getBytecodeMirror().getMethod(name, paramTypes));
         }
     }
@@ -175,18 +175,18 @@ public class ClassHolograph extends WrappingClassMirror {
     @Override
     public ConstructorMirror getConstructor(ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
-	try {
+        if (hasBytecode()) {
 	    return super.getConstructor(paramTypes);
-	} catch (UnsupportedOperationException e) {
+	} else {
 	    return new ConstructorHolograph(this, getBytecodeMirror().getConstructor(paramTypes));
 	}
     }
     
     @Override
     public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
-	try {
+        if (hasBytecode()) {
             return super.getDeclaredConstructors(publicOnly);
-        } catch (UnsupportedOperationException e) {
+        } else {
             List<ConstructorMirror> bytecodeCtrs = getBytecodeMirror().getDeclaredConstructors(publicOnly);
             List<ConstructorMirror> result = new ArrayList<ConstructorMirror>(bytecodeCtrs.size());
             for (ConstructorMirror bytecodeCtr : bytecodeCtrs) {
@@ -326,36 +326,44 @@ public class ClassHolograph extends WrappingClassMirror {
 
     @Override
     public byte[] getBytecode() {
-        try {
+        if (hasBytecode()) {
             return super.getBytecode();
-        } catch (UnsupportedOperationException e) {
+        } else {
             return getBytecodeMirror().getBytecode();
         }
+    }
+
+    boolean hasBytecode() {
+        return vm.getWrappedVM().canGetBytecodes() || wrapped instanceof DefinedClassMirror || bytecodeMirror == this;
+    }
+    
+    boolean actuallyHasInitialization() {
+        return vm.getWrappedVM().hasClassInitialization() || wrapped instanceof DefinedClassMirror || bytecodeMirror == this;
     }
     
     @Override
     public boolean isInterface() {
-        try {
+        if (hasBytecode()) {
             return super.isInterface();
-        } catch (UnsupportedOperationException e) {
+        } else {
             return getBytecodeMirror().isInterface();
         }
     }
 
     @Override
     public List<ClassMirror> getInterfaceMirrors() {
-        try {
+        if (hasBytecode()) {
             return super.getInterfaceMirrors();
-        } catch (UnsupportedOperationException e) {
+        } else {
             return getBytecodeMirror().getInterfaceMirrors();
         }
     }
 
     @Override
     public ClassMirror getComponentClassMirror() {
-	try {
+        if (hasBytecode()) {
 	    return super.getComponentClassMirror();
-	} catch (UnsupportedOperationException e) {
+	} else {
 	    Type type = Reflection.typeForClassMirror(this);
 	    Type componentType = MirageClassGenerator.makeArrayType(type.getDimensions() - 1, type.getElementType());
 	    return HolographInternalUtils.classMirrorForType(getVM(), ThreadHolograph.currentThreadMirror(), componentType, false, getLoader());
@@ -363,24 +371,10 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     @Override
-    public List<FieldMirror> getDeclaredFields() {
-        try {
-            return super.getDeclaredFields();
-        } catch (UnsupportedOperationException e) {
-            List<FieldMirror> bytecodeFields = getBytecodeMirror().getDeclaredFields();
-            List<FieldMirror> result = new ArrayList<FieldMirror>(bytecodeFields.size());
-            for (FieldMirror bytecodeField : bytecodeFields) {
-                result.add(vm.getFieldMirror(bytecodeField));
-            }
-            return result;
-        }
-    }
-
-    @Override
     public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
-	try {
+        if (hasBytecode()) {
             return super.getDeclaredMethods(publicOnly);
-        } catch (UnsupportedOperationException e) {
+        } else {
             List<MethodMirror> bytecodeMethods = getBytecodeMirror().getDeclaredMethods(publicOnly);
             List<MethodMirror> result = new ArrayList<MethodMirror>(bytecodeMethods.size());
             for (MethodMirror bytecodeMethod : bytecodeMethods) {
@@ -419,9 +413,9 @@ public class ClassHolograph extends WrappingClassMirror {
     
     @Override
     public boolean initialized() {
-        try {
+        if (actuallyHasInitialization()) {
             return super.initialized();
-        } catch (UnsupportedOperationException e) {
+        } else {
             resolveInitialized();
             if (initialized == null) {
                 throw new InternalError("Unable to infer initialization status of class: " + this);
@@ -431,21 +425,19 @@ public class ClassHolograph extends WrappingClassMirror {
     }
 
     Boolean resolveInitialized() {
-        try {
+        if (actuallyHasInitialization()) {
             return super.initialized();
-        } catch (UnsupportedOperationException e) {
-            // Fall through and infer
-        }
-        
-        if (!initializedResolved) {
-            initialized = inferInitialized();
-            initializedResolved = true;
-            
-            if (initialized != null) {
-                setInitialized(initialized);
+        } else {
+            if (!initializedResolved) {
+                initialized = inferInitialized();
+                initializedResolved = true;
+                
+                if (initialized != null) {
+                    setInitialized(initialized);
+                }
             }
+            return initialized;
         }
-        return initialized;
     }
     
     private void setInitialized(boolean initialized) {
@@ -599,9 +591,9 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public byte[] getRawAnnotations() {
-        try {
+        if (hasBytecode()) {
             return super.getRawAnnotations(); 
-        } catch (UnsupportedOperationException e) {
+        } else {
             return getBytecodeMirror().getRawAnnotations();
         }
     }

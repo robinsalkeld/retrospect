@@ -90,6 +90,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     private final Map<String, ClassHolograph> dynamicallyDefinedClasses =
             new HashMap<String, ClassHolograph>();
     
+    private Map<String, InstanceMirror> internedStrings =
+            new HashMap<String, InstanceMirror>();
+     
     public Map<Integer, FileInputStream> fileInputStreams = new HashMap<Integer, FileInputStream>();
     
     public Map<Long, ZipFile> zipFilesByAddress = new HashMap<Long, ZipFile>();
@@ -637,9 +640,19 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     @Override
     public boolean canBeModified() {
-        return wrappedVM.canBeModified();
+        return true;
+    }
+    
+    @Override
+    public boolean canGetBytecodes() {
+        return true;
     }
  
+    @Override
+    public boolean hasClassInitialization() {
+        return true;
+    }
+    
     @Override
     public FrameMirror wrapFrameMirror(WrappingVirtualMachine vm, FrameMirror frame) {
         return new FrameHolograph(vm, frame);
@@ -686,5 +699,19 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         classHolograph.getMirageClass(true);
         classHolograph.getMirageClass(false);
         classHolograph.resolveInitialized();
+    }
+    
+    public InstanceMirror getInternedString(String s) {
+        return internString(Reflection.makeString(this, s));
+    }
+    
+    public InstanceMirror internString(InstanceMirror s) {
+        String realString = Reflection.getRealStringForMirror(s);
+        InstanceMirror interned = internedStrings.get(realString);
+        if (interned == null) {
+            interned = s;
+            internedStrings.put(realString, interned);
+        }
+        return interned;
     }
 }

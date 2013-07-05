@@ -8,6 +8,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import org.eclipse.equinox.app.IApplication;
@@ -82,28 +85,55 @@ public class CDTBugTest implements IApplication {
         fis.close();
         ClassMirror analyzerClass = Reflection.injectBytecode(vm, thread, nameClass.getLoader(), 
                 analyzerClassName, analyzerClassBytecode);
-        MethodMirror method = analyzerClass.getMethod("analyse", vm.findBootstrapClassMirror(Collection.class.getName()));
+        MethodMirror method = analyzerClass.getMethod("nameKey", nameClass);
         
-        if (MirageClassLoader.debug) {
-            System.out.println("Building collection...");
-        }
+        final List<ObjectMirror> instances = nameClass.getInstances().subList(10000, 20000);
         
-        final List<ObjectMirror> instances = nameClass.getInstances().subList(0, 10000);
-        int count = instances.size();
-        ClassMirror objectArrayClass = vm.getArrayClass(1, vm.findBootstrapClassMirror(Object.class.getName()));
-        ClassMirror nameArrayClass = vm.getArrayClass(1, nameClass);
-        ObjectArrayMirror array = new CalculatedObjectArrayMirror(nameArrayClass, count) {
-            @Override
-            public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
-                return instances.get(index);
+        System.out.println();
+        System.out.println("***");
+        System.out.println("*** Starting analysis...");
+        System.out.println("***");
+        System.out.println();
+        
+        int count = 0;
+        int blankCount = 0;
+        SortedMap<String, Integer> nameCounts = new TreeMap<String, Integer>();
+        String blankKey = " - []";
+        for (ObjectMirror name : instances) {
+            String nameString = Reflection.getRealStringForMirror((InstanceMirror)method.invoke(thread, null, name));
+            Integer nameCount = nameCounts.get(nameString);
+            if (nameCount == null) {
+                    nameCount = 0;
             }
-        };
-        InstanceMirror arrayList = (InstanceMirror)vm.findBootstrapClassMirror(Arrays.class.getName()).getMethod("asList", objectArrayClass).invoke(thread, null, array);
-        
-        if (MirageClassLoader.debug) {
-            System.out.println("Invoking...");
+            nameCounts.put(nameString, nameCount + 1);
+            if (nameString.equals(blankKey)) {
+                    blankCount++;
+            }
+            if (++count % 10 == 0) {
+                    System.out.print(".");
+            }
+            if (count % 1000 == 0) {
+                    System.out.println(count);
+            }
         }
-        method.invoke(thread, null, arrayList);
+        
+        System.out.println();
+        System.out.println("***");
+        System.out.println("*** Finished analysis.");
+        System.out.println("***");
+        System.out.println();
+        
+        // Print out any duplicates
+        int dupCount = 0;
+        for (Map.Entry<String, Integer> entry : nameCounts.entrySet()) {
+                String key = entry.getKey();
+                int nameCount = entry.getValue();
+                if (nameCount > 1) {
+                        System.out.println(key + ": " + nameCount);
+                        dupCount += nameCount;
+                }
+        }
+        System.out.println("Total duplicates: " + dupCount);
     }
     
     public Object start(IApplicationContext context) throws Exception {
@@ -116,3 +146,4 @@ public class CDTBugTest implements IApplication {
         
     }
 }
+
