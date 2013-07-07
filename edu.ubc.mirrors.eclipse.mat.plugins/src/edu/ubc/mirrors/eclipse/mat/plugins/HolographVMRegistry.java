@@ -21,6 +21,7 @@ import org.eclipse.jdt.debug.eval.IEvaluationEngine;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
+import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.query.Icons;
 import org.eclipse.mat.util.IProgressListener;
@@ -88,7 +89,7 @@ public class HolographVMRegistry {
             vms.put(snapshot, vm);
             listener.done();
             
-//            prepareHolographVM(vm, listener);
+            // prepareHolographVM(vm, listener);
             
             Reflection.withThread(vm.getThreads().get(0), new Callable<Object>() {
                 public Object call() throws Exception {

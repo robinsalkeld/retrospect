@@ -1,7 +1,9 @@
 package edu.ubc.mirrors.holographs.mapreduce;
 
 import java.io.File;
+import java.util.Hashtable;
 
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -9,12 +11,27 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
-public class Driver implements IApplication {
-    public static void main(String[] args) throws Exception {
-        JobConf job = new JobConf("method invoking");
+public class Driver extends Configured implements IApplication, Tool, BundleActivator {
+    
+    @Override
+    public void start(BundleContext context) throws Exception {
+        System.out.println("Yo wassup????");
+        context.registerService(Tool.class.getName(), this, new Hashtable<String, String>());
+    }
+
+    @Override
+    public void stop(BundleContext frameworkConfig) throws Exception {
+    }
+    
+    public int run(String[] args) throws Exception {
+        JobConf job = new JobConf(getConf());
         job.setInputFormat(SnapshotObjectsOfTypeInputFormat.class);
         job.setMapperClass(InvokeMethodMapper.class);
         job.setCombinerClass(TextCountSumReducer.class);
@@ -37,6 +54,12 @@ public class Driver implements IApplication {
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
         
         JobClient.runJob(job);
+        return 0;
+    }
+    
+    public static void main(String[] args) throws Exception {
+        int res = ToolRunner.run(new Driver(), args);
+        System.exit(res);
     }
     
     public Object start(IApplicationContext context) throws Exception {

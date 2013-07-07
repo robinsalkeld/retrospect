@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="bin/"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
@@ -7,7 +8,6 @@
 	<classpathentry kind="lib" path="lib/jsp-2.1/jsp-api-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/asm-3.2.jar"/>
 	<classpathentry kind="lib" path="lib/aspectjrt-1.6.11.jar"/>
-	<classpathentry kind="lib" path="lib/aspectjtools-1.6.11.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-core-1.8.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar"/>
@@ -26,7 +26,7 @@
 	<classpathentry kind="lib" path="lib/commons-net-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/core-3.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/hadoop-capacity-scheduler-1.1.2.jar"/>
-	<classpathentry kind="lib" path="lib/hadoop-core-1.1.2.jar" sourcepath="/Users/robinsalkeld/Downloads/hadoop-1.1.2/src/mapred"/>
+	<classpathentry kind="lib" path="lib/hadoop-core-1.1.2.jar" sourcepath="/Users/robinsalkeld/Downloads/hadoop-1.1.2/src"/>
 	<classpathentry kind="lib" path="lib/hadoop-fairscheduler-1.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/hadoop-thriftfs-1.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/hsqldb-1.8.0.10.jar"/>

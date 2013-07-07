@@ -2,6 +2,7 @@ package edu.ubc.mirrors.holographs.mapreduce;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLClassLoader;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.io.IntWritable;
@@ -50,6 +51,20 @@ public class InvokeMethodMapper extends MapReduceBase
         Reflection.withThread(thread, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
+                try {
+                    ClassMirror appClassLoaderClass = holographVM.findBootstrapClassMirror("sun.misc.Launcher$AppClassLoader");
+                    InstanceMirror appClassLoader = (InstanceMirror)appClassLoaderClass.getInstances().get(0);
+                    ClassMirror urlClassLoaderClass = holographVM.findBootstrapClassMirror(URLClassLoader.class.getName());
+                    InstanceMirror ucp = (InstanceMirror)appClassLoader.get(urlClassLoaderClass.getDeclaredField("ucp"));
+//                    ClassMirror urlClassPathClass = holographVM.findBootstrapClassMirror("sun.misc.URLClassPath");
+//                    InstanceMirror stack = (InstanceMirror)ucp.get(urlClassPathClass.getDeclaredField("stack"));
+                } catch (IllegalAccessException e) {
+                    // TODO Auto-generated catch block
+                    throw new RuntimeException(e);
+                } catch (NoSuchFieldException e) {
+                    // TODO Auto-generated catch block
+                    throw new RuntimeException(e);
+                }
                 if (MirageClassLoader.debug) {
                     System.out.println("Finding target class...");
                 }

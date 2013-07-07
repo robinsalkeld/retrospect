@@ -1,0 +1,10 @@
+<project name="EquinoxOnHadoop" default="jar" basedir=".">
+
+  <target name="jar" >
+    <jar jarfile="equinox_on_hadoop.jar" manifest="${basedir}/meta-inf/manifest.mf">
+    	<fileset dir="bin"/>
+    	<fileset dir="." includes="lib/*.jar"/>
+    </jar>
+  	
+  </target>
+</project>
