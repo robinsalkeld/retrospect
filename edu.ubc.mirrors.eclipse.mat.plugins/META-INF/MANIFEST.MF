@@ -34,3 +34,5 @@ Import-Package: com.sun.jdi,
  org.eclipse.mat.util
 Export-Package: edu.ubc.mirrors.eclipse.mat.plugins
 Require-Bundle: org.eclipse.mat.report
+Bundle-ClassPath: bin/,
+ .

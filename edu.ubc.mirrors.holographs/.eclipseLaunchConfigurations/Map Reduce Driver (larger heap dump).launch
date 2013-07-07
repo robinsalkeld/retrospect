@@ -15,7 +15,7 @@
 <booleanAttribute key="includeOptional" value="false"/>
 <stringAttribute key="location" value="${workspace_loc}/../runtime-New_configuration(5)"/>
 <stringAttribute key="org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE" value="${workspace_loc:/Retrospect/miragetest2.txt}"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog -console /Users/robinsalkeld/Documents/UBC/Code/snapshots/cdt_oom_bug/java_pid7720.hprof /Users/robinsalkeld/Documents/UBC/Code/snapshots/cdt_oom_bug/mapreduceoutput"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog /Users/robinsalkeld/Documents/UBC/Code/snapshots/cdt_oom_bug/java_pid7720.hprof /Users/robinsalkeld/Documents/UBC/Code/snapshots/cdt_oom_bug/mapreduceoutput"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dedu.ubc.mirrors.mirages.debug=true -XX:-UseSplitVerifier&#10;-Xmx4g &#10;-XX:PermSize=64M -XX:MaxPermSize=256M"/>
 <stringAttribute key="pde.version" value="3.3"/>

@@ -206,7 +206,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     private List<URL> extractBootstrapPath(VirtualMachineMirror wrappedVM) {
 	try {
-	    ClassMirror launcherClass = wrappedVM.findBootstrapClassMirror(Launcher.class.getName());
+	    ClassMirror launcherClass = wrappedVM.findBootstrapClassMirror("sun.misc.Launcher");
 	    try {
 	        // Java 1.7
 	        InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.getStaticFieldValues().get(launcherClass.getDeclaredField("bootClassPath"));
@@ -223,7 +223,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	    } catch (NoSuchFieldException e) {
 	        // Java 1.6
 	        InstanceMirror /* URLClassPath */ bootstrapClassPathMirror = (InstanceMirror)launcherClass.getStaticFieldValues().get(launcherClass.getDeclaredField("bootstrapClassPath"));
-	        ClassMirror urlClassPathClass = wrappedVM.findBootstrapClassMirror(URLClassPath.class.getName());
+	        ClassMirror urlClassPathClass = wrappedVM.findBootstrapClassMirror("sun.misc.URLClassPath");
 	        InstanceMirror /* ArrayList */ listMirror = (InstanceMirror)bootstrapClassPathMirror.get(urlClassPathClass.getDeclaredField("path"));
 	        ClassMirror arrayListClass = wrappedVM.findBootstrapClassMirror(ArrayList.class.getName());
                 ObjectArrayMirror /* URL[] */ arrayMirror = (ObjectArrayMirror)listMirror.get(arrayListClass.getDeclaredField("elementData"));

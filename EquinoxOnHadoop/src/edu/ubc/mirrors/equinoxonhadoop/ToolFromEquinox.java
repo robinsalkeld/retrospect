@@ -32,6 +32,10 @@ public class ToolFromEquinox implements Tool {
         Framework framework = createFramework(config);
         wrappedTool = loadFromFramework(framework, Tool.class);
         wrappedTool.setConf(config);
+        
+        ClassLoader osgiLoader = wrappedTool.getClass().getClassLoader();
+        config.setClassLoader(osgiLoader);
+        Thread.currentThread().setContextClassLoader(osgiLoader);
     }
     
     @Override
@@ -47,12 +51,13 @@ public class ToolFromEquinox implements Tool {
     public Framework createFramework(Configuration config) {
         Map<String, String> frameworkConfig = new HashMap<String, String>();
         
-        frameworkConfig.put(Constants.FRAMEWORK_BOOTDELEGATION, "org.apache.hadoop.*");
+        // TODO-RS: We should be able to remove sun.misc?
+        frameworkConfig.put(Constants.FRAMEWORK_BOOTDELEGATION, "org.apache.hadoop.*,sun.misc,sun.reflect");
         frameworkConfig.put(Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_APP);
         frameworkConfig.put(Constants.FRAMEWORK_STORAGE, "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/EquinoxOnHadoop/eclipse");
         frameworkConfig.put(Constants.FRAMEWORK_STORAGE_CLEAN, "true");
         frameworkConfig.put("osgi.install.area", "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/EquinoxOnHadoop/eclipse");
-        frameworkConfig.put("osgi.console", "true");
+//        frameworkConfig.put("osgi.console", "true");
         
         FrameworkFactory factory = ServiceLoader.load(FrameworkFactory.class).iterator().next();
         Framework framework = factory.newFramework(frameworkConfig);

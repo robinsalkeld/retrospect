@@ -22,7 +22,6 @@ public class Driver extends Configured implements IApplication, Tool, BundleActi
     
     @Override
     public void start(BundleContext context) throws Exception {
-        System.out.println("Yo wassup????");
         context.registerService(Tool.class.getName(), this, new Hashtable<String, String>());
     }
 
@@ -32,6 +31,7 @@ public class Driver extends Configured implements IApplication, Tool, BundleActi
     
     public int run(String[] args) throws Exception {
         JobConf job = new JobConf(getConf());
+        job.setClassLoader(Driver.class.getClassLoader());
         job.setInputFormat(SnapshotObjectsOfTypeInputFormat.class);
         job.setMapperClass(InvokeMethodMapper.class);
         job.setCombinerClass(TextCountSumReducer.class);
