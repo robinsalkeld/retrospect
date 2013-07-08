@@ -18,6 +18,12 @@
       <query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery">
       </query>
+      <query
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.SaveObjectListQuery">
+      </query>
+      <query
+            impl="edu.ubc.mirrors.eclipse.mat.plugins.LoadObjectListQuery">
+      </query>
    </extension>
    <extension
          point="org.eclipse.mat.api.factory">

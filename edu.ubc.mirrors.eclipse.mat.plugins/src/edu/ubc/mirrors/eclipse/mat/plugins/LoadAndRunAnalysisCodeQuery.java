@@ -48,6 +48,9 @@ public class LoadAndRunAnalysisCodeQuery implements IQuery {
     @Argument
     public boolean aggregate = false;
     
+    @Argument
+    public boolean inbound = false;
+    
     private VirtualMachineMirror vm;
     private ThreadMirror threadMirror;
     private MethodMirror method;
@@ -84,7 +87,7 @@ public class LoadAndRunAnalysisCodeQuery implements IQuery {
             
             listener.done();
 
-            return new ObjectMirrorListResult.Outbound(snapshot, results);
+            return ObjectMirrorListResult.make(snapshot, results, inbound);
     }
     
     private ObjectMirror createCalculatedObjectList(final int[] objectIDs) throws IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchMethodException, MirrorInvocationTargetException {
