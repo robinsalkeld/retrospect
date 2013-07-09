@@ -157,8 +157,12 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
 
     @Override
-    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
-        return new NativeFieldMirror(klass.getDeclaredField(name));
+    public FieldMirror getDeclaredField(String name) {
+        try {
+            return new NativeFieldMirror(klass.getDeclaredField(name));
+        } catch (NoSuchFieldException e) {
+            return null;
+        }
     }
     
     @Override

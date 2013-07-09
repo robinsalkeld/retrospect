@@ -5,23 +5,28 @@ import edu.ubc.mirrors.wrapping.WrappingCharArrayMirror;
 
 public class MutableCharArrayMirror extends WrappingCharArrayMirror {
 
-    private final char[] values;
+    private final CharArrayMirror immutableMirror;
+    private char[] values;
     
     public MutableCharArrayMirror(VirtualMachineHolograph vm, CharArrayMirror immutableMirror) {
         super(vm, immutableMirror);
-        this.values = new char[immutableMirror.length()];
-        for (int i = 0; i < values.length; i++) {
-            values[i] = immutableMirror.getChar(i);
-        }
+        this.immutableMirror = immutableMirror;
+        
     }
     
     @Override
     public char getChar(int index) throws ArrayIndexOutOfBoundsException {
-        return values[index];
+        return values != null ? values[index] : immutableMirror.getChar(index);
     }
 
     @Override
     public void setChar(int index, char c) throws ArrayIndexOutOfBoundsException {
+        if (values == null) {
+            this.values = new char[immutableMirror.length()];
+            for (int i = 0; i < values.length; i++) {
+                values[i] = immutableMirror.getChar(i);
+            }
+        }
         values[index] = c;
     }
 }

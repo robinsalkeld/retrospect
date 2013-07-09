@@ -22,8 +22,6 @@ public class AtomicIntegerStubs extends NativeStubs {
             } else {
                 return false;
             }
-        } catch (NoSuchFieldException e) {
-            throw new NoSuchFieldError("value");
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError("value");
         }

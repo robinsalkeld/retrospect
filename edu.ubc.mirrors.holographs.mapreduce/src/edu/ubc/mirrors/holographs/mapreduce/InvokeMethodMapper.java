@@ -61,9 +61,6 @@ public class InvokeMethodMapper extends MapReduceBase
                 } catch (IllegalAccessException e) {
                     // TODO Auto-generated catch block
                     throw new RuntimeException(e);
-                } catch (NoSuchFieldException e) {
-                    // TODO Auto-generated catch block
-                    throw new RuntimeException(e);
                 }
                 if (MirageClassLoader.debug) {
                     System.out.println("Finding target class...");

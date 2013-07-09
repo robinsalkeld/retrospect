@@ -152,8 +152,6 @@ public class Reflection {
             result.setInt(stringClass.getDeclaredField("count"), s.length());
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
         }
         return result;
     }
@@ -178,8 +176,6 @@ public class Reflection {
             return new String(value, offset, count);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
-        } catch (NoSuchFieldException e) {
-            throw new NoSuchFieldError(e.getMessage());
         }
     }
     
@@ -421,31 +417,28 @@ public class Reflection {
         return isAssignableFrom(classMirror, oMirror.getClassMirror());
     }
     
-    public static FieldMirror getField(ClassMirror klass, String fieldName) throws NoSuchFieldException {
-        try {
-            return klass.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException e) {
-            // Continue
+    public static FieldMirror getField(ClassMirror klass, String fieldName) {
+        FieldMirror result = klass.getDeclaredField(fieldName);
+        if (result != null) {
+            return result;
         }
         
         for (ClassMirror i : klass.getInterfaceMirrors()) {
-            try {
-                return getField(i, fieldName);
-            } catch (NoSuchFieldException e) {
-                // Ignore
+            result = getField(i, fieldName);
+            if (result != null) {
+                return result;
             }
         }
         
         ClassMirror superclass = klass.getSuperClassMirror();
         if (superclass != null) {
-            try {
-                return getField(superclass, fieldName);
-            } catch (NoSuchFieldException e) {
-                // Ignore
+            result = getField(superclass, fieldName);
+            if (result != null) {
+                return result;
             }
         }
         
-        throw new NoSuchFieldException(fieldName);
+        return null;
     }
 
     public static <T> T checkNull(T t) {
@@ -542,13 +535,13 @@ public class Reflection {
 
     public static FieldMirror findField(ClassMirror klass, String name) throws NoSuchFieldException {
         while (klass != null) {
-            try {
-                return klass.getDeclaredField(name);
-            } catch (NoSuchFieldException e) {
-                klass = klass.getSuperClassMirror();
+            FieldMirror result = klass.getDeclaredField(name);
+            if (result != null) {
+                return result;
             }
+            klass = klass.getSuperClassMirror();
         }
-        throw new NoSuchFieldException(name);
+        return null;
     }
     
     public static void arraycopy(ObjectMirror src, int srcPos, ObjectMirror dest, int destPos, int length) {
@@ -649,8 +642,6 @@ public class Reflection {
             Reflection.arraycopy(nameChars, 0, new NativeCharArrayMirror(chars), 0, chars.length);
             return new String(chars);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         } 
     }

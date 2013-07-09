@@ -44,8 +44,6 @@ public class ThreadStubs extends NativeStubs {
                 element.setInt(stackTraceElementClass.getDeclaredField("lineNumber"), frame.lineNumber());
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
             }
 	    result.set(i, element);
 	}

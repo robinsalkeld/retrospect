@@ -77,8 +77,9 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
 
     @Override
-    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
-        return vm.getFieldMirror(wrapped.getDeclaredField(name));
+    public FieldMirror getDeclaredField(String name) {
+        FieldMirror field = wrapped.getDeclaredField(name);
+        return field != null ? vm.getFieldMirror(field) : field;
     }
     
     @Override

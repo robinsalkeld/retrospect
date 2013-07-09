@@ -16,7 +16,6 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.NativeStubs;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassLoaderStubs;
 
@@ -109,10 +108,16 @@ public class UnsafeStubs extends NativeStubs {
         // TODO-RS: Actually figure out dynamically.
         return 12;
     }
+    
+    public long objectFieldBaseOffset() {
+        // TODO-RS: Actually figure out dynamically.
+        return 12;
+    }
+    
     public long objectFieldOffset(InstanceMirror unsafe, InstanceMirror fieldMirror) {
         ClassMirror klass = (ClassMirror)HolographInternalUtils.getField(fieldMirror, "clazz");
         String fieldName = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(fieldMirror, "name"));
-        long fieldOffset = 12;
+        long fieldOffset = objectFieldBaseOffset();
         for (FieldMirror declaredField : klass.getDeclaredFields()) {
             if (!Modifier.isStatic(declaredField.getModifiers())) {
                 ClassMirror fieldType = declaredField.getType();
@@ -138,7 +143,7 @@ public class UnsafeStubs extends NativeStubs {
     
     private FieldMirror fieldForOffset(InstanceMirror instance, long offset) {
         ClassMirror klass = instance.getClassMirror();
-        long fieldOffset = 12;
+        long fieldOffset = objectFieldBaseOffset();
         for (FieldMirror field : klass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers())) {
                 ClassMirror fieldType = field.getType();
@@ -215,6 +220,6 @@ public class UnsafeStubs extends NativeStubs {
     }
     
     public void ensureClassInitialized(InstanceMirror unsafe, ClassMirror classMirror) {
-        MirageClassLoader.initializeClassMirror((ClassHolograph)classMirror);
+        ((ClassHolograph)classMirror).ensureInitialized();
     }
 }

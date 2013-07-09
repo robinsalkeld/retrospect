@@ -3,7 +3,10 @@ package edu.ubc.mirrors.eclipse.mat;
 import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.Field;
@@ -30,6 +33,8 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     private final HeapDumpVirtualMachineMirror vm;
     protected final IClass klass;
     private final IClassLoader loader;
+    private Map<String, HeapDumpFieldMirror> fieldMirrors;
+    private Map<FieldMirror, Integer> instanceFieldOffsets;
     
     public HeapDumpClassMirror(HeapDumpVirtualMachineMirror vm, IClass klass) {
         if (klass == null) {
@@ -97,22 +102,49 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         return name;
     }
 
-    @Override
-    public FieldMirror getDeclaredField(final String name) throws NoSuchFieldException {
-        List<Field> fields = klass.getStaticFields();
-        for (Field field : fields) {
-            if (field.getName().equals(name)) {
-                return new HeapDumpFieldMirror(vm, this, field);
+    private void resolveFields() {
+        if (fieldMirrors == null) {
+            fieldMirrors = new LinkedHashMap<String, HeapDumpFieldMirror>();
+            
+            List<Field> fields = klass.getStaticFields();
+            for (Field field : fields) {
+                    fieldMirrors.put(field.getName(), new HeapDumpFieldMirror(this, field));
+            }
+            
+            for (FieldDescriptor fd : klass.getFieldDescriptors()) {
+                fieldMirrors.put(fd.getName(), new HeapDumpFieldMirror(this, fd));
             }
         }
-        for (FieldDescriptor fd : klass.getFieldDescriptors()) {
-            if (fd.getName().equals(name)) {
-                return new HeapDumpFieldMirror(vm, this, fd);
-            }
-        }
-        throw new NoSuchFieldException(name);
     }
     
+    @Override
+    public FieldMirror getDeclaredField(final String name) {
+        resolveFields();
+        return fieldMirrors.get(name);
+    }
+    
+    int getFieldOffset(FieldMirror field) {
+        resolveFieldOffsets();
+        return instanceFieldOffsets.get(field);
+    }
+    
+    private void resolveFieldOffsets() {
+        if (instanceFieldOffsets == null) {
+            instanceFieldOffsets = new HashMap<FieldMirror, Integer>();
+            
+            ClassMirror klass = this;
+            int offset = 0;
+            while (klass != null) {
+                for (FieldMirror field : klass.getDeclaredFields()) {
+                    if (!((HeapDumpFieldMirror)field).isStatic()) {
+                        instanceFieldOffsets.put(field, offset++);
+                    }
+                }
+                klass = klass.getSuperClassMirror();
+            }
+        }
+    }
+
     @Override
     public HeapDumpClassMirrorLoader getLoader() {
         return (HeapDumpClassMirrorLoader)vm.makeMirror(loader);
@@ -205,14 +237,8 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
 
     @Override
     public List<FieldMirror> getDeclaredFields() {
-        List<FieldMirror> result = new ArrayList<FieldMirror>();
-        for (Field field : klass.getStaticFields()) {
-            result.add(new HeapDumpFieldMirror(vm, this, field));
-        }
-        for (FieldDescriptor fd : klass.getFieldDescriptors()) {
-            result.add(new HeapDumpFieldMirror(vm, this, fd));
-        }
-        return result;
+        resolveFields();
+        return new ArrayList<FieldMirror>(fieldMirrors.values());
     }
 
     @Override

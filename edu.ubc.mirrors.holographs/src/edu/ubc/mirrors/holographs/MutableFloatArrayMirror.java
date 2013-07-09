@@ -5,23 +5,28 @@ import edu.ubc.mirrors.wrapping.WrappingFloatArrayMirror;
 
 public class MutableFloatArrayMirror extends WrappingFloatArrayMirror {
 
-    private final float[] values;
+    private final FloatArrayMirror immutableMirror;
+    private float[] values;
     
     public MutableFloatArrayMirror(VirtualMachineHolograph vm, FloatArrayMirror immutableMirror) {
         super(vm, immutableMirror);
-        this.values = new float[immutableMirror.length()];
-        for (int i = 0; i < values.length; i++) {
-            values[i] = immutableMirror.getFloat(i);
-        }
+        this.immutableMirror = immutableMirror;
+        
     }
     
     @Override
     public float getFloat(int index) throws ArrayIndexOutOfBoundsException {
-        return values[index];
+        return values != null ? values[index] : immutableMirror.getFloat(index);
     }
 
     @Override
-    public void setFloat(int index, float i) throws ArrayIndexOutOfBoundsException {
-        values[index] = i;
+    public void setFloat(int index, float f) throws ArrayIndexOutOfBoundsException {
+        if (values == null) {
+            this.values = new float[immutableMirror.length()];
+            for (int i = 0; i < values.length; i++) {
+                values[i] = immutableMirror.getFloat(i);
+            }
+        }
+        values[index] = f;
     }
 }

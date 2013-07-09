@@ -42,8 +42,8 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
     }
     
     @Override
-    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
-        throw new NoSuchFieldException(name);
+    public FieldMirror getDeclaredField(String name) {
+        return null;
     }
 
     @Override

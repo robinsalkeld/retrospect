@@ -19,8 +19,6 @@ public abstract class MirrorsInstanceReference extends MirrorsObjectReference {
             return (InstanceMirror)wrapped.get(klass.getDeclaredField(fieldName));
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
         }
     }
 }

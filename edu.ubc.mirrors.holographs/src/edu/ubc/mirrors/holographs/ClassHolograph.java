@@ -9,14 +9,12 @@ import java.net.URLClassLoader;
 import java.security.SecureClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.objectweb.asm.Type;
 
@@ -408,6 +406,21 @@ public class ClassHolograph extends WrappingClassMirror {
         return new DirectArrayMirror(vm.getWrappedClassMirror(arrayClass), dims);
     }
     
+    public void ensureInitialized() {
+        if (!initialized()) {
+            Class<?> mirageClass = getMirageClass(true);
+            try {
+                // Reading a non-constant field forces class initialization
+                mirageClass.getField("classMirror").get(null);
+            } catch (IllegalAccessException e) {
+                throw new InternalError();
+            } catch (NoSuchFieldException e) {
+                // Ignore - not a dynamically generated class
+            }
+            initialized = Boolean.TRUE;
+        }
+    }
+    
     private Boolean initialized = null;
     private boolean initializedResolved = false;
     
@@ -533,8 +546,6 @@ public class ClassHolograph extends WrappingClassMirror {
                             return false;
                         }
                     }
-                } catch (NoSuchFieldException e) {
-                    throw new RuntimeException(e);
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
@@ -582,10 +593,10 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     @Override
-    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
+    public FieldMirror getDeclaredField(String name) {
         // Force initialization just as the VM would, in case there is
         // a <clinit> method that needs to be run.
-        MirageClassLoader.initializeClassMirror(this);
+        ensureInitialized();
 
         return super.getDeclaredField(name);
     }

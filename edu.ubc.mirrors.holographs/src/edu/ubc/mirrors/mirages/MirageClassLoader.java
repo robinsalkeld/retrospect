@@ -177,10 +177,15 @@ public class MirageClassLoader extends ClassLoader {
     protected synchronized Class<?> loadClass(String name, boolean resolve)
             throws ClassNotFoundException {
         
+        Class<?> c = findLoadedClass(name);
+        if (c != null) {
+            return c;
+        }
+        
         if (name.startsWith("mirage")) {
             String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
             ClassMirror classMirror = loadOriginalClassMirror(originalClassName);
-            Class<?> c = ClassHolograph.getMirageClass(classMirror, MirageClassGenerator.isImplementationClass(name));
+            c = ClassHolograph.getMirageClass(classMirror, MirageClassGenerator.isImplementationClass(name));
             if (resolve) {
                 resolveClass(c);
             }
@@ -443,21 +448,8 @@ public class MirageClassLoader extends ClassLoader {
         return classWriter.toByteArray();
     }
 
-    
     @Override
     public String toString() {
         return "MirageClassLoader: " + originalLoader;
-    }
-
-    public static void initializeClassMirror(ClassHolograph klass) {
-        Class<?> mirageClass = klass.getMirageClass(true);
-        try {
-	    // Reading a non-constant field forces class initialization
-            mirageClass.getField("classMirror").get(null);
-        } catch (IllegalAccessException e) {
-            throw new InternalError();
-        } catch (NoSuchFieldException e) {
-            // Ignore - not a dynamically generated class
-        }
     }
 }

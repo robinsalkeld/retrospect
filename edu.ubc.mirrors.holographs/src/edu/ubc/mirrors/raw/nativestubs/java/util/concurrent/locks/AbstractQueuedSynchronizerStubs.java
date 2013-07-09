@@ -22,8 +22,6 @@ public class AbstractQueuedSynchronizerStubs extends NativeStubs {
             } else {
                 return false;
             }
-        } catch (NoSuchFieldException e) {
-            throw new NoSuchFieldError(e.getMessage());
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         }

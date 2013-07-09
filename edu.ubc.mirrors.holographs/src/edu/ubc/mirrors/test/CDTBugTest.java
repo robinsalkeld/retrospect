@@ -77,6 +77,7 @@ public class CDTBugTest implements IApplication {
             System.out.println("Injecting bytecode...");
         }
         
+        // select * from org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTName n where toString(n.name) = "return_type_N_prot"
         String analyzerClassName = "org.eclipse.cdt.internal.core.dom.parser.cpp.CPPASTNameDuplicateAnalysis";
         String path = "/Users/robinsalkeld/Documents/UBC/Code/org.eclipse.cdt.git/core/org.eclipse.cdt.core/bin/" +analyzerClassName.replace('.', '/') + ".class"; 
         String classPath = "/Users/robinsalkeld/Documents/UBC/Code/org.eclipse.cdt.git/core/org.eclipse.cdt.core/bin/org/eclipse/cdt/internal/core/dom/parser/cpp/CPPASTNameDuplicateAnalysis.class";
@@ -87,7 +88,7 @@ public class CDTBugTest implements IApplication {
                 analyzerClassName, analyzerClassBytecode);
         MethodMirror method = analyzerClass.getMethod("nameKey", nameClass);
         
-        final List<ObjectMirror> instances = nameClass.getInstances().subList(10000, 20000);
+        final List<ObjectMirror> instances = nameClass.getInstances();
         
         System.out.println();
         System.out.println("***");
@@ -101,14 +102,14 @@ public class CDTBugTest implements IApplication {
         String blankKey = " - []";
         for (ObjectMirror name : instances) {
             String nameString = Reflection.getRealStringForMirror((InstanceMirror)method.invoke(thread, null, name));
-            Integer nameCount = nameCounts.get(nameString);
-            if (nameCount == null) {
-                    nameCount = 0;
-            }
-            nameCounts.put(nameString, nameCount + 1);
-            if (nameString.equals(blankKey)) {
-                    blankCount++;
-            }
+//            Integer nameCount = nameCounts.get(nameString);
+//            if (nameCount == null) {
+//                    nameCount = 0;
+//            }
+//            nameCounts.put(nameString, nameCount + 1);
+//            if (nameString.equals(blankKey)) {
+//                    blankCount++;
+//            }
             if (++count % 10 == 0) {
                     System.out.print(".");
             }

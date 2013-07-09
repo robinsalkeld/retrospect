@@ -126,9 +126,6 @@ public class ObjectMirage implements Mirage {
         } catch (IllegalAccessException e) {
             throwInternalError(e);
             return null;
-        } catch (NoSuchFieldException e) {
-            throwInternalError(e);
-            return null;
         }
     }
     

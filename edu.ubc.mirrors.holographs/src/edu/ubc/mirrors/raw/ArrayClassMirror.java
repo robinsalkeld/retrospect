@@ -67,8 +67,8 @@ public class ArrayClassMirror extends BlankClassMirror {
     }
     
     @Override
-    public FieldMirror getDeclaredField(final String name) throws NoSuchFieldException {
-        throw new NoSuchFieldException(name);
+    public FieldMirror getDeclaredField(final String name) {
+        return null;
     }
 
     @Override

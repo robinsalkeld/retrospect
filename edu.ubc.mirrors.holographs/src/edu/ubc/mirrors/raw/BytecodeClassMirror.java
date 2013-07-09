@@ -948,14 +948,14 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     }
     
     @Override
-    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
+    public FieldMirror getDeclaredField(String name) {
         resolve();
         for (BytecodeFieldMirror field : fields) {
             if (field.getName().equals(name)) {
                 return field;
             }
         }
-        throw new NoSuchFieldException(name);
+        return null;
     }
 
     @Override

@@ -5,23 +5,27 @@ import edu.ubc.mirrors.wrapping.WrappingLongArrayMirror;
 
 public class MutableLongArrayMirror extends WrappingLongArrayMirror {
 
-    private final long[] values;
+    private final LongArrayMirror immutableMirror;
+    private long[] values;
     
     public MutableLongArrayMirror(VirtualMachineHolograph vm, LongArrayMirror immutableMirror) {
         super(vm, immutableMirror);
-        this.values = new long[immutableMirror.length()];
-        for (int i = 0; i < values.length; i++) {
-            values[i] = immutableMirror.getLong(i);
-        }
+        this.immutableMirror = immutableMirror;
     }
     
     @Override
     public long getLong(int index) throws ArrayIndexOutOfBoundsException {
-        return values[index];
+         return values != null ? values[index] : immutableMirror.getLong(index);
     }
 
     @Override
-    public void setLong(int index, long i) throws ArrayIndexOutOfBoundsException {
-        values[index] = i;
+    public void setLong(int index, long l) throws ArrayIndexOutOfBoundsException {
+        if (values == null) {
+            this.values = new long[immutableMirror.length()];
+            for (int i = 0; i < values.length; i++) {
+                values[i] = immutableMirror.getLong(i);
+            }
+        }
+        values[index] = l;
     }
 }

@@ -6,27 +6,29 @@ import edu.ubc.mirrors.wrapping.WrappingObjectArrayMirror;
 
 public class MutableObjectArrayMirror extends WrappingObjectArrayMirror {
 
-    private final ObjectMirror[] mutableValues;
+    private ObjectMirror[] mutableValues;
     private final ObjectArrayMirror immutableMirror;
     
     public MutableObjectArrayMirror(VirtualMachineHolograph vm, ObjectArrayMirror immutableMirror) {
         super(vm, immutableMirror);
         this.immutableMirror = immutableMirror;
-        this.mutableValues = new ObjectMirror[immutableMirror.length()];
         
-        for (int index = 0; index < mutableValues.length; index++) {
-            mutableValues[index] = vm.getWrappedMirror(immutableMirror.get(index));
-        }
     }
     
     @Override
     public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
-        return mutableValues[index];
+        return mutableValues != null ? mutableValues[index] : vm.getWrappedMirror(immutableMirror.get(index));
     }
 
     @Override
-    public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
-        mutableValues[index] = o;
+    public void set(int i, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
+        if (mutableValues == null) {
+            this.mutableValues = new ObjectMirror[immutableMirror.length()];
+            for (int index = 0; index < mutableValues.length; index++) {
+                mutableValues[index] = vm.getWrappedMirror(immutableMirror.get(index));
+            }
+        }
+        mutableValues[i] = o;
     }
     
     @Override

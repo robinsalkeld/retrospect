@@ -133,11 +133,7 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
 
     @Override
     public Field fieldByName(String name) {
-        try {
-            return new MirrorsField(vm, wrapped.getDeclaredField(name));
-        } catch (NoSuchFieldException e) {
-            return null;
-        }
+        return new MirrorsField(vm, wrapped.getDeclaredField(name));
     }
 
     @Override

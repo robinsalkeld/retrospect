@@ -207,9 +207,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     private List<URL> extractBootstrapPath(VirtualMachineMirror wrappedVM) {
 	try {
 	    ClassMirror launcherClass = wrappedVM.findBootstrapClassMirror("sun.misc.Launcher");
-	    try {
+	    FieldMirror bootClassPathField = launcherClass.getDeclaredField("bootClassPath");
+	    if (bootClassPathField != null) {
 	        // Java 1.7
-	        InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.getStaticFieldValues().get(launcherClass.getDeclaredField("bootClassPath"));
+                InstanceMirror bootClassPathMirror = (InstanceMirror)launcherClass.getStaticFieldValues().get(bootClassPathField);
 	        ClassMirror fileClass = wrappedVM.findBootstrapClassMirror(File.class.getName());
 	        char pathSeparator = fileClass.getStaticFieldValues().getChar(fileClass.getDeclaredField("pathSeparatorChar"));
 	        String bootClassPath = Reflection.getRealStringForMirror(bootClassPathMirror);
@@ -220,7 +221,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	            urls.add(mappedFile.toURI().toURL());
 	        }
 	        return urls;
-	    } catch (NoSuchFieldException e) {
+	    } else {
 	        // Java 1.6
 	        InstanceMirror /* URLClassPath */ bootstrapClassPathMirror = (InstanceMirror)launcherClass.getStaticFieldValues().get(launcherClass.getDeclaredField("bootstrapClassPath"));
 	        ClassMirror urlClassPathClass = wrappedVM.findBootstrapClassMirror("sun.misc.URLClassPath");
@@ -243,8 +244,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	    throw new RuntimeException(e);
 	} catch (IllegalAccessException e) {
 	    throw new RuntimeException(e);
-	} catch (NoSuchFieldException e) {
-	    throw new RuntimeException(e);
 	}
     }
 
@@ -263,8 +262,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                                 address = zipFileMirror.getLong(zipFileClass.getDeclaredField("jzfile"));
                                 name = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(zipFileMirror, "name"));
                             } catch (IllegalAccessException e) {
-                                throw new RuntimeException(e);
-                            } catch (NoSuchFieldException e) {
                                 throw new RuntimeException(e);
                             }
                             if (name != null) {
@@ -299,8 +296,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 			String path = Reflection.getRealStringForMirror((InstanceMirror)fieldSetEvent.newValue());
 			zipPathsByAddress.put(address, new File(path));
 		    } catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		    } catch (NoSuchFieldException e) {
 			throw new RuntimeException(e);
 		    }
     	    	}
@@ -545,8 +540,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 return NativeClassMirror.readFully(in);
             }
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);

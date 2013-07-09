@@ -135,7 +135,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
-    public FieldMirror getDeclaredField(String name) throws NoSuchFieldException {
+    public FieldMirror getDeclaredField(String name) {
         if (refType instanceof ClassType) {
             Field field = ((ClassType)refType).fieldByName(name);
             if (field != null) {
@@ -143,7 +143,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
             }
         }
         
-        throw new NoSuchFieldException(name);
+        return null;
     }
     
     @Override

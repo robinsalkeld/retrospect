@@ -44,11 +44,7 @@ public class MutableFieldMirror extends WrappingFieldMirror {
     
     private FieldMirror getBytecodeField() {
         if (bytecodeField == null) {
-            try {
-                bytecodeField = klass.getBytecodeMirror().getDeclaredField(getName());
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            }
+            bytecodeField = klass.getBytecodeMirror().getDeclaredField(getName());
         }
         return bytecodeField;
     }

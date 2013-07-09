@@ -40,16 +40,16 @@ public class LoadAndRunAnalysisCodeQuery implements IQuery {
     public int[] objectIds;
 
     @Argument(isMandatory = true)
-    public File classFile;
+    public File classFile = new File("/Users/robinsalkeld/Documents/UBC/Code/org.eclipse.cdt.git/core/org.eclipse.cdt.core/bin/org/eclipse/cdt/internal/core/dom/parser/cpp/CPPASTNameDuplicateAnalysis.class");
     
     @Argument(isMandatory = true)
-    public String methodName;
+    public String methodName = "filterByLocations";
     
     @Argument
-    public boolean aggregate = false;
+    public boolean aggregate = true;
     
     @Argument
-    public boolean inbound = false;
+    public boolean inbound = true;
     
     private VirtualMachineMirror vm;
     private ThreadMirror threadMirror;
@@ -97,7 +97,9 @@ public class LoadAndRunAnalysisCodeQuery implements IQuery {
             @Override
             public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
                 try {
-                    return HolographVMRegistry.getObjectMirror(snapshot, objectIDs[index], voidListener);
+                    int objectID = objectIDs[index];
+                    System.out.println(index + ": " + objectID);
+                    return HolographVMRegistry.getObjectMirror(snapshot, objectID, voidListener);
                 } catch (SnapshotException e) {
                     throw new RuntimeException(e);
                 }
