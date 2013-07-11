@@ -363,7 +363,7 @@ public class ClassHolograph extends WrappingClassMirror {
 	    return super.getComponentClassMirror();
 	} else {
 	    Type type = Reflection.typeForClassMirror(this);
-	    Type componentType = MirageClassGenerator.makeArrayType(type.getDimensions() - 1, type.getElementType());
+	    Type componentType = Reflection.makeArrayType(type.getDimensions() - 1, type.getElementType());
 	    return HolographInternalUtils.classMirrorForType(getVM(), ThreadHolograph.currentThreadMirror(), componentType, false, getLoader());
         }
     }

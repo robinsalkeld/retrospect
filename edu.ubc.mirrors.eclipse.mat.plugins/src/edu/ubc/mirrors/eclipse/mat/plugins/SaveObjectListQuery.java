@@ -47,6 +47,8 @@ public class SaveObjectListQuery implements IQuery
         }
         out.flush();
         out.close();
-        return null;
+
+        // let the UI ignore this query
+        throw new IProgressListener.OperationCanceledException();
     }
 }

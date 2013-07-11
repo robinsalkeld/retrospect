@@ -250,32 +250,36 @@ public class Reflection {
         }
     }
     
+    public static Type typeForClassName(String name) {
+        if (name.equals("int")) {
+            return Type.INT_TYPE;
+        } else if (name.equals("void")) {
+            return Type.VOID_TYPE;
+        } else if (name.equals("boolean")) {
+            return Type.BOOLEAN_TYPE;
+        } else if (name.equals("byte")) {
+            return Type.BYTE_TYPE;
+        } else if (name.equals("char")) {
+            return Type.CHAR_TYPE;
+        } else if (name.equals("short")) {
+            return Type.SHORT_TYPE;
+        } else if (name.equals("double")) {
+            return Type.DOUBLE_TYPE;
+        } else if (name.equals("float")) {
+            return Type.FLOAT_TYPE;
+        } else if (name.equals("long")) {
+            return Type.LONG_TYPE;
+        } else {
+            return Type.getType(arrayClassName(name).replace('.', '/'));
+        }
+    }
+    
     public static Type typeForClassMirror(ClassMirror classMirror) {
         String name = classMirror.getClassName();
         if (classMirror.isPrimitive()) {
-            if (name.equals("int")) {
-                return Type.INT_TYPE;
-            } else if (name.equals("void")) {
-                return Type.VOID_TYPE;
-            } else if (name.equals("boolean")) {
-                return Type.BOOLEAN_TYPE;
-            } else if (name.equals("byte")) {
-                return Type.BYTE_TYPE;
-            } else if (name.equals("char")) {
-                return Type.CHAR_TYPE;
-            } else if (name.equals("short")) {
-                return Type.SHORT_TYPE;
-            } else if (name.equals("double")) {
-                return Type.DOUBLE_TYPE;
-            } else if (name.equals("float")) {
-                return Type.FLOAT_TYPE;
-            } else /* if (name.equals("long")) */{
-                return Type.LONG_TYPE;
-            }
-        } else if (classMirror.isArray()) {
-            return Type.getType(name);
+            return typeForClassName(name);
         } else {
-            return Type.getObjectType(name.replace('.', '/'));
+            return Type.getType(arrayClassName(name).replace('.', '/'));
         }
     }
     
@@ -651,10 +655,9 @@ public class Reflection {
         Type[] argTypes = new Type[parameterTypeNames.size()];
         int i = 0;
         for (String paramTypeName : parameterTypeNames) {
-            argTypes[i++] = Type.getObjectType(paramTypeName.replace('.', '/'));
-            
+            argTypes[i++] = typeForClassName(paramTypeName);
         }
-        return Type.getMethodType(Type.getObjectType(method.getReturnTypeName().replace('.', '/')), argTypes);
+        return Type.getMethodType(typeForClassName(method.getReturnTypeName()), argTypes);
     }
     
     public static Type getMethodType(ConstructorMirror constructor) {
@@ -663,7 +666,6 @@ public class Reflection {
         int i = 0;
         for (String paramTypeName : parameterTypeNames) {
             argTypes[i++] = Type.getObjectType(paramTypeName.replace('.', '/'));
-            
         }
         return Type.getMethodType(Type.VOID_TYPE, argTypes);
     }
@@ -689,5 +691,17 @@ public class Reflection {
             
             className = name.replace('/', '.');
         }
+    }
+
+    public static Type makeArrayType(int dims, Type elementType) {
+        if (dims == 0) {
+            return elementType;
+        }
+        StringBuilder builder = new StringBuilder();
+        while (dims-- > 0) {
+            builder.append('[');
+        }
+        builder.append(elementType.getDescriptor());
+        return Type.getObjectType(builder.toString());
     }
 }

@@ -195,16 +195,12 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
     public List<Method> methods() {
         List<Method> result = new ArrayList<Method>();
         for (MethodMirror method : wrapped.getDeclaredMethods(false)) {
-            result.add(new MirrorsMethod(vm, method));
+            result.add(new MethodMirrorMethod(vm, method));
         }
         for (ConstructorMirror cons : wrapped.getDeclaredConstructors(false)) {
             result.add(new ConstructorMirrorMethod(vm, cons));
         }
         // TODO-RS: No representation of static initializer in mirrors
-        
-        for (InterfaceType interfaceType : interfaces()) {
-            result.addAll(interfaceType.methods());
-        }
         
         return result;
     }
@@ -219,7 +215,7 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
         } else {
             for (MethodMirror method : wrapped.getDeclaredMethods(false)) {
                 if (method.getName().equals(name)) {
-                    result.add(new MirrorsMethod(vm, method));
+                    result.add(new MethodMirrorMethod(vm, method));
                 }
             }
         }
@@ -244,7 +240,7 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
         } else {
             for (MethodMirror method : wrapped.getDeclaredMethods(false)) {
                 if (method.getName().equals(name) && methodType.equals(Reflection.getMethodType(method))) {
-                    result.add(new MirrorsMethod(vm, method));
+                    result.add(new MethodMirrorMethod(vm, method));
                 }
             }
         }

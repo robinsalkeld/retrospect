@@ -1,7 +1,5 @@
 package edu.ubc.mirrors.raw;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.makeArrayType;
-
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -34,7 +32,7 @@ public class ArrayClassMirror extends BlankClassMirror {
             throw new IllegalArgumentException();
         }
         this.dims = dims;
-        this.arrayType = makeArrayType(dims, Reflection.typeForClassMirror(elementClassMirror));
+        this.arrayType = Reflection.makeArrayType(dims, Reflection.typeForClassMirror(elementClassMirror));
     }
     
     @Override

@@ -86,7 +86,7 @@ public class ConstructorMirrorMethod extends MirrorsMirrorWithModifiers implemen
 
     @Override
     public boolean isConstructor() {
-        return false;
+        return true;
     }
 
     @Override

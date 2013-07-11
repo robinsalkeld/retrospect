@@ -10,7 +10,6 @@ import static edu.ubc.mirrors.mirages.MirageClassGenerator.getPrimitiveArrayMirr
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.getSortName;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirrorType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.makeArrayType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirageType;
 import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
@@ -334,7 +333,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             }
             if (arrayElementType.equals(mirageType)) {
                 Type originalType = Type.getObjectType(getOriginalInternalClassName(mirageArrayType.getInternalName()));
-                arrayElementType = getMirageType(makeArrayType(originalType.getDimensions() - 1, originalType.getElementType()));
+                arrayElementType = getMirageType(Reflection.makeArrayType(originalType.getDimensions() - 1, originalType.getElementType()));
                 mirageArrayType = Type.getType(ObjectArrayMirage.class);
             }
             
@@ -378,7 +377,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
     public void visitTypeInsn(int opcode, String type) {
         if (opcode == Opcodes.ANEWARRAY) {
             String originalTypeName = getOriginalInternalClassName(type);
-            Type arrayType = makeArrayType(1, Type.getObjectType(originalTypeName));
+            Type arrayType = Reflection.makeArrayType(1, Type.getObjectType(originalTypeName));
             
             getClassMirror(Type.getObjectType(type));
             swap();

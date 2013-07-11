@@ -22,11 +22,11 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class MirrorsMethod extends MirrorsMirrorWithModifiers implements Method {
+public class MethodMirrorMethod extends MirrorsMirrorWithModifiers implements Method {
 
     protected final MethodMirror wrapped;
     
-    public MirrorsMethod(MirrorsVirtualMachine vm, MethodMirror method) {
+    public MethodMirrorMethod(MirrorsVirtualMachine vm, MethodMirror method) {
         super(vm, method);
         this.wrapped = method;
         wrapped.setAccessible(true);

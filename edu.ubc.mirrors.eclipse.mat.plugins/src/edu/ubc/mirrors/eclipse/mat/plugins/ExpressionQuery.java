@@ -24,6 +24,7 @@ import org.eclipse.mat.query.annotations.Argument.Advice;
 import org.eclipse.mat.query.annotations.Name;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.util.IProgressListener;
+import org.eclipse.mat.util.IProgressListener.Severity;
 
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
@@ -58,11 +59,11 @@ public class ExpressionQuery implements IQuery {
             
     public static class Value {
         
-        private Object object;
+        private IEvaluationResult result;
         private final Semaphore semaphore = new Semaphore(0);
         
-        public void setObject(Object object) {
-            this.object = object;
+        public void setResult(IEvaluationResult result) {
+            this.result = result;
             semaphore.release();
         }
         
@@ -106,39 +107,7 @@ public class ExpressionQuery implements IQuery {
         final Value value = new Value();
         final IEvaluationListener evaluationListener = new IEvaluationListener() {
             public void evaluationComplete(IEvaluationResult result) {
-                Object object = null;
-                try {
-                    if (!result.isTerminated()) {
-                        if (result.hasErrors()) {
-                            if (result.getException() != null) {
-                                result.getException().printStackTrace();
-                            } else {
-                                for (String error : result.getErrorMessages()) {
-                                    System.out.println(error);
-                                }
-                            }
-                        } else {
-                            IValue resultValue = result.getValue();
-                            
-                            if (resultValue != null) {
-                                if (resultValue instanceof JDIObjectValue) {
-                                    ObjectReference jdiValue = ((JDIObjectValue)resultValue).getUnderlyingObject();
-                                    if (jdiValue != null) {
-                                        object = ((MirrorsObjectReference)jdiValue).getWrapped();
-                                    }
-                                } else if (resultValue instanceof JDIPrimitiveValue) {
-                                    // TODO-RS: Complete
-                                    object = ((JDIPrimitiveValue)resultValue).getIntValue();
-                                }
-                            }
-
-                            
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                value.setObject(object);
+                value.setResult(result);
             }
 
         };
@@ -165,8 +134,41 @@ public class ExpressionQuery implements IQuery {
         // Need to synchronize since you can't evaluate multiple expressions against
         // a single ThreadMirror.
         value.waitForResult();
+        IEvaluationResult result = value.result;
         
-        return value.object;
+        Object object = null;
+        if (result.isTerminated()) {
+            throw new IProgressListener.OperationCanceledException();
+        } else {
+            if (result.hasErrors()) {
+                if (result.getException() != null) {
+                    listener.sendUserMessage(Severity.ERROR, "Exception thrown", result.getException());
+                } else {
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("Compilation errors in expression text: \n");
+                    for (String error : result.getErrorMessages()) {
+                        builder.append(error);
+                        builder.append('\n');
+                    }
+                    listener.sendUserMessage(Severity.ERROR, builder.toString(), null);
+                }
+            } else {
+                IValue resultValue = result.getValue();
+                
+                if (resultValue != null) {
+                    if (resultValue instanceof JDIObjectValue) {
+                        ObjectReference jdiValue = ((JDIObjectValue)resultValue).getUnderlyingObject();
+                        if (jdiValue != null) {
+                            object = ((MirrorsObjectReference)jdiValue).getWrapped();
+                        }
+                    } else if (resultValue instanceof JDIPrimitiveValue) {
+                        // TODO-RS: Complete
+                        object = ((JDIPrimitiveValue)resultValue).getIntValue();
+                    }
+                }
+            }
+        }
+        return object;
     }
     
     private class CancellingThread extends Thread {

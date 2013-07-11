@@ -182,6 +182,10 @@ public class MirageClassLoader extends ClassLoader {
             return c;
         }
         
+        // Specialized logic for loading mirage classes - we don't want to delegate as usual because
+        // I'm not reproducing the class loader hierarchy. Instead just get the MirageClassLoader that
+        // corresponds to the ClassLoaderMirror that defined the original class and get it to load
+        // the mirage class directly.
         if (name.startsWith("mirage")) {
             String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
             ClassMirror classMirror = loadOriginalClassMirror(originalClassName);

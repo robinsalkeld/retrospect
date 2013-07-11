@@ -8,7 +8,7 @@ import com.sun.jdi.VirtualMachine;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.asjdi.MirrorsMethod;
+import edu.ubc.mirrors.asjdi.MethodMirrorMethod;
 import edu.ubc.mirrors.asjdi.MirrorsLocation;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 
@@ -60,7 +60,7 @@ public class MirrorsLocation implements Location {
     
     @Override
     public Method method() {
-        return new MirrorsMethod(vm, method);
+        return new MethodMirrorMethod(vm, method);
     }
     
     @Override
@@ -87,7 +87,7 @@ public class MirrorsLocation implements Location {
         return new MirrorsLocation(vm, method, method.getDeclaringClass().getClassName().replace('.', '/') + ".java", -1) {
             @Override
             public Method method() {
-                return new MirrorsMethod(vm, method);
+                return new MethodMirrorMethod(vm, method);
             }
         };
     }

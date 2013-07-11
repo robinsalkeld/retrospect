@@ -46,14 +46,14 @@ public class CollectionValuesQuery implements IQuery
 
     public IResult execute(IProgressListener listener) throws Exception
     {
-        ArrayInt hashEntries = new ArrayInt();
+        List<Object> entries = new ArrayList<Object>();
 
         ObjectMirror collectionMirror = HolographVMRegistry.getObjectMirror(snapshot, collectionID, listener);
         for (ObjectMirror mirror : getValues(collectionMirror)) {
-            hashEntries.add(HolographVMRegistry.fromMirror(mirror).getObjectId());
+            entries.add(mirror);
         }
         
-        return new ObjectListResult.Outbound(snapshot, hashEntries.toArray());
+        return new ObjectMirrorListResult.Outbound(snapshot, entries);
     }
     
     public static List<ObjectMirror> getValues(ObjectMirror collection) {

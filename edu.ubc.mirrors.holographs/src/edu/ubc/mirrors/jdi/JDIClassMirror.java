@@ -46,6 +46,8 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     public String getClassName() {
         String name = refType.name();
         if (name.endsWith("[]")) {
+            // TODO-RS: This is probably wrong - need to fix it and 
+            // deal with any caller-side issues.
             name = Reflection.arrayClassName(name);
         }
         return name;

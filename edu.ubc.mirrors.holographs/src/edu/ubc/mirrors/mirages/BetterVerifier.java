@@ -1,7 +1,5 @@
 package edu.ubc.mirrors.mirages;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.makeArrayType;
-
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.SimpleVerifier;
@@ -47,12 +45,12 @@ public class BetterVerifier extends SimpleVerifier {
                     }
                     
                     if (t.getSort() == Type.ARRAY && u.getSort() == Type.ARRAY) {
-                        BasicValue vComp = new BasicValue(makeArrayType(t.getDimensions() - 1, t.getElementType()));
-                        BasicValue wComp = new BasicValue(makeArrayType(u.getDimensions() - 1, u.getElementType()));
+                        BasicValue vComp = new BasicValue(Reflection.makeArrayType(t.getDimensions() - 1, t.getElementType()));
+                        BasicValue wComp = new BasicValue(Reflection.makeArrayType(u.getDimensions() - 1, u.getElementType()));
                         BasicValue mergedComp = merge(vComp, wComp);
                         if (!mergedComp.equals(BasicValue.UNINITIALIZED_VALUE)) {
                             Type mergedCompType = mergedComp.getType();
-                            return new BasicValue(makeArrayType(1, mergedCompType));
+                            return new BasicValue(Reflection.makeArrayType(1, mergedCompType));
                         }
                     }
                     

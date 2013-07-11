@@ -173,12 +173,13 @@ public class HolographVMRegistry {
     }
 
     public static IObject fromMirror(ObjectMirror element) {
-        ObjectMirror wrapped = ((WrappingMirror)element).getWrapped();
-        if (wrapped instanceof HeapDumpObjectMirror) {
-            return ((HeapDumpObjectMirror)wrapped).getHeapDumpObject();
-        } else {
-            return null;
+        if (element instanceof WrappingMirror) {
+            ObjectMirror wrapped = ((WrappingMirror)element).getWrapped();
+            if (wrapped instanceof HeapDumpObjectMirror) {
+                return ((HeapDumpObjectMirror)wrapped).getHeapDumpObject();
+            }
         }
+        return null;
     }
     
     public static void setThreadsForEval(VirtualMachineMirror vm, ThreadMirror thread, ThreadMirror secondary) {

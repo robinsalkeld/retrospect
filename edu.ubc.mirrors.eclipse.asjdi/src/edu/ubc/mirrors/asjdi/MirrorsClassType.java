@@ -22,7 +22,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.asjdi.ConstructorMirrorMethod;
-import edu.ubc.mirrors.asjdi.MirrorsMethod;
+import edu.ubc.mirrors.asjdi.MethodMirrorMethod;
 import edu.ubc.mirrors.asjdi.MirrorsReferenceType;
 import edu.ubc.mirrors.asjdi.MirrorsThreadReference;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
@@ -47,15 +47,15 @@ public class MirrorsClassType extends MirrorsReferenceType implements ClassType 
             }
         }
         
-        if (superclass() != null) {
-                return superclass().concreteMethodByName(name, signature);
+        if (wrapped.getSuperClassMirror() != null) {
+            return superclass().concreteMethodByName(name, signature);
         }
         
         return null;
     }
     
     @Override
-    public List<Method> methods() {
+    public List<Method> allMethods() {
         List<Method> result = super.methods();
         
         if (wrapped.getSuperClassMirror() != null) {
@@ -82,7 +82,7 @@ public class MirrorsClassType extends MirrorsReferenceType implements ClassType 
             ClassNotLoadedException, IncompatibleThreadStateException,
             InvocationException {
         
-        return ((MirrorsMethod)method).invoke(thread, null, args, options);
+        return ((MethodMirrorMethod)method).invoke(thread, null, args, options);
     }
 
     @Override

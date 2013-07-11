@@ -175,4 +175,9 @@ public class MethodHolograph implements MethodMirror {
     public String getSignature() {
         return wrapped.getSignature();
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + wrapped;
+    }
 }

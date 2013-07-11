@@ -19,7 +19,7 @@ import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.asjdi.MirrorsMethod;
+import edu.ubc.mirrors.asjdi.MethodMirrorMethod;
 import edu.ubc.mirrors.asjdi.MirrorsMirror;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 
@@ -79,7 +79,7 @@ public class MirrorsObjectReference extends MirrorsMirror implements ObjectRefer
             ClassNotLoadedException, IncompatibleThreadStateException,
             InvocationException {
         
-        return ((MirrorsMethod)method).invoke(thread, wrapped, args, options);
+        return ((MethodMirrorMethod)method).invoke(thread, wrapped, args, options);
     }
 
     @Override

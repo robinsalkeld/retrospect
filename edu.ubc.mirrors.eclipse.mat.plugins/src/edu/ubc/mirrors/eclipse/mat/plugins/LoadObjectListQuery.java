@@ -36,6 +36,9 @@ public class LoadObjectListQuery implements IQuery
     @Argument(isMandatory = true)
     public File path;
     
+    @Argument(isMandatory = true)
+    public boolean inbound = false;
+    
     public IResult execute(IProgressListener listener) throws Exception
     {
         List<String> lines = new ArrayList<String>();
@@ -50,6 +53,7 @@ public class LoadObjectListQuery implements IQuery
             objectIDs[i] = Integer.valueOf(lines.get(i));
         }
         
-        return new ObjectListResult.Outbound(snapshot, objectIDs);
+        return inbound ? new ObjectListResult.Inbound(snapshot, objectIDs)
+                       : new ObjectListResult.Outbound(snapshot, objectIDs);
     }
 }

@@ -106,7 +106,7 @@ public class UnsafeStubs extends NativeStubs {
     
     public int arrayBaseOffsetByClassName(String name) {
         // TODO-RS: Actually figure out dynamically.
-        return 12;
+        return 16;
     }
     
     public long objectFieldBaseOffset() {

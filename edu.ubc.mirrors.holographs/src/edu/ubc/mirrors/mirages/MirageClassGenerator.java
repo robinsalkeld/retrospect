@@ -312,7 +312,7 @@ public class MirageClassGenerator extends ClassVisitor {
                 originalElementType = Type.getObjectType(getOriginalInternalClassName(mirageElementName));
             }
             
-            return makeArrayType(dims, originalElementType).getInternalName();
+            return Reflection.makeArrayType(dims, originalElementType).getInternalName();
         }
         
         if (Type.getInternalName(Mirage.class).equals(mirageClassName) || Type.getInternalName(ObjectMirage.class).equals(mirageClassName)) {
@@ -346,18 +346,6 @@ public class MirageClassGenerator extends ClassVisitor {
     
     public static String getOriginalBinaryClassName(String mirageBinaryName) {
         return getOriginalInternalClassName(mirageBinaryName.replace('.', '/')).replace('/', '.');
-    }
-    
-    public static Type makeArrayType(int dims, Type elementType) {
-        if (dims == 0) {
-            return elementType;
-        }
-        StringBuilder builder = new StringBuilder();
-        while (dims-- > 0) {
-            builder.append('[');
-        }
-        builder.append(elementType.getDescriptor());
-        return Type.getObjectType(builder.toString());
     }
     
     public static Type getMirageType(Type type) {
@@ -598,20 +586,20 @@ public class MirageClassGenerator extends ClassVisitor {
             
             if (isInterface) {
                 if (superClassMirror != null) { 
-                    Type superType = makeArrayType(dims, Type.getObjectType(superClassMirror.getClassName().replace('.', '/'))); 
+                    Type superType = Reflection.makeArrayType(dims, Type.getObjectType(superClassMirror.getClassName().replace('.', '/'))); 
                     String superInterfaceName = getMirageType(superType).getInternalName(); 
                     interfaces.add(superInterfaceName);
                 }
                 
                 for (ClassMirror interfaceMirror : elementClass.getInterfaceMirrors()) {
-                    Type superType = makeArrayType(dims, Type.getObjectType(interfaceMirror.getClassName().replace('.', '/'))); 
+                    Type superType = Reflection.makeArrayType(dims, Type.getObjectType(interfaceMirror.getClassName().replace('.', '/'))); 
                     String interfaceName = getMirageType(superType).getInternalName(); 
                     interfaces.add(interfaceName);
                 }
                 
                 interfaces.add(mirageType.getInternalName());
                 
-                Type nMinus1Type = makeArrayType(dims - 1, Type.getType(Object.class)); 
+                Type nMinus1Type = Reflection.makeArrayType(dims - 1, Type.getType(Object.class)); 
                 interfaces.add(getMirageType(nMinus1Type).getInternalName());
             }
         }
