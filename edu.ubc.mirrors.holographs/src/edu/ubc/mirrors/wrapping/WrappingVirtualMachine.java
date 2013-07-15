@@ -24,6 +24,7 @@ import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.test.Breakpoint;
@@ -104,6 +105,8 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
             return new WrappingClassMirrorLoader(this, (ClassMirrorLoader)mirror);
         } else if (mirror instanceof ThreadMirror) {
             return new WrappingThreadMirror(this, (ThreadMirror)mirror);
+        } else if (mirror instanceof StaticFieldValuesMirror) {
+            return new WrappingStaticFieldValuesMirror(this, (StaticFieldValuesMirror)mirror);
         } else if (mirror instanceof InstanceMirror) {
             return new WrappingInstanceMirror(this, (InstanceMirror)mirror);
         } else if (mirror instanceof ObjectArrayMirror) {

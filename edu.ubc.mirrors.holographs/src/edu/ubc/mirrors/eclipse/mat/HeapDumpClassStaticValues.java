@@ -8,8 +8,9 @@ import edu.ubc.mirrors.BoxingInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 
-public class HeapDumpClassStaticValues extends BoxingInstanceMirror {
+public class HeapDumpClassStaticValues extends BoxingInstanceMirror implements StaticFieldValuesMirror {
 
     private final HeapDumpVirtualMachineMirror vm;
     
@@ -19,7 +20,7 @@ public class HeapDumpClassStaticValues extends BoxingInstanceMirror {
     
     @Override
     public ClassMirror getClassMirror() {
-        return vm.findBootstrapClassMirror(Class.class.getName());
+        return vm.findBootstrapClassMirror(Object.class.getName());
     }
 
     @Override

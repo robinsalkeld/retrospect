@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.eclipse.mat;
 
+import java.lang.ref.WeakReference;
+
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
@@ -11,6 +13,8 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
 
     private final HeapDumpVirtualMachineMirror vm;
     private final IObjectArray array;
+    
+    private WeakReference<long[]> referenceArray;
     
     public HeapDumpObjectArrayMirror(HeapDumpVirtualMachineMirror vm, IObjectArray array) {
         this.vm = vm;
@@ -50,7 +54,13 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
     }
 
     public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
-        long address = ((IObjectArray)array).getReferenceArray()[index];
+        long[] refArray = referenceArray != null ? referenceArray.get() : null;
+        if (refArray == null) {
+            refArray = ((IObjectArray)array).getReferenceArray();
+            referenceArray = new WeakReference<long[]>(refArray);
+        }
+        
+        long address = refArray[index];
         if (address == 0) {
             return null;
         }

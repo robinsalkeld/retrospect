@@ -136,13 +136,16 @@ public class MirageMethodGenerator extends InstructionAdapter {
             }
         }
         
-        if (name.equals("clone") && desc.equals(Type.getMethodDescriptor(mirageType))) {
-            desc = Type.getMethodDescriptor(OBJECT_TYPE);
-        }
-        if (name.equals("clone") && owner.startsWith("miragearray") && !owner.startsWith("miragearrayimpl")) {
-            String originalName = getOriginalInternalClassName(owner);
-            owner = getMirageInternalClassName(originalName, true);
-            checkcast(Type.getObjectType(owner));
+        if (name.equals("clone")) {
+            if (desc.equals(Type.getMethodDescriptor(mirageType))) {
+                desc = Type.getMethodDescriptor(OBJECT_TYPE);
+            } 
+            if (owner.equals(Type.getType(ObjectArrayMirror.class).getInternalName()) ||
+                            (owner.startsWith("miragearray") && !owner.startsWith("miragearrayimpl"))) {
+                String originalName = getOriginalInternalClassName(owner);
+                owner = getMirageInternalClassName(originalName, true);
+                checkcast(Type.getObjectType(owner));
+            }
         }
         
 //        if (owner.equals(getMirageType(Throwable.class).getInternalName())) {

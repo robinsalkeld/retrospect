@@ -57,6 +57,7 @@ import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
@@ -391,6 +392,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             return new ClassLoaderHolograph(this, (ClassMirrorLoader)mirror);
         } else if (mirror instanceof ThreadMirror) {
             return new ThreadHolograph(this, (ThreadMirror)mirror);
+        } else if (mirror instanceof StaticFieldValuesMirror) {
+            return new StaticFieldValuesHolograph(this, (StaticFieldValuesMirror)mirror);
         } else if (mirror instanceof InstanceMirror) {
             return new InstanceHolograph(this, (InstanceMirror)mirror);
         } else if (mirror.getClassMirror().getClassName().length() == 2) {

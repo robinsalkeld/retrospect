@@ -4,11 +4,18 @@ public abstract class BlankClassMirror extends BlankInstanceMirror implements Cl
 
     @Override
     public InstanceMirror getStaticFieldValues() {
-        return new BlankInstanceMirror() {
-            @Override
-            public ClassMirror getClassMirror() {
-                return getVM().findBootstrapClassMirror(Class.class.getName());
-            }
-        };
+        return new BlankStaticFieldValuesMirror();
+    }
+    
+    private class BlankStaticFieldValuesMirror extends BlankInstanceMirror implements StaticFieldValuesMirror {
+        @Override
+        public ClassMirror getClassMirror() {
+            return getVM().findBootstrapClassMirror(Object.class.getName());
+        }
+        
+        @Override
+        public ClassMirror forClassMirror() {
+            return BlankClassMirror.this;
+        }
     }
 }

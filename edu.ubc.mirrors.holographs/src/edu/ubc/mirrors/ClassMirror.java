@@ -54,5 +54,6 @@ public interface ClassMirror extends InstanceMirror {
     // rather than in the VM itself.
     public byte[] getRawAnnotations();
     
+    // This fake "object" must return the vm's Object type from getClassMirror()
     public InstanceMirror getStaticFieldValues();
 }

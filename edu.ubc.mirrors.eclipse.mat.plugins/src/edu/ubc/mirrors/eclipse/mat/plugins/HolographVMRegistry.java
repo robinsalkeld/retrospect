@@ -17,6 +17,7 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.debug.eval.IAstEvaluationEngine;
 import org.eclipse.jdt.debug.eval.IEvaluationEngine;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.mat.SnapshotException;
@@ -42,7 +43,7 @@ import edu.ubc.mirrors.wrapping.WrappingMirror;
 public class HolographVMRegistry {
 
     private static final Map<ISnapshot, VirtualMachineHolograph> vms = new HashMap<ISnapshot, VirtualMachineHolograph>();
-    private static final Map<VirtualMachineMirror, IEvaluationEngine> evalEngines = new HashMap<VirtualMachineMirror, IEvaluationEngine>();
+    private static final Map<VirtualMachineMirror, IAstEvaluationEngine> evalEngines = new HashMap<VirtualMachineMirror, IAstEvaluationEngine>();
     private static final Map<IObject, ObjectMirror> mirrors = new HashMap<IObject, ObjectMirror>();
     
     private static final Map<VirtualMachineMirror, ThreadMirror> threadsForEval = new HashMap<VirtualMachineMirror, ThreadMirror>();
@@ -135,8 +136,8 @@ public class HolographVMRegistry {
         stashedObjectMirrors.clear();
     }
     
-    public static IEvaluationEngine getEvaluationEngine(VirtualMachineMirror vm) throws CoreException {
-        IEvaluationEngine result = evalEngines.get(vm);
+    public static IAstEvaluationEngine getEvaluationEngine(VirtualMachineMirror vm) throws CoreException {
+        IAstEvaluationEngine result = evalEngines.get(vm);
         if (result != null) {
             return result;
         }

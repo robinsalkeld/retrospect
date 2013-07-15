@@ -13,6 +13,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.NativeStubs;
@@ -86,6 +87,11 @@ public class UnsafeStubs extends NativeStubs {
         }
     }
     
+    public void putObject(InstanceMirror unsafe, ObjectMirror mirror, long offset, ObjectMirror element) throws IllegalAccessException, NoSuchFieldException {
+        // TODO-RS: Will be different when concurrent access is supported.
+        putOrderedObject(unsafe, mirror, offset, element);
+    }
+    
     public void putOrderedObject(InstanceMirror unsafe, ObjectMirror mirror, long offset, ObjectMirror element) throws IllegalAccessException, NoSuchFieldException {
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
@@ -106,7 +112,7 @@ public class UnsafeStubs extends NativeStubs {
     
     public int arrayBaseOffsetByClassName(String name) {
         // TODO-RS: Actually figure out dynamically.
-        return 16;
+        return 12;
     }
     
     public long objectFieldBaseOffset() {
@@ -114,12 +120,25 @@ public class UnsafeStubs extends NativeStubs {
         return 12;
     }
     
+    public ObjectMirror staticFieldBase(InstanceMirror unsafe, InstanceMirror fieldMirror) {
+        ClassMirror klass = (ClassMirror)HolographInternalUtils.getField(fieldMirror, "clazz");
+        return klass.getStaticFieldValues();
+    }
+    
+    public long staticFieldOffset(InstanceMirror unsafe, InstanceMirror fieldMirror) {
+        return fieldOffset(unsafe, fieldMirror, true);
+    }
+    
     public long objectFieldOffset(InstanceMirror unsafe, InstanceMirror fieldMirror) {
+        return fieldOffset(unsafe, fieldMirror, false);
+    }
+    
+    public long fieldOffset(InstanceMirror unsafe, InstanceMirror fieldMirror, boolean isStatic) {
         ClassMirror klass = (ClassMirror)HolographInternalUtils.getField(fieldMirror, "clazz");
         String fieldName = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(fieldMirror, "name"));
         long fieldOffset = objectFieldBaseOffset();
         for (FieldMirror declaredField : klass.getDeclaredFields()) {
-            if (!Modifier.isStatic(declaredField.getModifiers())) {
+            if (Modifier.isStatic(declaredField.getModifiers()) == isStatic) {
                 ClassMirror fieldType = declaredField.getType();
                 if (fieldType.isPrimitive()) {
                     String name = fieldType.getClassName();
@@ -142,10 +161,18 @@ public class UnsafeStubs extends NativeStubs {
     }
     
     private FieldMirror fieldForOffset(InstanceMirror instance, long offset) {
-        ClassMirror klass = instance.getClassMirror();
+        ClassMirror klass;
+        boolean isStatic;
+        if (instance instanceof StaticFieldValuesMirror) {
+            klass = ((StaticFieldValuesMirror)instance).forClassMirror();
+            isStatic = true;
+        } else {
+            klass = instance.getClassMirror();
+            isStatic = false;
+        }
         long fieldOffset = objectFieldBaseOffset();
         for (FieldMirror field : klass.getDeclaredFields()) {
-            if (!Modifier.isStatic(field.getModifiers())) {
+            if (Modifier.isStatic(field.getModifiers()) == isStatic) {
                 ClassMirror fieldType = field.getType();
                 if (fieldType.isPrimitive()) {
                     String name = fieldType.getClassName();

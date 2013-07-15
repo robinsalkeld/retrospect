@@ -24,11 +24,35 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 
 public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
+
+    private final class JDIStaticFieldValuesMirror extends JDIInstanceMirror implements StaticFieldValuesMirror {
+        private JDIStaticFieldValuesMirror(JDIVirtualMachineMirror vm, ObjectReference t) {
+            super(vm, t);
+        }
+
+        @Override
+        protected Value getValue(FieldMirror field) {
+            Field jdiField = ((JDIFieldMirror)field).field;
+            assert jdiField.isStatic();
+            return jdiField.declaringType().getValue(jdiField);
+        }
+
+        @Override
+        public ClassMirror getClassMirror() {
+            return vm.findBootstrapClassMirror(Object.class.getName());
+        }
+        
+        @Override
+        public ClassMirror forClassMirror() {
+            return JDIClassMirror.this;
+        }
+    }
 
     protected final ReferenceType refType;
     
@@ -255,14 +279,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public InstanceMirror getStaticFieldValues() {
-        return new JDIInstanceMirror(vm, mirror) {
-            @Override
-            protected Value getValue(FieldMirror field) {
-                Field jdiField = ((JDIFieldMirror)field).field;
-                assert jdiField.isStatic();
-                return jdiField.declaringType().getValue(jdiField);
-            }
-        };
+        return new JDIStaticFieldValuesMirror(vm, mirror);
     }
 
 }

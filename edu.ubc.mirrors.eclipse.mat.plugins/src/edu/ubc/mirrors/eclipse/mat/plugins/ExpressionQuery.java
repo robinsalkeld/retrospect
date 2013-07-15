@@ -1,6 +1,8 @@
 package edu.ubc.mirrors.eclipse.mat.plugins;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
@@ -10,6 +12,8 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaThread;
+import org.eclipse.jdt.debug.eval.IAstEvaluationEngine;
+import org.eclipse.jdt.debug.eval.ICompiledExpression;
 import org.eclipse.jdt.debug.eval.IEvaluationEngine;
 import org.eclipse.jdt.debug.eval.IEvaluationListener;
 import org.eclipse.jdt.debug.eval.IEvaluationResult;
@@ -17,25 +21,33 @@ import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIPrimitiveValue;
 import org.eclipse.jdt.internal.debug.core.model.JDIValue;
+import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.annotations.Argument;
+import org.eclipse.mat.query.annotations.CommandName;
 import org.eclipse.mat.query.annotations.Argument.Advice;
 import org.eclipse.mat.query.annotations.Name;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.util.IProgressListener;
+import org.eclipse.mat.util.VoidProgressListener;
 import org.eclipse.mat.util.IProgressListener.Severity;
 
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
 
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.asjdi.MirrorsObjectReference;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
+import edu.ubc.mirrors.fieldmap.CalculatedObjectArrayMirror;
 import edu.ubc.mirrors.mirages.Reflection;
 
+@CommandName("evaluate_expression")
 @Name("Evaluate Expression")
 public class ExpressionQuery implements IQuery {
     @Argument
@@ -48,15 +60,23 @@ public class ExpressionQuery implements IQuery {
     public String expression = "toString()";
     
     @Argument
+    public boolean aggregate = false;
+    
+    @Argument
+    public Integer maxObjects = null;
+    
+    @Argument
     public boolean inbound = false;
     
     private VirtualMachineMirror vm;
     private MirrorsVirtualMachine jdiVM;
-    private IEvaluationEngine engine;
+    private IAstEvaluationEngine engine;
     private ThreadMirror threadMirror;
     private IJavaThread evalThread;
     private JDIDebugTarget debugTarget;
-            
+
+    private ICompiledExpression compiledExpr;
+    
     public static class Value {
         
         private IEvaluationResult result;
@@ -72,6 +92,24 @@ public class ExpressionQuery implements IQuery {
         }
     }
     
+    private ObjectMirror createCalculatedObjectList(final int[] objectIDs, int count) throws IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchMethodException, MirrorInvocationTargetException {
+        final IProgressListener voidListener = new VoidProgressListener();
+        ClassMirror objectArrayClass = vm.getArrayClass(1, vm.findBootstrapClassMirror(Object.class.getName()));
+        ObjectArrayMirror array = new CalculatedObjectArrayMirror(objectArrayClass, count) {
+            @Override
+            public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
+                try {
+                    int objectID = objectIDs[index];
+                    System.out.println(index + ": " + objectID);
+                    return HolographVMRegistry.getObjectMirror(snapshot, objectID, voidListener);
+                } catch (SnapshotException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        return (ObjectMirror)vm.findBootstrapClassMirror(Arrays.class.getName()).getMethod("asList", objectArrayClass).invoke(threadMirror, null, array);
+    }
+    
     public IResult execute(IProgressListener listener) throws Exception
     {
             vm = HolographVMRegistry.getHolographVM(snapshot, listener);
@@ -84,14 +122,47 @@ public class ExpressionQuery implements IQuery {
             ThreadReference jdiThread = (ThreadReference)jdiVM.wrapMirror(threadMirror);
             evalThread = debugTarget.findThread(jdiThread);
             
-            List<Object> results = new ArrayList<Object>();
+            int count = objectIds.length;
+            if (maxObjects != null) {
+                count = Math.min(maxObjects, count);
+            }
             
-            listener.beginTask("Evaluating expression", objectIds.length);
-            for (int id : objectIds) {
-                ObjectMirror mirror = HolographVMRegistry.getObjectMirror(snapshot, id, listener);
+            List<ObjectMirror> input;
+            if (aggregate) {
+                input = Collections.singletonList(createCalculatedObjectList(objectIds, count));
+            } else {
+                input = new ArrayList<ObjectMirror>(objectIds.length);
+                for (int index = 0; index < count; index++) {
+                    input.add(HolographVMRegistry.getObjectMirror(snapshot, objectIds[index], listener));
+                }
+            }
+            
+            listener.beginTask("Compiling expression", 1);
+            ObjectReference jdiObject = jdiVM.wrapMirror(input.get(0));
+            final IJavaObject thisContext = (IJavaObject)JDIValue.createValue(debugTarget, jdiObject);
+            Reflection.withThread(HolographVMRegistry.getSecondaryThreadForEval(vm), new Callable<Object>() {
+                public Object call() throws Exception {
+                    compiledExpr = engine.getCompiledExpression(expression, thisContext);
+                    return null;
+                }
+            });
+            listener.worked(1);
+            if (compiledExpr.hasErrors()) {
+                StringBuilder builder = new StringBuilder();
+                builder.append("Compilation errors in expression text \"" + expression + "\": \n");
+                for (String error : compiledExpr.getErrorMessages()) {
+                    builder.append(error);
+                    builder.append('\n');
+                }
+                throw new IllegalArgumentException(builder.toString());
+            }
+            
+            List<Object> results = new ArrayList<Object>();
+            listener.beginTask("Evaluating expression", input.size());
+            for (ObjectMirror mirror : input) {
                 results.add(evaluate(mirror, listener));
-                
                 listener.worked(1);
+                
                 if (listener.isCanceled()) throw new IProgressListener.OperationCanceledException();
             }
             
@@ -109,7 +180,6 @@ public class ExpressionQuery implements IQuery {
             public void evaluationComplete(IEvaluationResult result) {
                 value.setResult(result);
             }
-
         };
         
         // Create a new thread to watch for cancellation and interrupt the evaluation.
@@ -123,7 +193,7 @@ public class ExpressionQuery implements IQuery {
         Reflection.withThread(HolographVMRegistry.getSecondaryThreadForEval(vm), new Callable<Object>() {
             @Override
             public Object call() throws Exception {
-                engine.evaluate(expression, thisContext, evalThread, evaluationListener, DebugEvent.EVALUATION, false);
+                engine.evaluateExpression(compiledExpr, thisContext, evalThread, evaluationListener, DebugEvent.EVALUATION, false);
                 cancellingThread.finished();
                 return null;
             }

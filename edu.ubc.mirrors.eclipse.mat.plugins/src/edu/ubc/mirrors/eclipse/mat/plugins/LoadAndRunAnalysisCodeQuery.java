@@ -49,6 +49,9 @@ public class LoadAndRunAnalysisCodeQuery implements IQuery {
     public boolean aggregate = true;
     
     @Argument
+    public Integer maxObjects = null;
+    
+    @Argument
     public boolean inbound = true;
     
     private VirtualMachineMirror vm;
@@ -63,19 +66,22 @@ public class LoadAndRunAnalysisCodeQuery implements IQuery {
             method = defineClassAndGetMethod(listener);
             
             List<Object> results = new ArrayList<Object>();
+            int count = objectIds.length;
+            if (maxObjects != null) {
+                count = Math.min(maxObjects, count);
+            }
             
             if (aggregate) {
                 listener.beginTask("Running analysis code", 1);
-                ObjectMirror allObjectsList = createCalculatedObjectList(objectIds);
-                listener.worked(1);
+                ObjectMirror allObjectsList = createCalculatedObjectList(objectIds, count);
                 results.add(evaluate(allObjectsList, listener));
+                listener.worked(1);
             } else {
-                int count = objectIds.length;
                 listener.beginTask("Running analysis code", count);
                 int i = 0;
-                for (int id : objectIds) {
+                for (int index = 0; index < count; index++) {
                     listener.subTask("Running analysis code (" + ++i + " of " + count + ")");
-                    ObjectMirror mirror = HolographVMRegistry.getObjectMirror(snapshot, id, listener);
+                    ObjectMirror mirror = HolographVMRegistry.getObjectMirror(snapshot, objectIds[index], listener);
                     results.add(evaluate(mirror, listener));
                     
                     listener.worked(1);
@@ -90,10 +96,10 @@ public class LoadAndRunAnalysisCodeQuery implements IQuery {
             return ObjectMirrorListResult.make(snapshot, results, inbound);
     }
     
-    private ObjectMirror createCalculatedObjectList(final int[] objectIDs) throws IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchMethodException, MirrorInvocationTargetException {
+    private ObjectMirror createCalculatedObjectList(final int[] objectIDs, int count) throws IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchMethodException, MirrorInvocationTargetException {
         final IProgressListener voidListener = new VoidProgressListener();
         ClassMirror objectArrayClass = vm.getArrayClass(1, vm.findBootstrapClassMirror(Object.class.getName()));
-        ObjectArrayMirror array = new CalculatedObjectArrayMirror(objectArrayClass, objectIDs.length) {
+        ObjectArrayMirror array = new CalculatedObjectArrayMirror(objectArrayClass, count) {
             @Override
             public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
                 try {

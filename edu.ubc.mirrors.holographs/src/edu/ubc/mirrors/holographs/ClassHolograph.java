@@ -27,6 +27,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
@@ -43,7 +44,7 @@ import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 public class ClassHolograph extends WrappingClassMirror {
 
     private InstanceMirror memberFieldsDelegate;
-    private InstanceMirror staticFieldValues;
+    private StaticFieldValuesMirror staticFieldValues;
     
     private ClassMirror bytecodeMirror;
     
@@ -118,16 +119,11 @@ public class ClassHolograph extends WrappingClassMirror {
         super(vm, wrapped);
         this.vm = vm;
         memberFieldsDelegate = new InstanceHolograph(vm, wrapped);
-        staticFieldValues = (InstanceMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
+        staticFieldValues = (StaticFieldValuesMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
         if (!vm.canBeModified() || wrapped instanceof DefinedClassMirror) {
             // Allow mutations on existing objects only if the underlying VM can't be resumed
             memberFieldsDelegate = new MutableInstanceMirror(memberFieldsDelegate);
-            staticFieldValues = new MutableInstanceMirror(staticFieldValues);
-        }
-        
-        if (wrapped.getClassName().equals("org.eclipse.ui.internal.Workbench")) {
-            int bp =4;
-            bp++;
+            staticFieldValues = new MutableStaticFieldValuesMirror(staticFieldValues);
         }
     }
     
@@ -485,10 +481,10 @@ public class ClassHolograph extends WrappingClassMirror {
 //            "org.eclipse.core.internal.runtime.CompatibilityHelper",
 //            "com.ibm.icu.impl.ICUService",
 //            "org.eclipse.ui.internal.misc.Policy",
-            "org.eclipse.equinox.weaving.hooks.AbstractWeavingHook"
+            "org.eclipse.equinox.weaving.hooks.AbstractWeavingHook",
 //            "org.eclipse.osgi.internal.permadmin.EquinoxSecurityManager",
 //            "java.lang.invoke.MethodHandleNatives",
-//            "sun.reflect.UnsafeStaticFieldAccessorImpl",
+            "sun.reflect.UnsafeStaticFieldAccessorImpl"
 //            // Hits illegal native methods anyway - this makes the classes untouchable
 //            "sun.nio.ch.NativeThread",
 //            "sun.reflect.ConstantPool",

@@ -532,7 +532,9 @@ public class MirrorsVirtualMachine implements VirtualMachine {
     }
     
     public Object objectForValue(Value v) {
-        if (v instanceof BooleanValue) {
+        if (v == null) {
+            return null;
+        } else if (v instanceof BooleanValue) {
             return ((BooleanValue)v).booleanValue();
         } else if (v instanceof ByteValue) {
             return ((ByteValue)v).byteValue();

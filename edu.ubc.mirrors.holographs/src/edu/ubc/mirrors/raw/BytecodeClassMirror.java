@@ -43,6 +43,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.mirages.Reflection;
@@ -132,13 +133,17 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         return staticFieldValues;
     }
     
-    private class BytecodeInstanceMirror extends BoxingInstanceMirror {
+    private class BytecodeInstanceMirror extends BoxingInstanceMirror implements StaticFieldValuesMirror {
 
         @Override
         public ClassMirror getClassMirror() {
-            return loadClassMirrorInternal(Type.getType(Class.class));
+            return loadClassMirrorInternal(Type.getType(Object.class));
         }
 
+        public ClassMirror forClassMirror() {
+            return BytecodeClassMirror.this;
+        }
+        
         @Override
         public int identityHashCode() {
             return 0;
