@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -12,6 +12,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
 
+import edu.ubc.mirrors.holograms.ObjectHologram;
+
 public class MainEntryAdaptor extends ClassVisitor {
 
     public MainEntryAdaptor(ClassVisitor output) {
@@ -24,7 +26,7 @@ public class MainEntryAdaptor extends ClassVisitor {
             Type.getType(Void.TYPE), 
             Type.getType(String[].class));
     
-    private static final String invokeMirageMainMethodDesc = Type.getMethodDescriptor(
+    private static final String invokeHologramMainMethodDesc = Type.getMethodDescriptor(
             Type.getType(Void.TYPE), 
             Type.getType(Class.class), Type.getType(String[].class));
     
@@ -46,7 +48,7 @@ public class MainEntryAdaptor extends ClassVisitor {
             superVisitor.visitCode();
             superVisitor.visitLdcInsn(Type.getObjectType(className));
             superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-            superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(ObjectMirage.class), "invokeMirageMainMethod", invokeMirageMainMethodDesc);
+            superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(ObjectHologram.class), "invokeHologramMainMethod", invokeHologramMainMethodDesc);
             superVisitor.visitInsn(Opcodes.RETURN);
             superVisitor.visitMaxs(2, 1);
             superVisitor.visitEnd();

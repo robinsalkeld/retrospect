@@ -1,10 +1,9 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -28,10 +27,10 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
     
     private Frame<FrameValue> currentFrame;
     
-    public FrameVerifier(VirtualMachineMirror vm, ClassMirrorLoader loader, boolean mirages) {
+    public FrameVerifier(VirtualMachineMirror vm, ClassMirrorLoader loader, boolean holograms) {
         super(ASM4);
-        simplerVerifier = mirages ? 
-                new MirageVerifier((VirtualMachineHolograph)vm, (ClassLoaderHolograph)loader) : 
+        simplerVerifier = holograms ? 
+                new HologramVerifier((VirtualMachineHolograph)vm, (ClassLoaderHolograph)loader) : 
                 new BetterVerifier(vm, loader);
     }
     

@@ -23,13 +23,13 @@ import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.MirageClassGenerator;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class JarVerifier implements IApplication {
     public static void main(String[] args) throws Exception {
@@ -84,8 +84,8 @@ public class JarVerifier implements IApplication {
                                         noBytecode++;
                                         return null;
                                     }
-                                    MirageClassLoader loader = ClassHolograph.getMirageClassLoader(classMirror);
-                                    loader.getMirageClass(classMirror, true);
+                                    HologramClassLoader loader = ClassHolograph.getHologramClassLoader(classMirror);
+                                    loader.getHologramClass(classMirror, true);
                                     return null;
                                 }
                             });
@@ -109,10 +109,10 @@ public class JarVerifier implements IApplication {
             String fullName = fullInternalName.replace('/', '.');
             
             Class<?> stubsClass = ClassHolograph.getNativeStubsClass(fullName);
-            Map<Method, java.lang.reflect.Method> stubsMethods = MirageClassGenerator.indexStubMethods(stubsClass);
+            Map<Method, java.lang.reflect.Method> stubsMethods = HologramClassGenerator.indexStubMethods(stubsClass);
             
             for (MethodNode method : entry.getValue()) {
-                Method stubMethod = MirageClassGenerator.getStubMethodDesc(fullInternalName, method.name, method.access, method.desc);
+                Method stubMethod = HologramClassGenerator.getStubMethodDesc(fullInternalName, method.name, method.access, method.desc);
                 if (stubsMethods.containsKey(stubMethod)) {
                     implemented++;
                     continue;
@@ -145,17 +145,17 @@ public class JarVerifier implements IApplication {
         
         System.out.println("No bytecode? " + noBytecode);
         System.out.println("Errors: " + errors);
-        MirageClassLoader.printStats();
+        HologramClassLoader.printStats();
     }
     
-    private static boolean testClass(MirageClassLoader loader, InputStream bytesIn, String className) {
+    private static boolean testClass(HologramClassLoader loader, InputStream bytesIn, String className) {
         try {
             try {
                 CheckClassAdapter.verify(new ClassReader(bytesIn), loader, false, new PrintWriter(System.out));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            loader.loadClass("mirage." + className).getMethods();
+            loader.loadClass("hologram." + className).getMethods();
             return true;
         } catch (Throwable t) {
             System.out.println(className + " - " + t.getClass().getName() + ": " + t.getMessage());

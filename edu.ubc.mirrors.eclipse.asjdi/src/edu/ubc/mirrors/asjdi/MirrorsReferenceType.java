@@ -28,7 +28,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.Reflection;
 
 public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements ReferenceType {
 

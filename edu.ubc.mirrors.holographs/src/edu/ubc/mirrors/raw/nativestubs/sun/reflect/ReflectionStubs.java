@@ -5,11 +5,11 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.mirages.MirageClassGenerator;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
 
 public class ReflectionStubs extends NativeStubs {
 
@@ -23,11 +23,11 @@ public class ReflectionStubs extends NativeStubs {
         Class<?> klass = sun.reflect.Reflection.getCallerClass(nativeDepth);
         while (klass != null) {
             ClassLoader loader = klass.getClassLoader();
-            if (loader instanceof MirageClassLoader) {
+            if (loader instanceof HologramClassLoader) {
                 if (depth == 0) {
-                    MirageClassLoader mirageClassLoader = (MirageClassLoader)klass.getClassLoader();
-                    String className = MirageClassGenerator.getOriginalBinaryClassName(klass.getName());
-                    return mirageClassLoader.loadOriginalClassMirror(className);
+                    HologramClassLoader hologramClassLoader = (HologramClassLoader)klass.getClassLoader();
+                    String className = HologramClassGenerator.getOriginalBinaryClassName(klass.getName());
+                    return hologramClassLoader.loadOriginalClassMirror(className);
                 }
                 depth--;
             }

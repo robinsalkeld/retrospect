@@ -24,7 +24,7 @@ import org.eclipse.mat.snapshot.query.Icons;
 
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.Reflection;
 
 public class ObjectMirrorListResult {
     

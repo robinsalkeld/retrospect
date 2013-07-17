@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -17,6 +17,11 @@ import org.objectweb.asm.tree.analysis.Analyzer;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.Frame;
 import org.objectweb.asm.tree.analysis.Interpreter;
+
+import edu.ubc.mirrors.holograms.FrameAnalyzer;
+import edu.ubc.mirrors.holograms.FrameAnalyzerAdaptor;
+import edu.ubc.mirrors.holograms.FrameValue;
+import edu.ubc.mirrors.holograms.FrameVerifier;
 
 public class FrameAnalyzer extends Analyzer<FrameValue> {
 

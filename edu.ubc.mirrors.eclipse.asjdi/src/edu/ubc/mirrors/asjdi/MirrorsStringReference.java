@@ -4,9 +4,9 @@ import com.sun.jdi.StringReference;
 
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.asjdi.MirrorsObjectReference;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class MirrorsStringReference extends MirrorsObjectReference implements StringReference {
 

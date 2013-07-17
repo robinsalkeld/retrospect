@@ -21,11 +21,11 @@ import org.eclipse.mat.snapshot.query.SnapshotQuery;
 import org.eclipse.mat.util.IProgressListener;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.mirages.MethodHandle;
-import edu.ubc.mirrors.mirages.Reflection;
 
 @CommandName("system_properties_holo")
 @Name("System Properties (Holographic)")

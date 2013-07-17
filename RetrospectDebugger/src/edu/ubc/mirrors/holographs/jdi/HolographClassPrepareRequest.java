@@ -3,7 +3,7 @@ package edu.ubc.mirrors.holographs.jdi;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.request.ClassPrepareRequest;
 
-import edu.ubc.mirrors.mirages.MirageClassGenerator;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
 
 public class HolographClassPrepareRequest extends HolographEventRequest implements ClassPrepareRequest {
 
@@ -30,7 +30,7 @@ public class HolographClassPrepareRequest extends HolographEventRequest implemen
      * @see com.sun.jdi.request.ClassPrepareRequest#addClassFilter(java.lang.String)
      */
     public void addClassFilter(String arg1) {
-        wrapped.addClassFilter(MirageClassGenerator.getMirageBinaryClassName(arg1, true));
+        wrapped.addClassFilter(HologramClassGenerator.getHologramBinaryClassName(arg1, true));
     }
 
     /**

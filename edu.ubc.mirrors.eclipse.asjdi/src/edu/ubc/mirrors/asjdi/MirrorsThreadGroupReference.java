@@ -10,9 +10,9 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.asjdi.MirrorsInstanceReference;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class MirrorsThreadGroupReference extends MirrorsInstanceReference implements ThreadGroupReference {
 

@@ -1,8 +1,8 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 import edu.ubc.mirrors.ObjectMirror;
 
-public interface Mirage {
+public interface Hologram {
 
     public ObjectMirror getMirror();
 }

@@ -6,10 +6,10 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
-import edu.ubc.mirrors.mirages.Reflection;
 import junit.framework.TestCase;
 
 public class SanityTest extends TestCase {

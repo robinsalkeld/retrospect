@@ -3,8 +3,8 @@ package edu.ubc.mirrors.holographs;
 import java.util.List;
 
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
@@ -78,7 +78,7 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
             return originalStack;
         }
         
-        // TODO-RS: Need to append native frames, removing non-MirageClassLoader frames.
+        // TODO-RS: Need to append native frames, removing non-HologramClassLoader frames.
         // See also ReflectionStubs#getCallerClass
 //        StackTraceElement[] holographicTrace = runningThread.getStackTrace();
         

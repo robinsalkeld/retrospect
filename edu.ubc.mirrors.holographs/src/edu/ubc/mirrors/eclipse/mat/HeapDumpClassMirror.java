@@ -24,9 +24,9 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.mirages.MirageClassGenerator;
-import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
 
 public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMirror {
 
@@ -205,7 +205,7 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         String name = getClassName();
         if (name.startsWith("[")) {
             Type componentType = Type.getType(name.substring(1).replace('.', '/'));
-            if (MirageClassGenerator.isRefType(componentType)) {
+            if (HologramClassGenerator.isRefType(componentType)) {
                 String componentClassName = componentType.getInternalName().replace('/', '.');
                 if (loader == null) {
                     return vm.findBootstrapClassMirror(componentClassName);

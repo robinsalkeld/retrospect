@@ -3,10 +3,10 @@ package edu.ubc.mirrors.raw.nativestubs.java.lang;
 import java.net.URL;
 
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class PackageStubs extends NativeStubs {
 

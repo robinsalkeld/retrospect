@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -11,11 +11,9 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
-import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.analysis.Analyzer;
 import org.objectweb.asm.tree.analysis.Frame;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceMethodVisitor;
@@ -28,15 +26,15 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     private final VirtualMachineMirror vm;
     private final ClassMirrorLoader loader;
     private final boolean insertFrames;
-    private final boolean mirages;
+    private final boolean holograms;
     private Type thisType = null;
     
-    public FrameAnalyzerAdaptor(VirtualMachineMirror vm, ClassMirrorLoader loader, ClassVisitor cv, boolean insertFrames, boolean mirages) {
+    public FrameAnalyzerAdaptor(VirtualMachineMirror vm, ClassMirrorLoader loader, ClassVisitor cv, boolean insertFrames, boolean holograms) {
         super(Opcodes.ASM4, cv);
         this.vm = vm;
         this.loader = loader;
         this.insertFrames = insertFrames;
-        this.mirages = mirages;
+        this.holograms = holograms;
     }
 
     @Override
@@ -97,7 +95,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         final MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         final Map<Label, LabelNode> labelNodes = new HashMap<Label, LabelNode>();
-        final FrameVerifier verifier = new FrameVerifier(vm, loader, mirages);
+        final FrameVerifier verifier = new FrameVerifier(vm, loader, holograms);
         
         MethodNode analyzer = new MethodNode(access, name, desc, null, null) {
             @Override

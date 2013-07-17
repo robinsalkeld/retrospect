@@ -1,6 +1,6 @@
 package edu.ubc.mirrors.jdi;
 
-import static edu.ubc.mirrors.mirages.Reflection.checkNull;
+import static edu.ubc.mirrors.Reflection.checkNull;
 
 import com.sun.jdi.Mirror;
 

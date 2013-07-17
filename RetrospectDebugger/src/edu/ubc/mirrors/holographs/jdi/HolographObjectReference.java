@@ -21,7 +21,7 @@ import com.sun.jdi.Value;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.mirages.MethodHandle;
+import edu.ubc.mirrors.MethodHandle;
 
 public class HolographObjectReference extends Holograph implements ObjectReference {
 
@@ -114,13 +114,13 @@ public class HolographObjectReference extends Holograph implements ObjectReferen
                     ((InstanceMirror)null).get(null);
                 } 
             }, fieldMirror);
-            value = vm.invokeMethodHandle(null, MethodHandle.OBJECT_MIRAGE_MAKE, mirror);
+            value = vm.invokeMethodHandle(null, MethodHandle.OBJECT_HOLOGRAM_MAKE, mirror);
         }
         return vm.wrapValue(value);
     }
 
     public ObjectReference getObjectMirror() {
-        return (ObjectReference)vm.invokeMethodHandle(wrapped, MethodHandle.OBJECT_MIRAGE_GET_MIRROR);
+        return (ObjectReference)vm.invokeMethodHandle(wrapped, MethodHandle.OBJECT_HOLOGRAM_GET_MIRROR);
     }
     
     /**

@@ -13,7 +13,7 @@ import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
 
 public class NativeClassGenerator extends RemappingClassAdapter {
 

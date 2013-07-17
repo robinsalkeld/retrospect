@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 public class Stopwatch {
 

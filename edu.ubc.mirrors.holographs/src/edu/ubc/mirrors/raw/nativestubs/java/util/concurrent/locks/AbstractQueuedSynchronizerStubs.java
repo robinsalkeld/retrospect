@@ -2,9 +2,9 @@ package edu.ubc.mirrors.raw.nativestubs.java.util.concurrent.locks;
 
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.holograms.Hologram;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
-import edu.ubc.mirrors.mirages.Mirage;
 
 public class AbstractQueuedSynchronizerStubs extends NativeStubs {
 

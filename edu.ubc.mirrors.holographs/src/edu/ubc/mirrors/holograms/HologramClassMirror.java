@@ -1,16 +1,19 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.HologramClassMirror;
+import edu.ubc.mirrors.holograms.HologramVirtualMachine;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
-public class MirageClassMirror extends WrappingClassMirror {
+public class HologramClassMirror extends WrappingClassMirror {
 
-    private final MirageVirtualMachine vm;
+    private final HologramVirtualMachine vm;
     private final boolean isImplementationClass;
     
-    protected MirageClassMirror(MirageVirtualMachine vm, ClassMirror wrapped, boolean isImplementationClass) {
+    protected HologramClassMirror(HologramVirtualMachine vm, ClassMirror wrapped, boolean isImplementationClass) {
         super(vm, wrapped);
         this.vm = vm;
         this.isImplementationClass = isImplementationClass;
@@ -35,17 +38,17 @@ public class MirageClassMirror extends WrappingClassMirror {
     
     @Override
     public String getClassName() {
-        return MirageClassGenerator.getMirageBinaryClassName(getOriginal().getClassName(), isImplementationClass);
+        return HologramClassGenerator.getHologramBinaryClassName(getOriginal().getClassName(), isImplementationClass);
     }
     
     @Override
     public byte[] getBytecode() {
-        return ClassHolograph.getMirageClassLoader(getOriginal()).getBytecode(this);
+        return ClassHolograph.getHologramClassLoader(getOriginal()).getBytecode(this);
     }
     
     public static ClassMirror getFrameworkClassMirror(String className) {
         try {
-            return new NativeClassMirror(Class.forName(className, false, MirageClassMirror.class.getClassLoader()));
+            return new NativeClassMirror(Class.forName(className, false, HologramClassMirror.class.getClassLoader()));
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);
@@ -64,11 +67,11 @@ public class MirageClassMirror extends WrappingClassMirror {
         }
         
         
-        MirageClassMirror mirageMirror = new MirageClassMirror(vm, original, true);
-        if (mirageMirror.getClassName().startsWith("edu.ubc.mirrors")) {
-            return getFrameworkClassMirror(mirageMirror.getClassName());
+        HologramClassMirror hologramMirror = new HologramClassMirror(vm, original, true);
+        if (hologramMirror.getClassName().startsWith("edu.ubc.mirrors")) {
+            return getFrameworkClassMirror(hologramMirror.getClassName());
         }
-        return mirageMirror;
+        return hologramMirror;
     }
     
 }

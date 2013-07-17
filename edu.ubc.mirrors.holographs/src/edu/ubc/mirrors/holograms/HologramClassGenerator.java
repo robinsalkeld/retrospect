@@ -1,6 +1,6 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
-import static edu.ubc.mirrors.mirages.Reflection.getMirrorType;
+import static edu.ubc.mirrors.Reflection.getMirrorType;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,34 +27,43 @@ import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holograms.ArrayHologram;
+import edu.ubc.mirrors.holograms.InstanceHologram;
+import edu.ubc.mirrors.holograms.Hologram;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.HologramMethodGenerator;
+import edu.ubc.mirrors.holograms.ObjectArrayHologram;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
-public class MirageClassGenerator extends ClassVisitor {
+public class HologramClassGenerator extends ClassVisitor {
 
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type classMirrorType = Type.getType(ClassMirror.class);
     public static Type instanceMirrorType = Type.getType(InstanceMirror.class);
     public static Type arrayMirrorType = Type.getType(ArrayMirror.class);
     public static Type objectArrayMirrorType = Type.getType(ObjectArrayMirror.class);
-    public static Type objectMirageType = Type.getType(ObjectMirage.class);
-    public static Type instanceMirageType = Type.getType(InstanceMirage.class);
-    public static Type mirageType = Type.getType(Mirage.class);
+    public static Type objectHologramType = Type.getType(ObjectHologram.class);
+    public static Type instanceHologramType = Type.getType(InstanceHologram.class);
+    public static Type hologramType = Type.getType(Hologram.class);
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeInstanceMirror.class);
     public static Type objectType = Type.getType(Object.class);
     public static Type stringType = Type.getType(String.class);
-    public static Type mirageStringType = getMirageType(String.class);
-    public static Type mirageThrowableType = getMirageType(Throwable.class);
+    public static Type hologramStringType = getHologramType(String.class);
+    public static Type hologramThrowableType = getHologramType(Throwable.class);
     public static Type classType = Type.getType(Class.class);
     public static Type stackTraceElementType = Type.getType(StackTraceElement.class);
     public static Type stackTraceType = Type.getType(StackTraceElement[].class);
     
     public static Remapper REMAPPER = new Remapper() {
         public String map(String typeName) {
-            return getMirageInternalClassName(typeName, false);
+            return getHologramInternalClassName(typeName, false);
         }
         public String mapDesc(String desc) {
             Type t = Type.getType(desc);
@@ -93,7 +102,7 @@ public class MirageClassGenerator extends ClassVisitor {
     private final Type nativeStubsType;
     private final Map<org.objectweb.asm.commons.Method, Method> mirrorMethods;
     
-    public MirageClassGenerator(ClassMirror classMirror, ClassVisitor output) {
+    public HologramClassGenerator(ClassMirror classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
         Class<?> nativeStubsClass = ClassHolograph.getNativeStubsClass(classMirror.getClassName());
         mirrorMethods = indexStubMethods(nativeStubsClass);
@@ -117,17 +126,17 @@ public class MirageClassGenerator extends ClassVisitor {
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         this.name = name;
         this.isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
-        this.superName = getMirageSuperclassName(isInterface, name, superName);
-        interfaces = getMirageInterfaces(isInterface, interfaces);
+        this.superName = getHologramSuperclassName(isInterface, name, superName);
+        interfaces = getHologramInterfaces(isInterface, interfaces);
         
-        // Force everything to be public, since MirageClassLoader has to reflectively
-        // construct mirages. Again, not a problem because the VM will see the original flags on the ClassMirror instead.
+        // Force everything to be public, since HologramClassLoader has to reflectively
+        // construct holograms. Again, not a problem because the VM will see the original flags on the ClassMirror instead.
         // Also remove enum flags.
-        int mirageAccess = (~(Opcodes.ACC_ENUM | Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED) & access) | Opcodes.ACC_PUBLIC;
+        int hologramAccess = (~(Opcodes.ACC_ENUM | Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED) & access) | Opcodes.ACC_PUBLIC;
         // Also remove abstract flag. Shouldn't be necessary, but the VM (OpenJDK at least)
         // creates objects that claim to be an instance of VirtualMachineError, which is abstract.
-        if (name.equals("mirage/java/lang/VirtualMachineError")) {
-            mirageAccess = ~Opcodes.ACC_ABSTRACT & access;
+        if (name.equals("hologram/java/lang/VirtualMachineError")) {
+            hologramAccess = ~Opcodes.ACC_ABSTRACT & access;
         }
         
         // We need at least 49 to use class literal constants
@@ -136,9 +145,9 @@ public class MirageClassGenerator extends ClassVisitor {
             version = 49;
         }
         
-        super.visit(version, mirageAccess, name, signature, this.superName, interfaces);
+        super.visit(version, hologramAccess, name, signature, this.superName, interfaces);
         
-        if (this.name.equals(mirageThrowableType.getInternalName())) {
+        if (this.name.equals(hologramThrowableType.getInternalName())) {
             // Generate aliases for the original superclass' fillInStackTrace and getStackTrace methods,
             // so we can call them in stubs without hitting hologram code.
             MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, "superFillInStackTrace", Type.getMethodDescriptor(Type.VOID_TYPE), null, null);
@@ -161,41 +170,41 @@ public class MirageClassGenerator extends ClassVisitor {
 
     @Override
     public void visitInnerClass(String name, String outerName, String innerName, int access) {
-        int mirageAccess = ~Opcodes.ACC_ENUM & access;
-        super.visitInnerClass(name, outerName, innerName, mirageAccess);
+        int hologramAccess = ~Opcodes.ACC_ENUM & access;
+        super.visitInnerClass(name, outerName, innerName, hologramAccess);
     }
     
-    public static String getMirageSuperclassName(boolean isInterface, String mirageName, String mirageSuperName) {
-        if (getMirageInternalClassName(Type.getInternalName(Throwable.class), true).equals(mirageName)) {
+    public static String getHologramSuperclassName(boolean isInterface, String hologramName, String hologramSuperName) {
+        if (getHologramInternalClassName(Type.getInternalName(Throwable.class), true).equals(hologramName)) {
             return Type.getInternalName(Throwable.class);
-        } else if (Type.getInternalName(Mirage.class).equals(mirageSuperName)) {
+        } else if (Type.getInternalName(Hologram.class).equals(hologramSuperName)) {
             if (isInterface) {
                 return Type.getInternalName(Object.class);
             } else {
-                return Type.getInternalName(ObjectMirage.class);
+                return Type.getInternalName(ObjectHologram.class);
             }
         } else {
-            return mirageSuperName;
+            return hologramSuperName;
         }
     }
     
-    public static String[] getMirageInterfaces(boolean isInterface, String[] mirageInterfaces) {
+    public static String[] getHologramInterfaces(boolean isInterface, String[] hologramInterfaces) {
         if (isInterface) {
-            String[] newInterfaces = new String[mirageInterfaces.length + 1];
-            System.arraycopy(mirageInterfaces, 0, newInterfaces, 0, mirageInterfaces.length);
-            newInterfaces[newInterfaces.length - 1] = Type.getInternalName(Mirage.class);
+            String[] newInterfaces = new String[hologramInterfaces.length + 1];
+            System.arraycopy(hologramInterfaces, 0, newInterfaces, 0, hologramInterfaces.length);
+            newInterfaces[newInterfaces.length - 1] = Type.getInternalName(Hologram.class);
             return newInterfaces;
         } else {
-            return mirageInterfaces;
+            return hologramInterfaces;
         }
     }
     
-    public static String getMirageBinaryClassName(String className, boolean arrayImpl) {
+    public static String getHologramBinaryClassName(String className, boolean arrayImpl) {
         if (className == null) {
             return null;
         }
         
-        return getMirageInternalClassName(className.replace('.', '/'), arrayImpl).replace('/', '.');
+        return getHologramInternalClassName(className.replace('.', '/'), arrayImpl).replace('/', '.');
     }
     
     public static String getSortName(int sort) {
@@ -251,25 +260,25 @@ public class MirageClassGenerator extends ClassVisitor {
         }
     }
     
-    public static String getPrimitiveArrayMirageInternalName(Type elementType) {
-        return "edu/ubc/mirrors/mirages/" + getSortName(elementType.getSort()) + "ArrayMirage";
+    public static String getPrimitiveArrayHologramInternalName(Type elementType) {
+        return "edu/ubc/mirrors/holograms/" + getSortName(elementType.getSort()) + "ArrayHologram";
     }
     
     public static String getPrimitiveArrayMirrorInternalName(Type elementType) {
         return "edu/ubc/mirrors/" + getSortName(elementType.getSort()) + "ArrayMirror";
     }
     
-    public static String getMirageInternalClassName(String className, boolean impl) {
+    public static String getHologramInternalClassName(String className, boolean impl) {
         if (className == null) {
             return null;
         }
         
         if (className.equals(Type.getInternalName(Object.class))) {
-            return impl ? Type.getInternalName(ObjectMirage.class) : Type.getInternalName(Mirage.class);
+            return impl ? Type.getInternalName(ObjectHologram.class) : Type.getInternalName(Hologram.class);
         }
         if (className.equals("[L" + Type.getInternalName(Object.class) + ";")
-                || className.equals("[L" + Type.getInternalName(Mirage.class) + ";")) {
-            return impl ? Type.getInternalName(ObjectArrayMirage.class) : Type.getInternalName(ObjectArrayMirror.class);
+                || className.equals("[L" + Type.getInternalName(Hologram.class) + ";")) {
+            return impl ? Type.getInternalName(ObjectArrayHologram.class) : Type.getInternalName(ObjectArrayMirror.class);
         }
         
         Type type = Type.getObjectType(className);
@@ -279,78 +288,78 @@ public class MirageClassGenerator extends ClassVisitor {
             int dims = type.getDimensions();
             // Primitive array
             if (dims == 1 && elementSort != Type.OBJECT) {
-                return getPrimitiveArrayMirageInternalName(elementType);
+                return getPrimitiveArrayHologramInternalName(elementType);
             } else {
                 String elementName = (elementSort == Type.OBJECT ?
                         elementType.getInternalName() : getSortName(elementSort));
-                return (impl ? "miragearrayimpl" : "miragearray") + dims + "/" + elementName; 
+                return (impl ? "hologramarrayimpl" : "hologramarray") + dims + "/" + elementName; 
             }
-        } else if (!className.startsWith("mirage")) {
-            return "mirage/" + className;
+        } else if (!className.startsWith("hologram")) {
+            return "hologram/" + className;
         } else {
             return className;
         }
     }
     
-    public static boolean isImplementationClass(String mirageClassBinaryName) {
-        return mirageClassBinaryName.equals(ObjectMirage.class.getName())
-            || mirageClassBinaryName.equals(ObjectArrayMirage.class.getName())
-            || mirageClassBinaryName.startsWith("miragearrayimpl");
+    public static boolean isImplementationClass(String hologramClassBinaryName) {
+        return hologramClassBinaryName.equals(ObjectHologram.class.getName())
+            || hologramClassBinaryName.equals(ObjectArrayHologram.class.getName())
+            || hologramClassBinaryName.startsWith("hologramarrayimpl");
     }
     
-    public static String getOriginalInternalClassName(String mirageClassName) {
-        if (mirageClassName == null) {
+    public static String getOriginalInternalClassName(String hologramClassName) {
+        if (hologramClassName == null) {
             return null;
         }
         
-        Matcher m = Pattern.compile("miragearray(?:impl)?(\\d+)[./](.*)").matcher(mirageClassName);
+        Matcher m = Pattern.compile("hologramarray(?:impl)?(\\d+)[./](.*)").matcher(hologramClassName);
         if (m.matches()) {
             int dims = Integer.parseInt(m.group(1));
-            String mirageElementName = m.group(2);
-            Type originalElementType = getTypeForSortName(mirageElementName);
+            String hologramElementName = m.group(2);
+            Type originalElementType = getTypeForSortName(hologramElementName);
             if (originalElementType == null) {
-                originalElementType = Type.getObjectType(getOriginalInternalClassName(mirageElementName));
+                originalElementType = Type.getObjectType(getOriginalInternalClassName(hologramElementName));
             }
             
             return Reflection.makeArrayType(dims, originalElementType).getInternalName();
         }
         
-        if (Type.getInternalName(Mirage.class).equals(mirageClassName) || Type.getInternalName(ObjectMirage.class).equals(mirageClassName)) {
+        if (Type.getInternalName(Hologram.class).equals(hologramClassName) || Type.getInternalName(ObjectHologram.class).equals(hologramClassName)) {
             return "java/lang/Object";
         }
         
-        if (Type.getInternalName(ObjectArrayMirage.class).equals(mirageClassName)) {
+        if (Type.getInternalName(ObjectArrayHologram.class).equals(hologramClassName)) {
             return "[Ljava/lang/Object;";
         }
         
-        if (Type.getInternalName(ArrayMirage.class).equals(mirageClassName)) {
-            return mirageClassName;
+        if (Type.getInternalName(ArrayHologram.class).equals(hologramClassName)) {
+            return hologramClassName;
         }
         
-        m = Pattern.compile("edu/ubc/mirrors/mirages/(.*)ArrayMirage").matcher(mirageClassName);
+        m = Pattern.compile("edu/ubc/mirrors/holograms/(.*)ArrayHologram").matcher(hologramClassName);
         if (m.matches()) {
             String sortName = m.group(1);
             return "[" + getTypeForSortName(sortName).getDescriptor();
         }
         
-        if (mirageClassName.equals("edu/ubc/mirrors/ObjectArrayMirror")) {
+        if (hologramClassName.equals("edu/ubc/mirrors/ObjectArrayMirror")) {
             return "[Ljava/lang/Object;";
         }
         
-        if (mirageClassName.startsWith("mirage")) {
-            return mirageClassName.substring("mirage".length() + 1);
+        if (hologramClassName.startsWith("hologram")) {
+            return hologramClassName.substring("hologram".length() + 1);
         } else {
-            return mirageClassName;
+            return hologramClassName;
         }
     }
     
-    public static String getOriginalBinaryClassName(String mirageBinaryName) {
-        return getOriginalInternalClassName(mirageBinaryName.replace('.', '/')).replace('/', '.');
+    public static String getOriginalBinaryClassName(String hologramBinaryName) {
+        return getOriginalInternalClassName(hologramBinaryName.replace('.', '/')).replace('/', '.');
     }
     
-    public static Type getMirageType(Type type) {
+    public static Type getHologramType(Type type) {
         if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
-            return Type.getObjectType(getMirageInternalClassName(type.getInternalName(), false));
+            return Type.getObjectType(getHologramInternalClassName(type.getInternalName(), false));
         } else {
             return type;
         }
@@ -366,8 +375,8 @@ public class MirageClassGenerator extends ClassVisitor {
         
     }
     
-    public static Type getMirageType(Class<?> c) {
-        return getMirageType(Type.getType(c));
+    public static Type getHologramType(Class<?> c) {
+        return getHologramType(Type.getType(c));
     }
     
     public static String addMirrorParam(String desc) {
@@ -398,29 +407,29 @@ public class MirageClassGenerator extends ClassVisitor {
         }
         
         // toString() is a special case - it's defined in java.lang.Object, which this class must ultimately
-        // extend, so we have to return a real String rather than a mirage.
-        boolean isToString = name.equals("toString") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(String.class))));
+        // extend, so we have to return a real String rather than a hologram.
+        boolean isToString = name.equals("toString") && desc.equals(Type.getMethodDescriptor(getHologramType(Type.getType(String.class))));
         if (isToString) {
             desc = Type.getMethodDescriptor(Type.getType(String.class));
         }
-        if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Mirage.class)))) {
+        if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Hologram.class)))) {
             desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Object.class));
         }
-        boolean isGetStackTrace = this.name.equals(mirageThrowableType.getInternalName()) && name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement[].class)))); 
+        boolean isGetStackTrace = this.name.equals(hologramThrowableType.getInternalName()) && name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getHologramType(Type.getType(StackTraceElement[].class)))); 
         if (isGetStackTrace) {
             desc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
         }
-//        if (name.equals("getStackTraceElement") && desc.equals(Type.getMethodDescriptor(getMirageType(Type.getType(StackTraceElement.class)), Type.INT_TYPE))) {
+//        if (name.equals("getStackTraceElement") && desc.equals(Type.getMethodDescriptor(getHologramType(Type.getType(StackTraceElement.class)), Type.INT_TYPE))) {
 //            desc = Type.getMethodDescriptor(Type.getType(StackTraceElement.class), Type.INT_TYPE);
 //        }
         
         // Take off the native keyword if it's there - we're going to fill in an actual
         // method (even if it's a stub that throws an exception).
-        int mirageAccess = ~Opcodes.ACC_NATIVE & access;
+        int hologramAccess = ~Opcodes.ACC_NATIVE & access;
         
-        MethodVisitor superVisitor = super.visitMethod(mirageAccess, name, desc, signature, exceptions);
+        MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);
         
-        MirageMethodGenerator generator = new MirageMethodGenerator(this.name, mirageAccess, name, desc, superVisitor, isToString, isGetStackTrace);
+        HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString, isGetStackTrace);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
@@ -456,17 +465,17 @@ public class MirageClassGenerator extends ClassVisitor {
         Type[] argumentTypes = methodType.getArgumentTypes();
         List<Type> stubArgumentTypes = new ArrayList<Type>(argumentTypes.length + 1);
         if ((Opcodes.ACC_STATIC & access) == 0) {
-            stubArgumentTypes.add(getMirrorTypeForMirageType(Type.getObjectType(owner)));
+            stubArgumentTypes.add(getMirrorTypeForHologramType(Type.getObjectType(owner)));
         }
         for (int i = 0; i < argumentTypes.length; i++) {
-            stubArgumentTypes.add(getMirrorTypeForMirageType(argumentTypes[i]));
+            stubArgumentTypes.add(getMirrorTypeForHologramType(argumentTypes[i]));
         }
-        Type stubReturnType = getMirrorTypeForMirageType(methodType.getReturnType());
+        Type stubReturnType = getMirrorTypeForHologramType(methodType.getReturnType());
         return new org.objectweb.asm.commons.Method(name, stubReturnType, stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
     }
     
-    public static Type getMirrorTypeForMirageType(Type mirageType) {
-        return getMirrorType(getOriginalType(mirageType));
+    public static Type getMirrorTypeForHologramType(Type hologramType) {
+        return getMirrorType(getOriginalType(hologramType));
     }
     
     public void generateNativeThunk(MethodVisitor visitor, String owner, String desc, Method method) {
@@ -479,7 +488,7 @@ public class MirageClassGenerator extends ClassVisitor {
             Type paramType = Type.getType(parameterClasses[param]);
             visitor.visitVarInsn(paramType.getOpcode(Opcodes.ILOAD), var);
             if (isRefType(paramType)) {
-                MethodHandle.OBJECT_MIRAGE_GET_MIRROR.invoke(visitor);
+                MethodHandle.OBJECT_HOLOGRAM_GET_MIRROR.invoke(visitor);
             }
             var += paramType.getSize();
         }
@@ -489,7 +498,7 @@ public class MirageClassGenerator extends ClassVisitor {
         visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, nativeStubsType.getInternalName(), method.getName(), Type.getMethodDescriptor(method));
         
         if (isRefType(returnType)) {
-            MethodHandle.OBJECT_MIRAGE_MAKE.invoke(visitor);
+            MethodHandle.OBJECT_HOLOGRAM_MAKE.invoke(visitor);
             visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getReturnType(desc).getInternalName());
         }
         visitor.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
@@ -516,8 +525,8 @@ public class MirageClassGenerator extends ClassVisitor {
         
         // Generate the constructor that takes a mirror instance as an Object parameter
         String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));
-        if (name.equals(getMirageInternalClassName(Type.getInternalName(Throwable.class), true))) {
-            // This doesn't extend ObjectMirage so we have to set the field directly
+        if (name.equals(getHologramInternalClassName(Type.getInternalName(Throwable.class), true))) {
+            // This doesn't extend ObjectHologram so we have to set the field directly
             super.visitField(Opcodes.ACC_PUBLIC, "mirror", objectMirrorType.getDescriptor(), null, null);
             
             MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
@@ -559,7 +568,7 @@ public class MirageClassGenerator extends ClassVisitor {
             InstructionAdapter mv = new InstructionAdapter(super.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, 
         	    "<clinit>", "()V", null, null));
             mv.visitCode();
-            MirageMethodGenerator.initializeStaticFields(Type.getObjectType(this.name), mv);
+            HologramMethodGenerator.initializeStaticFields(Type.getObjectType(this.name), mv);
             mv.areturn(Type.VOID_TYPE);
             mv.visitMaxs(2, 2);
             mv.visitEnd();
@@ -568,15 +577,15 @@ public class MirageClassGenerator extends ClassVisitor {
         super.visitEnd();
     }
 
-    public static byte[] generateArray(MirageClassLoader loader, ClassMirror classMirror, boolean isInterface) {
-        String internalName = getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), !isInterface);
+    public static byte[] generateArray(HologramClassLoader loader, ClassMirror classMirror, boolean isInterface) {
+        String internalName = getHologramInternalClassName(classMirror.getClassName().replace('.', '/'), !isInterface);
         
         Type originalType = Type.getObjectType(classMirror.getClassName().replace('.', '/'));
         Type originalElementType = originalType.getElementType();
         int dims = originalType.getDimensions();
         
         ClassMirror superClassMirror = null;
-        String superName = isInterface ? Type.getInternalName(Object.class) : Type.getInternalName(ObjectArrayMirage.class);
+        String superName = isInterface ? Type.getInternalName(Object.class) : Type.getInternalName(ObjectArrayHologram.class);
         Set<String> interfaces = new HashSet<String>();
         int access = Opcodes.ACC_PUBLIC | (isInterface ? Opcodes.ACC_INTERFACE : 0);
         
@@ -587,24 +596,24 @@ public class MirageClassGenerator extends ClassVisitor {
             if (isInterface) {
                 if (superClassMirror != null) { 
                     Type superType = Reflection.makeArrayType(dims, Type.getObjectType(superClassMirror.getClassName().replace('.', '/'))); 
-                    String superInterfaceName = getMirageType(superType).getInternalName(); 
+                    String superInterfaceName = getHologramType(superType).getInternalName(); 
                     interfaces.add(superInterfaceName);
                 }
                 
                 for (ClassMirror interfaceMirror : elementClass.getInterfaceMirrors()) {
                     Type superType = Reflection.makeArrayType(dims, Type.getObjectType(interfaceMirror.getClassName().replace('.', '/'))); 
-                    String interfaceName = getMirageType(superType).getInternalName(); 
+                    String interfaceName = getHologramType(superType).getInternalName(); 
                     interfaces.add(interfaceName);
                 }
                 
-                interfaces.add(mirageType.getInternalName());
+                interfaces.add(hologramType.getInternalName());
                 
                 Type nMinus1Type = Reflection.makeArrayType(dims - 1, Type.getType(Object.class)); 
-                interfaces.add(getMirageType(nMinus1Type).getInternalName());
+                interfaces.add(getHologramType(nMinus1Type).getInternalName());
             }
         }
         if (!isInterface) {
-            interfaces.add(getMirageInternalClassName(classMirror.getClassName().replace('.', '/'), false));
+            interfaces.add(getHologramInternalClassName(classMirror.getClassName().replace('.', '/'), false));
         }
         
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);

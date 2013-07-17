@@ -29,9 +29,9 @@ import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.query.ObjectListResult;
 import org.eclipse.mat.util.IProgressListener;
 
+import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.mirages.MethodHandle;
-import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.Reflection;
 
 @CommandName("collection_values")
 @Name("Collection Values")

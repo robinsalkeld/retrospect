@@ -3,9 +3,9 @@ package edu.ubc.mirrors.asjdi;
 import com.sun.jdi.Type;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.asjdi.MirrorsMirror;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class MirrorsType extends MirrorsMirror implements Type {
 

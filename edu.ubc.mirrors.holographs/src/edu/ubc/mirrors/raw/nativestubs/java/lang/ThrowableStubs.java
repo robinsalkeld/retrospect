@@ -1,19 +1,19 @@
 package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalBinaryClassName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinaryClassName;
 
 import java.lang.reflect.InvocationTargetException;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.mirages.ObjectMirage;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class ThrowableStubs extends NativeStubs {
 
@@ -24,8 +24,8 @@ public class ThrowableStubs extends NativeStubs {
     public InstanceMirror fillInStackTrace(InstanceMirror throwable) {
 	try {
 	    // TODO-RS: The abstraction leaks a bit here since Throwable is a tricky special case.
-	    Object mirage = ObjectMirage.make(throwable);
-	    mirage.getClass().getMethod("superFillInStackTrace").invoke(mirage);
+	    Object hologram = ObjectHologram.make(throwable);
+	    hologram.getClass().getMethod("superFillInStackTrace").invoke(hologram);
 	} catch (IllegalAccessException e) {
 	    throw new IllegalAccessError(e.getMessage());
 	} catch (InvocationTargetException e) {

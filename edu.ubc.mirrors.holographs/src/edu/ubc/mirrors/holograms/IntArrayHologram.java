@@ -1,12 +1,13 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 import edu.ubc.mirrors.IntArrayMirror;
+import edu.ubc.mirrors.holograms.ArrayHologram;
 
-public class IntArrayMirage extends ArrayMirage implements IntArrayMirror {
+public class IntArrayHologram extends ArrayHologram implements IntArrayMirror {
 
     protected final IntArrayMirror mirror;
     
-    public IntArrayMirage(IntArrayMirror mirror) {
+    public IntArrayHologram(IntArrayMirror mirror) {
         super(mirror);
         this.mirror = mirror;
     }
@@ -21,21 +22,21 @@ public class IntArrayMirage extends ArrayMirage implements IntArrayMirror {
         mirror.setInt(index, b);
     }
     
-    public static int getMirage(IntArrayMirror mirror, int index) throws Throwable {
+    public static int getHologram(IntArrayMirror mirror, int index) throws Throwable {
         try {
             return mirror.getInt(index);
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw throwableAsMirage(mirror.getClassMirror().getVM(), e);
+            throw throwableAsHologram(mirror.getClassMirror().getVM(), e);
         }
     }
     
-    public static void setMirage(IntArrayMirror mirror, int index, int b) throws Throwable {
+    public static void setHologram(IntArrayMirror mirror, int index, int b) throws Throwable {
         try {
             mirror.setInt(index, b);
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw throwableAsMirage(mirror.getClassMirror().getVM(), e);
+            throw throwableAsHologram(mirror.getClassMirror().getVM(), e);
         } catch (ArrayStoreException e) {
-            throw throwableAsMirage(mirror.getClassMirror().getVM(), e);
+            throw throwableAsHologram(mirror.getClassMirror().getVM(), e);
         }
     }
 }

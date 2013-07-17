@@ -1,6 +1,6 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalBinaryClassName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinaryClassName;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -13,26 +13,31 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
+import edu.ubc.mirrors.holograms.Hologram;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 
 /**
- * Superclass for all mirage classes.
+ * Superclass for all hologram classes.
  * Represents java.lang.Object if used directly.
  * 
  * @author Robin Salkeld
  */
-public class ObjectMirage implements Mirage {
+public class ObjectHologram implements Hologram {
     public ObjectMirror mirror;
     
     /**
      * Constructor for calls to make() - the mirror instance is passed up the constructor chain.
      */
-    public ObjectMirage(Object mirror) {
-        if (getClass().getName().equals("mirage.java.lang.Class") && !(mirror instanceof ClassMirror)) {
+    public ObjectHologram(Object mirror) {
+        if (getClass().getName().equals("hologram.java.lang.Class") && !(mirror instanceof ClassMirror)) {
             throw new IllegalArgumentException();
         }
         
@@ -43,13 +48,13 @@ public class ObjectMirage implements Mirage {
     /**
      * Constructor for translated new statements.
      */
-    public ObjectMirage(InstanceMirror mirror) {
+    public ObjectHologram(InstanceMirror mirror) {
         this((Object)mirror);
     }
     
     private void register() {
-        MirageClassLoader loader = ClassHolograph.getMirageClassLoader(mirror.getClassMirror());
-        loader.registerMirage(this);
+        HologramClassLoader loader = ClassHolograph.getHologramClassLoader(mirror.getClassMirror());
+        loader.registerHologram(this);
     }
     
     @Override
@@ -71,20 +76,20 @@ public class ObjectMirage implements Mirage {
      * @param o
      * @return
      */
-    public static String mirageToString(Mirage o) {
+    public static String hologramToString(Hologram o) {
         return o.getMirror().getClassMirror().getClassName() + "@" + Integer.toHexString(o.hashCode());
     }
     
     @Override
     public String toString() {
-        return mirageToString(this);
+        return hologramToString(this);
     }
     
-    public static Class<?> getNativeClass(Class<?> mirageClass) {
-        final String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(mirageClass.getName());
+    public static Class<?> getNativeClass(Class<?> hologramClass) {
+        final String originalClassName = HologramClassGenerator.getOriginalBinaryClassName(hologramClass.getName());
         final String nativeClassName = NativeClassGenerator.getNativeBinaryClassName(originalClassName);
         try {
-            return mirageClass.getClassLoader().loadClass(nativeClassName);
+            return hologramClass.getClassLoader().loadClass(nativeClassName);
         } catch (ClassNotFoundException e) {
             throw new InternalError();
         }
@@ -96,21 +101,21 @@ public class ObjectMirage implements Mirage {
         throw ie;
     }
     
-    public static String getRealStringForMirage(ObjectMirage mirage) {
-        if (mirage == null) {
+    public static String getRealStringForHologram(ObjectHologram hologram) {
+        if (hologram == null) {
             return null;
         }
         
-        return Reflection.getRealStringForMirror((InstanceMirror)mirage.mirror);
+        return Reflection.getRealStringForMirror((InstanceMirror)hologram.mirror);
     }
     
-    public static StackTraceElement[] getRealStackTraceForMirage(Mirage mirage) {
-        if (mirage == null) {
+    public static StackTraceElement[] getRealStackTraceForHologram(Hologram hologram) {
+        if (hologram == null) {
             return null;
         }
         
         try {
-            ObjectArrayMirror arrayMirror = (ObjectArrayMirror)mirage.getMirror();
+            ObjectArrayMirror arrayMirror = (ObjectArrayMirror)hologram.getMirror();
             ClassMirror steClass = arrayMirror.getClassMirror().getComponentClassMirror();
             StackTraceElement[] result = new StackTraceElement[arrayMirror.length()];
             for (int i = 0; i < result.length; i++) {
@@ -129,22 +134,22 @@ public class ObjectMirage implements Mirage {
         }
     }
     
-    public static Mirage make(ObjectMirror mirror) {
+    public static Hologram make(ObjectMirror mirror) {
         if (mirror == null) {
             return null;
         }
         
-        MirageClassLoader loader = ClassHolograph.getMirageClassLoader(mirror.getClassMirror());
-        return loader.makeMirage(mirror);
+        HologramClassLoader loader = ClassHolograph.getHologramClassLoader(mirror.getClassMirror());
+        return loader.makeHologram(mirror);
     }
     
-    public static Mirage makeStringMirage(String s, ClassMirror callingClass) {
+    public static Hologram makeStringHologram(String s, ClassMirror callingClass) {
         if (s == null) {
             return null;
         }
         
         InstanceMirror sMirror = Reflection.makeString(callingClass.getVM(), s);
-        return ObjectMirage.make(sMirror);
+        return ObjectHologram.make(sMirror);
     }
     
     public static ClassMirror getClassMirrorForHolographicClass(Class<?> klass) {
@@ -153,14 +158,14 @@ public class ObjectMirage implements Mirage {
         }
         
 	String name = klass.getName();
-	String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
-        MirageClassLoader loader = (MirageClassLoader)klass.getClassLoader();
+	String originalClassName = HologramClassGenerator.getOriginalBinaryClassName(name);
+        HologramClassLoader loader = (HologramClassLoader)klass.getClassLoader();
         return loader.loadOriginalClassMirror(originalClassName);
     }
     
     public static ClassMirror getClassMirrorForType(ClassMirror callingClass, String descriptor) {
-	Type mirageType = Type.getType(descriptor);
-	Type type = MirageClassGenerator.getOriginalType(mirageType);
+	Type hologramType = Type.getType(descriptor);
+	Type type = HologramClassGenerator.getOriginalType(hologramType);
         return HolographInternalUtils.classMirrorForType(callingClass.getVM(), ThreadHolograph.currentThreadMirror(), type, false, callingClass.getLoader());
     }
     
@@ -183,25 +188,25 @@ public class ObjectMirage implements Mirage {
 	}
     }
     
-    public static Mirage makeClassMirage(Class<?> c, ClassMirror callingClass) {
+    public static Hologram makeClassHologram(Class<?> c, ClassMirror callingClass) {
 	if (c == null) {
             return null;
         }
         
-        MirageClassLoader loader = ClassHolograph.getMirageClassLoader(callingClass);
-        String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(c.getName());
+        HologramClassLoader loader = ClassHolograph.getHologramClassLoader(callingClass);
+        String originalClassName = HologramClassGenerator.getOriginalBinaryClassName(c.getName());
         ClassMirror classMirror = loader.loadOriginalClassMirror(originalClassName);
-        return ObjectMirage.make(classMirror);
+        return ObjectHologram.make(classMirror);
     }
     
     public static ObjectMirror getMirror(Object o) {
         if (o == null) {
             return null;
         }
-        return ((Mirage)o).getMirror();
+        return ((Hologram)o).getMirror();
     }
     
-    public static Mirage cleanAndSetStackTrace(Mirage throwable, StackTraceElement[] nativeTrace) {
+    public static Hologram cleanAndSetStackTrace(Hologram throwable, StackTraceElement[] nativeTrace) {
         VirtualMachineMirror vm = throwable.getMirror().getClassMirror().getVM();
         ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
@@ -229,8 +234,8 @@ public class ObjectMirage implements Mirage {
         return clone(this);
     }
     
-    public static Object clone(Mirage mirage) {
-        ObjectMirror mirror = mirage.getMirror();
+    public static Object clone(Hologram hologram) {
+        ObjectMirror mirror = hologram.getMirror();
         if (mirror instanceof InstanceMirror) {
             InstanceMirror instanceMirror = (InstanceMirror)mirror;
             InstanceMirror result = mirror.getClassMirror().newRawInstance();
@@ -277,10 +282,10 @@ public class ObjectMirage implements Mirage {
         }
     }
     
-    public static Throwable throwableAsMirage(VirtualMachineMirror vm, Throwable t) {
+    public static Throwable throwableAsHologram(VirtualMachineMirror vm, Throwable t) {
         ClassMirror klass = vm.findBootstrapClassMirror(t.getClass().getName());
         InstanceMirror throwableMirror = klass.newRawInstance();
         HolographInternalUtils.setField(throwableMirror, "detailMessage", Reflection.makeString(vm, t.getMessage()));
-        return (Throwable)ObjectMirage.make(throwableMirror);
+        return (Throwable)ObjectHologram.make(throwableMirror);
     }
 }

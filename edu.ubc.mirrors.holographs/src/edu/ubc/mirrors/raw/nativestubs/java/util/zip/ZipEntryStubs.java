@@ -6,8 +6,8 @@ import java.util.zip.ZipFile;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class ZipEntryStubs extends ZipFileStubs {
 

@@ -19,12 +19,12 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
@@ -63,11 +63,11 @@ public class EclipseHeapDumpTest implements IApplication {
         Reflection.withThread(holographVM.getThreads().get(0), new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                if (MirageClassLoader.debug) {
+                if (HologramClassLoader.debug) {
                     System.out.println("Finding target class...");
                 }
         	ClassMirror bundleRepositoryClass = holographVM.findAllClasses(BundleRepository.class.getName(), false).get(0);
-        	if (MirageClassLoader.debug) {
+        	if (HologramClassLoader.debug) {
                     System.out.println("Finding target instance...");
                 }
         	ObjectMirror bundleRepository = bundleRepositoryClass.getInstances().get(0);
@@ -111,7 +111,7 @@ public class EclipseHeapDumpTest implements IApplication {
         VirtualMachineMirror vm = bundleRepositoryClass.getVM();
         // TODO-RS: Does this make sense?
         ThreadMirror thread = vm.getThreads().get(0);
-        if (MirageClassLoader.debug) {
+        if (HologramClassLoader.debug) {
             System.out.println("Injecting bytecode...");
         }
         
@@ -121,7 +121,7 @@ public class EclipseHeapDumpTest implements IApplication {
         MethodMirror method = printerClass.getMethod("print", bundleRepositoryClass);
         
         // Invoke PrintOSGiBundles#print reflectively.
-        if (MirageClassLoader.debug) {
+        if (HologramClassLoader.debug) {
             System.out.println("Invoking...");
         }
         long before = System.currentTimeMillis();

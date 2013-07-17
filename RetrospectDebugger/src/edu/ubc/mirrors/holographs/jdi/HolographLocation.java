@@ -6,7 +6,7 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 
-import edu.ubc.mirrors.mirages.MirageClassGenerator;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
 
 public class HolographLocation extends Holograph implements Location {
 
@@ -92,7 +92,7 @@ public class HolographLocation extends Holograph implements Location {
      * @see com.sun.jdi.Location#sourcePath()
      */
     public String sourcePath() throws AbsentInformationException {
-        return MirageClassGenerator.getOriginalInternalClassName(wrapped.sourcePath());
+        return HologramClassGenerator.getOriginalInternalClassName(wrapped.sourcePath());
     }
 
     /**

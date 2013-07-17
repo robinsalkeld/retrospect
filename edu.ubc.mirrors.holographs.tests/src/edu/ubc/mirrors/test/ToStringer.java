@@ -18,13 +18,13 @@ import org.eclipse.mat.util.ConsoleProgressListener;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.mirages.Stopwatch;
 
 public class ToStringer implements IApplication {
 
@@ -162,7 +162,7 @@ public class ToStringer implements IApplication {
                 System.out.println("Average time per character: " + ((float)time) / charCount);
                 System.out.println("Max time per character: " + maxTimePerChar);
             }
-//            MirageClassLoader.printStats();
+//            HologramClassLoader.printStats();
         }
     }
     

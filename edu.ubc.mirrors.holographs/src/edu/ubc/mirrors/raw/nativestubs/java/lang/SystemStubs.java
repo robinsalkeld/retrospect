@@ -3,9 +3,9 @@ package edu.ubc.mirrors.raw.nativestubs.java.lang;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class SystemStubs extends NativeStubs {
 

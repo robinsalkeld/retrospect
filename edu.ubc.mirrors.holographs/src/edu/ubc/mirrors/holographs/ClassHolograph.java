@@ -27,16 +27,16 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapThreadMirror;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.MirageClassGenerator;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.holograms.Hologram;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
@@ -199,38 +199,38 @@ public class ClassHolograph extends WrappingClassMirror {
         return (ClassLoaderHolograph)super.getLoader();
     }
     
-    public static MirageClassLoader getMirageClassLoader(ClassMirror classMirror) {
-        return getMirageClassLoader(classMirror.getVM(), classMirror.getLoader());
+    public static HologramClassLoader getHologramClassLoader(ClassMirror classMirror) {
+        return getHologramClassLoader(classMirror.getVM(), classMirror.getLoader());
     }
     
-    public static MirageClassLoader getMirageClassLoader(VirtualMachineMirror vm, ClassMirrorLoader loader) {
+    public static HologramClassLoader getHologramClassLoader(VirtualMachineMirror vm, ClassMirrorLoader loader) {
         return loader == null ? 
-                ((VirtualMachineHolograph)vm).getMirageClassLoader() : 
-                    ((ClassLoaderHolograph)loader).getMirageClassLoader();
+                ((VirtualMachineHolograph)vm).getHologramClassLoader() : 
+                    ((ClassLoaderHolograph)loader).getHologramClassLoader();
     }
     
-    public MirageClassLoader getMirageClassLoader() {
-        return getMirageClassLoader(getVM(), getLoader());
+    public HologramClassLoader getHologramClassLoader() {
+        return getHologramClassLoader(getVM(), getLoader());
     }
     
-    public static Class<?> getMirageClass(ClassMirror classMirror, boolean impl) {
+    public static Class<?> getHologramClass(ClassMirror classMirror, boolean impl) {
         try {
-            return getMirageClassLoader(classMirror).getMirageClass(classMirror, impl);
+            return getHologramClassLoader(classMirror).getHologramClass(classMirror, impl);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
     
-    public Class<?> getMirageClass(boolean impl) {
-        return getMirageClass(this, impl);
+    public Class<?> getHologramClass(boolean impl) {
+        return getHologramClass(this, impl);
     }
     
     public static void cleanStackTrace(Throwable t) {
-	if (!(t instanceof Mirage)) {
+	if (!(t instanceof Hologram)) {
             StackTraceElement[] stackTrace = t.getStackTrace();
             for (int i = 0; i < stackTrace.length; i++) {
                 stackTrace[i] = new StackTraceElement(
-                        MirageClassGenerator.getOriginalBinaryClassName(stackTrace[i].getClassName()),
+                        HologramClassGenerator.getOriginalBinaryClassName(stackTrace[i].getClassName()),
                         stackTrace[i].getMethodName(),
                         stackTrace[i].getFileName(),
                         stackTrace[i].getLineNumber());
@@ -247,32 +247,32 @@ public class ClassHolograph extends WrappingClassMirror {
     public static MirrorInvocationTargetException causeAsMirrorInvocationTargetException(Throwable t) {
         cleanStackTrace(t);
         Throwable cause = t.getCause();
-        if (cause instanceof Mirage) {
-            return new MirrorInvocationTargetException((InstanceMirror)((Mirage)cause).getMirror());
+        if (cause instanceof Hologram) {
+            return new MirrorInvocationTargetException((InstanceMirror)((Hologram)cause).getMirror());
         } else {
             throw (InternalError)new InternalError(cause.getMessage()).initCause(cause);
         }
     }
     
-    public static Object makeMirage(Object mirror) {
+    public static Object makeHologram(Object mirror) {
         if (mirror instanceof ObjectMirror) {
             ObjectMirror objectMirror = (ObjectMirror)mirror;
-            return getMirageClassLoader(objectMirror.getClassMirror()).makeMirage(objectMirror);
+            return getHologramClassLoader(objectMirror.getClassMirror()).makeHologram(objectMirror);
         } else {
             return mirror;
         }
     }
     
-    public static ClassMirror getOriginalClassMirror(Class<?> mirageValue) {
-        MirageClassLoader loader = (MirageClassLoader)mirageValue.getClassLoader();
-        return loader.loadOriginalClassMirror(MirageClassGenerator.getOriginalBinaryClassName(mirageValue.getName()));
+    public static ClassMirror getOriginalClassMirror(Class<?> hologramValue) {
+        HologramClassLoader loader = (HologramClassLoader)hologramValue.getClassLoader();
+        return loader.loadOriginalClassMirror(HologramClassGenerator.getOriginalBinaryClassName(hologramValue.getName()));
     }
 
-    public static Object unwrapMirage(Object mirage) {
-        if (mirage instanceof Mirage) {
-            return ((Mirage)mirage).getMirror();
+    public static Object unwrapHologram(Object hologram) {
+        if (hologram instanceof Hologram) {
+            return ((Hologram)hologram).getMirror();
         } else {
-            return mirage;
+            return hologram;
         }
     }
     
@@ -409,10 +409,10 @@ public class ClassHolograph extends WrappingClassMirror {
     
     public void ensureInitialized() {
         if (!initialized()) {
-            Class<?> mirageClass = getMirageClass(true);
+            Class<?> hologramClass = getHologramClass(true);
             try {
                 // Reading a non-constant field forces class initialization
-                mirageClass.getField("classMirror").get(null);
+                hologramClass.getField("classMirror").get(null);
             } catch (IllegalAccessException e) {
                 throw new InternalError();
             } catch (NoSuchFieldException e) {

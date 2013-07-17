@@ -16,11 +16,11 @@ import org.eclipse.mat.util.ConsoleProgressListener;
 
 import com.sun.jdi.connect.Connector;
 
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class HeapDumpHolographConnector implements IVMConnector {
 

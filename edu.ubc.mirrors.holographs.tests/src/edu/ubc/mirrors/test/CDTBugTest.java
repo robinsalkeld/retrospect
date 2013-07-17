@@ -27,12 +27,12 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.CalculatedObjectArrayMirror;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class CDTBugTest implements IApplication {
@@ -57,16 +57,16 @@ public class CDTBugTest implements IApplication {
 
         final VirtualMachineHolograph holographVM = VirtualMachineHolograph.fromSnapshotWithIniFile(snapshot);
         
-        if (MirageClassLoader.debug) {
+        if (HologramClassLoader.debug) {
             System.out.println("Finding target class...");
         }
         final ClassMirror nameClass = holographVM.findAllClasses(CPPASTName, false).get(0);
-        if (MirageClassLoader.debug) {
+        if (HologramClassLoader.debug) {
             System.out.println("Finding target instance...");
         }
         VirtualMachineMirror vm = nameClass.getVM();
         ThreadMirror thread = vm.getThreads().get(0);
-        if (MirageClassLoader.debug) {
+        if (HologramClassLoader.debug) {
             System.out.println("Injecting bytecode...");
         }
         

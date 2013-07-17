@@ -1,6 +1,6 @@
 package edu.ubc.mirrors.raw;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.classType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,10 +43,10 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public abstract class BytecodeClassMirror extends BoxingInstanceMirror implements ClassMirror {
 

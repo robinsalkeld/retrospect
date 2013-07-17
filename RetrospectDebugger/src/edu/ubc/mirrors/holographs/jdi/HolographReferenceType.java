@@ -1,36 +1,27 @@
 package edu.ubc.mirrors.holographs.jdi;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.objectweb.asm.Type;
+
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassLoaderReference;
-import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.Field;
-import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.IntegerValue;
-import com.sun.jdi.InvalidTypeException;
-import com.sun.jdi.InvocationException;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.Value;
-import com.sun.jdi.VirtualMachine;
 
-import edu.ubc.mirrors.mirages.MethodHandle;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.MirageClassGenerator;
-
-import org.eclipse.debug.core.DebugException;
-import org.objectweb.asm.Type;
+import edu.ubc.mirrors.MethodHandle;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
 
 public class HolographReferenceType extends Holograph implements ReferenceType {
 
@@ -88,8 +79,8 @@ public class HolographReferenceType extends Holograph implements ReferenceType {
 
     public ObjectReference getClassMirror() {
         ClassLoaderReference loader = wrapped.classLoader();
-        StringReference mirageClassName = vm.mirrorOf(name());
-        return (ObjectReference)vm.invokeMethodHandle(loader, MethodHandle.MIRAGE_CLASS_LOADER_LOAD_ORIGINAL_CLASS_MIRROR, mirageClassName);
+        StringReference hologramClassName = vm.mirrorOf(name());
+        return (ObjectReference)vm.invokeMethodHandle(loader, MethodHandle.HOLOGRAM_CLASS_LOADER_LOAD_ORIGINAL_CLASS_MIRROR, hologramClassName);
     }
     
     /**
@@ -389,7 +380,7 @@ public class HolographReferenceType extends Holograph implements ReferenceType {
      * @see com.sun.jdi.ReferenceType#name()
      */
     public String name() {
-        return MirageClassGenerator.getOriginalBinaryClassName(wrapped.name());
+        return HologramClassGenerator.getOriginalBinaryClassName(wrapped.name());
     }
 
     /**
@@ -406,7 +397,7 @@ public class HolographReferenceType extends Holograph implements ReferenceType {
      */
     public String signature() {
         Type type = Type.getType(wrapped.signature());
-        return MirageClassGenerator.getOriginalType(type).getDescriptor();
+        return HologramClassGenerator.getOriginalType(type).getDescriptor();
     }
 
     /**

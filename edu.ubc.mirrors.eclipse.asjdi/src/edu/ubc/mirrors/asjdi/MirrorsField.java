@@ -6,9 +6,9 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Type;
 
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.asjdi.MirrorsMirrorWithModifiers;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class MirrorsField extends MirrorsMirrorWithModifiers implements Field {
 

@@ -43,9 +43,9 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.xml.internal.ws.org.objectweb.asm.Opcodes;
 
+import edu.ubc.mirrors.MethodHandle;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holographs.HolographDebuggingThread;
-import edu.ubc.mirrors.mirages.MethodHandle;
-import edu.ubc.mirrors.mirages.MirageClassGenerator;
 
 public class JDIHolographVirtualMachine implements VirtualMachine, org.eclipse.jdi.hcr.VirtualMachine, org.eclipse.jdi.VirtualMachine {
 
@@ -335,7 +335,7 @@ public class JDIHolographVirtualMachine implements VirtualMachine, org.eclipse.j
      * @see com.sun.jdi.VirtualMachine#classesByName(java.lang.String)
      */
     public List<ReferenceType> classesByName(String arg0) {
-        return wrapTypes(wrappedVM.classesByName(MirageClassGenerator.getMirageBinaryClassName(arg0, true)));
+        return wrapTypes(wrappedVM.classesByName(HologramClassGenerator.getHologramBinaryClassName(arg0, true)));
     }
 
     /**
@@ -627,7 +627,7 @@ public class JDIHolographVirtualMachine implements VirtualMachine, org.eclipse.j
         
         if (thisObject instanceof StringReference) {
             return thisObject;
-        } else if (thisObject.referenceType().name().equals("mirage.java.lang.String")) {
+        } else if (thisObject.referenceType().name().equals("hologram.java.lang.String")) {
             return new HolographStringReference(this, thisObject);
         } else {
             return new HolographObjectReference(this, thisObject);

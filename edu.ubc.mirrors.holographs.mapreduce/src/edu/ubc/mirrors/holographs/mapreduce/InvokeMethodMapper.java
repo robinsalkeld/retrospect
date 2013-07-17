@@ -22,11 +22,11 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.plugins.HolographVMRegistry;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class InvokeMethodMapper extends MapReduceBase 
@@ -62,7 +62,7 @@ public class InvokeMethodMapper extends MapReduceBase
                     // TODO Auto-generated catch block
                     throw new RuntimeException(e);
                 }
-                if (MirageClassLoader.debug) {
+                if (HologramClassLoader.debug) {
                     System.out.println("Finding target class...");
                 }
                 String targetClassName = job.get("targetClassName");

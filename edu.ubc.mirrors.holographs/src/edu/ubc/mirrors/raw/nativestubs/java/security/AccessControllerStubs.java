@@ -9,15 +9,15 @@ import java.security.PrivilegedExceptionAction;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.holograms.Hologram;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.mirages.MethodHandle;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.ObjectMirage;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class AccessControllerStubs extends NativeStubs {
 

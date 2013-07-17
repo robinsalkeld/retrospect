@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,14 +43,30 @@ import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.holograms.BooleanArrayHologram;
+import edu.ubc.mirrors.holograms.ByteArrayHologram;
+import edu.ubc.mirrors.holograms.CharArrayHologram;
+import edu.ubc.mirrors.holograms.DoubleArrayHologram;
+import edu.ubc.mirrors.holograms.FloatArrayHologram;
+import edu.ubc.mirrors.holograms.FrameAnalyzerAdaptor;
+import edu.ubc.mirrors.holograms.IntArrayHologram;
+import edu.ubc.mirrors.holograms.LongArrayHologram;
+import edu.ubc.mirrors.holograms.Hologram;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.HologramClassMirror;
+import edu.ubc.mirrors.holograms.HologramClassLoaderMirror;
+import edu.ubc.mirrors.holograms.HologramMethodGenerator;
+import edu.ubc.mirrors.holograms.ShortArrayHologram;
+import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
-public class MirageClassLoader extends ClassLoader {
+public class HologramClassLoader extends ClassLoader {
     public static String traceClass = null;
-    public static boolean debug = Boolean.getBoolean("edu.ubc.mirrors.mirages.debug");
-    public static boolean preverify = Boolean.getBoolean("edu.ubc.mirrors.mirages.preverify");
+    public static boolean debug = Boolean.getBoolean("edu.ubc.mirrors.holograms.debug");
+    public static boolean preverify = Boolean.getBoolean("edu.ubc.mirrors.holograms.preverify");
     
     private static Stack<Stopwatch> timerStack = new Stack<Stopwatch>();
     private static Map<String, Stopwatch> timers = new HashMap<String, Stopwatch>();
@@ -73,7 +89,7 @@ public class MirageClassLoader extends ClassLoader {
     
     private final Set<String> inFlightClasses = new HashSet<String>();
     
-    final MirageClassMirrorLoader mirageClassMirrorLoader;
+    final HologramClassLoaderMirror hologramClassMirrorLoader;
     
     public VirtualMachineMirror getVM() {
         return vm;
@@ -83,11 +99,11 @@ public class MirageClassLoader extends ClassLoader {
         return originalLoader;
     }
     
-    public MirageClassLoader(VirtualMachineHolograph vm, ClassMirrorLoader originalLoader) {
-        super(MirageClassLoader.class.getClassLoader());
+    public HologramClassLoader(VirtualMachineHolograph vm, ClassMirrorLoader originalLoader) {
+        super(HologramClassLoader.class.getClassLoader());
         this.vm = vm;
         this.originalLoader = originalLoader;
-        this.mirageClassMirrorLoader = new MirageClassMirrorLoader(vm.getMirageVM(), new NativeClassMirrorLoader(getParent()), originalLoader);
+        this.hologramClassMirrorLoader = new HologramClassLoaderMirror(vm.getHologramVM(), new NativeClassMirrorLoader(getParent()), originalLoader);
     }
     
     public File createClassFile(int index, String internalName) {
@@ -138,15 +154,15 @@ public class MirageClassLoader extends ClassLoader {
         return HolographInternalUtils.classMirrorForType(vm, ThreadHolograph.currentThreadMirror(), originalType, false, originalLoader);
     }
     
-    public Class<?> getMirageClass(ClassMirror classMirror, boolean impl) throws ClassNotFoundException {
+    public Class<?> getHologramClass(ClassMirror classMirror, boolean impl) throws ClassNotFoundException {
         if (classMirror.isPrimitive()) {
             return NativeVirtualMachineMirror.getNativePrimitiveClass(classMirror.getClassName());
         }
         
-        MirageClassMirror mirageMirror = new MirageClassMirror(vm.getMirageVM(), classMirror, impl);
-        String name = mirageMirror.getClassName();
+        HologramClassMirror hologramMirror = new HologramClassMirror(vm.getHologramVM(), classMirror, impl);
+        String name = hologramMirror.getClassName();
         
-        if (!name.startsWith("mirage")) {
+        if (!name.startsWith("hologram")) {
             return super.loadClass(name);
         }
         
@@ -161,11 +177,11 @@ public class MirageClassLoader extends ClassLoader {
         
         byte[] b;
         try {
-            b = mirageMirror.getBytecode();
+            b = hologramMirror.getBytecode();
         } catch (Throwable e) {
             String target = name;
-            if (MirageMethodGenerator.activeMethod != null) {
-                target += "#" + MirageMethodGenerator.activeMethod;
+            if (HologramMethodGenerator.activeMethod != null) {
+                target += "#" + HologramMethodGenerator.activeMethod;
             }
             throw new RuntimeException("Error caught while generating bytecode for " + target, e);
         }
@@ -181,14 +197,14 @@ public class MirageClassLoader extends ClassLoader {
             return c;
         }
         
-        // Specialized logic for loading mirage classes - we don't want to delegate as usual because
-        // I'm not reproducing the class loader hierarchy. Instead just get the MirageClassLoader that
+        // Specialized logic for loading hologram classes - we don't want to delegate as usual because
+        // I'm not reproducing the class loader hierarchy. Instead just get the HologramClassLoader that
         // corresponds to the ClassLoaderMirror that defined the original class and get it to load
-        // the mirage class directly.
-        if (name.startsWith("mirage")) {
-            String originalClassName = MirageClassGenerator.getOriginalBinaryClassName(name);
+        // the hologram class directly.
+        if (name.startsWith("hologram")) {
+            String originalClassName = HologramClassGenerator.getOriginalBinaryClassName(name);
             ClassMirror classMirror = loadOriginalClassMirror(originalClassName);
-            c = ClassHolograph.getMirageClass(classMirror, MirageClassGenerator.isImplementationClass(name));
+            c = ClassHolograph.getHologramClass(classMirror, HologramClassGenerator.isImplementationClass(name));
             if (resolve) {
                 resolveClass(c);
             }
@@ -206,82 +222,82 @@ public class MirageClassLoader extends ClassLoader {
         }
     }
     
-    private final Map<ObjectMirror, Mirage> mirages = new WeakHashMap<ObjectMirror, Mirage>();
+    private final Map<ObjectMirror, Hologram> holograms = new WeakHashMap<ObjectMirror, Hologram>();
     
-    public Mirage makeMirage(ObjectMirror mirror) {
+    public Hologram makeHologram(ObjectMirror mirror) {
         if (mirror == null) {
             return null;
         }
-        Mirage mirage = mirages.get(mirror);
-        if (mirage != null) {
-            return mirage;
+        Hologram hologram = holograms.get(mirror);
+        if (hologram != null) {
+            return hologram;
         }
         
         final String internalClassName = mirror.getClassMirror().getClassName().replace('.', '/');
         
         if (internalClassName.equals("[Z")) {
-            mirage = new BooleanArrayMirage((BooleanArrayMirror)mirror);
+            hologram = new BooleanArrayHologram((BooleanArrayMirror)mirror);
         } else if (internalClassName.equals("[B")) {
-            mirage = new ByteArrayMirage((ByteArrayMirror)mirror);
+            hologram = new ByteArrayHologram((ByteArrayMirror)mirror);
         } else if (internalClassName.equals("[C")) {
-            mirage = new CharArrayMirage((CharArrayMirror)mirror);
+            hologram = new CharArrayHologram((CharArrayMirror)mirror);
         } else if (internalClassName.equals("[S")) {
-            mirage = new ShortArrayMirage((ShortArrayMirror)mirror);
+            hologram = new ShortArrayHologram((ShortArrayMirror)mirror);
         } else if (internalClassName.equals("[I")) {
-            mirage = new IntArrayMirage((IntArrayMirror)mirror);
+            hologram = new IntArrayHologram((IntArrayMirror)mirror);
         } else if (internalClassName.equals("[J")) {
-            mirage = new LongArrayMirage((LongArrayMirror)mirror);
+            hologram = new LongArrayHologram((LongArrayMirror)mirror);
         } else if (internalClassName.equals("[F")) {
-            mirage = new FloatArrayMirage((FloatArrayMirror)mirror);
+            hologram = new FloatArrayHologram((FloatArrayMirror)mirror);
         } else if (internalClassName.equals("[D")) {
-            mirage = new DoubleArrayMirage((DoubleArrayMirror)mirror);
+            hologram = new DoubleArrayHologram((DoubleArrayMirror)mirror);
         } else {
-            final String mirageClassName = MirageClassGenerator.getMirageBinaryClassName(internalClassName, true);
+            final String hologramClassName = HologramClassGenerator.getHologramBinaryClassName(internalClassName, true);
             try {
-                final Class<?> mirageClass = loadClass(mirageClassName);
-                final Constructor<?> c = mirageClass.getConstructor(mirror instanceof InstanceMirror ? Object.class : ObjectArrayMirror.class);
-                mirage = (Mirage)c.newInstance(mirror);
+                final Class<?> hologramClass = loadClass(hologramClassName);
+                final Constructor<?> c = hologramClass.getConstructor(mirror instanceof InstanceMirror ? Object.class : ObjectArrayMirror.class);
+                hologram = (Hologram)c.newInstance(mirror);
             } catch (NoSuchMethodException e) {
-                InternalError error = new InternalError("Mirage class constructor not accessible: " + mirageClassName);
+                InternalError error = new InternalError("Hologram class constructor not accessible: " + hologramClassName);
                 error.initCause(e);
                 throw error;
             } catch (IllegalAccessException e) {
-                InternalError error = new InternalError("Mirage class constructor not accessible: " + mirageClassName);
+                InternalError error = new InternalError("Hologram class constructor not accessible: " + hologramClassName);
                 error.initCause(e);
                 throw error;
             } catch (InstantiationException e) {
-                InternalError error = new InternalError("Result of ObjectMirage#getMirrorClass() is abstract: " + mirageClassName);
+                InternalError error = new InternalError("Result of ObjectHologram#getMirrorClass() is abstract: " + hologramClassName);
                 error.initCause(e);
                 throw error;
             } catch (InvocationTargetException e) {
-                InternalError error = new InternalError("Error on instantiating Mirage class: " + mirageClassName);
+                InternalError error = new InternalError("Error on instantiating Hologram class: " + hologramClassName);
                 error.initCause(e);
                 throw error;
             } catch (ClassNotFoundException e) {
-                InternalError error = new InternalError("Error on loading Mirage class: " + mirageClassName);
+                InternalError error = new InternalError("Error on loading Hologram class: " + hologramClassName);
                 error.initCause(e);
                 throw error;
             }
         }
         
-        return mirage;
+        return hologram;
     }
     
-    public void registerMirage(Mirage mirage) {
-        mirages.put(mirage.getMirror(), mirage);
+    public void registerHologram(Hologram hologram) {
+        holograms.put(hologram.getMirror(), hologram);
     }
     
-    public byte[] getBytecode(MirageClassMirror mirageClassMirror) {
-        String name = mirageClassMirror.getClassName();
+    public byte[] getBytecode(HologramClassMirror hologramClassMirror) {
+        String name = hologramClassMirror.getClassName();
         String internalName = name.replace('.', '/');
         
-        ClassMirror classMirrorForCacheKey = mirageClassMirror.getOriginal();
+        ClassMirror classMirrorForCacheKey = hologramClassMirror.getOriginal();
         while (classMirrorForCacheKey.isArray()) {
             classMirrorForCacheKey = classMirrorForCacheKey.getComponentClassMirror();
         }
         // This will be null for primitive classes
         byte[] originalBytecode = classMirrorForCacheKey.getBytecode();
-        String originalInternalName = MirageClassGenerator.getOriginalInternalClassName(classMirrorForCacheKey.getClassName().replace('.', '/'));
+        String originalInternalName = HologramClassGenerator.getOriginalInternalClassName(classMirrorForCacheKey.getClassName().replace('.', '/'));
         int cacheIndex = 0;
         if (vm.getBytecodeCacheDir() != null) {
             cacheIndex = findCacheIndex(originalInternalName, originalBytecode);
@@ -312,14 +328,14 @@ public class MirageClassLoader extends ClassLoader {
         
         inFlightClasses.add(name);
         try {
-            byte[] result = generateBytecode(cacheIndex, mirageClassMirror);
+            byte[] result = generateBytecode(cacheIndex, hologramClassMirror);
             
             if (vm.getBytecodeCacheDir() != null) {
         	writeToBytecodeCache(cacheIndex, internalName, result);
 
                 // Optimization for heap dumps: let the underlying VM cache the location of bytecode,
                 // since it has stable, persistent object identifiers.
-                ClassMirror wrappedClass = ((ClassHolograph)mirageClassMirror.getOriginal()).getWrappedClassMirror();
+                ClassMirror wrappedClass = ((ClassHolograph)hologramClassMirror.getOriginal()).getWrappedClassMirror();
                 if (wrappedClass instanceof HeapDumpClassMirror) {
                     File originalBytecodeLocation = createClassFile(cacheIndex, originalInternalName + ".class");
                     ((HeapDumpClassMirror)wrappedClass).bytecodeLocated(originalBytecodeLocation);
@@ -390,14 +406,14 @@ public class MirageClassLoader extends ClassLoader {
         }
     }
     
-    public byte[] generateBytecode(int cacheIndex, MirageClassMirror mirageClassMirror) {
-        if (mirageClassMirror.getOriginal().isArray()) {
-            return MirageClassGenerator.generateArray(this, mirageClassMirror.getOriginal(), !mirageClassMirror.isImplementationClass());
+    public byte[] generateBytecode(int cacheIndex, HologramClassMirror hologramClassMirror) {
+        if (hologramClassMirror.getOriginal().isArray()) {
+            return HologramClassGenerator.generateArray(this, hologramClassMirror.getOriginal(), !hologramClassMirror.isImplementationClass());
         }
         
-        String internalName = mirageClassMirror.getClassName().replace('.', '/');
+        String internalName = hologramClassMirror.getClassName().replace('.', '/');
         
-        ClassMirror original = mirageClassMirror.getOriginal();
+        ClassMirror original = hologramClassMirror.getOriginal();
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
         if (preverify) {
@@ -413,8 +429,8 @@ public class MirageClassLoader extends ClassLoader {
             }
             visitor = new TraceClassVisitor(visitor, textFileWriter);
         }
-        visitor = new MirageClassGenerator(original, visitor);
-        visitor = new RemappingClassAdapter(visitor, MirageClassGenerator.REMAPPER);
+        visitor = new HologramClassGenerator(original, visitor);
+        visitor = new RemappingClassAdapter(visitor, HologramClassGenerator.REMAPPER);
         if (vm.getBytecodeCacheDir() != null) {
             File txtFile = createClassFile(cacheIndex, internalName + ".afterframes.txt");
             PrintWriter textFileWriter;
@@ -425,9 +441,9 @@ public class MirageClassLoader extends ClassLoader {
             }
             ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
             ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), traceVisitor, true, false);
-            byte[] bytecode = mirageClassMirror.getOriginal().getBytecode();
+            byte[] bytecode = hologramClassMirror.getOriginal().getBytecode();
             if (bytecode == null) {
-                mirageClassMirror.getOriginal().getBytecode();
+                hologramClassMirror.getOriginal().getBytecode();
             }
             new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
         }
@@ -449,6 +465,6 @@ public class MirageClassLoader extends ClassLoader {
 
     @Override
     public String toString() {
-        return "MirageClassLoader: " + originalLoader;
+        return "HologramClassLoader: " + originalLoader;
     }
 }

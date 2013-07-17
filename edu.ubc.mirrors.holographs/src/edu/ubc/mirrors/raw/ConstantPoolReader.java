@@ -8,8 +8,8 @@ import org.objectweb.asm.ClassReader;
 import edu.ubc.mirrors.BlankInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
-import edu.ubc.mirrors.mirages.Reflection;
 
 
 public class ConstantPoolReader extends BlankInstanceMirror implements InstanceMirror {

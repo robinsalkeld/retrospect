@@ -5,7 +5,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FilterInputStream;
@@ -14,7 +13,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,8 +29,6 @@ import org.eclipse.mat.snapshot.ISnapshot;
 import org.objectweb.asm.Type;
 
 import sun.misc.FileURLMapper;
-import sun.misc.Launcher;
-import sun.misc.URLClassPath;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
@@ -51,21 +47,21 @@ import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
+import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
-import edu.ubc.mirrors.mirages.MethodHandle;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.MirageVirtualMachine;
-import edu.ubc.mirrors.mirages.Reflection;
-import edu.ubc.mirrors.mirages.Stopwatch;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.HologramVirtualMachine;
+import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -77,12 +73,12 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 
     private final File bytecodeCacheDir;
     
-    private final MirageVirtualMachine mirageVM;
+    private final HologramVirtualMachine hologramVM;
     
     // TODO-RS: Expose this more generally?
     private final EventDispatch dispatch;
     
-    private final MirageClassLoader mirageBootstrapLoader;
+    private final HologramClassLoader hologramBootstrapLoader;
     
     private final Thread debuggingThread;
     
@@ -104,11 +100,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     public VirtualMachineHolograph(VirtualMachineMirror wrappedVM, Map<String, String> mappedFiles) {
         super(wrappedVM);
-        if (MirageClassLoader.debug) {
+        if (HologramClassLoader.debug) {
             System.out.println("Creating VM holograph...");
         }
         
-        String bcdProperty = System.getProperty("edu.ubc.mirrors.mirages.bytecodeCacheDir");
+        String bcdProperty = System.getProperty("edu.ubc.mirrors.holograms.bytecodeCacheDir");
         if (bcdProperty != null) {
             bytecodeCacheDir = new File(bcdProperty);
         } else if (wrappedVM instanceof HeapDumpVirtualMachineMirror) {
@@ -120,8 +116,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             bytecodeCacheDir = null;
         }
         
-        this.mirageVM = new MirageVirtualMachine(this);
-        this.mirageBootstrapLoader = new MirageClassLoader(this, null);
+        this.hologramVM = new HologramVirtualMachine(this);
+        this.hologramBootstrapLoader = new HologramClassLoader(this, null);
         this.mappedFiles = mappedFiles;
         this.dispatch = new EventDispatch(this);
         
@@ -143,7 +139,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         
         collectZipFiles();
         
-        if (MirageClassLoader.debug) {
+        if (HologramClassLoader.debug) {
             System.out.println("Done.");
         }
     }
@@ -327,8 +323,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         return hostZipFile;
     }
     
-    public File getMappedFile(InstanceMirror fileMirage, boolean errorOnUnmapped) {
-        InstanceMirror pathMirror = (InstanceMirror)HolographInternalUtils.getField(fileMirage, "path");
+    public File getMappedFile(InstanceMirror fileHologram, boolean errorOnUnmapped) {
+        InstanceMirror pathMirror = (InstanceMirror)HolographInternalUtils.getField(fileHologram, "path");
         String path = Reflection.getRealStringForMirror(pathMirror);
         return getMappedFile(new File(path), errorOnUnmapped);
     }
@@ -412,12 +408,12 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         return new MutableFieldMirror(klass, fieldMirror);
     }
     
-    public MirageClassLoader getMirageClassLoader() {
-        return mirageBootstrapLoader;
+    public HologramClassLoader getHologramClassLoader() {
+        return hologramBootstrapLoader;
     }
     
-    public MirageVirtualMachine getMirageVM() {
-        return mirageVM;
+    public HologramVirtualMachine getHologramVM() {
+        return hologramVM;
     }
     
     public ClassLoader getBootstrapBytecodeLoader() {
@@ -548,8 +544,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             throw new RuntimeException(e);
         }
         
-//        if (MirageClassLoader.debug) {
-//            MirageClassLoader.printIndent();
+//        if (HologramClassLoader.debug) {
+//            HologramClassLoader.printIndent();
 //            System.out.println("Fetching original bytecode for: " + holographClass.getClassName() + " (from instance of " + className + ")");
 //        }
         MethodHandle readMethod = new MethodHandle() {
@@ -569,8 +565,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
         byte[] result = baos.toByteArray();
 
-//        if (MirageClassLoader.debug) {
-//            MirageClassLoader.printIndent();
+//        if (HologramClassLoader.debug) {
+//            HologramClassLoader.printIndent();
 //            System.out.println("Fetched original bytecode for: " + holographClass.getClassName());
 //        }
         return result;
@@ -692,8 +688,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     public void prepareClass(ClassMirror klass) {
         ClassHolograph classHolograph = (ClassHolograph)klass;
-        classHolograph.getMirageClass(true);
-        classHolograph.getMirageClass(false);
+        classHolograph.getHologramClass(true);
+        classHolograph.getHologramClass(false);
         classHolograph.resolveInitialized();
     }
     

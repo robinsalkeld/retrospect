@@ -9,15 +9,15 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.ObjectMirage;
+import edu.ubc.mirrors.holograms.Hologram;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 
 public class ConstructorHolograph implements ConstructorMirror {
 
     private final ClassHolograph klass;
     private final ConstructorMirror wrapped;
     private ConstructorMirror bytecodeConstructor;
-    private Constructor<?> mirageClassConstructor;
+    private Constructor<?> hologramClassConstructor;
     
     public ConstructorHolograph(ClassHolograph klass, ConstructorMirror wrapped) {
 	this.klass = klass;
@@ -38,20 +38,20 @@ public class ConstructorHolograph implements ConstructorMirror {
     private void resolveConstructor() {
         List<ClassMirror> paramTypes = getParameterTypes();
         // Add the extra implicit mirror parameter
-        Class<?>[] mirageParamTypes = new Class<?>[paramTypes.size() + 1];
-        for (int i = 0; i < mirageParamTypes.length - 1; i++) {
-            mirageParamTypes[i] = ClassHolograph.getMirageClass(paramTypes.get(i), false);
+        Class<?>[] hologramParamTypes = new Class<?>[paramTypes.size() + 1];
+        for (int i = 0; i < hologramParamTypes.length - 1; i++) {
+            hologramParamTypes[i] = ClassHolograph.getHologramClass(paramTypes.get(i), false);
         }
-        mirageParamTypes[mirageParamTypes.length - 1] = InstanceMirror.class;
+        hologramParamTypes[hologramParamTypes.length - 1] = InstanceMirror.class;
         
-        Class<?> mirageClass = ClassHolograph.getMirageClass(klass, true);
+        Class<?> hologramClass = ClassHolograph.getHologramClass(klass, true);
         
         try {
-            mirageClassConstructor = mirageClass.getDeclaredConstructor(mirageParamTypes);
+            hologramClassConstructor = hologramClass.getDeclaredConstructor(hologramParamTypes);
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError();
         }
-        mirageClassConstructor.setAccessible(true);
+        hologramClassConstructor.setAccessible(true);
     }
     
     @Override
@@ -67,13 +67,13 @@ public class ConstructorHolograph implements ConstructorMirror {
             
             // Add the extra implicit mirror parameter
             InstanceMirror mirror = getDeclaringClass().newRawInstance();
-            Object[] mirageArgs = new Object[args.length + 1];
+            Object[] hologramArgs = new Object[args.length + 1];
             for (int i = 0; i < args.length; i++) {
-                mirageArgs[i] = ClassHolograph.makeMirage(args[i]);
+                hologramArgs[i] = ClassHolograph.makeHologram(args[i]);
             }
-            mirageArgs[args.length] = mirror;
-            Object result = mirageClassConstructor.newInstance(mirageArgs);
-            return (InstanceMirror)ClassHolograph.unwrapMirage(result);
+            hologramArgs[args.length] = mirror;
+            Object result = hologramClassConstructor.newInstance(hologramArgs);
+            return (InstanceMirror)ClassHolograph.unwrapHologram(result);
         } catch (InstantiationException e) {
             throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
         } catch (InvocationTargetException e) {

@@ -9,9 +9,9 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.asjdi.MirrorsObjectReference;
 import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class MirrorsArrayReference extends MirrorsObjectReference implements ArrayReference {
 

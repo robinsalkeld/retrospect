@@ -5,12 +5,12 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.holograms.Hologram;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.mirages.Mirage;
-import edu.ubc.mirrors.mirages.ObjectMirage;
-import edu.ubc.mirrors.mirages.Reflection;
 
 public class NativeMethodAccessorImplStubs extends NativeStubs {
 
@@ -27,7 +27,7 @@ public class NativeMethodAccessorImplStubs extends NativeStubs {
                 argsArray[i] = argsMirror.get(i);
             }
         }
-        Object result = methodMirror.invoke(ThreadHolograph.currentThreadMirror(), ObjectMirage.getMirror(target), argsArray);
+        Object result = methodMirror.invoke(ThreadHolograph.currentThreadMirror(), ObjectHologram.getMirror(target), argsArray);
         return (ObjectMirror)result;
     }
 }

@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -7,13 +7,17 @@ import java.security.ProtectionDomain;
 
 import org.objectweb.asm.ClassReader;
 
-public class ObjectMirageAgent implements ClassFileTransformer {
+import edu.ubc.mirrors.holograms.MainEntryAdaptor;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.ObjectHologramAgent;
+
+public class ObjectHologramAgent implements ClassFileTransformer {
 
     public static void premain(String options, Instrumentation instr) {
         for (Class<?> c : instr.getAllLoadedClasses()) {
             System.out.println(c.getName());
         }
-        instr.addTransformer(new ObjectMirageAgent());
+        instr.addTransformer(new ObjectHologramAgent());
     }
 
     public byte[] transform(ClassLoader loader, String className,
@@ -24,12 +28,12 @@ public class ObjectMirageAgent implements ClassFileTransformer {
         try {
             String binaryName = className.replace('/', '.');
 //            System.out.println(binaryName);
-            if (binaryName.equals("edu.ubc.mirrors.MirageClassLoader")) return null;
+            if (binaryName.equals(HologramClassLoader.class.getName())) return null;
 //            Thread.dumpStack();
             // TODO: Enable once I work out how to ensure classes are resolved in the same order
-//            ObjectMirage.defineMirageClass(binaryName, loader, new ClassReader(classfileBuffer));
+//            ObjectHologram.defineHologramClass(binaryName, loader, new ClassReader(classfileBuffer));
             
-            if (!(loader instanceof MirageClassLoader)) {
+            if (!(loader instanceof HologramClassLoader)) {
                 return MainEntryAdaptor.generate(binaryName, new ClassReader(classfileBuffer), null);
             } else {
                 return null;

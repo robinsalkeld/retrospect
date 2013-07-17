@@ -1,6 +1,6 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageBinaryClassName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.getHologramBinaryClassName;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -26,32 +26,11 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import edu.ubc.mirrors.ArrayMirror;
-import edu.ubc.mirrors.BooleanArrayMirror;
-import edu.ubc.mirrors.ByteArrayMirror;
-import edu.ubc.mirrors.CharArrayMirror;
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.ConstructorMirror;
-import edu.ubc.mirrors.DoubleArrayMirror;
-import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.FloatArrayMirror;
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.IntArrayMirror;
-import edu.ubc.mirrors.LongArrayMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectArrayMirror;
-import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.ShortArrayMirror;
-import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
-import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class Reflection {
 
@@ -199,7 +178,7 @@ public class Reflection {
         // String must be special-cased, because we can't call loadClass(String) to load String itself! We just make the
         // assumption that the VM defines the class, which is legitimate since the VM must also create string constants at the bytecode level.
         ClassMirror result;
-        if (originalLoader == null || name.equals(String.class.getName()) || name.equals(getMirageBinaryClassName(String.class.getName(), false))) {
+        if (originalLoader == null || name.equals(String.class.getName()) || name.equals(getHologramBinaryClassName(String.class.getName(), false))) {
             result = vm.findBootstrapClassMirror(name);
         } else {
             final ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());

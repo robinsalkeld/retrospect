@@ -4,7 +4,7 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.Value;
 
-import edu.ubc.mirrors.mirages.MethodHandle;
+import edu.ubc.mirrors.MethodHandle;
 
 public class HolographStringReference extends HolographObjectReference implements StringReference {
 

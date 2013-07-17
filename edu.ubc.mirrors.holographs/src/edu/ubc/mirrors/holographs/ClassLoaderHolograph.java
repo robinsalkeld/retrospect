@@ -9,8 +9,8 @@ import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.mirages.MirageClassLoader;
-import edu.ubc.mirrors.mirages.Reflection;
+import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 
 public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirrorLoader {
@@ -23,13 +23,13 @@ public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirr
     protected ClassLoaderHolograph(VirtualMachineHolograph vm, ClassMirrorLoader wrappedLoader) {
         super(vm, wrappedLoader);
         this.wrappedLoader = wrappedLoader;
-        this.mirageLoader = new MirageClassLoader(vm, this);
+        this.hologramLoader = new HologramClassLoader(vm, this);
     }
 
-    private final MirageClassLoader mirageLoader;
+    private final HologramClassLoader hologramLoader;
     
-    public MirageClassLoader getMirageClassLoader() {
-        return mirageLoader;
+    public HologramClassLoader getHologramClassLoader() {
+        return hologramLoader;
     }
     
     @Override

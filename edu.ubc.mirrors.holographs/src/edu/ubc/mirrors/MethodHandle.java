@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors;
 
 import java.util.concurrent.Callable;
 
@@ -9,33 +9,29 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.MethodInsnNode;
 
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public abstract class MethodHandle {
-    public static MethodHandle OBJECT_MIRAGE_GET_MIRROR = new MethodHandle() {
+    public static MethodHandle OBJECT_HOLOGRAM_GET_MIRROR = new MethodHandle() {
         @Override 
         public void methodCall() {
-            ObjectMirage.getMirror(null);
+            ObjectHologram.getMirror(null);
         }
     };
     
-    public static MethodHandle OBJECT_MIRAGE_MAKE = new MethodHandle() {
+    public static MethodHandle OBJECT_HOLOGRAM_MAKE = new MethodHandle() {
         @Override 
         public void methodCall() {
-            ObjectMirage.make(null);
+            ObjectHologram.make(null);
         }
     };
     
-    public static MethodHandle MIRAGE_CLASS_LOADER_LOAD_ORIGINAL_CLASS_MIRROR = new MethodHandle() {
-        MirageClassLoader loader = null;
+    public static MethodHandle HOLOGRAM_CLASS_LOADER_LOAD_ORIGINAL_CLASS_MIRROR = new MethodHandle() {
+        HologramClassLoader loader = null;
         @Override
         public void methodCall() {
             loader.loadOriginalClassMirror((String)null);

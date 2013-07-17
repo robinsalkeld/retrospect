@@ -1,19 +1,19 @@
-package edu.ubc.mirrors.mirages;
+package edu.ubc.mirrors.holograms;
 
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.arrayMirrorType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.classMirrorType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.classType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageInternalClassName;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getMirageType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getOriginalInternalClassName;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getPrimitiveArrayMirrorInternalName;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.getSortName;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirageType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.instanceMirrorType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.mirageType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirageType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.objectMirrorType;
-import static edu.ubc.mirrors.mirages.MirageClassGenerator.stringType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.arrayMirrorType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.classMirrorType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.classType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.getHologramInternalClassName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.getHologramType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalInternalClassName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.getPrimitiveArrayMirrorInternalName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.getSortName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceHologramType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceMirrorType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.hologramType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectHologramType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectMirrorType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.stringType;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -25,11 +25,17 @@ import org.objectweb.asm.commons.LocalVariablesSorter;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holograms.Hologram;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.ObjectArrayHologram;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 
-public class MirageMethodGenerator extends InstructionAdapter {
+public class HologramMethodGenerator extends InstructionAdapter {
 
     static String activeMethod = null;
     
@@ -42,7 +48,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
     private final boolean isToString;
     private final boolean isGetStackTrace;
     
-    public MirageMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString, boolean isGetStackTrace) {
+    public HologramMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString, boolean isGetStackTrace) {
         super(Opcodes.ASM4, null);
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
         this.mv = analyzer;
@@ -56,14 +62,14 @@ public class MirageMethodGenerator extends InstructionAdapter {
     }
 
     public void getClassMirror(Type type) {
-	if (type.getSort() == Type.OBJECT && type.getInternalName().startsWith("mirage")) {
+	if (type.getSort() == Type.OBJECT && type.getInternalName().startsWith("hologram")) {
 	    getstatic(type.getInternalName(), "classMirror", classMirrorType.getDescriptor());
 	} else {
 	    getstatic(owner.getInternalName(), "classMirror", classMirrorType.getDescriptor());
 	    aconst(type.getDescriptor());
 	    new MethodHandle() {
         	protected void methodCall() throws Throwable {
-        	    ObjectMirage.getClassMirrorForType(null, null);
+        	    ObjectHologram.getClassMirrorForType(null, null);
         	}
             }.invoke(this);
 	}
@@ -86,81 +92,81 @@ public class MirageMethodGenerator extends InstructionAdapter {
     
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
-        Type stringMirageType = getMirageType(String.class);
-        if (name.equals("toString") && desc.equals(Type.getMethodDescriptor(stringMirageType))) {
+        Type stringHologramType = getHologramType(String.class);
+        if (name.equals("toString") && desc.equals(Type.getMethodDescriptor(stringHologramType))) {
             desc = Type.getMethodDescriptor(Type.getType(String.class));
-            if (owner.equals(Type.getInternalName(Mirage.class))) {
+            if (owner.equals(Type.getInternalName(Hologram.class))) {
                 owner = OBJECT_TYPE.getInternalName();
                 // Handle calling Object.toString() with an invokespecial opcode, 
                 // which doesn't work any more since we've changed the superclass.
                 if (opcode == Opcodes.INVOKESPECIAL) {
                     opcode = Opcodes.INVOKESTATIC;
-                    owner = objectMirageType.getInternalName();
-                    name = "mirageToString";
-                    desc = Type.getMethodDescriptor(stringType, mirageType);
+                    owner = objectHologramType.getInternalName();
+                    name = "hologramToString";
+                    desc = Type.getMethodDescriptor(stringType, hologramType);
                 }
             }
             
             super.visitMethodInsn(opcode, owner, name, desc);
             
             getClassMirror(this.owner);
-            invokestatic(objectMirageType.getInternalName(),
-                         "makeStringMirage",
-                         Type.getMethodDescriptor(mirageType, stringType, classMirrorType));
-            checkcast(stringMirageType);
+            invokestatic(objectHologramType.getInternalName(),
+                         "makeStringHologram",
+                         Type.getMethodDescriptor(hologramType, stringType, classMirrorType));
+            checkcast(stringHologramType);
             return;
         }
         
-        if (name.equals("getClass") && desc.equals(Type.getMethodDescriptor(getMirageType(Class.class)))) {
-            invokeinterface(Type.getInternalName(Mirage.class), 
+        if (name.equals("getClass") && desc.equals(Type.getMethodDescriptor(getHologramType(Class.class)))) {
+            invokeinterface(Type.getInternalName(Hologram.class), 
                     "getMirror", 
                     Type.getMethodDescriptor(objectMirrorType));
             invokeinterface(objectMirrorType.getInternalName(),
                             "getClassMirror",
                             Type.getMethodDescriptor(Type.getType(ClassMirror.class)));
             
-            invokestatic(objectMirageType.getInternalName(),
+            invokestatic(objectHologramType.getInternalName(),
                          "make",
-                         Type.getMethodDescriptor(mirageType, objectMirrorType));
-            checkcast(getMirageType(Class.class));
+                         Type.getMethodDescriptor(hologramType, objectMirrorType));
+            checkcast(getHologramType(Class.class));
             return;
         }
         
-        if (owner.equals(Type.getInternalName(Mirage.class))) {
-            if (name.equals("<init>") && this.owner.equals(getMirageType(Throwable.class))) {
+        if (owner.equals(Type.getInternalName(Hologram.class))) {
+            if (name.equals("<init>") && this.owner.equals(getHologramType(Throwable.class))) {
                 owner = Type.getInternalName(Throwable.class);
             } else if (name.equals("<init>") || name.equals("toString")) {
-                owner = objectMirageType.getInternalName();
+                owner = objectHologramType.getInternalName();
             } else {
                 owner = OBJECT_TYPE.getInternalName();
             }
         }
         
         if (name.equals("clone")) {
-            if (desc.equals(Type.getMethodDescriptor(mirageType))) {
+            if (desc.equals(Type.getMethodDescriptor(hologramType))) {
                 desc = Type.getMethodDescriptor(OBJECT_TYPE);
             } 
             if (owner.equals(Type.getType(ObjectArrayMirror.class).getInternalName()) ||
-                            (owner.startsWith("miragearray") && !owner.startsWith("miragearrayimpl"))) {
+                            (owner.startsWith("hologramarray") && !owner.startsWith("hologramarrayimpl"))) {
                 String originalName = getOriginalInternalClassName(owner);
-                owner = getMirageInternalClassName(originalName, true);
+                owner = getHologramInternalClassName(originalName, true);
                 checkcast(Type.getObjectType(owner));
             }
         }
         
-//        if (owner.equals(getMirageType(Throwable.class).getInternalName())) {
-//            if (name.equals("<init>") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE, getMirageType(String.class)))) {
-//                desc = Type.getMethodDescriptor(Type.VOID_TYPE, objectMirageType);
+//        if (owner.equals(getHologramType(Throwable.class).getInternalName())) {
+//            if (name.equals("<init>") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE, getHologramType(String.class)))) {
+//                desc = Type.getMethodDescriptor(Type.VOID_TYPE, objectHologramType);
 //            }
 //        }
         
-        if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Mirage.class)))) {
+        if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Hologram.class)))) {
             desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, OBJECT_TYPE);
         }
         
         if (name.equals("<init>") && !owner.equals(Type.getInternalName(Throwable.class))) {
             int argsSize = Type.getArgumentsAndReturnSizes(desc) >> 2;
-            desc = MirageClassGenerator.addMirrorParam(desc);
+            desc = HologramClassGenerator.addMirrorParam(desc);
             
             Object targetType = stackType(argsSize - 1);
             if (targetType.equals(Opcodes.UNINITIALIZED_THIS)) {
@@ -184,7 +190,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         
         if (owner.equals(Type.getInternalName(Throwable.class)) && name.equals("getStackTraceElement")) {
             Type steType = Type.getType(StackTraceElement.class);
-            invokestatic(Type.getInternalName(ObjectMirage.class),
+            invokestatic(Type.getInternalName(ObjectHologram.class),
                          "cleanStackTraceElement",
                          Type.getMethodDescriptor(steType, steType));
         }
@@ -209,7 +215,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             }
         } else {
             // If this is an "uninitialized this", the mirror is the nth argument instead
-            // of the mirror field on ObjectMirage.
+            // of the mirror field on ObjectHologram.
             Object stackType = stackType(isSet ? 1 : 0);
             if (stackType == Opcodes.UNINITIALIZED_THIS) {
                 // Pop the original argument
@@ -221,7 +227,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
                 pop();
                 load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
 
-                MethodHandle.OBJECT_MIRAGE_MAKE.invoke(this);
+                MethodHandle.OBJECT_HOLOGRAM_MAKE.invoke(this);
 
                 if (isSet) {
                     load(setValueLocal, fieldType);
@@ -236,23 +242,23 @@ public class MirageMethodGenerator extends InstructionAdapter {
         int fieldSort = fieldType.getSort();
         String suffix = "";
         if (fieldSort == Type.ARRAY || fieldSort == Type.OBJECT) {
-            fieldTypeForMirrorCall = mirageType;
+            fieldTypeForMirrorCall = hologramType;
         } else {
-            suffix = MirageClassGenerator.getSortName(fieldSort);
+            suffix = HologramClassGenerator.getSortName(fieldSort);
         }
         
         // Call the appropriate getter/setter method on the mirror
         String methodDesc;
         if (isSet) {
-            methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, mirageType, fieldTypeForMirrorCall, classMirrorType, stringType);
+            methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, hologramType, fieldTypeForMirrorCall, classMirrorType, stringType);
         } else {
-            methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall, mirageType, classMirrorType, stringType);
+            methodDesc = Type.getMethodDescriptor(fieldTypeForMirrorCall, hologramType, classMirrorType, stringType);
         }
-        invokestatic(instanceMirageType.getInternalName(), 
+        invokestatic(instanceHologramType.getInternalName(), 
                      (isSet ? "set" : "get") + suffix + "Field", 
                      methodDesc);
         
-        if (!isSet && fieldTypeForMirrorCall.equals(mirageType)) {
+        if (!isSet && fieldTypeForMirrorCall.equals(hologramType)) {
             checkcast(fieldType);
         }
     }
@@ -263,8 +269,8 @@ public class MirageMethodGenerator extends InstructionAdapter {
     
     @Override
     public void visitMultiANewArrayInsn(String desc, int dims) {
-        Type mirageArrayType = Type.getType(desc);
-        Type originalElementType = Type.getObjectType(getOriginalInternalClassName(mirageArrayType.getInternalName())).getElementType();
+        Type hologramArrayType = Type.getType(desc);
+        Type originalElementType = Type.getObjectType(getOriginalInternalClassName(hologramArrayType.getInternalName())).getElementType();
         
         Type intArrayType = Type.getObjectType("[I");
         
@@ -282,7 +288,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             astore(Type.INT_TYPE);
         }
         
-        anew(mirageArrayType);
+        anew(hologramArrayType);
         dup();
         
         getClassMirror(originalElementType);
@@ -291,7 +297,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
                 "newArray",
                 Type.getMethodDescriptor(Type.getType(ArrayMirror.class), intArrayType));
         
-        invokespecial(mirageArrayType.getInternalName(), 
+        invokespecial(hologramArrayType.getInternalName(), 
                       "<init>", 
                       Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class)));
     }
@@ -309,7 +315,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
             case Opcodes.LALOAD: arrayElementType = Type.LONG_TYPE; break;
             case Opcodes.FALOAD: arrayElementType = Type.FLOAT_TYPE; break;
             case Opcodes.DALOAD: arrayElementType = Type.DOUBLE_TYPE; break;
-            case Opcodes.AALOAD: arrayElementType = mirageType; break;
+            case Opcodes.AALOAD: arrayElementType = hologramType; break;
             case Opcodes.BALOAD: arrayElementType = Type.BYTE_TYPE; break;
             case Opcodes.CALOAD: arrayElementType = Type.CHAR_TYPE; break;
             case Opcodes.SALOAD: arrayElementType = Type.SHORT_TYPE; break;
@@ -317,40 +323,40 @@ public class MirageMethodGenerator extends InstructionAdapter {
             case Opcodes.LASTORE: arrayElementType = Type.LONG_TYPE; break;
             case Opcodes.FASTORE: arrayElementType = Type.FLOAT_TYPE; break;
             case Opcodes.DASTORE: arrayElementType = Type.DOUBLE_TYPE; break;
-            case Opcodes.AASTORE: arrayElementType = mirageType; break;
+            case Opcodes.AASTORE: arrayElementType = hologramType; break;
             case Opcodes.BASTORE: arrayElementType = Type.BYTE_TYPE; break;
             case Opcodes.CASTORE: arrayElementType = Type.CHAR_TYPE; break;
             case Opcodes.SASTORE: arrayElementType = Type.SHORT_TYPE; break;
             }
             
-            Type mirrorType = MirageClassGenerator.objectArrayMirrorType;
+            Type mirrorType = HologramClassGenerator.objectArrayMirrorType;
             if (arrayElementType.getSort() != Type.OBJECT && arrayElementType.getSort() != Type.ARRAY) {
                 mirrorType = Type.getObjectType(getPrimitiveArrayMirrorInternalName(arrayElementType));
             }
             
             // Use the analyzer to figure out the expected array element type
             Type arrayElementTypeForMirrorCall = arrayElementType;
-            Type mirageArrayType = Type.getObjectType((String)stackType(isArrayStore ? 1 + arrayElementType.getSize() : 1));
-            if (mirageArrayType == null) {
-                mirageArrayType = Type.getType(ObjectArrayMirage.class);
+            Type hologramArrayType = Type.getObjectType((String)stackType(isArrayStore ? 1 + arrayElementType.getSize() : 1));
+            if (hologramArrayType == null) {
+                hologramArrayType = Type.getType(ObjectArrayHologram.class);
             }
-            if (arrayElementType.equals(mirageType)) {
-                Type originalType = Type.getObjectType(getOriginalInternalClassName(mirageArrayType.getInternalName()));
-                arrayElementType = getMirageType(Reflection.makeArrayType(originalType.getDimensions() - 1, originalType.getElementType()));
-                mirageArrayType = Type.getType(ObjectArrayMirage.class);
+            if (arrayElementType.equals(hologramType)) {
+                Type originalType = Type.getObjectType(getOriginalInternalClassName(hologramArrayType.getInternalName()));
+                arrayElementType = getHologramType(Reflection.makeArrayType(originalType.getDimensions() - 1, originalType.getElementType()));
+                hologramArrayType = Type.getType(ObjectArrayHologram.class);
             }
             
-            // Call the appropriate getter/setter method on the mirage
+            // Call the appropriate getter/setter method on the hologram
             String methodDesc;
             if (isArrayStore) {
                 methodDesc = Type.getMethodDescriptor(Type.VOID_TYPE, mirrorType, Type.INT_TYPE, arrayElementTypeForMirrorCall);
             } else {
                 methodDesc = Type.getMethodDescriptor(arrayElementTypeForMirrorCall, mirrorType, Type.INT_TYPE);
             }
-            invokestatic(mirageArrayType.getInternalName(), 
-                            (isArrayStore ? "setMirage" : "getMirage"), 
+            invokestatic(hologramArrayType.getInternalName(), 
+                            (isArrayStore ? "setHologram" : "getHologram"), 
                             methodDesc);
-            if (!isArrayStore && arrayElementTypeForMirrorCall.equals(mirageType)) {
+            if (!isArrayStore && arrayElementTypeForMirrorCall.equals(hologramType)) {
                 checkcast(arrayElementType);
             }
             
@@ -364,13 +370,13 @@ public class MirageMethodGenerator extends InstructionAdapter {
         
         if (opcode == Opcodes.ARETURN) {
             if (isToString) {
-                invokestatic(objectMirageType.getInternalName(),
-                             "getRealStringForMirage",
-                             Type.getMethodDescriptor(Type.getType(String.class), Type.getType(ObjectMirage.class)));
+                invokestatic(objectHologramType.getInternalName(),
+                             "getRealStringForHologram",
+                             Type.getMethodDescriptor(Type.getType(String.class), Type.getType(ObjectHologram.class)));
             } else if (isGetStackTrace) {
-                invokestatic(objectMirageType.getInternalName(),
-                             "getRealStackTraceForMirage",
-                             Type.getMethodDescriptor(Type.getType(StackTraceElement[].class), Type.getType(Mirage.class)));
+                invokestatic(objectHologramType.getInternalName(),
+                             "getRealStackTraceForHologram",
+                             Type.getMethodDescriptor(Type.getType(StackTraceElement[].class), Type.getType(Hologram.class)));
             }
         }
         super.visitInsn(opcode);
@@ -388,20 +394,20 @@ public class MirageMethodGenerator extends InstructionAdapter {
                     "newArray",
                     Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.INT_TYPE));
             
-            // Instantiate the mirage class
-            Type mirageArrayType = Type.getObjectType(getMirageInternalClassName(arrayType.getInternalName(), true));
-            anew(mirageArrayType);
+            // Instantiate the hologram class
+            Type hologramArrayType = Type.getObjectType(getHologramInternalClassName(arrayType.getInternalName(), true));
+            anew(hologramArrayType);
             dupX1();
             swap();
             
-            invokespecial(mirageArrayType.getInternalName(), 
+            invokespecial(hologramArrayType.getInternalName(), 
                           "<init>", 
                           Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class)));
             return;
         }
         
-        if (opcode == Opcodes.NEW && type.equals(Type.getInternalName(Mirage.class))) {
-            type = objectMirageType.getInternalName();
+        if (opcode == Opcodes.NEW && type.equals(Type.getInternalName(Hologram.class))) {
+            type = objectHologramType.getInternalName();
         }
         
         super.visitTypeInsn(opcode, type);
@@ -430,12 +436,12 @@ public class MirageMethodGenerator extends InstructionAdapter {
                     "newArray",
                     Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.INT_TYPE));
             
-            String arrayMirageType = "edu/ubc/mirrors/mirages/" + getSortName(elementType.getSort()) + "ArrayMirage";
+            String arrayHologramType = "edu/ubc/mirrors/holograms/" + getSortName(elementType.getSort()) + "ArrayHologram";
             
-            invokestatic(objectMirageType.getInternalName(),
+            invokestatic(objectHologramType.getInternalName(),
                     "make",
-                    Type.getMethodDescriptor(mirageType, objectMirrorType));
-            checkcast(Type.getObjectType(arrayMirageType));
+                    Type.getMethodDescriptor(hologramType, objectMirrorType));
+            checkcast(Type.getObjectType(arrayHologramType));
             
             return;
         }
@@ -448,19 +454,19 @@ public class MirageMethodGenerator extends InstructionAdapter {
         super.visitLdcInsn(cst);
         
         if (cst instanceof String) {
-            Type mirageStringType = getMirageType(stringType);
+            Type hologramStringType = getHologramType(stringType);
             getClassMirror(this.owner);
-            invokestatic(objectMirageType.getInternalName(),
-                         "makeStringMirage",
-                         Type.getMethodDescriptor(mirageType, stringType, classMirrorType));
-            checkcast(mirageStringType);
+            invokestatic(objectHologramType.getInternalName(),
+                         "makeStringHologram",
+                         Type.getMethodDescriptor(hologramType, stringType, classMirrorType));
+            checkcast(hologramStringType);
         } else if (cst instanceof Type) {
-            Type mirageClassType = getMirageType(classType);
+            Type hologramClassType = getHologramType(classType);
             getClassMirror(this.owner);
-            invokestatic(objectMirageType.getInternalName(),
-                         "makeClassMirage",
-                         Type.getMethodDescriptor(mirageType, classType, classMirrorType));
-            checkcast(mirageClassType);
+            invokestatic(objectHologramType.getInternalName(),
+                         "makeClassHologram",
+                         Type.getMethodDescriptor(hologramType, classType, classMirrorType));
+            checkcast(hologramClassType);
         }
     }
     
@@ -484,20 +490,20 @@ public class MirageMethodGenerator extends InstructionAdapter {
         mv.aconst(owner);
         new MethodHandle() {
     	protected void methodCall() throws Throwable {
-    	    ObjectMirage.getClassMirrorForHolographicClass(null);
+    	    ObjectHologram.getClassMirrorForHolographicClass(null);
     	}
         }.invoke(mv);
         mv.dup();
         mv.putstatic(owner.getInternalName(), "classMirror", classMirrorType.getDescriptor());
         
         // Initialize the static field that holds the native stubs instance (if any)
-        String originalClassName = MirageClassGenerator.getOriginalInternalClassName(owner.getInternalName());
+        String originalClassName = HologramClassGenerator.getOriginalInternalClassName(owner.getInternalName());
         Class<?> nativeStubsClass = ClassHolograph.getNativeStubsClass(originalClassName.replace('/', '.'));
         if (nativeStubsClass != null) {
             mv.dup();
             new MethodHandle() {
         	protected void methodCall() throws Throwable {
-        	    ObjectMirage.getNativeStubsInstanceForClassMirror(null);
+        	    ObjectHologram.getNativeStubsInstanceForClassMirror(null);
         	}
             }.invoke(mv);
             mv.checkcast(Type.getType(nativeStubsClass));
@@ -530,7 +536,7 @@ public class MirageMethodGenerator extends InstructionAdapter {
         if (name.equals("<init>")) {
             lvs.newLocal(instanceMirrorType);
 
-            if (owner.equals(getMirageType(Throwable.class))) {
+            if (owner.equals(getHologramType(Throwable.class))) {
                 load(0, owner);
                 load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
                 putfield(owner.getInternalName(), "mirror", Type.getDescriptor(ObjectMirror.class));

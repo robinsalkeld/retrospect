@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.NativeStubs;
-import edu.ubc.mirrors.mirages.Reflection;
 
 //TODO-RS: These should actually do the work themselves so we could theoretically
 //emulate across platforms
