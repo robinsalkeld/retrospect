@@ -27,7 +27,6 @@ import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.test.Breakpoint;
 
 public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
 
@@ -97,9 +96,6 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         } else if (classNameString.equals("[D")) {
             return new WrappingDoubleArrayMirror(this, (DoubleArrayMirror)mirror);
         } else if (mirror instanceof ClassMirror) {
-            if (((ClassMirror)mirror).isPrimitive()) {
-        	Breakpoint.bp();
-            }
             return new WrappingClassMirror(this, (ClassMirror)mirror);
         } else if (mirror instanceof ClassMirrorLoader) {
             return new WrappingClassMirrorLoader(this, (ClassMirrorLoader)mirror);

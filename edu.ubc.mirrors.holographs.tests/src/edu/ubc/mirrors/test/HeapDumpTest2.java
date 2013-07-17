@@ -10,7 +10,6 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
-import org.jruby.Ruby;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -57,7 +56,7 @@ public class HeapDumpTest2 implements IApplication {
         public Void call() throws Exception {
     
             // Create a new class loader in the holograph VM and define more bytecode.
-            ClassMirror rubyClass = holographVM.findAllClasses(Ruby.class.getName(), false).get(0);
+            ClassMirror rubyClass = holographVM.findAllClasses("org.jruby.Ruby", false).get(0);
             ThreadMirror thread = holographVM.getThreads().get(0);
             NativeClassMirror nativePrinterClass = new NativeClassMirror(JRubyStackTraces.class);
             ClassMirror printerClass = Reflection.injectBytecode(holographVM, thread, 

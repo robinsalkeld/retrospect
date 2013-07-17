@@ -12,17 +12,22 @@ import edu.ubc.mirrors.StaticFieldValuesMirror;
 
 public class HeapDumpClassStaticValues extends BoxingInstanceMirror implements StaticFieldValuesMirror {
 
-    private final HeapDumpVirtualMachineMirror vm;
+    private final HeapDumpClassMirror forClassMirror;
     
-    public HeapDumpClassStaticValues(HeapDumpVirtualMachineMirror vm) {
-        this.vm = vm;
+    public HeapDumpClassStaticValues(HeapDumpClassMirror forClassMirror) {
+        this.forClassMirror = forClassMirror;
     }
     
     @Override
     public ClassMirror getClassMirror() {
-        return vm.findBootstrapClassMirror(Object.class.getName());
+        return forClassMirror().getVM().findBootstrapClassMirror(Object.class.getName());
     }
 
+    @Override
+    public ClassMirror forClassMirror() {
+        return forClassMirror;
+    }
+    
     @Override
     public int identityHashCode() {
         return 0;
@@ -42,7 +47,7 @@ public class HeapDumpClassStaticValues extends BoxingInstanceMirror implements S
             return null;
         }
         try {
-            return vm.makeMirror(ref.getObject());
+            return forClassMirror.getVM().makeMirror(ref.getObject());
         } catch (SnapshotException e) {
             throw new RuntimeException(e);
         }

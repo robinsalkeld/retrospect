@@ -79,7 +79,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         return 11 * jdiVM.hashCode();
     }
     
-    public static VirtualMachine commandLineLaunch(String mainAndArgs, String vmArgs) throws VMStartException, IOException {
+    public static VirtualMachine commandLineLaunch(String mainAndArgs, String vmArgs, boolean suspend) throws VMStartException, IOException {
 	VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List<Connector> connectors = vmm.allConnectors();
         SunCommandLineLauncher c = null;
@@ -93,7 +93,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         Map<String, ? extends Argument> connectorArgs = c.defaultArguments();
         ((StringArgument)connectorArgs.get("main")).setValue(mainAndArgs);
         ((StringArgument)connectorArgs.get("options")).setValue(vmArgs);
-        ((BooleanArgument)connectorArgs.get("suspend")).setValue(true);
+        ((BooleanArgument)connectorArgs.get("suspend")).setValue(suspend);
         try {
 	    return c.launch(connectorArgs);
 	} catch (IllegalConnectorArgumentsException e) {

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
-import edu.ubc.mirrors.test.Breakpoint;
-
 public class EventDispatch {
 
     public static interface EventCallback {
@@ -70,8 +68,6 @@ public class EventDispatch {
 		    ((EventCallback)callback).handle(event);
 		}
 	    }
-	} else {
-	    Breakpoint.bp();
 	}
     }
     

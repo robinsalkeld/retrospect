@@ -75,7 +75,7 @@ public class AccessControllerStubs extends NativeStubs {
 	return doPrivileged(action);
     }
     
-    public Mirage getStackAccessControlContext() {
+    public InstanceMirror getStackAccessControlContext() {
         // TODO-RS: See above.
         return null;
     }

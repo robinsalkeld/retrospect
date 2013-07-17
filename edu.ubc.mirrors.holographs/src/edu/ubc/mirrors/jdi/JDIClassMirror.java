@@ -149,15 +149,11 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public List<FieldMirror> getDeclaredFields() {
-        if (refType instanceof ClassType) {
-            List<FieldMirror> result = new ArrayList<FieldMirror>();
-            for (Field field : ((ClassType)refType).fields()) {
-                result.add(new JDIFieldMirror(vm, field));
-            }
-            return result;
-        } else {
-            return Collections.emptyList();
+        List<FieldMirror> result = new ArrayList<FieldMirror>();
+        for (Field field : refType.fields()) {
+            result.add(new JDIFieldMirror(vm, field));
         }
+        return result;
     }
 
     @Override

@@ -46,7 +46,6 @@ import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
-import edu.ubc.mirrors.test.Breakpoint;
 
 public class MirageClassLoader extends ClassLoader {
     public static String traceClass = null;
@@ -219,10 +218,6 @@ public class MirageClassLoader extends ClassLoader {
         }
         
         final String internalClassName = mirror.getClassMirror().getClassName().replace('.', '/');
-        
-        if (internalClassName.equals("java/util/AbstractMap")) {
-            Breakpoint.bp();
-        }
         
         if (internalClassName.equals("[Z")) {
             mirage = new BooleanArrayMirage((BooleanArrayMirror)mirror);

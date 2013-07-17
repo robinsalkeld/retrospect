@@ -13,3 +13,4 @@ org.eclipse.mat.ui/bin
 edu.ubc.mirrors.holographs.mapreduce/bin
 EquinoxOnHadoop/eclipse
 EquinoxOnHadoop/bin
+edu.ubc.mirrors.holographs.tests/bin

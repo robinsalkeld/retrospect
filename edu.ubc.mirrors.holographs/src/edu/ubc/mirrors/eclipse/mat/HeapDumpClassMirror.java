@@ -43,7 +43,7 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         this.vm = vm;
         this.klass = klass;
         this.loader = getClassLoader(klass);
-        this.staticFieldValues = new HeapDumpClassStaticValues(vm);
+        this.staticFieldValues = new HeapDumpClassStaticValues(this);
     }
     
     @Override
@@ -75,7 +75,7 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     }
     
     @Override
-    public VirtualMachineMirror getVM() {
+    public HeapDumpVirtualMachineMirror getVM() {
         return vm;
     }
     

@@ -3,6 +3,8 @@ package edu.ubc.mirrors.raw.nativestubs.sun.misc;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HashMap;
+import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
@@ -22,10 +24,40 @@ import edu.ubc.mirrors.raw.nativestubs.java.lang.ClassLoaderStubs;
 
 public class UnsafeStubs extends NativeStubs {
 
+    private Map<String, Integer> arrayBaseOffsets;
+    
     public UnsafeStubs(ClassHolograph klass) {
 	super(klass);
     }
 
+    private void inferArrayBaseOffsets() {
+        if (arrayBaseOffsets == null) {
+            arrayBaseOffsets = new HashMap<String, Integer>();
+            
+            try {
+                // Java 7 adding these static fields at some point
+                if (klass.getDeclaredField("ARRAY_BOOLEAN_BASE_OFFSET") != null) {
+                    InstanceMirror staticFieldValues = klass.getStaticFieldValues();
+                    arrayBaseOffsets.put("[Z", staticFieldValues.getInt(klass.getDeclaredField("ARRAY_BOOLEAN_BASE_OFFSET")));
+                    arrayBaseOffsets.put("[B", staticFieldValues.getInt(klass.getDeclaredField("ARRAY_BYTE_BASE_OFFSET")));
+                    arrayBaseOffsets.put("[C", staticFieldValues.getInt(klass.getDeclaredField("ARRAY_CHAR_BASE_OFFSET")));
+                    arrayBaseOffsets.put("[S", staticFieldValues.getInt(klass.getDeclaredField("ARRAY_SHORT_BASE_OFFSET")));
+                    arrayBaseOffsets.put("[I", staticFieldValues.getInt(klass.getDeclaredField("ARRAY_INT_BASE_OFFSET")));
+                    arrayBaseOffsets.put("[J", staticFieldValues.getInt(klass.getDeclaredField("ARRAY_LONG_BASE_OFFSET")));
+                    arrayBaseOffsets.put("[F", staticFieldValues.getInt(klass.getDeclaredField("ARRAY_FLOAT_BASE_OFFSET")));
+                    arrayBaseOffsets.put("[D", staticFieldValues.getInt(klass.getDeclaredField("ARRAY_DOUBLE_BASE_OFFSET")));
+                    arrayBaseOffsets.put("[java.lang.Object", staticFieldValues.getInt(klass.getDeclaredField("ARRAY_OBJECT_BASE_OFFSET")));
+                } else {
+                    // TODO-RS: Limited special case - do better!
+                    ClassMirror byteArrayAccessClass = getVM().findBootstrapClassMirror("sun.security.provider.ByteArrayAccess");
+                    arrayBaseOffsets.put("[B", byteArrayAccessClass.getStaticFieldValues().getInt(byteArrayAccessClass.getDeclaredField("byteArrayOfs")));
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    
     public ObjectMirror getObject(InstanceMirror unsafe, ObjectMirror object, int offset) {
         // TODO-RS: Will be different when concurrent access is supported.
         return getObjectVolatile(unsafe, object, offset);
@@ -40,7 +72,7 @@ public class UnsafeStubs extends NativeStubs {
         ObjectArrayMirror array = (ObjectArrayMirror)object;
         // TODO-RS: Here (and several other similar places in this class)
         // these offset calculations need to be verified.
-        return array.get((int)((offset - arrayBaseOffsetByClassName(array.getClassMirror().getClassName())) / 4));
+        return array.get((int)((offset - arrayBaseOffset(unsafe, array.getClassMirror())) / 4));
     }
     
     public int getInt(InstanceMirror unsafe, ObjectMirror object, long offset) {
@@ -49,10 +81,10 @@ public class UnsafeStubs extends NativeStubs {
         // in ConcurrentHashMap - to be completed.
         String className = array.getClassMirror().getClassName();
         if (className.equals("[I")) {
-            int index = (int)((offset - arrayBaseOffsetByClassName(className)) / 4);
+            int index = (int)((offset - arrayBaseOffset(unsafe, array.getClassMirror())) / 4);
             return ((IntArrayMirror)array).getInt(index);
         } else if (className.equals("[B")) {
-            int index = (int)(offset - arrayBaseOffsetByClassName(className));
+            int index = (int)(offset - arrayBaseOffset(unsafe, array.getClassMirror()));
             ByteArrayMirror bam = (ByteArrayMirror)array;
             ByteBuffer buffer = ByteBuffer.allocate(4);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -71,10 +103,10 @@ public class UnsafeStubs extends NativeStubs {
         // in ConcurrentHashMap - to be completed.
         String className = array.getClassMirror().getClassName();
         if (className.equals("[I")) {
-            int index = (int)((offset - arrayBaseOffsetByClassName(className)) / 4);
+            int index = (int)((offset - arrayBaseOffset(unsafe, array.getClassMirror())) / 4);
             ((IntArrayMirror)array).setInt(index, value);
         } else if (className.equals("[B")) {
-            int index = (int)offset - arrayBaseOffsetByClassName(className);
+            int index = (int)offset - arrayBaseOffset(unsafe, array.getClassMirror());
             ByteArrayMirror bam = (ByteArrayMirror)array;
             ByteBuffer buffer = ByteBuffer.allocate(4);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -96,7 +128,7 @@ public class UnsafeStubs extends NativeStubs {
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
             // TODO-RS: Need to be much more careful about this!
-            array.set((int)((offset - arrayBaseOffsetByClassName(mirror.getClassMirror().getClassName())) / 4), element);
+            array.set((int)((offset - arrayBaseOffset(unsafe, mirror.getClassMirror())) / 4), element);
         } else if (mirror instanceof InstanceMirror) {
             InstanceMirror instance = (InstanceMirror)mirror;
             FieldMirror field = fieldForOffset(instance, offset);
@@ -106,13 +138,10 @@ public class UnsafeStubs extends NativeStubs {
         }
     }
     
-    public int arrayBaseOffset(InstanceMirror unsafe, ClassMirror klass) {
-        return arrayBaseOffsetByClassName(klass.getClassName());
-    }
-    
-    public int arrayBaseOffsetByClassName(String name) {
-        // TODO-RS: Actually figure out dynamically.
-        return 12;
+    private int arrayBaseOffset(InstanceMirror unsafe, ClassMirror klass) {
+        inferArrayBaseOffsets();
+        String className = klass.getComponentClassMirror().isPrimitive() ? klass.getClassName() : "[java.lang.Object";
+        return arrayBaseOffsets.get(className);
     }
     
     public long objectFieldBaseOffset() {
@@ -200,7 +229,7 @@ public class UnsafeStubs extends NativeStubs {
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
             // TODO-RS: Need to be much more careful about this!
-            int index = (int)((offset - arrayBaseOffsetByClassName(array.getClassMirror().getClassName())) / 4);
+            int index = (int)((offset - arrayBaseOffset(unsafe, array.getClassMirror())) / 4);
             ObjectMirror current = array.get(index);
             if (current == oldValue) {
                 array.set(index, newValue);

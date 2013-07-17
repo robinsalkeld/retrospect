@@ -5,14 +5,11 @@ Bundle-SymbolicName: edu.ubc.mirrors.holographs;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-ClassPath: lib/asm-debug-all-4.0.jar,
  bin/,
- lib/bcel-5.2.jar,
- lib/jruby-complete-1.6.4.jar,
- lib/hat.jar,
  lib/abc.jar,
- lib/java_cup.jar,
  lib/polyglot.jar,
  lib/sootclasses.jar,
- lib/tools.jar
+ lib/tools.jar,
+ lib/java_cup.jar
 Premain-Class: edu.ubc.mirrors.ObjectMirageAgent
 Created-By: 1.6.0_26-b03-383-11M3527 (Apple Inc.)
 Ant-Version: Apache Ant 1.8.2
@@ -46,13 +43,20 @@ Import-Package: com.ibm.icu.text;version="4.4.2.1",
  org.osgi.framework.wiring;version="1.0.0",
  org.osgi.service.packageadmin;version="1.2.0"
 Service-Component: component.xml
-Export-Package: edu.ubc.mirrors,
+Export-Package: com.sun.jdi;version="1.0.0.tools_jar",
+ com.sun.jdi.event;version="1.0.0.tools_jar",
+ com.sun.jdi.request;version="1.0.0.tools_jar",
+ edu.ubc.mirrors,
  edu.ubc.mirrors.eclipse.mat,
  edu.ubc.mirrors.fieldmap,
  edu.ubc.mirrors.holographs,
+ edu.ubc.mirrors.jdi,
  edu.ubc.mirrors.mirages,
  edu.ubc.mirrors.raw,
  edu.ubc.mirrors.test,
  edu.ubc.mirrors.wrapping,
+ edu.ubc.retrospect,
  org.objectweb.asm;version="4.0.0",
- org.objectweb.asm.tree;version="4.0.0"
+ org.objectweb.asm.commons;version="4.0.0",
+ org.objectweb.asm.tree;version="4.0.0",
+ org.objectweb.asm.util;version="4.0.0"

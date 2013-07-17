@@ -299,9 +299,14 @@ public class ClassHolograph extends WrappingClassMirror {
         }
         
         for (FieldMirror bytecodeField : bytecodeMirror.getDeclaredFields()) {
-            FieldMirror expectedField = expectedFields.remove(bytecodeField.getName());
+            String fieldName = bytecodeField.getName();
+            FieldMirror expectedField = expectedFields.remove(fieldName);
             if (expectedField == null) {
-                throw new IllegalStateException("Unexpected field found in bytecode class: " + bytecodeField);
+                // Ignore Throwable.backtrace - it's hidden in many formats
+                if (getClassName().equals(Throwable.class.getName()) && fieldName.equals("backtrace")) {
+                    continue;
+                }
+                throw new IllegalStateException("Unexpected field found in bytecode class (" + getClassName() + "): " + bytecodeField);
             }
             // Just use type name - checking actual types across VMs is too complicated and
             // causes too many side effects to boot.

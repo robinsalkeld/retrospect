@@ -30,6 +30,6 @@ public abstract class JDIMirror {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " on " + mirror.getClass();
+        return getClass().getSimpleName() + " on " + mirror;
     }
 }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.equinox.app.IApplication;
@@ -20,8 +21,10 @@ import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.LocatableEvent;
+import com.sun.jdi.event.VMStartEvent;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.MethodEntryRequest;
 
@@ -36,10 +39,15 @@ public class LiveVersusDeadToStringEvaluation implements IApplication {
         
         final VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(port);
         System.out.println("Connected.");
+        run(jdiVM);
+    }  
         
+    public static void run(VirtualMachine jdiVM) throws Exception {
         EventSet eventSet = pauseAndGetThread(jdiVM);
-        LocatableEvent event = (LocatableEvent)eventSet.iterator().next();
-        ThreadReference thread = event.thread();
+        Iterator<Event> iterator = eventSet.iterator();
+        Event event = iterator.next();
+        LocatableEvent locateableEvent = (LocatableEvent)event;
+        ThreadReference thread = locateableEvent.thread();
          
         final JDIVirtualMachineMirror liveVM = new JDIVirtualMachineMirror(jdiVM);
         

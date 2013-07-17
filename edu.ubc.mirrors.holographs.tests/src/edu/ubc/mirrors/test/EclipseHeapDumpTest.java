@@ -1,16 +1,9 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.annotation.Pointcut;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.mat.snapshot.ISnapshot;
@@ -25,19 +18,15 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
-import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.mirages.MethodHandle;
 import edu.ubc.mirrors.mirages.MirageClassLoader;
 import edu.ubc.mirrors.mirages.Reflection;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
-import edu.ubc.retrospect.RetroactiveWeaver;
 
 public class EclipseHeapDumpTest implements IApplication {
 

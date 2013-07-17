@@ -18,6 +18,7 @@ import java.io.PrintStream;
 import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.annotations.Argument;
+import org.eclipse.mat.query.annotations.Argument.Advice;
 import org.eclipse.mat.query.annotations.CommandName;
 import org.eclipse.mat.query.annotations.Name;
 import org.eclipse.mat.snapshot.ISnapshot;
@@ -34,7 +35,7 @@ public class SaveObjectListQuery implements IQuery
     @Argument(flag = Argument.UNFLAGGED)
     public IHeapObjectArgument objects;
 
-    @Argument(isMandatory = true)
+    @Argument(isMandatory = true, advice = Advice.SAVE)
     public File path;
     
     public IResult execute(IProgressListener listener) throws Exception

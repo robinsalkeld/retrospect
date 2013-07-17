@@ -93,23 +93,28 @@ public class Reflection {
         }));
     }
     
-    public static ClassMirror injectBytecode(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader parent, String name, byte[] newClassBytecode) {
-        ClassMirror secureClassLoaderClass = vm.findBootstrapClassMirror(SecureClassLoader.class.getName());
-        ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
-        ConstructorMirror constructor = HolographInternalUtils.getConstructor(secureClassLoaderClass, classLoaderClass);
-        
-        ClassMirrorLoader newLoader = (ClassMirrorLoader)HolographInternalUtils.newInstance(constructor, thread, parent);
-        
-        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
-        ClassMirror byteArrayClass = HolographInternalUtils.loadClassMirrorInternal(vm, null, "[B");
-        ClassMirror intClass = vm.getPrimitiveClass("int");
-        MethodMirror defineClassMethod = HolographInternalUtils.getMethod(classLoaderClass, "defineClass", stringClass, byteArrayClass, intClass, intClass);
-        defineClassMethod.setAccessible(true);
-        
-        InstanceMirror nameMirror = makeString(vm, name);
-        ObjectMirror bytecodeInVM = copyArray(vm, new NativeByteArrayMirror(newClassBytecode));
-        
-        return (ClassMirror)HolographInternalUtils.mirrorInvoke(thread, defineClassMethod, newLoader, nameMirror, bytecodeInVM, 0, newClassBytecode.length);
+    public static ClassMirror injectBytecode(final VirtualMachineMirror vm, final ThreadMirror thread, final ClassMirrorLoader parent, final String name, final byte[] newClassBytecode) {
+        return Reflection.withThread(thread, new Callable<ClassMirror>() {
+            public ClassMirror call() throws Exception {
+                ClassMirror secureClassLoaderClass = vm.findBootstrapClassMirror(SecureClassLoader.class.getName());
+                ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
+                ConstructorMirror constructor = HolographInternalUtils.getConstructor(secureClassLoaderClass, classLoaderClass);
+                
+                ClassMirrorLoader newLoader = (ClassMirrorLoader)HolographInternalUtils.newInstance(constructor, thread, parent);
+                
+                ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
+                ClassMirror byteArrayClass = HolographInternalUtils.loadClassMirrorInternal(vm, null, "[B");
+                ClassMirror intClass = vm.getPrimitiveClass("int");
+                MethodMirror defineClassMethod = HolographInternalUtils.getMethod(classLoaderClass, "defineClass", stringClass, byteArrayClass, intClass, intClass);
+                defineClassMethod.setAccessible(true);
+                
+                InstanceMirror nameMirror = makeString(vm, name);
+                ObjectMirror bytecodeInVM = copyArray(vm, new NativeByteArrayMirror(newClassBytecode));
+                
+                return (ClassMirror)HolographInternalUtils.mirrorInvoke(thread, defineClassMethod, newLoader, nameMirror, bytecodeInVM, 0, newClassBytecode.length);
+                
+            };
+        });
     }
     
     public static ClassMirrorLoader newURLClassLoader(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader parent, URL[] urls) {
