@@ -23,4 +23,8 @@ public abstract class JDIObjectMirror extends JDIMirror implements ObjectMirror 
     public int identityHashCode() {
         return vm.identityHashCode(mirror);
     }
+    
+    public ObjectReference getObjectReference() {
+        return mirror;
+    }
 }

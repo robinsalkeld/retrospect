@@ -1,0 +1,1530 @@
+Connected.
+Jul 20, 2013 1:54:31 PM org.eclipse.mat.hprof.acquire.JMapHeapDumpProvider acquireDump
+INFO: Executing { "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/bin/jmap", "-dump:format=b,file=/Users/robinsalkeld/snapshots/2170.hprof", "2170" }
+........................................40
+........................................80
+........................................120
+........................................160
+........................................200
+........................................240
+........................................280
+........................................320
+........................................360
+........................................400
+........................................440
+........................................480
+........................................520
+........................................560
+........................................600
+........................................640
+........................................680
+........................................720
+........................................760
+........................................800
+........................................840
+........................................880
+........................................920
+........................................960
+........................................1000
+........................................1040
+........................................1080
+........................................1120
+........................................1160
+........................................1200
+........................................1240
+....................
+Total classes: 1260
+Total objects: 195277
+........................................1000
+........................................2000
+........................................3000
+........................................4000
+........................................5000
+........................................6000
+........................................7000
+........................................8000
+........................................9000
+........................................10000
+........................................11000
+........................................12000
+........................................13000
+........................................14000
+........................................15000
+........................................16000
+........................................17000
+........................................18000
+........................................19000
+........................................20000
+........................................21000
+........................................22000
+........................................23000
+........................................24000
+........................................25000
+........................................26000
+........................................27000
+........................................28000
+........................................29000
+........................................30000
+........................................31000
+........................................32000
+........................................33000
+........................................34000
+........................................35000
+........................................36000
+........................................37000
+........................................38000
+........................................39000
+........................................40000
+........................................41000
+........................................42000
+........................................43000
+........................................44000
+........................................45000
+........................................46000
+........................................47000
+........................................48000
+........................................49000
+........................................50000
+........................................51000
+........................................52000
+........................................53000
+........................................54000
+........................................55000
+........................................56000
+........................................57000
+........................................58000
+........................................59000
+........................................60000
+........................................61000
+........................................62000
+........................................63000
+........................................64000
+........................................65000
+........................................66000
+........................................67000
+........................................68000
+........................................69000
+........................................70000
+........................................71000
+........................................72000
+........................................73000
+........................................74000
+........................................75000
+........................................76000
+........................................77000
+........................................78000
+........................................79000
+........................................80000
+........................................81000
+........................................82000
+........................................83000
+........................................84000
+........................................85000
+........................................86000
+........................................87000
+........................................88000
+........................................89000
+........................................90000
+........................................91000
+........................................92000
+........................................93000
+........................................94000
+........................................95000
+........................................96000
+........................................97000
+........................................98000
+........................................99000
+........................................100000
+........................................101000
+........................................102000
+........................................103000
+........................................104000
+........................................105000
+........................................106000
+........................................107000
+........................................108000
+........................................109000
+........................................110000
+........................................111000
+........................................112000
+........................................113000
+........................................114000
+........................................115000
+........................................116000
+........................................117000
+........................................118000
+........................................119000
+........................................120000
+........................................121000
+........................................122000
+........................................123000
+........................................124000
+........................................125000
+........................................126000
+........................................127000
+........................................128000
+........................................129000
+........................................130000
+........................................131000
+........................................132000
+........................................133000
+........................................134000
+........................................135000
+........................................136000
+........................................137000
+........................................138000
+........................................139000
+........................................140000
+........................................141000
+........................................142000
+........................................143000
+........................................144000
+........................................145000
+........................................146000
+........................................147000
+........................................148000
+........................................149000
+........................................150000
+........................................151000
+........................................152000
+........................................153000
+........................................154000
+........................................155000
+........................................156000
+........................................157000
+........................................158000
+.....java.lang.RuntimeException: com.sun.jdi.InvocationException: Exception occurred in target VMError on object JDIInstanceMirror on instance of org.eclipse.core.internal.registry.HashtableOfStringAndInt(id=162307)
+
+	at edu.ubc.mirrors.jdi.JDIMethodMirror.invoke(JDIMethodMirror.java:57)
+	at edu.ubc.mirrors.Reflection.toString(Reflection.java:348)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:131)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation$1.call(LiveVersusDeadToStringEvaluation.java:78)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:75)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: com.sun.jdi.InvocationException: Exception occurred in target VM
+	at com.sun.tools.jdi.ObjectReferenceImpl.invokeMethod(ObjectReferenceImpl.java:410)
+	at edu.ubc.mirrors.jdi.JDIMethodMirror.invoke(JDIMethodMirror.java:47)
+	... 20 more
+...................................159000
+........................................160000
+........................................161000
+........................................162000
+........................................163000
+........................................164000
+........................................165000
+........................................166000
+........................................167000
+........................................168000
+........................................169000
+........................................170000
+........................................171000
+........................................172000
+........................................173000
+........................................174000
+........................................175000
+........................................176000
+........................................177000
+........................................178000
+........................................179000
+........................................180000
+........................................181000
+........................................182000
+........................................183000
+........................................184000
+........................................185000
+........................................186000
+........................................187000
+........................................188000
+........................................189000
+........................................190000
+........................................191000
+..................................
+Num objects toString-ed: 191871
+GC'd objects skipped: 3405
+Errors: 1
+Total: 4325813.5ms
+Min: 0ms
+Mean: 22.545425ms
+Max: 73211ms
+Std: 388.89547117445323ms
+........................................40
+........................................80
+...............................java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy6
+.	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy6.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@1575625154()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+........120
+........................................160
+........................................200
+........................................240
+........................................280
+................................java.lang.RuntimeException: Error caught while generating bytecode for hologram.sun.reflect.GeneratedConstructorAccessor11
+.	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedConstructorAccessor11.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@297480919()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+.......320
+........................................360
+........................................400
+........................................440
+........................................480
+........................................520
+........................................560
+........................................600
+........................................640
+........................................680
+........................................720
+........................................760
+........................................800
+........................................840
+........................................880
+........................................920
+........................................960
+........................................1000
+........................................1040
+........................................1080
+........................................1120
+........................................1160
+........................................1200
+........................................1240
+........................................1280
+........................................1320
+........................................1360
+........................................1400
+......................................java.lang.RuntimeException: Error caught while generating bytecode for hologram.sun.reflect.GeneratedMethodAccessor3
+.	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedMethodAccessor3.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@393584852()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+.1440
+........................................1480
+........................................1520
+........................................1560
+........................................1600
+........................................1640
+........................................1680
+........................................1720
+........................................1760
+........................................1800
+........................................1840
+........................................1880
+........................................1920
+........................................1960
+........................................2000
+........................................2040
+........................................2080
+........................................2120
+........................................2160
+........................................2200
+........................................2240
+........................................2280
+..................java.lang.RuntimeException: Error caught while generating bytecode for hologram.org.apache.felix.gogo.command.OBR
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.RuntimeException: repos(Ljava/lang/String;[Ljava/lang/String;)V
+00000 OBR String String . . . .  :  :    L0
+00001 OBR String String . . . .  :  :     LINENUMBER 79 L0
+00002 OBR String String . . . .  :  :     ALOAD 0
+00003 OBR String String . . . .  : OBR  :     INVOKESPECIAL org/apache/felix/gogo/command/OBR.getRepositoryAdmin ()Lorg/apache/felix/bundlerepository/RepositoryAdmin;
+00004 OBR String String . . . .  : RepositoryAdmin  :     ASTORE 3
+00005 OBR String String RepositoryAdmin . . .  :  :    L1
+00006 OBR String String RepositoryAdmin . . .  :  :     LINENUMBER 80 L1
+00007 OBR String String RepositoryAdmin . . .  :  :     ALOAD 3
+00008 OBR String String RepositoryAdmin . . .  : RepositoryAdmin  :     IFNONNULL L2
+00009 OBR String String RepositoryAdmin . . .  :  :    L3
+00010 ?           :     LINENUMBER 82 L3
+00011 ?           :     RETURN
+00012 OBR String String RepositoryAdmin . . .  :  :    L2
+00013 OBR String String RepositoryAdmin . . .  :  :     LINENUMBER 84 L2
+00014 OBR String String RepositoryAdmin . . .  :  :     ALOAD 3
+00015 OBR String String RepositoryAdmin . . .  : RepositoryAdmin  :     CHECKCAST org/apache/felix/bundlerepository/RepositoryAdmin
+00016 OBR String String RepositoryAdmin . . .  : RepositoryAdmin  :     ASTORE 4
+00017 OBR String String RepositoryAdmin RepositoryAdmin . .  :  :    L4
+00018 OBR String String RepositoryAdmin RepositoryAdmin . .  :  :     LINENUMBER 86 L4
+00019 OBR String String RepositoryAdmin RepositoryAdmin . .  :  :     ALOAD 2
+00020 OBR String String RepositoryAdmin RepositoryAdmin . .  : String  :     ARRAYLENGTH
+00021 OBR String String RepositoryAdmin RepositoryAdmin . .  : I  :     IFLE L5
+00022 OBR String String RepositoryAdmin RepositoryAdmin . .  :  :    L6
+00023 ?           :     LINENUMBER 88 L6
+00024 ?           :     ICONST_0
+00025 ?           :     ISTORE 5
+00026 ?           :    L7
+00027 ?           :     ILOAD 5
+00028 ?           :     ALOAD 2
+00029 ?           :     ARRAYLENGTH
+00030 ?           :     IF_ICMPGE L8
+00031 ?           :    L9
+00032 ?           :     LINENUMBER 92 L9
+00033 ?           :     ALOAD 1
+00034 ?           :     LDC "add"
+00035 ?           :     INVOKEVIRTUAL java/lang/String.equals (Ljava/lang/Object;)Z
+00036 ?           :     IFEQ L10
+00037 ?           :    L11
+00038 ?           :     LINENUMBER 94 L11
+00039 ?           :     ALOAD 4
+00040 ?           :     ALOAD 2
+00041 ?           :     ILOAD 5
+00042 ?           :     AALOAD
+00043 ?           :     INVOKEINTERFACE org/apache/felix/bundlerepository/RepositoryAdmin.addRepository (Ljava/lang/String;)Lorg/apache/felix/bundlerepository/Repository;
+00044 ?           :     POP
+00045 ?           :     GOTO L12
+00046 ?           :    L10
+00047 ?           :     LINENUMBER 96 L10
+00048 ?           :     ALOAD 1
+00049 ?           :     LDC "refresh"
+00050 ?           :     INVOKEVIRTUAL java/lang/String.equals (Ljava/lang/Object;)Z
+00051 ?           :     IFEQ L13
+00052 ?           :    L14
+00053 ?           :     LINENUMBER 98 L14
+00054 ?           :     ALOAD 4
+00055 ?           :     ALOAD 2
+00056 ?           :     ILOAD 5
+00057 ?           :     AALOAD
+00058 ?           :     INVOKEINTERFACE org/apache/felix/bundlerepository/RepositoryAdmin.removeRepository (Ljava/lang/String;)Z
+00059 ?           :     POP
+00060 ?           :    L15
+00061 ?           :     LINENUMBER 99 L15
+00062 ?           :     ALOAD 4
+00063 ?           :     ALOAD 2
+00064 ?           :     ILOAD 5
+00065 ?           :     AALOAD
+00066 ?           :     INVOKEINTERFACE org/apache/felix/bundlerepository/RepositoryAdmin.addRepository (Ljava/lang/String;)Lorg/apache/felix/bundlerepository/Repository;
+00067 ?           :     POP
+00068 ?           :     GOTO L12
+00069 ?           :    L13
+00070 ?           :     LINENUMBER 101 L13
+00071 ?           :     ALOAD 1
+00072 ?           :     LDC "remove"
+00073 ?           :     INVOKEVIRTUAL java/lang/String.equals (Ljava/lang/Object;)Z
+00074 ?           :     IFEQ L16
+00075 ?           :    L17
+00076 ?           :     LINENUMBER 103 L17
+00077 ?           :     ALOAD 4
+00078 ?           :     ALOAD 2
+00079 ?           :     ILOAD 5
+00080 ?           :     AALOAD
+00081 ?           :     INVOKEINTERFACE org/apache/felix/bundlerepository/RepositoryAdmin.removeRepository (Ljava/lang/String;)Z
+00082 ?           :     POP
+00083 ?           :     GOTO L12
+00084 ?           :    L16
+00085 ?           :     LINENUMBER 107 L16
+00086 ?           :     GETSTATIC java/lang/System.out : Ljava/io/PrintStream;
+00087 ?           :     NEW java/lang/StringBuilder
+00088 ?           :     DUP
+00089 ?           :     INVOKESPECIAL java/lang/StringBuilder.<init> ()V
+00090 ?           :     LDC "Unknown repository operation: "
+00091 ?           :     INVOKEVIRTUAL java/lang/StringBuilder.append (Ljava/lang/String;)Ljava/lang/StringBuilder;
+00092 ?           :     ALOAD 1
+00093 ?           :     INVOKEVIRTUAL java/lang/StringBuilder.append (Ljava/lang/String;)Ljava/lang/StringBuilder;
+00094 ?           :     INVOKEVIRTUAL java/lang/StringBuilder.toString ()Ljava/lang/String;
+00095 ?           :     INVOKEVIRTUAL java/io/PrintStream.println (Ljava/lang/String;)V
+00096 ?           :    L12
+00097 ?           :     LINENUMBER 113 L12
+00098 ?           :     GOTO L18
+00099 ?           :    L19
+00100 ?           :     LINENUMBER 110 L19
+00101 ?           :     ASTORE 6
+00102 ?           :    L20
+00103 ?           :     LINENUMBER 112 L20
+00104 ?           :     ALOAD 6
+00105 ?           :     GETSTATIC java/lang/System.err : Ljava/io/PrintStream;
+00106 ?           :     INVOKEVIRTUAL java/lang/Exception.printStackTrace (Ljava/io/PrintStream;)V
+00107 ?           :    L18
+00108 ?           :     LINENUMBER 88 L18
+00109 ?           :     IINC 5 1
+00110 ?           :     GOTO L7
+00111 ?           :    L8
+00112 ?           :     GOTO L21
+00113 OBR String String RepositoryAdmin RepositoryAdmin . .  :  :    L5
+00114 OBR String String RepositoryAdmin RepositoryAdmin . .  :  :     LINENUMBER 118 L5
+00115 OBR String String RepositoryAdmin RepositoryAdmin . .  :  :     ALOAD 4
+00116 OBR String String RepositoryAdmin RepositoryAdmin . .  : RepositoryAdmin  :     INVOKEINTERFACE org/apache/felix/bundlerepository/RepositoryAdmin.listRepositories ()[Lorg/apache/felix/bundlerepository/Repository;
+00117 OBR String String RepositoryAdmin RepositoryAdmin . .  : Repository  :     ASTORE 5
+00118 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :    L22
+00119 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :     LINENUMBER 120 L22
+00120 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :     ALOAD 5
+00121 OBR String String RepositoryAdmin RepositoryAdmin Repository .  : Repository  :     IFNULL L23
+00122 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :     ALOAD 5
+00123 OBR String String RepositoryAdmin RepositoryAdmin Repository .  : Repository  :     ARRAYLENGTH
+00124 OBR String String RepositoryAdmin RepositoryAdmin Repository .  : I  :     IFLE L23
+00125 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :    L24
+00126 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :     LINENUMBER 122 L24
+00127 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :     ICONST_0
+00128 OBR String String RepositoryAdmin RepositoryAdmin Repository .  : I  :     ISTORE 6
+00129 OBR String String RepositoryAdmin RepositoryAdmin Repository I  :  :    L25
+00130 OBR String String RepositoryAdmin RepositoryAdmin Repository I  :  :     ILOAD 6
+00131 OBR String String RepositoryAdmin RepositoryAdmin Repository I  : I  :     ALOAD 5
+00132 OBR String String RepositoryAdmin RepositoryAdmin Repository I  : I Repository  :     ARRAYLENGTH
+00133 OBR String String RepositoryAdmin RepositoryAdmin Repository I  : I I  :     IF_ICMPGE L26
+00134 OBR String String RepositoryAdmin RepositoryAdmin Repository I  :  :    L27
+00135 OBR String String RepositoryAdmin RepositoryAdmin Repository I  :  :     LINENUMBER 124 L27
+00136 OBR String String RepositoryAdmin RepositoryAdmin Repository I  :  :     GETSTATIC java/lang/System.out : Ljava/io/PrintStream;
+00137 OBR String String RepositoryAdmin RepositoryAdmin Repository I  : PrintStream  :     ALOAD 5
+00138 OBR String String RepositoryAdmin RepositoryAdmin Repository I  : PrintStream Repository  :     ILOAD 6
+00139 OBR String String RepositoryAdmin RepositoryAdmin Repository I  : PrintStream Repository I  :     AALOAD
+00140 ?           :     INVOKEINTERFACE org/apache/felix/bundlerepository/Repository.getURI ()Ljava/lang/String;
+00141 ?           :     INVOKEVIRTUAL java/io/PrintStream.println (Ljava/lang/String;)V
+00142 ?           :    L28
+00143 ?           :     LINENUMBER 122 L28
+00144 ?           :     IINC 6 1
+00145 ?           :     GOTO L25
+00146 OBR String String RepositoryAdmin RepositoryAdmin Repository I  :  :    L26
+00147 OBR String String RepositoryAdmin RepositoryAdmin Repository I  :  :     GOTO L21
+00148 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :    L23
+00149 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :     LINENUMBER 129 L23
+00150 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :     GETSTATIC java/lang/System.out : Ljava/io/PrintStream;
+00151 OBR String String RepositoryAdmin RepositoryAdmin Repository .  : PrintStream  :     LDC "No repository URLs are set."
+00152 OBR String String RepositoryAdmin RepositoryAdmin Repository .  : PrintStream String  :     INVOKEVIRTUAL java/io/PrintStream.println (Ljava/lang/String;)V
+00153 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :    L21
+00154 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :     LINENUMBER 132 L21
+00155 OBR String String RepositoryAdmin RepositoryAdmin Repository .  :  :     RETURN
+00156 ?           :    L29
+     TRYCATCHBLOCK L9 L12 L19 java/lang/Exception
+
+
+	at edu.ubc.mirrors.holograms.FrameAnalyzerAdaptor$1.visitEnd(FrameAnalyzerAdaptor.java:126)
+	at org.objectweb.asm.tree.MethodNode.accept(MethodNode.java:644)
+	at org.objectweb.asm.commons.JSRInlinerAdapter.visitEnd(JSRInlinerAdapter.java:181)
+	at org.objectweb.asm.ClassReader.accept(ClassReader.java:1625)
+	at org.objectweb.asm.ClassReader.accept(ClassReader.java:533)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.generateBytecode(HologramClassLoader.java:448)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:331)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+Caused by: java.lang.InternalError: Unsupported native method: hologram/java/io/FileInputStream#skip(Ledu/ubc/mirrors/InstanceMirror;J)J
+	at edu.ubc.mirrors.holographs.ClassHolograph.causeAsMirrorInvocationTargetException(ClassHolograph.java:261)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:83)
+	at edu.ubc.mirrors.Reflection.loadClassMirror(Reflection.java:201)
+	at edu.ubc.mirrors.Reflection.classMirrorForType(Reflection.java:239)
+	at edu.ubc.mirrors.Reflection.classMirrorForType(Reflection.java:218)
+	at edu.ubc.mirrors.Reflection.classMirrorForName(Reflection.java:277)
+	at edu.ubc.mirrors.holograms.BetterVerifier.getClassMirror(BetterVerifier.java:82)
+	at edu.ubc.mirrors.holograms.BetterVerifier.isAssignableFrom(BetterVerifier.java:110)
+	at org.objectweb.asm.tree.analysis.SimpleVerifier.isSubTypeOf(SimpleVerifier.java:215)
+	at edu.ubc.mirrors.holograms.BetterVerifier.isSubTypeOf(BetterVerifier.java:118)
+	at org.objectweb.asm.tree.analysis.BasicVerifier.binaryOperation(BasicVerifier.java:315)
+	at edu.ubc.mirrors.holograms.FrameVerifier.binaryOperation(FrameVerifier.java:121)
+	at edu.ubc.mirrors.holograms.FrameVerifier.binaryOperation(FrameVerifier.java:1)
+	at org.objectweb.asm.tree.analysis.Frame.execute(Frame.java:264)
+	at edu.ubc.mirrors.holograms.FrameAnalyzer$ContextFrame.execute(FrameAnalyzer.java:98)
+	at org.objectweb.asm.tree.analysis.Analyzer.analyze(Analyzer.java:197)
+	at edu.ubc.mirrors.holograms.FrameAnalyzerAdaptor$1.visitEnd(FrameAnalyzerAdaptor.java:106)
+	... 32 more
+Caused by: java.lang.InternalError: Unsupported native method: hologram/java/io/FileInputStream#skip(Ledu/ubc/mirrors/InstanceMirror;J)J
+	at java.io.FileInputStream.skip(FileInputStream.java)
+	at java.io.BufferedInputStream.skip(BufferedInputStream.java:366)
+	at java.io.DataInputStream.skipBytes(DataInputStream.java:220)
+	at org.eclipse.osgi.internal.resolver.StateReader.readBundleDescriptionLazyData(StateReader.java:264)
+	at org.eclipse.osgi.internal.resolver.StateReader.fullyLoad(StateReader.java:799)
+	at org.eclipse.osgi.internal.resolver.StateImpl.fullyLoad(StateImpl.java:1084)
+	at org.eclipse.osgi.internal.resolver.StateImpl.linkDynamicImport(StateImpl.java:1025)
+	at org.eclipse.osgi.internal.loader.BundleLoader.findDynamicSource(BundleLoader.java:1167)
+	at org.eclipse.osgi.internal.loader.BundleLoader.findClassInternal(BundleLoader.java:469)
+	at org.eclipse.osgi.internal.loader.BundleLoader.findClass(BundleLoader.java:421)
+	at org.eclipse.osgi.internal.loader.BundleLoader.findClass(BundleLoader.java:412)
+	at org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader.loadClass(DefaultClassLoader.java:107)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:356)
+	at sun.reflect.GeneratedMethodAccessor6.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at edu.ubc.mirrors.holographs.MethodHolograph.invoke(MethodHolograph.java:74)
+	... 47 more
+......................2320
+..................................java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy14
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy14.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@1650204110()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+......2360
+........................................2400
+........................................2440
+........................................2480
+........................................2520
+............java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy10
+...	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy10.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@1575625154()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+.........................2560
+........................................2600
+........................................2640
+........................................2680
+........................................2720
+.........java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy8.
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy8.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@316763214()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+..............................2760
+........................................2800
+........................................2840
+........................................2880
+........................................2920
+........................................2960
+........................................3000
+........................................3040
+........................................3080
+........................................3120
+........................................3160
+....................java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy5
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy5.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@59685751()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+.java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy4
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy4.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@59685751()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+...java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy3
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226).
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy3.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@59685751()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+...............3200
+........................................3240
+........................................3280
+........................................3320
+........................................3360
+........................................3400
+........................................3440
+........................................3480
+........................................3520
+..java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy0
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661).
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for bootstrapped class: ClassHolograph on HeapDumpClassMirror: java.lang.Class [id=0x121cf6408;name=$Proxy0]
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:465)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+..java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy2
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for bootstrapped class: ClassHolograph on HeapDumpClassMirror: java.lang.Class [id=0x121cf6700;name=$Proxy2]
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:465)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+...................................3560
+........................................3600
+........................................3640
+........................................3680
+........................................3720
+........................................3760
+........................................3800
+........................................3840
+.......java.lang.RuntimeException: Error caught while generating bytecode for hologram.sun.reflect.GeneratedMethodAccessor16.
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedMethodAccessor16.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@1730090207()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+................................3880
+........................................3920
+........................................3960
+........................................4000
+........................................4040
+..............java.lang.RuntimeException: Error caught while generating bytecode for hologram.sun.reflect.GeneratedMethodAccessor4
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedMethodAccessor4.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@707734867()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+........java.lang.RuntimeException: Error caught while generating bytecode for hologram.sun.reflect.GeneratedMethodAccessor2
+.	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedMethodAccessor2.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@609761336()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+.................4080
+........................................4120
+........................................4160
+........................................4200
+........................................4240
+........................................4280
+........................................4320
+............................java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy11...
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy11.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@2092562409()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+.........4360
+........................................4400
+........................................4440
+........................................4480
+........................................4520
+........................................4560
+........................................4600
+........................................4640
+........................................4680
+........................................4720
+........................................4760
+........................................4800
+........................................4840
+........................................4880
+........................................4920
+........................................4960
+..........java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy13.
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy13.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@1650204110()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+.java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy12
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy12.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@1650204110()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+............................5000
+................java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy9
+..	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy9.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@1575625154()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+......................5040
+........................................5080
+........................................5120
+........................................5160
+........................................5200
+.........java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy7..
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy7.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@316763214()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+.............................5240
+........................................5280
+........................................5320
+........................................5360
+........................................5400
+........................................5440
+........................................5480
+........................................5520
+........................................5560
+........................................5600
+........................................5640
+........................................5680
+........................................5720
+........................................5760
+........................................5800
+........................................5840
+........................................5880
+........................................5920
+........................................5960
+.......................................java.lang.RuntimeException: Error caught while generating bytecode for hologram.$Proxy1
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+.6000
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for bootstrapped class: ClassHolograph on HeapDumpClassMirror: java.lang.Class [id=0x121cf6b40;name=$Proxy1]
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:465)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+........................................6040
+........................................6080
+........................................6120
+........................................6160
+........................................6200
+........................................6240
+.java.lang.RuntimeException: Error caught while generating bytecode for hologram.sun.reflect.GeneratedMethodAccessor1
+...	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedMethodAccessor1.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@113451774()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+....................................6280
+........................................6320
+........................................6360
+........................................6400
+........................................6440
+........................................6480
+........................................6520
+........................................6560
+........................................6600
+........................................6640
+........................................6680
+........................................6720
+........................................6760
+........................................6800
+........................................6840
+........................................6880
+........................................6920
+........................................6960
+..............................java.lang.RuntimeException: Error caught while generating bytecode for hologram.sun.reflect.GeneratedConstructorAccessor12..
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:186)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:226)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getHologramClass(ClassHolograph.java:233)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepareClass(VirtualMachineHolograph.java:693)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:670)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph$6.call(VirtualMachineHolograph.java:1)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.prepare(VirtualMachineHolograph.java:661)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.createPreparedVMHolographForSnapshot(LiveVersusDeadToStringEvaluation.java:110)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:84)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class sun/reflect/GeneratedConstructorAccessor12.class from loader: ClassLoaderHolograph[sun.reflect.DelegatingClassLoader]@865932492()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecode(ClassHolograph.java:339)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getBytecode(HologramClassLoader.java:299)
+	at edu.ubc.mirrors.holograms.HologramClassMirror.getBytecode(HologramClassMirror.java:46)
+	at edu.ubc.mirrors.holograms.HologramClassLoader.getHologramClass(HologramClassLoader.java:180)
+	... 24 more
+........7000
+........................................7040
+........................................7080
+........................................7120
+........................................7160
+........................................7200
+........................................7240
+........................................7280
+........................................7320
+........................................7360
+........................................7400
+........................................7440
+........................................7480
+........................................7520
+........................................7560
+........................................7600
+..........
+Prepared 7610 classes in 778392ms
+Errors on classes: [$Proxy3, $Proxy2, $Proxy5, $Proxy4, $Proxy7, $Proxy6, $Proxy9, $Proxy8, sun.reflect.GeneratedConstructorAccessor12, sun.reflect.GeneratedMethodAccessor4, $Proxy1, sun.reflect.GeneratedConstructorAccessor11, $Proxy0, sun.reflect.GeneratedMethodAccessor1, sun.reflect.GeneratedMethodAccessor2, sun.reflect.GeneratedMethodAccessor3, $Proxy10, org.apache.felix.gogo.command.OBR, $Proxy12, $Proxy11, $Proxy14, $Proxy13, sun.reflect.GeneratedMethodAccessor16]
+.........java.lang.InternalError: Couldn't load bytecode for class $Proxy6.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@1575625154()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.isInterface(ClassHolograph.java:356)
+	at edu.ubc.mirrors.test.ToStringer.hasNonDefaultToString(ToStringer.java:194)
+	at edu.ubc.mirrors.test.ToStringer.collectObjects(ToStringer.java:82)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:121)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation$2.call(LiveVersusDeadToStringEvaluation.java:89)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:86)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+.............!SESSION 2013-07-20 13:54:26.207 -----------------------------------------------
+eclipse.buildId=unknown
+java.version=1.7.0_05
+java.vendor=Oracle Corporation
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_US
+Framework arguments:  -application edu.ubc.mirrors.holographs.tests.LiveVersusDeadToStringEvaluation 7777
+Command-line arguments:  -application edu.ubc.mirrors.holographs.tests.LiveVersusDeadToStringEvaluation -data /Users/robinsalkeld/Documents/workspace/../runtime-New_configuration(5) -dev file:/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/LiveToStringer/dev.properties -os macosx -ws cocoa -arch x86_64 -consoleLog 7777
+
+!ENTRY org.eclipse.osgi 4 0 2013-07-20 15:24:50.740
+!MESSAGE Application error
+!STACK 1
+java.lang.RuntimeException: java.lang.InternalError: Couldn't load bytecode for class $Proxy6.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@1575625154()
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:44)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.run(LiveVersusDeadToStringEvaluation.java:86)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.main(LiveVersusDeadToStringEvaluation.java:46)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation.start(LiveVersusDeadToStringEvaluation.java:179)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:344)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:179)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:601)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:622)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:577)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1410)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1386)
+Caused by: java.lang.InternalError: Couldn't load bytecode for class $Proxy6.class from loader: ClassLoaderHolograph[org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader]@1575625154()
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecode(VirtualMachineHolograph.java:489)
+	at edu.ubc.mirrors.holographs.VirtualMachineHolograph.getBytecodeClassMirror(VirtualMachineHolograph.java:434)
+	at edu.ubc.mirrors.holographs.ClassHolograph.getBytecodeMirror(ClassHolograph.java:292)
+	at edu.ubc.mirrors.holographs.ClassHolograph.isInterface(ClassHolograph.java:356)
+	at edu.ubc.mirrors.test.ToStringer.hasNonDefaultToString(ToStringer.java:194)
+	at edu.ubc.mirrors.test.ToStringer.collectObjects(ToStringer.java:82)
+	at edu.ubc.mirrors.test.ToStringer.toStringAllTheObjects(ToStringer.java:121)
+	at edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation$2.call(LiveVersusDeadToStringEvaluation.java:89)
+	at edu.ubc.mirrors.Reflection.withThread(Reflection.java:41)
+	... 16 more
+An error has occurred. See the log file
+/Users/robinsalkeld/Documents/runtime-New_configuration(5)/.metadata/.log.

@@ -113,6 +113,17 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
 
     @Override
+    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        
+        ClassMirror[] unwrappedParamTypes = new ClassMirror[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            unwrappedParamTypes[i] = (ClassMirror)vm.unwrapMirror(paramTypes[i]);
+        }
+        return vm.wrapMethod(wrapped.getDeclaredMethod(name, unwrappedParamTypes));
+    }
+    
+    @Override
     public MethodMirror getMethod(String name, ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
         

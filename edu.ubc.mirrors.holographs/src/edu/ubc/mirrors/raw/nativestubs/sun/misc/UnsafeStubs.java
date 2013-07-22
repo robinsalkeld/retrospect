@@ -13,6 +13,7 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
+import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
@@ -207,6 +208,8 @@ public class UnsafeStubs extends NativeStubs {
                     String name = fieldType.getClassName();
                     if (name.equals("int")) {
                         fieldOffset += 4;
+                    } else if (name.equals("long")) {
+                        fieldOffset += 4;
                     } else {
                         throw new InternalError("Unsupported type: " + name);
                     }
@@ -244,6 +247,34 @@ public class UnsafeStubs extends NativeStubs {
             ObjectMirror current = instance.get(field);
             if (current == oldValue) {
                 instance.set(field, newValue);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            throw new InternalError();
+        }
+    }
+    
+    public boolean compareAndSwapLong(InstanceMirror unsafe, ObjectMirror mirror, long offset, long oldValue, long newValue) throws IllegalAccessException, NoSuchFieldException {
+        if (mirror instanceof LongArrayMirror) {
+            LongArrayMirror array = (LongArrayMirror)mirror;
+            // TODO-RS: Need to be much more careful about this!
+            int index = (int)((offset - arrayBaseOffset(unsafe, array.getClassMirror())) / 8);
+            long current = array.getLong(index);
+            if (current == oldValue) {
+                array.setLong(index, newValue);
+                return true;
+            } else {
+                return false;
+            }
+        } else if (mirror instanceof InstanceMirror) {
+            InstanceMirror instance = (InstanceMirror)mirror;
+            FieldMirror field = fieldForOffset(instance, offset);
+
+            long current = instance.getLong(field);
+            if (current == oldValue) {
+                instance.setLong(field, newValue);
                 return true;
             } else {
                 return false;

@@ -242,6 +242,13 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     }
 
     @Override
+    public MethodMirror getDeclaredMethod(String name,
+            ClassMirror... paramTypes) throws SecurityException,
+            NoSuchMethodException {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public MethodMirror getMethod(String name, ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
         throw new UnsupportedOperationException();

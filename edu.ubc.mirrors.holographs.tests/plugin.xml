@@ -50,7 +50,7 @@
       </application>
    </extension>
    <extension
-         id="edu.ubc.mirrors.test.LiveVersusDeadToStringEvaluation"
+         id="LiveVersusDeadToStringEvaluation"
          point="org.eclipse.core.runtime.applications">
       <application
             cardinality="singleton-global"
@@ -70,6 +70,19 @@
             visible="true">
          <run
                class="edu.ubc.mirrors.test.CDTBugTest">
+         </run>
+      </application>
+   </extension>
+   <extension
+         id="edu.ubc.mirrors.holographs.tests.SnapshotAndPrepare"
+         name="edu.ubc.mirrors.holographs.tests.SnapshotAndPrepare"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="edu.ubc.mirrors.test.SnapshotAndPrepare">
          </run>
       </application>
    </extension>

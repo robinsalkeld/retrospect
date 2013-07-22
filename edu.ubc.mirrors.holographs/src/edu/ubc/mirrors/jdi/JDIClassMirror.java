@@ -178,8 +178,20 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
+    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+        List<ClassMirror> requestedTypes = Arrays.asList(paramTypes);
+        for (Method method : refType.methodsByName(name)) {
+            MethodMirror mirror = new JDIMethodMirror(vm, method);
+            if (mirror.getParameterTypes().equals(requestedTypes)) {
+                return mirror;
+            }
+        }
+        throw new NoSuchMethodException(name);
+    }
+    
+    @Override
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-	List<ClassMirror> requestedTypes = Arrays.asList(paramTypes);
+        List<ClassMirror> requestedTypes = Arrays.asList(paramTypes);
 	for (Method method : refType.methodsByName(name)) {
 	    MethodMirror mirror = new JDIMethodMirror(vm, method);
 	    if (mirror.getParameterTypes().equals(requestedTypes)) {
@@ -278,4 +290,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
         return new JDIStaticFieldValuesMirror(vm, mirror);
     }
 
+    public ReferenceType getReferenceType() {
+        return refType;
+    }
 }

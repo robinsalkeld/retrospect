@@ -79,7 +79,7 @@ public class DebuggingTest {
         	
         	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
                 InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("out"));
-        	MethodMirror method = traceClass.getMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
+        	MethodMirror method = traceClass.getDeclaredMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
                 method.invoke(thread, null, stream);
         	
         	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version1.TraceMyClasses", true, loader);

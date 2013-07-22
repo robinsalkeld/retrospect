@@ -985,6 +985,18 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     }
     
     @Override
+    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramClasses) 
+            throws SecurityException, NoSuchMethodException {
+        resolve();
+        for (MethodMirror m : methods) {
+            if (methodMatches(m, name, paramClasses)) {
+                return m;
+            }
+        }
+        throw new NoSuchMethodException(name);
+    }
+    
+    @Override
     public MethodMirror getMethod(String name, ClassMirror... paramClasses)
             throws SecurityException, NoSuchMethodException {
         resolve();

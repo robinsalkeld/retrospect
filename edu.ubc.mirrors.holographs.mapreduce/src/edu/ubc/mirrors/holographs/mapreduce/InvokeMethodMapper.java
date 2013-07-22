@@ -76,7 +76,7 @@ public class InvokeMethodMapper extends MapReduceBase
                 
                 ClassMirror analyzerClass = Reflection.injectBytecode(holographVM, thread, nameClass.getLoader(), 
                         analyzerClassName, analyzerClassBytecode);
-                method = analyzerClass.getMethod("locationKey", nameClass);
+                method = analyzerClass.getDeclaredMethod("locationKey", nameClass);
                 return null;
             }
         });

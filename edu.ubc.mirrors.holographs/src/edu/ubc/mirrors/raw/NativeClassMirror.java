@@ -210,12 +210,22 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
         
     @Override
-    public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
         Class<?>[] nativeParamTypes = new Class<?>[paramTypes.length];
         for (int i = 0; i < paramTypes.length; i++) {
             nativeParamTypes[i] = getNativeClass(paramTypes[i]);
         }
         Method nativeMethod = klass.getDeclaredMethod(name, nativeParamTypes);
+        return new NativeMethodMirror(nativeMethod);
+    }
+
+    @Override
+    public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+        Class<?>[] nativeParamTypes = new Class<?>[paramTypes.length];
+        for (int i = 0; i < paramTypes.length; i++) {
+            nativeParamTypes[i] = getNativeClass(paramTypes[i]);
+        }
+        Method nativeMethod = klass.getMethod(name, nativeParamTypes);
         return new NativeMethodMirror(nativeMethod);
     }
 

@@ -214,8 +214,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	        String[] paths = bootClassPath.split("" + pathSeparator);
 	        List<URL> urls = new ArrayList<URL>();
 	        for (int i = 0; i < paths.length; i++) {
-	            File mappedFile = getMappedFile(new File(paths[i]), true);
-	            urls.add(mappedFile.toURI().toURL());
+	            File mappedFile = getMappedFile(new File(paths[i]), false);
+	            if (mappedFile != null) {
+	                urls.add(mappedFile.toURI().toURL());
+	            }
 	        }
 	        return urls;
 	    } else {

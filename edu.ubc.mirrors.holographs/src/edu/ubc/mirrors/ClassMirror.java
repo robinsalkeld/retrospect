@@ -31,6 +31,7 @@ public interface ClassMirror extends InstanceMirror {
     
     public List<ObjectMirror> getInstances();
 
+    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
 
     public ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;

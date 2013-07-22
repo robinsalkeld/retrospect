@@ -148,6 +148,13 @@ public class ArrayClassMirror extends BlankClassMirror {
     }
 
     @Override
+    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        
+        throw new NoSuchMethodException(name);
+    }
+
+    @Override
     public MethodMirror getMethod(String name, ClassMirror... paramTypes)
             throws SecurityException, NoSuchMethodException {
         

@@ -112,13 +112,20 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
     }
 
     @Override
+    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes)
+            throws SecurityException, NoSuchMethodException {
+        
+        throw new NoSuchMethodException(name);
+    }
+
+    @Override
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-        throw new UnsupportedOperationException();
+        throw new NoSuchMethodException(name);
     }
 
     @Override
     public ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-        throw new UnsupportedOperationException();
+        throw new NoSuchMethodException();
     }
 
     @Override

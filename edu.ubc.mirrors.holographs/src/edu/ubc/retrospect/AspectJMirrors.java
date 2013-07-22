@@ -181,7 +181,7 @@ public class AspectJMirrors {
 		String pointcut;
 		String parameterNamesString;
 		try {
-		    pointcut = Reflection.getRealStringForMirror((InstanceMirror)annotation.getClassMirror().getMethod("value").invoke(thread, annotation));
+		    pointcut = Reflection.getRealStringForMirror((InstanceMirror)annotation.getClassMirror().getDeclaredMethod("value").invoke(thread, annotation));
 		    parameterNamesString = Reflection.getRealStringForMirror((InstanceMirror)annotation.getClassMirror().getMethod("argNames").invoke(thread, annotation));
 		} catch (IllegalAccessException e) {
 		    throw new RuntimeException(e);

@@ -48,7 +48,7 @@ public class ClassHolograph extends WrappingClassMirror {
     
     private ClassMirror bytecodeMirror;
     
-    public static class MethodPattern {
+    public static class MethodPattern implements Comparable<MethodPattern> {
         public final String className;
         private final Pattern classNamePattern;
         public final String methodName;
@@ -78,6 +78,15 @@ public class ClassHolograph extends WrappingClassMirror {
         
         public String getCategory() {
             return category;
+        }
+        
+        @Override
+        public int compareTo(MethodPattern o) {
+            int result = category.compareTo(o.category);
+            if (result != 0) return result;
+            result = classNamePattern.toString().compareTo(o.classNamePattern.toString());
+            if (result != 0) return result;
+            return methodNamePattern.toString().compareTo(o.methodNamePattern.toString());
         }
     }
     
@@ -158,6 +167,14 @@ public class ClassHolograph extends WrappingClassMirror {
         return null;
     }
         
+    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+        if (hasBytecode()) {
+            return super.getMethod(name, paramTypes);
+        } else {
+            return new MethodHolograph(this, getBytecodeMirror().getDeclaredMethod(name, paramTypes));
+        }
+    }
+    
     public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
         if (hasBytecode()) {
             return super.getMethod(name, paramTypes);

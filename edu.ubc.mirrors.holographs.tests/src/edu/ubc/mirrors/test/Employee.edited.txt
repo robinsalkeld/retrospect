@@ -1,0 +1,146 @@
+// class version 50.0 (50)
+// access flags 0x21
+public class hologram/Employee extends ObjectHologram  {
+
+  // compiled from: Employee.java
+
+  // access flags 0x1
+  public <init>(Lhologram/String;ILInstanceMirror;)V
+   L0
+    LINENUMBER 11 L0
+    ALOAD 0
+    ALOAD 3
+    INVOKESPECIAL ObjectHologram.<init> (LInstanceMirror;)V
+   L1
+    LINENUMBER 12 L1
+    ALOAD 0
+    ALOAD 1
+    GETSTATIC hologram/Employee.classMirror : LClassMirror;
+    LDC "name"
+    INVOKESTATIC InstanceHologram.setField (LHologram;LHologram;LClassMirror;LString;)V
+   L2
+    LINENUMBER 13 L2
+    ALOAD 0
+    ILOAD 2
+    GETSTATIC hologram/Employee.classMirror : LClassMirror;
+    LDC "age"
+    INVOKESTATIC InstanceHologram.setIntField (LHologram;ILClassMirror;LString;)V
+   L3
+    LINENUMBER 14 L3
+    RETURN
+   L4
+    LOCALVARIABLE this Lhologram/Employee; L0 L4 0
+    LOCALVARIABLE name Lhologram/String; L0 L4 1
+    LOCALVARIABLE age I L0 L4 2
+    MAXSTACK = 22
+    MAXLOCALS = 25
+
+// access flags 0x9
+// signature ([Lhologram/Employee;)Lhologram/Set<Lhologram/Employee;>;
+// declaration: hologram.Set<hologram.Employee> employeesOver40(hologram.Employee[])
+public static employeesOver40(Lhologramarray1/Employee;)Lhologram/Set;
+ L0
+  LINENUMBER 17 L0
+  NEW hologram/HashSet
+  DUP
+  GETSTATIC hologram/HashSet.classMirror : LClassMirror;
+  INVOKEINTERFACE ClassMirror.newRawInstance ()LInstanceMirror;
+  INVOKESPECIAL hologram/HashSet.<init> (LInstanceMirror;)V
+  ASTORE 1
+ L1
+  LINENUMBER 18 L1
+  ALOAD 0
+  DUP
+  ASTORE 2
+  INVOKEINTERFACE ArrayMirror.length ()I
+  ISTORE 3
+  ICONST_0
+  ISTORE 4
+  GOTO L2
+ L3
+ FRAME FULL [hologramarray1/Employee hologram/HashSet hologramarray1/Employee I I] []
+  ALOAD 2
+  ILOAD 4
+  INVOKESTATIC ObjectArrayHologram.getHologram (LObjectArrayMirror;I)LHologram;
+  CHECKCAST hologram/Employee
+  ASTORE 5
+ L4
+  LINENUMBER 19 L4
+  ALOAD 5
+  GETSTATIC hologram/Employee.classMirror : LClassMirror;
+  LDC "age"
+  INVOKESTATIC InstanceHologram.getIntField (LHologram;LClassMirror;LString;)I
+  BIPUSH 40
+  IF_ICMPLE L5
+ L6
+  LINENUMBER 20 L6
+  ALOAD 1
+  ALOAD 5
+  INVOKEINTERFACE hologram/Set.add (LHologram;)Z
+  POP
+ L5
+  LINENUMBER 18 L5
+ FRAME FULL [hologramarray1/Employee hologram/HashSet hologramarray1/Employee I I hologram/Employee] []
+  IINC 4 1
+ L2
+ FRAME FULL [hologramarray1/Employee hologram/HashSet hologramarray1/Employee I I] []
+  ILOAD 4
+  ILOAD 3
+  IF_ICMPLT L3
+ L7
+  LINENUMBER 23 L7
+  ALOAD 1
+  ARETURN
+ L8
+  LOCALVARIABLE input Lhologramarray1/Employee; L0 L8 0
+  LOCALVARIABLE result Lhologram/Set; L1 L8 1
+  // signature Lhologram/Set<Lhologram/Employee;>;
+  // declaration: hologram.Set<hologram.Employee>
+  LOCALVARIABLE e Lhologram/Employee; L4 L5 5
+  MAXSTACK = 22
+  MAXLOCALS = 26
+
+  // access flags 0x9
+  public static main(Lhologramarray1/String;)V
+   L0
+    LINENUMBER 28 L0
+   FRAME FULL [hologramarray1/String] []
+    INVOKESTATIC hologram/Employee.foo ()V
+   L1
+    LINENUMBER 27 L1
+    GOTO L0
+   L2
+    LOCALVARIABLE args Lhologramarray1/String; L0 L2 0
+    MAXSTACK = 20
+    MAXLOCALS = 21
+
+  // access flags 0x9
+  public static foo()V
+   L0
+    LINENUMBER 34 L0
+    RETURN
+    MAXSTACK = 20
+    MAXLOCALS = 20
+
+  // access flags 0x19
+  public final static LClassMirror; classMirror
+
+  // access flags 0x1
+  public <init>(LObject;)V
+    ALOAD 0
+    ALOAD 1
+    INVOKESPECIAL ObjectHologram.<init> (LObject;)V
+    RETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2
+
+  // access flags 0x9
+  public static <clinit>()V
+    LDC Lhologram/Employee;.class
+    INVOKESTATIC ObjectHologram.getClassMirrorForHolographicClass (LClass;)LClassMirror;
+    DUP
+    PUTSTATIC hologram/Employee.classMirror : LClassMirror;
+    RETURN
+    MAXSTACK = 2
+    MAXLOCALS = 2
+}

@@ -27,7 +27,7 @@ public class MethodHolograph implements MethodMirror {
     private MethodMirror getBytecodeMethod() {
 	if (bytecodeMethod == null) {
 	    try {
-		bytecodeMethod = klass.getBytecodeMirror().getMethod(wrapped.getName(), wrapped.getParameterTypes().toArray(new ClassMirror[0]));
+		bytecodeMethod = klass.getBytecodeMirror().getDeclaredMethod(wrapped.getName(), wrapped.getParameterTypes().toArray(new ClassMirror[0]));
 	    } catch (NoSuchMethodException e) {
 		throw new RuntimeException(e);
 	    }

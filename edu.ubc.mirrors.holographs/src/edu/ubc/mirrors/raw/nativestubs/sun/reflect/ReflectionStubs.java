@@ -43,11 +43,15 @@ public class ReflectionStubs extends NativeStubs {
             return null;
         }
         FrameMirror frame = stack.get(frameIndex);
-        return frame.method().getDeclaringClass();
+        return frame.declaringClass();
     }
     
     public ClassMirror getCallerClass(int depth) {
         return getCallerClassMirror(depth);
+    }
+    
+    public ClassMirror getCallerClass() {
+        return getCallerClassMirror(1);
     }
     
     public int getClassAccessFlags(ClassMirror klass) {

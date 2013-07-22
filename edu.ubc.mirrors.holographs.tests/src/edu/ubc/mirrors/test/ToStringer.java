@@ -25,6 +25,8 @@ import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.jdi.JDIClassMirror;
+import edu.ubc.mirrors.jdi.JDIObjectMirror;
 
 public class ToStringer implements IApplication {
 
@@ -72,15 +74,18 @@ public class ToStringer implements IApplication {
         return sample;
     }
     
-    private static void countClasses(VirtualMachineMirror vm, ThreadMirror thread) {
+    private static List<ObjectMirror> collectObjects(VirtualMachineMirror vm, ThreadMirror thread) {
         int total = 0;
         int classCount = 0;
+        List<ObjectMirror> objects = new ArrayList<ObjectMirror>();
         for (ClassMirror klass : vm.findAllClasses()) {
             if (!hasNonDefaultToString(klass, thread)) {
                 continue;
             }
             classCount++;
-            total += klass.getInstances().size();
+            List<ObjectMirror> instances = klass.getInstances();
+            objects.addAll(instances);
+            total += instances.size();
             System.out.print(".");
             if (classCount % 40 == 0) {
                 System.out.println(classCount);
@@ -89,6 +94,7 @@ public class ToStringer implements IApplication {
         System.out.println();
         System.out.println("Total classes: " + classCount);
         System.out.println("Total objects: " + total);
+        return objects;
     }
     
     // toString() ALL the objects!!!
@@ -99,92 +105,115 @@ public class ToStringer implements IApplication {
 //        if (true) return;
         
         int count = 0;
-        int charCount = 0;
-        List<String> timesOver500ms = new ArrayList<String>();
+        int collected = 0;
+        long minTime = 0;
         long maxTime = 0;
-        float maxTimePerChar = 0;
+        String maxString = null;
+        
+        // Using Welford's algorithm for online variance calculation
+        // http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+        float mean = 0;
+        float delta = 0;
+        float M2 = 0;
+        
         int errors = 0;
         
-        countClasses(vm, thread);
-        
-        Stopwatch sw = new Stopwatch();
-        sw.start();
+        List<ObjectMirror> objects = collectObjects(vm, thread);
         try {
-            for (ClassMirror klass : vm.findAllClasses()) {
-                if (!hasNonDefaultToString(klass, thread)) {
-                    continue;
-                }
-                
-                for (ObjectMirror object : klass.getInstances()) {
-                    try {
-                        Stopwatch perObjectSW = new Stopwatch();
-                        perObjectSW.start();
-                        String s = Reflection.toString(object, thread);
-                        long time = perObjectSW.stop();
-                        
-                        if (time > 500) {
-                            timesOver500ms.add("" + object + "(" + time + "): " + s);
-                        }
-                        maxTime = Math.max(maxTime, time);
-                        
-                        charCount += s.length();
-                        float timePerChar = ((float)time) / charCount;
-                        maxTimePerChar = Math.max(maxTimePerChar, timePerChar);
-                        
-                        count++;
-                        if (count % 25 == 0) {
-                            System.out.print(".");
-                        }
-                        if (count % 1000 == 0) {
-                            System.out.println(count);
-                        }
-                    } catch (Throwable e) {
-                        errors++;
-                        System.out.println("Error on object " + object);
-                        e.printStackTrace();
+            for (ObjectMirror object : objects) {
+                try {
+                    if (object instanceof JDIObjectMirror && ((JDIObjectMirror)object).getObjectReference().isCollected()) {
+                        collected++;
+                        continue;
                     }
+                    Stopwatch perObjectSW = new Stopwatch();
+                    perObjectSW.start();
+                    String s = Reflection.toString(object, thread);
+                    long time = perObjectSW.stop();
+                    if (time < 0) {
+                        System.out.println("WTF?");
+                    }
+                    
+                    count++;
+                    delta = (float)time - mean;
+                    mean += delta / count;
+                    M2 += delta * (time - mean);
+                            
+                    minTime = Math.min(minTime, time);
+                    maxTime = Math.max(maxTime, time);
+                    if (time >= maxTime) {
+                        maxString = s;
+                    }
+                    
+                    if (count % 25 == 0) {
+                        System.out.print(".");
+                    }
+                    if (count % 1000 == 0) {
+                        System.out.println(count);
+                    }
+                } catch (Throwable e) {
+                    errors++;
+                    try {
+                        System.out.println("Error on object " + object);
+                    } catch (Throwable e2) {
+                        //
+                    }
+                    e.printStackTrace();
                 }
             }
         } finally {
-            long time = sw.stop();
+            float variance = M2 / count;
+            double std = Math.sqrt(variance);
             System.out.println();
             System.out.println("Num objects toString-ed: " + count);
+            System.out.println("GC'd objects skipped: " + collected);
             System.out.println("Errors: " + errors);
             if (count != 0) {
-                System.out.println("Total time: " + time);
-                System.out.println("Average time per object: " + ((float)time) / count);
-                System.out.println("Max time per object: " + maxTime);
-                System.out.println("Objects taking more than 1/2 second: "+timesOver500ms.size());
+                System.out.println("Total: " + (mean * count) + "ms");
+                System.out.println("Min: " + minTime + "ms");
+                System.out.println("Mean: " + mean + "ms");
+                System.out.println("Max: " + maxTime + "ms");
+                System.out.println("Std: " + std + "ms");
+//                System.out.println("Max output: " + maxString);
 //                for (String s : timesOver500ms) {
 //                    System.out.println(s);
 //                }
-                System.out.println("Average string length: " + ((float)charCount) / count);
-                System.out.println("Average time per character: " + ((float)time) / charCount);
-                System.out.println("Max time per character: " + maxTimePerChar);
             }
 //            HologramClassLoader.printStats();
         }
     }
     
     private static boolean hasNonDefaultToString(final ClassMirror klass, ThreadMirror thread) {
-        if (klass.isArray()) {
+        try {
+            if (klass.isArray()) {
+                return false;
+            }
+            
+            // Skip String - uninteresting
+            if (klass.getClassName().equals(String.class.getName())) {
+                return false;
+            }
+            // TODO-RS: Mild hack - if the class isn't prepared we can't look at its methods. But it
+            // also can't have any instances so it's safe to skip.
+            if (klass instanceof JDIClassMirror && !((JDIClassMirror)klass).getReferenceType().isInitialized()) {
+                return false;
+            }
+            
+            if (klass.isInterface()) {
+                return false;
+            }
+            return !klass.getMethod("toString").getDeclaringClass().getClassName().equals(Object.class.getName());
+        } catch (NoSuchMethodException e) {
+            // Should never happen
+            throw new RuntimeException(e);
+        } catch (UnsupportedOperationException e) {
+            // TODO-RS: Mild hack - JDIClassMirror might throw this because one of the parameter types isn't loaded.
+            // Another reason I should fix the API to match JDI more closely.
+            return false;
+        } catch (Throwable e) {
+            // Last ditch catch all
             return false;
         }
-        return true;
-//        ClassMirror thisClass = klass;
-//        while (thisClass != null) {
-//            try {
-//                thisClass.getMethod("toString");
-//                return true;
-//            } catch (NoSuchMethodException e) {
-//                thisClass = thisClass.getSuperClassMirror();
-//            } catch (Throwable t) {
-//                // This may trigger errors in holographic execution
-//                t.printStackTrace();
-//                return false;
-//            }
-//        }
-//        return false;
     }
     
     public Object start(IApplicationContext context) throws Exception {

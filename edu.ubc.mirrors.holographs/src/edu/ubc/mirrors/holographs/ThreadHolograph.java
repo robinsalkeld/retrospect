@@ -1,10 +1,16 @@
 package edu.ubc.mirrors.holographs;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapFrameMirror;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
@@ -78,11 +84,33 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
             return originalStack;
         }
         
-        // TODO-RS: Need to append native frames, removing non-HologramClassLoader frames.
-        // See also ReflectionStubs#getCallerClass
-//        StackTraceElement[] holographicTrace = runningThread.getStackTrace();
+        List<FrameMirror> result = new ArrayList<FrameMirror>(originalStack);
+        // Need to deal with API mismatches here - we don't have the Classes on the stack for
+        // arbitrary threads.
+//        for (StackTraceElement ste : runningThread.getStackTrace()) {
+//            String className = ste.getClassName();
+//            if (className.startsWith("hologram")) {
+//                String originalClassName = HologramClassGenerator.getOriginalBinaryClassName(className);
+//                
+//                // Unfortunately here we only have class names rather than actual classes
+//                // so if any are ambiguous we're hooped.
+//                List<ClassMirror> matchingClasses = vm.findAllClasses(originalClassName, false);
+//                if (matchingClasses.isEmpty()) {
+//                    // This indicates an error in the underlying VM
+//                    throw new InternalError();
+//                } else if (matchingClasses.size() > 1) {
+//                    // This is just unfortunate but could happen
+//                    throw new InternalError("Ambiguous class name on stack: " + className);
+//                }
+//                ClassMirror klass = matchingClasses.get(0);
+//                MethodMirror method = klass.getDeclaredMethod(ste.getMethodName(), paramTypes)
+//                
+//                FrameMirror holographicFrame = new FieldMapFrameMirror(method, ste.getFileName(), ste.getLineNumber());
+//                result.add(holographicFrame);
+//            }
+//        }
         
-        return originalStack;
+        return result;
     }
 
     @Override

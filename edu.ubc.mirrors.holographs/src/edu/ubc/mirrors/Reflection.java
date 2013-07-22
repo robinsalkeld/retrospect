@@ -155,9 +155,15 @@ public class Reflection {
             char[] value = new char[valueMirror.length()];
             NativeCharArrayMirror nativeValueMirror = new NativeCharArrayMirror(value);
             arraycopy(valueMirror, 0, nativeValueMirror, 0, value.length);
-            int offset = mirror.getInt(stringClass.getDeclaredField("offset"));
-            int count = mirror.getInt(stringClass.getDeclaredField("count"));
-            return new String(value, offset, count);
+            FieldMirror offsetField = stringClass.getDeclaredField("offset");
+            if (offsetField == null) {
+                // Post Java 7 u5 - no more sharing of string storage
+                return new String(value);
+            } else {
+                int offset = mirror.getInt(offsetField);
+                int count = mirror.getInt(stringClass.getDeclaredField("count"));
+                return new String(value, offset, count);
+            }
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         }
@@ -482,7 +488,7 @@ public class Reflection {
         }
 
         try {
-            return declaringClass.getMethod(name, parameterTypes);
+            return declaringClass.getDeclaredMethod(name, parameterTypes);
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         }
