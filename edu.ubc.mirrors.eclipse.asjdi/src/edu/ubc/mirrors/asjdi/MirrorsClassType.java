@@ -1,6 +1,5 @@
 package edu.ubc.mirrors.asjdi;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.sun.jdi.ClassNotLoadedException;
@@ -16,16 +15,9 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.asjdi.ConstructorMirrorMethod;
-import edu.ubc.mirrors.asjdi.MethodMirrorMethod;
-import edu.ubc.mirrors.asjdi.MirrorsReferenceType;
-import edu.ubc.mirrors.asjdi.MirrorsThreadReference;
-import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 
 public class MirrorsClassType extends MirrorsReferenceType implements ClassType {
 
@@ -78,7 +70,7 @@ public class MirrorsClassType extends MirrorsReferenceType implements ClassType 
 
     @Override
     public Value invokeMethod(ThreadReference thread, Method method,
-            List args, int options) throws InvalidTypeException,
+            List<? extends Value> args, int options) throws InvalidTypeException,
             ClassNotLoadedException, IncompatibleThreadStateException,
             InvocationException {
         
@@ -87,7 +79,7 @@ public class MirrorsClassType extends MirrorsReferenceType implements ClassType 
 
     @Override
     public ObjectReference newInstance(ThreadReference thread, Method method,
-            List args, int options) throws InvalidTypeException,
+            List<? extends Value> args, int options) throws InvalidTypeException,
             ClassNotLoadedException, IncompatibleThreadStateException,
             InvocationException {
         

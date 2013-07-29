@@ -4,7 +4,9 @@ package edu.ubc.mirrors.holographs.jdi;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
+
 import com.ibm.icu.text.MessageFormat;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -177,7 +179,7 @@ public class SocketAttachConnector implements IVMConnector {
 	/**
 	 * @see IVMConnector#getArgumentOrder()
 	 */
-	public List<?> getArgumentOrder() {
+	public List<String> getArgumentOrder() {
 		List<String> list = new ArrayList<String>(2);
 		list.add("hostname"); //$NON-NLS-1$
 		list.add("port"); //$NON-NLS-1$

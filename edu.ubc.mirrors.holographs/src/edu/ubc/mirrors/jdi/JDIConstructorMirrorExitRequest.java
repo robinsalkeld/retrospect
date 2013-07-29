@@ -5,8 +5,6 @@ import com.sun.jdi.request.MethodExitRequest;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MethodMirrorExitRequest;
 
 public class JDIConstructorMirrorExitRequest extends JDIEventRequest implements ConstructorMirrorExitRequest {
 

@@ -45,8 +45,8 @@ public class MirrorsField extends MirrorsMirrorWithModifiers implements Field {
     }
 
     @Override
-    public int compareTo(Object o) {
-        return name().compareTo(((Field)o).name());
+    public int compareTo(Field o) {
+        return name().compareTo(o.name());
     }
 
     @Override

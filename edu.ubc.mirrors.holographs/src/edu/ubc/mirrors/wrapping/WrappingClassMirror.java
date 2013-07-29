@@ -37,6 +37,11 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
 
     @Override
+    public String getSignature() {
+        return wrapped.getSignature();
+    }
+    
+    @Override
     public ClassMirrorLoader getLoader() {
         return (ClassMirrorLoader)vm.getWrappedMirror(wrapped.getLoader());
     }

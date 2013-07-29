@@ -34,6 +34,22 @@ import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 
 public class Reflection {
 
+    
+    /*
+     * "Binary class name":
+     * java.lang.Object
+     * long[]
+     * java.lang.Object[]
+     * 
+     * "Internal class name" (non-array classes only):
+     * java/lang/Object
+     * 
+     * "Descriptor":
+     * Ljava/lang/Object;
+     * [L
+     * [java/lang/Object;
+     */
+    
     public static <T> T withThread(ThreadMirror t, Callable<T> c) {
         ThreadHolograph threadHolograph = (ThreadHolograph)t;
         threadHolograph.enterHologramExecution();
@@ -82,7 +98,7 @@ public class Reflection {
                 ClassMirrorLoader newLoader = (ClassMirrorLoader)HolographInternalUtils.newInstance(constructor, thread, parent);
                 
                 ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
-                ClassMirror byteArrayClass = HolographInternalUtils.loadClassMirrorInternal(vm, null, "[B");
+                ClassMirror byteArrayClass = HolographInternalUtils.loadClassMirrorInternal(vm, null, "byte[]");
                 ClassMirror intClass = vm.getPrimitiveClass("int");
                 MethodMirror defineClassMethod = HolographInternalUtils.getMethod(classLoaderClass, "defineClass", stringClass, byteArrayClass, intClass, intClass);
                 defineClassMethod.setAccessible(true);
@@ -240,6 +256,10 @@ public class Reflection {
         }
     }
     
+    /**
+     * @param name A binary class name
+     * @return
+     */
     public static Type typeForClassName(String name) {
         if (name.equals("int")) {
             return Type.INT_TYPE;
@@ -273,8 +293,18 @@ public class Reflection {
         }
     }
     
+    /**
+     * @param vm
+     * @param thread
+     * @param name Binary name of the class to load
+     * @param resolve
+     * @param loader
+     * @return
+     * @throws ClassNotFoundException
+     * @throws MirrorInvocationTargetException
+     */
     public static ClassMirror classMirrorForName(VirtualMachineMirror vm, ThreadMirror thread, String name, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException, MirrorInvocationTargetException {
-        return classMirrorForType(vm, thread, Type.getObjectType(name), resolve, loader);
+        return classMirrorForType(vm, thread, Reflection.typeForClassName(name), resolve, loader);
     }
     
     public static boolean isAssignableFrom(ClassMirror thiz, ClassMirror other) {
@@ -545,22 +575,22 @@ public class Reflection {
     }
     
     public static Object getArrayElement(ObjectMirror am, int index) {
-        String className = am.getClassMirror().getClassName();
-        if (className.equals("[Z")) {
+        String signature = am.getClassMirror().getSignature();
+        if (signature.equals("[Z")) {
             return ((BooleanArrayMirror)am).getBoolean(index);
-        } else if (className.equals("[B")) {
+        } else if (signature.equals("[B")) {
             return ((ByteArrayMirror)am).getByte(index);
-        } else if (className.equals("[C")) {
+        } else if (signature.equals("[C")) {
             return ((CharArrayMirror)am).getChar(index);
-        } else if (className.equals("[S")) {
+        } else if (signature.equals("[S")) {
             return ((ShortArrayMirror)am).getShort(index);
-        } else if (className.equals("[I")) {
+        } else if (signature.equals("[I")) {
             return ((IntArrayMirror)am).getInt(index);
-        } else if (className.equals("[J")) {
+        } else if (signature.equals("[J")) {
             return ((LongArrayMirror)am).getLong(index);
-        } else if (className.equals("[F")) {
+        } else if (signature.equals("[F")) {
             return ((FloatArrayMirror)am).getFloat(index);
-        } else if (className.equals("[D")) {
+        } else if (signature.equals("[D")) {
             return ((DoubleArrayMirror)am).getDouble(index);
         } else {
             return ((ObjectArrayMirror)am).get(index);
@@ -568,22 +598,22 @@ public class Reflection {
     }
     
     public static void setArrayElement(ObjectMirror am, int index, Object o) {
-        String className = am.getClassMirror().getClassName();
-        if (className.equals("[Z")) {
+        String signature = am.getClassMirror().getSignature();
+        if (signature.equals("[Z")) {
             ((BooleanArrayMirror)am).setBoolean(index, (Boolean)o);
-        } else if (className.equals("[B")) {
+        } else if (signature.equals("[B")) {
             ((ByteArrayMirror)am).setByte(index, (Byte)o);
-        } else if (className.equals("[C")) {
+        } else if (signature.equals("[C")) {
             ((CharArrayMirror)am).setChar(index, (Character)o);
-        } else if (className.equals("[S")) {
+        } else if (signature.equals("[S")) {
             ((ShortArrayMirror)am).setShort(index, (Short)o);
-        } else if (className.equals("[I")) {
+        } else if (signature.equals("[I")) {
             ((IntArrayMirror)am).setInt(index, (Integer)o);
-        } else if (className.equals("[J")) {
+        } else if (signature.equals("[J")) {
             ((LongArrayMirror)am).setLong(index, (Long)o);
-        } else if (className.equals("[F")) {
+        } else if (signature.equals("[F")) {
             ((FloatArrayMirror)am).setFloat(index, (Float)o);
-        } else if (className.equals("[D")) {
+        } else if (signature.equals("[D")) {
             ((DoubleArrayMirror)am).setDouble(index, (Double)o);
         } else {
             ((ObjectArrayMirror)am).set(index, (ObjectMirror)o);
@@ -655,7 +685,7 @@ public class Reflection {
         Type[] argTypes = new Type[parameterTypeNames.size()];
         int i = 0;
         for (String paramTypeName : parameterTypeNames) {
-            argTypes[i++] = Type.getObjectType(paramTypeName.replace('.', '/'));
+            argTypes[i++] = typeForClassName(paramTypeName);
         }
         return Type.getMethodType(Type.VOID_TYPE, argTypes);
     }

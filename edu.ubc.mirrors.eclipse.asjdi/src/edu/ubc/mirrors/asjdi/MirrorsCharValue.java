@@ -13,8 +13,8 @@ public class MirrorsCharValue extends MirrorsPrimitiveValue<Integer, IntegerValu
     }
 
     @Override
-    public int compareTo(Object o) {
-        return value.compareTo(((CharValue)o).intValue());
+    public int compareTo(CharValue o) {
+        return value.compareTo(o.intValue());
     }
     
     @Override

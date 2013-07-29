@@ -118,7 +118,7 @@ public abstract class MethodHandle {
         VirtualMachineMirror vm = klass.getVM();
         final ClassMirror targetClass;
         try {
-            targetClass = Reflection.classMirrorForName(vm, thread, getMethod().owner, false, klass.getLoader());
+            targetClass = Reflection.classMirrorForType(vm, thread, Type.getObjectType(getMethod().owner), false, klass.getLoader());
         } catch (ClassNotFoundException e) {
             throw new NoClassDefFoundError(e.getMessage());
         }

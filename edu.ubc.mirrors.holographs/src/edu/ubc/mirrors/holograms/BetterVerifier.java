@@ -73,13 +73,7 @@ public class BetterVerifier extends SimpleVerifier {
     
     protected ClassMirror getClassMirror(Type t) {
         try {
-            String className;
-            if (t.getSort() == Type.ARRAY) {
-                className = t.getInternalName().replace('/', '.');
-            } else {
-                className = t.getClassName();
-            }
-            return Reflection.classMirrorForName(vm, ThreadHolograph.currentThreadMirrorNoError(), className, false, loader);
+            return Reflection.classMirrorForType(vm, ThreadHolograph.currentThreadMirrorNoError(), t, false, loader);
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);

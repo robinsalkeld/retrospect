@@ -41,7 +41,7 @@ public class MirrorsStackFrame extends MirrorsMirror implements StackFrame {
     }
 
     @Override
-    public Map<LocalVariable, Value> getValues(List vars) {
+    public Map<LocalVariable, Value> getValues(List<? extends LocalVariable> vars) {
         if (vars.isEmpty()) {
             return Collections.emptyMap();
         } else {

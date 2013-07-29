@@ -15,12 +15,14 @@
 <booleanAttribute key="includeOptional" value="false"/>
 <stringAttribute key="location" value="${workspace_loc}/../runtime-New_configuration(5)"/>
 <stringAttribute key="org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE" value="${workspace_loc:/Retrospect/miragetest2.txt}"/>
+<booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog /Users/robinsalkeld/Documents/UBC/Code/snapshots/cdt_oom_bug/java_pid7720.hprof"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dedu.ubc.mirrors.mirages.debug=false -XX:-UseSplitVerifier&#10;-Xmx3g &#10;-XX:PermSize=64M -XX:MaxPermSize=256M"/>
 <stringAttribute key="pde.version" value="3.3"/>
 <stringAttribute key="product" value="org.eclipse.sdk.ide"/>
-<stringAttribute key="selected_target_plugins" value="com.ibm.icu@default:default,org.eclipse.core.contenttype@default:default,org.eclipse.core.jobs@default:default,org.eclipse.core.runtime.compatibility.registry@default:false,org.eclipse.core.runtime@default:true,org.eclipse.equinox.app@default:default,org.eclipse.equinox.common@2:true,org.eclipse.equinox.preferences@default:default,org.eclipse.equinox.registry@default:default,org.eclipse.equinox.weaving.hook@default:false,org.eclipse.mat.api@default:default,org.eclipse.mat.hprof@default:default,org.eclipse.mat.jruby.resolver@default:default,org.eclipse.mat.parser@default:default,org.eclipse.mat.report@default:default,org.eclipse.osgi@-1:true,org.hamcrest.core@default:default,org.junit*4.8.2.v4_8_2_v20110321-1705@default:default"/>
+<stringAttribute key="selected_target_plugins" value="com.ibm.icu@default:default,org.eclipse.core.contenttype@default:default,org.eclipse.core.jobs@default:default,org.eclipse.core.runtime.compatibility.registry@default:false,org.eclipse.core.runtime@default:true,org.eclipse.equinox.app@default:default,org.eclipse.equinox.common@2:true,org.eclipse.equinox.preferences@default:default,org.eclipse.equinox.registry@default:default,org.eclipse.mat.api@default:default,org.eclipse.mat.hprof@default:default,org.eclipse.mat.jruby.resolver@default:default,org.eclipse.mat.parser@default:default,org.eclipse.mat.report@default:default,org.eclipse.osgi@-1:true,org.hamcrest.core@default:default,org.junit@default:default"/>
 <stringAttribute key="selected_workspace_plugins" value="edu.ubc.mirrors.holographs.tests@default:default,edu.ubc.mirrors.holographs@default:default,org.aspectj.runtime@default:default"/>
 <booleanAttribute key="show_selected_only" value="true"/>
 <stringAttribute key="templateConfig" value="${target_home}/configuration/config.ini"/>

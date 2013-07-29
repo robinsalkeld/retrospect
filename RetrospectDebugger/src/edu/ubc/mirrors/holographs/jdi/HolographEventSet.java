@@ -25,8 +25,8 @@ public class HolographEventSet extends Holograph implements EventSet {
      * @return
      * @see java.util.Set#add(java.lang.Object)
      */
-    public boolean add(Object e) {
-        return wrapped.add(vm.wrapEvent((Event)e));
+    public boolean add(Event e) {
+        return wrapped.add(vm.wrapEvent(e));
     }
 
     /**
@@ -109,7 +109,7 @@ public class HolographEventSet extends Holograph implements EventSet {
          * @return
          * @see java.util.Iterator#next()
          */
-        public Object next() {
+        public Event next() {
             return nextEvent();
         }
 

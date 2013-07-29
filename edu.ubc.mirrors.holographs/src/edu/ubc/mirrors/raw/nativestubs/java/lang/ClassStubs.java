@@ -5,6 +5,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.objectweb.asm.Type;
+
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -61,8 +63,10 @@ public class ClassStubs extends NativeStubs {
     }
     
     public ClassMirror forName0(InstanceMirror name, boolean resolve, ClassMirrorLoader loader) throws ClassNotFoundException, MirrorInvocationTargetException {
-        String realName = Reflection.getRealStringForMirror(name); 
-        return Reflection.classMirrorForName(getVM(), ThreadHolograph.currentThreadMirror(), realName, resolve, loader);
+        String realName = Reflection.getRealStringForMirror(name);
+        // This method expects strings like "[Lfoo.Bar;" for array classes
+        Type type = Type.getObjectType(realName.replace('.', '/'));
+        return Reflection.classMirrorForType(getVM(), ThreadHolograph.currentThreadMirror(), type, resolve, loader);
     }
     
     public ObjectArrayMirror getDeclaredConstructors0(ClassMirror classMirror, boolean publicOnly) {

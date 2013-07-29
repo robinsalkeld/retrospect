@@ -65,7 +65,7 @@ public class MirrorsObjectReference extends MirrorsMirror implements ObjectRefer
     }
 
     @Override
-    public Map<Field, Value> getValues(List fields) {
+    public Map<Field, Value> getValues(List<? extends Field> fields) {
         Map<Field, Value> result = new HashMap<Field, Value>(fields.size());
         for (Object field : fields) {
             result.put((Field)field, getValue((Field)field));
@@ -75,7 +75,7 @@ public class MirrorsObjectReference extends MirrorsMirror implements ObjectRefer
 
     @Override
     public Value invokeMethod(ThreadReference thread, Method method,
-            List args, int options) throws InvalidTypeException,
+            List<? extends Value> args, int options) throws InvalidTypeException,
             ClassNotLoadedException, IncompatibleThreadStateException,
             InvocationException {
         

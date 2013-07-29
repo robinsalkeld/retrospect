@@ -580,7 +580,7 @@ public class ClassHolograph extends WrappingClassMirror {
         // TODO-RS: Apply the contra-positive too: if another class has been initialized and touches this class,
         // this class must be initialized.
         for (String touchedClass : classInitInfo.touchedClasses()) {
-            ClassHolograph touchedClassMirror = (ClassHolograph)HolographInternalUtils.loadClassMirrorInternal(this, touchedClass.replace('/', '.'));
+            ClassHolograph touchedClassMirror = (ClassHolograph)HolographInternalUtils.loadClassMirrorInternal(this, Type.getObjectType(touchedClass).getClassName());
             Boolean touchedInitialized = touchedClassMirror.resolveInitialized();
             if (touchedInitialized != null && touchedInitialized.booleanValue() == false) {
                 return false;

@@ -1,16 +1,13 @@
 package edu.ubc.mirrors.asjdi;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.Locatable;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.asjdi.MethodMirrorMethod;
-import edu.ubc.mirrors.asjdi.MirrorsLocation;
-import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 
 public class MirrorsLocation implements Location {
 
@@ -34,7 +31,7 @@ public class MirrorsLocation implements Location {
     }
     
     @Override
-    public int compareTo(Object o) {
+    public int compareTo(Locatable o) {
         throw new UnsupportedOperationException();
     }
     

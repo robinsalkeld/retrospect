@@ -58,8 +58,8 @@ public class MethodMirrorMethod extends MirrorsMirrorWithModifiers implements Me
     }
 
     @Override
-    public int compareTo(Object o) {
-        return signature().compareTo(((Method)o).signature());
+    public int compareTo(Method o) {
+        return signature().compareTo(o.signature());
     }
 
     @Override
@@ -153,7 +153,7 @@ public class MethodMirrorMethod extends MirrorsMirrorWithModifiers implements Me
     }
     
     public Value invoke(ThreadReference thread, ObjectMirror target,
-            List args, int options) throws InvalidTypeException,
+            List<? extends Value> args, int options) throws InvalidTypeException,
             ClassNotLoadedException, IncompatibleThreadStateException,
             InvocationException {
 //        if (options != ObjectReference.INVOKE_SINGLE_THREADED) {

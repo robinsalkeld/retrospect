@@ -94,14 +94,6 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         throw new UnsupportedOperationException();
     }
     
-    public static String getClassName(IClass klass) {
-        String name = klass.getName();
-        if (name.endsWith("[]")) {
-            name = Reflection.arrayClassName(name);
-        }
-        return name;
-    }
-
     private void resolveFields() {
         if (fieldMirrors == null) {
             fieldMirrors = new LinkedHashMap<String, HeapDumpFieldMirror>();
@@ -179,16 +171,16 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         return vm.findBootstrapClassMirror(Class.class.getName());
     }
 
-    private String className;
-    
     @Override
     public String getClassName() {
-        if (className == null) {
-            className = getClassName(klass);
-        }
-        return className;
+        return klass.getName();
     }
 
+    @Override
+    public String getSignature() {
+        return Reflection.typeForClassMirror(this).getDescriptor();
+    }
+    
     @Override
     public boolean isPrimitive() {
         // Primitive classes don't show up in the dump
@@ -203,8 +195,8 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     @Override
     public ClassMirror getComponentClassMirror() {
         String name = getClassName();
-        if (name.startsWith("[")) {
-            Type componentType = Type.getType(name.substring(1).replace('.', '/'));
+        if (name.endsWith("[]")) {
+            Type componentType = Type.getType(Reflection.arrayClassName(name.substring(0, name.length() - 2)).replace('.', '/'));
             if (HologramClassGenerator.isRefType(componentType)) {
                 String componentClassName = componentType.getInternalName().replace('/', '.');
                 if (loader == null) {

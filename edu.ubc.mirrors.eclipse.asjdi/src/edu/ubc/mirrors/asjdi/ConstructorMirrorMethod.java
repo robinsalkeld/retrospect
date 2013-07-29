@@ -46,8 +46,8 @@ public class ConstructorMirrorMethod extends MirrorsMirrorWithModifiers implemen
     }
 
     @Override
-    public int compareTo(Object o) {
-        return signature().compareTo(((Method)o).signature());
+    public int compareTo(Method o) {
+        return signature().compareTo(o.signature());
     }
 
     @Override

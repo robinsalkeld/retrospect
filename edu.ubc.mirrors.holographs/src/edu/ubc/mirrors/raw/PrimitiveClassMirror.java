@@ -19,10 +19,12 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
 
     private final VirtualMachineMirror vm;
     private final String typeName;
+    private final String signature;
     
-    public PrimitiveClassMirror(VirtualMachineMirror vm, String typeName) {
+    public PrimitiveClassMirror(VirtualMachineMirror vm, String typeName, String signature) {
         this.vm = vm;
         this.typeName = typeName;
+        this.signature = signature;
     }
     
     @Override
@@ -61,6 +63,11 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
         return typeName;
     }
 
+    @Override
+    public String getSignature() {
+        return signature;
+    }
+    
     @Override
     public ClassMirrorLoader getLoader() {
         return null;

@@ -2,27 +2,29 @@
 <launchConfiguration type="org.eclipse.pde.ui.RuntimeWorkbench">
 <booleanAttribute key="append.args" value="true"/>
 <stringAttribute key="application" value="edu.ubc.mirrors.holographs.tests.LiveVersusDeadToStringEvaluation"/>
-<booleanAttribute key="askclear" value="true"/>
+<booleanAttribute key="askclear" value="false"/>
 <booleanAttribute key="automaticAdd" value="false"/>
 <booleanAttribute key="automaticValidate" value="true"/>
 <stringAttribute key="bootstrap" value=""/>
 <stringAttribute key="checked" value="[NONE]"/>
-<booleanAttribute key="clearConfig" value="false"/>
-<booleanAttribute key="clearws" value="false"/>
+<booleanAttribute key="clearConfig" value="true"/>
+<booleanAttribute key="clearws" value="true"/>
 <booleanAttribute key="clearwslog" value="false"/>
 <stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/LiveToStringer"/>
 <booleanAttribute key="default" value="false"/>
 <booleanAttribute key="includeOptional" value="false"/>
 <stringAttribute key="location" value="${workspace_loc}/../runtime-New_configuration(5)"/>
 <stringAttribute key="org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE" value="${workspace_loc:/edu.ubc.mirrors.holographs/src/edu/ubc/mirrors/test/live_to_stringer.txt}"/>
+<booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog 7777"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dedu.ubc.mirrors.mirages.debug=false &#10;-XX:-UseSplitVerifier &#10;-Dedu.ubc.mirrors.mirages.preverify=false&#10;-Xmx2g &#10;-XX:PermSize=64M -XX:MaxPermSize=256M"/>
 <stringAttribute key="pde.version" value="3.3"/>
 <stringAttribute key="product" value="org.eclipse.sdk.ide"/>
-<stringAttribute key="selected_target_plugins" value="com.ibm.icu@default:default,org.eclipse.core.contenttype@default:default,org.eclipse.core.jobs@default:default,org.eclipse.core.runtime.compatibility.registry@default:false,org.eclipse.core.runtime@default:true,org.eclipse.equinox.app@default:default,org.eclipse.equinox.common@2:true,org.eclipse.equinox.preferences@default:default,org.eclipse.equinox.registry@default:default,org.eclipse.equinox.weaving.hook@default:false,org.eclipse.mat.jruby.resolver@default:default,org.eclipse.osgi@-1:true,org.hamcrest.core@default:default,org.junit*4.8.2.v4_8_2_v20110321-1705@default:default"/>
-<stringAttribute key="selected_workspace_plugins" value="edu.ubc.mirrors.holographs.tests@default:default,edu.ubc.mirrors.holographs@default:default,org.aspectj.runtime@default:default,org.eclipse.mat.api@default:default,org.eclipse.mat.hprof@default:default,org.eclipse.mat.parser@default:default,org.eclipse.mat.report@default:default"/>
-<booleanAttribute key="show_selected_only" value="false"/>
+<stringAttribute key="selected_target_plugins" value="com.ibm.icu@default:default,javax.xml@default:default,org.eclipse.ant.core@default:default,org.eclipse.compare.core@default:default,org.eclipse.core.commands@default:default,org.eclipse.core.contenttype@default:default,org.eclipse.core.expressions@default:default,org.eclipse.core.filesystem.macosx@default:false,org.eclipse.core.filesystem@default:default,org.eclipse.core.jobs@default:default,org.eclipse.core.resources@default:default,org.eclipse.core.runtime.compatibility.registry@default:false,org.eclipse.core.runtime@default:true,org.eclipse.core.variables@default:default,org.eclipse.debug.core@default:default,org.eclipse.equinox.app@default:default,org.eclipse.equinox.common@2:true,org.eclipse.equinox.preferences@default:default,org.eclipse.equinox.registry@default:default,org.eclipse.jdt.compiler.apt@default:false,org.eclipse.jdt.compiler.tool@default:false,org.eclipse.jdt.core@default:default,org.eclipse.jdt.debug@default:default,org.eclipse.jdt.launching@default:default,org.eclipse.mat.jruby.resolver@default:default,org.eclipse.osgi@-1:true,org.eclipse.team.core@default:default,org.eclipse.text@default:default,org.hamcrest.core@default:default,org.junit@default:default"/>
+<stringAttribute key="selected_workspace_plugins" value="com.sun.jdi@default:default,edu.ubc.mirrors.eclipse.asjdi@default:default,edu.ubc.mirrors.eclipse.mat.plugins@default:default,edu.ubc.mirrors.holographs.tests@default:default,edu.ubc.mirrors.holographs@default:default,org.aspectj.runtime@default:default,org.eclipse.mat.api@default:default,org.eclipse.mat.hprof@default:default,org.eclipse.mat.parser@default:default,org.eclipse.mat.report@default:default"/>
+<booleanAttribute key="show_selected_only" value="true"/>
 <stringAttribute key="templateConfig" value="${target_home}/configuration/config.ini"/>
 <booleanAttribute key="tracing" value="false"/>
 <booleanAttribute key="useCustomFeatures" value="false"/>

@@ -77,7 +77,7 @@ public class HolographField extends Holograph implements Field {
     }
 
     @Override
-    public int compareTo(Object o) {
+    public int compareTo(Field o) {
         return name.compareTo(((HolographField)o).name);
     }
 

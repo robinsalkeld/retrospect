@@ -233,26 +233,26 @@ public class HologramClassLoader extends ClassLoader {
             return hologram;
         }
         
-        final String internalClassName = mirror.getClassMirror().getClassName().replace('.', '/');
+        final String signature = mirror.getClassMirror().getSignature();
         
-        if (internalClassName.equals("[Z")) {
+        if (signature.equals("[Z")) {
             hologram = new BooleanArrayHologram((BooleanArrayMirror)mirror);
-        } else if (internalClassName.equals("[B")) {
+        } else if (signature.equals("[B")) {
             hologram = new ByteArrayHologram((ByteArrayMirror)mirror);
-        } else if (internalClassName.equals("[C")) {
+        } else if (signature.equals("[C")) {
             hologram = new CharArrayHologram((CharArrayMirror)mirror);
-        } else if (internalClassName.equals("[S")) {
+        } else if (signature.equals("[S")) {
             hologram = new ShortArrayHologram((ShortArrayMirror)mirror);
-        } else if (internalClassName.equals("[I")) {
+        } else if (signature.equals("[I")) {
             hologram = new IntArrayHologram((IntArrayMirror)mirror);
-        } else if (internalClassName.equals("[J")) {
+        } else if (signature.equals("[J")) {
             hologram = new LongArrayHologram((LongArrayMirror)mirror);
-        } else if (internalClassName.equals("[F")) {
+        } else if (signature.equals("[F")) {
             hologram = new FloatArrayHologram((FloatArrayMirror)mirror);
-        } else if (internalClassName.equals("[D")) {
+        } else if (signature.equals("[D")) {
             hologram = new DoubleArrayHologram((DoubleArrayMirror)mirror);
         } else {
-            final String hologramClassName = HologramClassGenerator.getHologramBinaryClassName(internalClassName, true);
+            final String hologramClassName = HologramClassGenerator.getHologramBinaryClassName(mirror.getClassMirror().getClassName(), true);
             try {
                 final Class<?> hologramClass = loadClass(hologramClassName);
                 final Constructor<?> c = hologramClass.getConstructor(mirror instanceof InstanceMirror ? Object.class : ObjectArrayMirror.class);

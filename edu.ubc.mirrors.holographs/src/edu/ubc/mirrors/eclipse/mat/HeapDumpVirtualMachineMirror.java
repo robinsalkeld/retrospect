@@ -90,19 +90,19 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         if (primitiveClasses == null) {
             primitiveClasses = new HashMap<String, ClassMirror>();
             
-            registerPrimitiveClass("java.lang.Boolean", "boolean");
-            registerPrimitiveClass("java.lang.Byte", "byte");
-            registerPrimitiveClass("java.lang.Short", "short");
-            registerPrimitiveClass("java.lang.Character", "char");
-            registerPrimitiveClass("java.lang.Integer", "int");
-            registerPrimitiveClass("java.lang.Long", "long");
-            registerPrimitiveClass("java.lang.Float", "float");
-            registerPrimitiveClass("java.lang.Double", "double");
-            registerPrimitiveClass("java.lang.Void", "void");
+            registerPrimitiveClass("java.lang.Boolean", "boolean", "Z");
+            registerPrimitiveClass("java.lang.Byte", "byte", "B");
+            registerPrimitiveClass("java.lang.Short", "short", "S");
+            registerPrimitiveClass("java.lang.Character", "char", "C");
+            registerPrimitiveClass("java.lang.Integer", "int", "I");
+            registerPrimitiveClass("java.lang.Long", "long", "J");
+            registerPrimitiveClass("java.lang.Float", "float", "F");
+            registerPrimitiveClass("java.lang.Double", "double", "D");
+            registerPrimitiveClass("java.lang.Void", "void", "V");
         }
     }
     
-    private void registerPrimitiveClass(String boxingTypeName, String typeName) {
+    private void registerPrimitiveClass(String boxingTypeName, String typeName, String signature) {
         try {
             IClass boxingType = snapshot.getClassesByName(boxingTypeName, false).iterator().next();
             IInstance primitiveInstance = null;
@@ -115,7 +115,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
                     }
                 }
             }
-            ClassMirror mirror = new PrimitiveClassMirror(this, typeName);
+            ClassMirror mirror = new PrimitiveClassMirror(this, typeName, signature);
             primitiveClasses.put(typeName, mirror);
             if (primitiveInstance != null) {
                 mirrors.put(primitiveInstance, mirror);

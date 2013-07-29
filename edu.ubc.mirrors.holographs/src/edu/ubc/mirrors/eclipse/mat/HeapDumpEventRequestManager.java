@@ -12,6 +12,7 @@ import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
+import edu.ubc.mirrors.ThreadMirrorStartRequest;
 
 public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
 
@@ -94,6 +95,11 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
+    public ThreadMirrorStartRequest createThreadMirrorStartRequest() {
+        return new HeapDumpThreadMirrorStartRequest(vm);
+    }
+    
+    @Override
     public ThreadMirrorDeathRequest createThreadMirrorDeathRequest() {
         return new HeapDumpThreadMirrorDeathRequest(vm);
     }
@@ -103,5 +109,4 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
         // TODO Auto-generated method stub
         
     }
-
 }

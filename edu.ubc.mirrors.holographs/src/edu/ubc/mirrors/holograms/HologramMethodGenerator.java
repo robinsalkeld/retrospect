@@ -3,10 +3,9 @@ package edu.ubc.mirrors.holograms;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.arrayMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.classMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.classType;
-import static edu.ubc.mirrors.holograms.HologramClassGenerator.getHologramInternalClassName;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getHologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalInternalClassName;
-import static edu.ubc.mirrors.holograms.HologramClassGenerator.getPrimitiveArrayMirrorInternalName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.getPrimitiveArrayMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getSortName;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceHologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceMirrorType;
@@ -149,7 +148,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
             if (owner.equals(Type.getType(ObjectArrayMirror.class).getInternalName()) ||
                             (owner.startsWith("hologramarray") && !owner.startsWith("hologramarrayimpl"))) {
                 String originalName = getOriginalInternalClassName(owner);
-                owner = getHologramInternalClassName(originalName, true);
+                owner = getHologramType(Type.getObjectType(originalName), true).getInternalName();
                 checkcast(Type.getObjectType(owner));
             }
         }
@@ -331,7 +330,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
             
             Type mirrorType = HologramClassGenerator.objectArrayMirrorType;
             if (arrayElementType.getSort() != Type.OBJECT && arrayElementType.getSort() != Type.ARRAY) {
-                mirrorType = Type.getObjectType(getPrimitiveArrayMirrorInternalName(arrayElementType));
+                mirrorType = getPrimitiveArrayMirrorType(arrayElementType);
             }
             
             // Use the analyzer to figure out the expected array element type
@@ -395,7 +394,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
                     Type.getMethodDescriptor(Type.getType(ArrayMirror.class), Type.INT_TYPE));
             
             // Instantiate the hologram class
-            Type hologramArrayType = Type.getObjectType(getHologramInternalClassName(arrayType.getInternalName(), true));
+            Type hologramArrayType = getHologramType(arrayType, true);
             anew(hologramArrayType);
             dupX1();
             swap();

@@ -11,7 +11,6 @@ import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.event.MethodExitEvent;
 import com.sun.jdi.event.ModificationWatchpointEvent;
-import com.sun.jdi.request.ClassPrepareRequest;
 
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventSet;

@@ -21,6 +21,7 @@ import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
+import edu.ubc.mirrors.ThreadMirrorStartRequest;
 
 public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 
@@ -139,5 +140,10 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     @Override
     public ThreadMirrorDeathRequest createThreadMirrorDeathRequest() {
         return new JDIThreadMirrorDeathRequest(vm, wrapped.createThreadDeathRequest());
+    }
+    
+    @Override
+    public ThreadMirrorStartRequest createThreadMirrorStartRequest() {
+        return new JDIThreadMirrorStartRequest(vm, wrapped.createThreadStartRequest());
     }
 }

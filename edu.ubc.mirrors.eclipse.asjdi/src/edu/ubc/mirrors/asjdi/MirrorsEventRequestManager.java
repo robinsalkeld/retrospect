@@ -7,7 +7,6 @@ import com.sun.jdi.Field;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.ClassPrepareRequest;
@@ -15,7 +14,6 @@ import com.sun.jdi.request.ClassUnloadRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.ExceptionRequest;
-import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
@@ -29,9 +27,6 @@ import com.sun.jdi.request.ThreadStartRequest;
 import com.sun.jdi.request.VMDeathRequest;
 
 import edu.ubc.mirrors.MirrorEventRequestManager;
-import edu.ubc.mirrors.asjdi.MirrorsEventRequest;
-import edu.ubc.mirrors.asjdi.MirrorsMirror;
-import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
 
 public class MirrorsEventRequestManager extends MirrorsMirror implements EventRequestManager {
 
@@ -153,7 +148,7 @@ public class MirrorsEventRequestManager extends MirrorsMirror implements EventRe
     }
 
     @Override
-    public void deleteEventRequests(List requests) {
+    public void deleteEventRequests(List<? extends EventRequest> requests) {
         for (Object request : requests) {
             deleteEventRequest((EventRequest)request);
         }

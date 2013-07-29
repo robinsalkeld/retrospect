@@ -72,12 +72,12 @@ public class MirrorsEventSet extends MirrorsMirror implements EventSet {
     }
 
     @Override
-    public Object[] toArray(Object[] a) {
+    public <T> T[] toArray(T[] a) {
         return wrappedSet().toArray(a);
     }
 
     @Override
-    public boolean add(Object e) {
+    public boolean add(Event e) {
         throw new UnsupportedOperationException();
     }
 
@@ -87,22 +87,22 @@ public class MirrorsEventSet extends MirrorsMirror implements EventSet {
     }
 
     @Override
-    public boolean containsAll(Collection c) {
+    public boolean containsAll(Collection<?> c) {
         return wrappedSet().containsAll(c);
     }
 
     @Override
-    public boolean addAll(Collection c) {
+    public boolean addAll(Collection<? extends Event> c) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean retainAll(Collection c) {
+    public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean removeAll(Collection c) {
+    public boolean removeAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 

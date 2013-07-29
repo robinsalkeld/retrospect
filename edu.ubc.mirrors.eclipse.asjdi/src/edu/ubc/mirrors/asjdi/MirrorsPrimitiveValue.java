@@ -26,7 +26,7 @@ public abstract class MirrorsPrimitiveValue<T extends Number & Comparable<? supe
     }
     
     @SuppressWarnings("unchecked")
-    public int compareTo(Object o) {
+    public int compareTo(U o) {
         // This is not fully general, but much easier to implement for now...
         return value.compareTo(((MirrorsPrimitiveValue<T, ?>)o).value);
     };

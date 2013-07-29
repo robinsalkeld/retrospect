@@ -9,6 +9,8 @@ public interface ClassMirror extends InstanceMirror {
     
     public abstract String getClassName();
     
+    public abstract String getSignature();
+    
     public abstract ClassMirrorLoader getLoader();
     
     public abstract byte[] getBytecode();

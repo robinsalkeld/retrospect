@@ -14,7 +14,6 @@ import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.eval.IAstEvaluationEngine;
 import org.eclipse.jdt.debug.eval.ICompiledExpression;
-import org.eclipse.jdt.debug.eval.IEvaluationEngine;
 import org.eclipse.jdt.debug.eval.IEvaluationListener;
 import org.eclipse.jdt.debug.eval.IEvaluationResult;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
@@ -25,13 +24,13 @@ import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.annotations.Argument;
-import org.eclipse.mat.query.annotations.CommandName;
 import org.eclipse.mat.query.annotations.Argument.Advice;
+import org.eclipse.mat.query.annotations.CommandName;
 import org.eclipse.mat.query.annotations.Name;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.util.IProgressListener;
-import org.eclipse.mat.util.VoidProgressListener;
 import org.eclipse.mat.util.IProgressListener.Severity;
+import org.eclipse.mat.util.VoidProgressListener;
 
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
@@ -62,7 +61,7 @@ public class ExpressionQuery implements IQuery {
     @Argument
     public boolean aggregate = false;
     
-    @Argument
+    @Argument(isMandatory = false)
     public Integer maxObjects = null;
     
     @Argument

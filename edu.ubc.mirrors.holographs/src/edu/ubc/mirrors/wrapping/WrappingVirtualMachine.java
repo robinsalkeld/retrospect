@@ -77,7 +77,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
             return null;
         }
         
-        String classNameString = mirror.getClassMirror().getClassName();
+        String classNameString = mirror.getClassMirror().getSignature();
         
         if (classNameString.equals("[Z")) {
             return new WrappingBooleanArrayMirror(this, (BooleanArrayMirror)mirror);

@@ -1,15 +1,11 @@
 package edu.ubc.mirrors.jdi;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.Method;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.ThreadMirror;
 
 public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
 

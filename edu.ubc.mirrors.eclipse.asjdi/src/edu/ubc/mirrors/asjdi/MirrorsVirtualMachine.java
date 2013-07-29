@@ -8,11 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.jdt.debug.core.IJavaDebugTarget;
-import org.eclipse.jdt.debug.core.JDIDebugModel;
-import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
-
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteValue;
 import com.sun.jdi.CharValue;
@@ -60,22 +55,6 @@ public class MirrorsVirtualMachine implements VirtualMachine {
         this.vm = vm;
     }
 
-    public static JDIDebugTarget makeDebugTarget(ThreadMirror thread, final VirtualMachine jdiVM, final ILaunch launch) {
-        try {
-            return Reflection.withThread(thread, new Callable<JDIDebugTarget>() {
-                public JDIDebugTarget call() throws Exception {
-                    JDIDebugTarget debugTarget = (JDIDebugTarget)JDIDebugModel.newDebugTarget(launch, jdiVM, jdiVM.name(), null, true, true);
-                    if (launch != null) {
-                        launch.addDebugTarget(debugTarget);
-                    }
-                    return debugTarget;
-                }
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
     public ObjectReference wrapMirror(ObjectMirror mirror) {
         if (mirror == null) {
             return null;
@@ -330,7 +309,7 @@ public class MirrorsVirtualMachine implements VirtualMachine {
     }
 
     @Override
-    public long[] instanceCounts(List types) {
+    public long[] instanceCounts(List<? extends ReferenceType> types) {
         long[] result = new long[types.size()];
         for (int i = 0; i < result.length; i++) {
             ClassMirror klass = ((MirrorsReferenceType)types.get(i)).wrapped;
@@ -400,7 +379,7 @@ public class MirrorsVirtualMachine implements VirtualMachine {
     }
 
     @Override
-    public void redefineClasses(Map bytecodes) {
+    public void redefineClasses(Map<? extends ReferenceType, byte[]> bytecodes) {
         throw new UnsupportedOperationException();
     }
 
@@ -523,10 +502,10 @@ public class MirrorsVirtualMachine implements VirtualMachine {
         }
     }
     
-    public Object[] objectsForValues(List values) {
+    public Object[] objectsForValues(List<? extends Value> values) {
         Object[] objects = new Object[values.size()];
         for (int i = 0; i < objects.length; i++) {
-            objects[i] = objectForValue((Value)values.get(i));
+            objects[i] = objectForValue(values.get(i));
         }
         return objects;
     }

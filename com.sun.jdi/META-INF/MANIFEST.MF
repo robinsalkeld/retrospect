@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: com.sun.jdi
+Bundle-SymbolicName: com.sun.jdi
+Bundle-Version: 1.0.0.qualifier
+Bundle-ClassPath: lib/tools.jar
+Export-Package: com.sun.jdi,
+ com.sun.jdi.connect,
+ com.sun.jdi.event,
+ com.sun.jdi.request

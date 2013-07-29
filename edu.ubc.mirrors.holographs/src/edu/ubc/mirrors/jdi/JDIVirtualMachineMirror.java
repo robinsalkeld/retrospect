@@ -7,9 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdi.Bootstrap;
+
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.BooleanValue;
-import com.sun.jdi.Bootstrap;
 import com.sun.jdi.ByteValue;
 import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassLoaderReference;
@@ -34,15 +35,15 @@ import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
+import com.sun.jdi.connect.AttachingConnector;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.Connector.Argument;
 import com.sun.jdi.connect.Connector.BooleanArgument;
 import com.sun.jdi.connect.Connector.IntegerArgument;
 import com.sun.jdi.connect.Connector.StringArgument;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
-import com.sun.tools.jdi.SocketAttachingConnector;
-import com.sun.tools.jdi.SunCommandLineLauncher;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -82,10 +83,10 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     public static VirtualMachine commandLineLaunch(String mainAndArgs, String vmArgs, boolean suspend) throws VMStartException, IOException {
 	VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List<Connector> connectors = vmm.allConnectors();
-        SunCommandLineLauncher c = null;
+        LaunchingConnector c = null;
         for (Connector connector : connectors) {
-            if (connector instanceof SunCommandLineLauncher) {
-                c = (SunCommandLineLauncher)connector;
+            if (connector instanceof LaunchingConnector) {
+                c = (LaunchingConnector)connector;
                 break;
             }
         }
@@ -104,15 +105,15 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     public static VirtualMachine connectOnPort(int port) throws IOException, IllegalConnectorArgumentsException {
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List<Connector> connectors = vmm.allConnectors();
-        SocketAttachingConnector c = null;
+        AttachingConnector c = null;
         for (Connector connector : connectors) {
-            if (connector instanceof SocketAttachingConnector) {
-                c = (SocketAttachingConnector)connector;
+            if (connector instanceof AttachingConnector) {
+                c = (AttachingConnector)connector;
                 break;
             }
         }
         
-        Map connectorArgs = c.defaultArguments();
+        Map<String, Argument> connectorArgs = c.defaultArguments();
         ((IntegerArgument)connectorArgs.get("port")).setValue(port);
         return c.attach(connectorArgs);
     }

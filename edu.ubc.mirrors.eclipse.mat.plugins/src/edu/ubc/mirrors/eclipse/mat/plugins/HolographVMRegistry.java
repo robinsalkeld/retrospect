@@ -17,6 +17,7 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.Launch;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.debug.eval.IAstEvaluationEngine;
 import org.eclipse.jdt.debug.eval.IEvaluationEngine;
 import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
@@ -26,6 +27,8 @@ import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.query.Icons;
 import org.eclipse.mat.util.IProgressListener;
+
+import com.sun.jdi.VirtualMachine;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -147,7 +150,7 @@ public class HolographVMRegistry {
         ILaunchConfiguration launchConfig = remoteJavaLaunchType.newInstance(null, "dummy");
         ILaunch launch = new Launch(launchConfig, ILaunchManager.DEBUG_MODE, null);
         
-        JDIDebugTarget debugTarget = MirrorsVirtualMachine.makeDebugTarget(getThreadForEval(vm), jdiVM, launch);
+        JDIDebugTarget debugTarget = makeDebugTarget(getThreadForEval(vm), jdiVM, launch);
         
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProjects()[0];
         IJavaProject javaProject = JavaCore.create(project);
@@ -156,6 +159,22 @@ public class HolographVMRegistry {
         evalEngines.put(vm, result);
         
         return result;
+    }
+    
+    public static JDIDebugTarget makeDebugTarget(ThreadMirror thread, final VirtualMachine jdiVM, final ILaunch launch) {
+        try {
+            return Reflection.withThread(thread, new Callable<JDIDebugTarget>() {
+                public JDIDebugTarget call() throws Exception {
+                    JDIDebugTarget debugTarget = (JDIDebugTarget)JDIDebugModel.newDebugTarget(launch, jdiVM, jdiVM.name(), null, true, true);
+                    if (launch != null) {
+                        launch.addDebugTarget(debugTarget);
+                    }
+                    return debugTarget;
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
     
     public static ObjectMirror getMirrorForHeapDumpObject(IObject object, IProgressListener listener) {

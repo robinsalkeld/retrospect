@@ -99,7 +99,18 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     public String getClassName() {
-        return klass.getName();
+        // The Class.getName() method is irritatingly consistent, returning
+        // [java.lang.Object; or [I instead of java.lang.Object[] or int[]
+        String name = klass.getName();
+        if (name.startsWith("[")) {
+            name = Type.getType(name.replace('.', '/')).getClassName();
+        }
+        return name;
+    }
+    
+    @Override
+    public String getSignature() {
+        return Reflection.typeForClassMirror(this).getDescriptor();
     }
     
     protected ClassMirror findClassMirror(Class<?> forClass) {

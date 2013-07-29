@@ -30,6 +30,8 @@ public interface MirrorEventRequestManager {
     
     ThreadMirrorDeathRequest createThreadMirrorDeathRequest();
     
+    ThreadMirrorStartRequest createThreadMirrorStartRequest();
+    
     void deleteMirrorEventRequest(MirrorEventRequest request);
 
 }

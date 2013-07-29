@@ -51,9 +51,11 @@ public class HologramClassGenerator extends ClassVisitor {
     public static Type objectHologramType = Type.getType(ObjectHologram.class);
     public static Type instanceHologramType = Type.getType(InstanceHologram.class);
     public static Type hologramType = Type.getType(Hologram.class);
+    public static Type hologramArrayType = Reflection.makeArrayType(1, Type.getType(Hologram.class));
     public static Type fieldMirrorType = Type.getType(FieldMirror.class);
     public static Type nativeObjectMirrorType = Type.getType(NativeInstanceMirror.class);
     public static Type objectType = Type.getType(Object.class);
+    public static Type objectArrayType = Reflection.makeArrayType(1, Type.getType(Object.class));
     public static Type stringType = Type.getType(String.class);
     public static Type hologramStringType = getHologramType(String.class);
     public static Type hologramThrowableType = getHologramType(Throwable.class);
@@ -63,7 +65,7 @@ public class HologramClassGenerator extends ClassVisitor {
     
     public static Remapper REMAPPER = new Remapper() {
         public String map(String typeName) {
-            return getHologramInternalClassName(typeName, false);
+            return getHologramType(Type.getObjectType(typeName), false).getInternalName();
         }
         public String mapDesc(String desc) {
             Type t = Type.getType(desc);
@@ -175,7 +177,7 @@ public class HologramClassGenerator extends ClassVisitor {
     }
     
     public static String getHologramSuperclassName(boolean isInterface, String hologramName, String hologramSuperName) {
-        if (getHologramInternalClassName(Type.getInternalName(Throwable.class), true).equals(hologramName)) {
+        if (getHologramType(Type.getType(Throwable.class), true).getInternalName().equals(hologramName)) {
             return Type.getInternalName(Throwable.class);
         } else if (Type.getInternalName(Hologram.class).equals(hologramSuperName)) {
             if (isInterface) {
@@ -204,7 +206,7 @@ public class HologramClassGenerator extends ClassVisitor {
             return null;
         }
         
-        return getHologramInternalClassName(className.replace('.', '/'), arrayImpl).replace('/', '.');
+        return getHologramType(Reflection.typeForClassName(className), arrayImpl).getClassName();
     }
     
     public static String getSortName(int sort) {
@@ -260,44 +262,45 @@ public class HologramClassGenerator extends ClassVisitor {
         }
     }
     
-    public static String getPrimitiveArrayHologramInternalName(Type elementType) {
-        return "edu/ubc/mirrors/holograms/" + getSortName(elementType.getSort()) + "ArrayHologram";
+    public static Type getPrimitiveArrayHologramType(Type elementType) {
+        return Type.getObjectType("edu/ubc/mirrors/holograms/" + getSortName(elementType.getSort()) + "ArrayHologram");
     }
     
-    public static String getPrimitiveArrayMirrorInternalName(Type elementType) {
-        return "edu/ubc/mirrors/" + getSortName(elementType.getSort()) + "ArrayMirror";
+    public static Type getPrimitiveArrayMirrorType(Type elementType) {
+        return Type.getObjectType("edu/ubc/mirrors/" + getSortName(elementType.getSort()) + "ArrayMirror");
     }
     
-    public static String getHologramInternalClassName(String className, boolean impl) {
-        if (className == null) {
+    public static Type getHologramType(Type type, boolean impl) {
+        if (type == null) {
             return null;
         }
         
-        if (className.equals(Type.getInternalName(Object.class))) {
-            return impl ? Type.getInternalName(ObjectHologram.class) : Type.getInternalName(Hologram.class);
+        if (type.equals(objectType)) {
+            return impl ? objectHologramType : hologramType;
         }
-        if (className.equals("[L" + Type.getInternalName(Object.class) + ";")
-                || className.equals("[L" + Type.getInternalName(Hologram.class) + ";")) {
-            return impl ? Type.getInternalName(ObjectArrayHologram.class) : Type.getInternalName(ObjectArrayMirror.class);
+        if (type.equals(objectArrayType) || type.equals(hologramArrayType)) {
+            return impl ? Type.getType(ObjectArrayHologram.class) : Type.getType(ObjectArrayMirror.class);
         }
         
-        Type type = Type.getObjectType(className);
         if (type.getSort() == Type.ARRAY) {
             Type elementType = type.getElementType();
             int elementSort = elementType.getSort();
             int dims = type.getDimensions();
             // Primitive array
             if (dims == 1 && elementSort != Type.OBJECT) {
-                return getPrimitiveArrayHologramInternalName(elementType);
+                return getPrimitiveArrayHologramType(elementType);
             } else {
                 String elementName = (elementSort == Type.OBJECT ?
                         elementType.getInternalName() : getSortName(elementSort));
-                return (impl ? "hologramarrayimpl" : "hologramarray") + dims + "/" + elementName; 
+                return Type.getObjectType((impl ? "hologramarrayimpl" : "hologramarray") + dims + "/" + elementName); 
             }
-        } else if (!className.startsWith("hologram")) {
-            return "hologram/" + className;
+        } 
+        
+        String internalName = type.getInternalName();
+        if (!internalName.startsWith("hologram")) {
+            return Type.getObjectType("hologram/" + internalName);
         } else {
-            return className;
+            return type;
         }
     }
     
@@ -354,16 +357,11 @@ public class HologramClassGenerator extends ClassVisitor {
     }
     
     public static String getOriginalBinaryClassName(String hologramBinaryName) {
-        return getOriginalInternalClassName(hologramBinaryName.replace('.', '/')).replace('/', '.');
+        return getOriginalType(Reflection.typeForClassName(hologramBinaryName)).getClassName();
     }
     
     public static Type getHologramType(Type type) {
-        if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
-            return Type.getObjectType(getHologramInternalClassName(type.getInternalName(), false));
-        } else {
-            return type;
-        }
-        
+        return getHologramType(type, false);
     }
     
     public static Type getOriginalType(Type type) {
@@ -525,7 +523,7 @@ public class HologramClassGenerator extends ClassVisitor {
         
         // Generate the constructor that takes a mirror instance as an Object parameter
         String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));
-        if (name.equals(getHologramInternalClassName(Type.getInternalName(Throwable.class), true))) {
+        if (name.equals(getHologramType(Type.getType(Throwable.class), true).getInternalName())) {
             // This doesn't extend ObjectHologram so we have to set the field directly
             super.visitField(Opcodes.ACC_PUBLIC, "mirror", objectMirrorType.getDescriptor(), null, null);
             
@@ -578,11 +576,12 @@ public class HologramClassGenerator extends ClassVisitor {
     }
 
     public static byte[] generateArray(HologramClassLoader loader, ClassMirror classMirror, boolean isInterface) {
-        String internalName = getHologramInternalClassName(classMirror.getClassName().replace('.', '/'), !isInterface);
         
-        Type originalType = Type.getObjectType(classMirror.getClassName().replace('.', '/'));
+        Type originalType = Reflection.typeForClassMirror(classMirror);
         Type originalElementType = originalType.getElementType();
         int dims = originalType.getDimensions();
+        
+        String internalName = getHologramType(originalType, !isInterface).getInternalName();
         
         ClassMirror superClassMirror = null;
         String superName = isInterface ? Type.getInternalName(Object.class) : Type.getInternalName(ObjectArrayHologram.class);
@@ -613,7 +612,7 @@ public class HologramClassGenerator extends ClassVisitor {
             }
         }
         if (!isInterface) {
-            interfaces.add(getHologramInternalClassName(classMirror.getClassName().replace('.', '/'), false));
+            interfaces.add(getHologramType(originalType, false).getInternalName());
         }
         
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);

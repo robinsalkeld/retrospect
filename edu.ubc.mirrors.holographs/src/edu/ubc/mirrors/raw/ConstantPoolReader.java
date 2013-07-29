@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 
 import org.objectweb.asm.ClassReader;
 
+import com.sun.xml.internal.ws.org.objectweb.asm.Type;
+
 import edu.ubc.mirrors.BlankInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -40,7 +42,7 @@ public class ConstantPoolReader extends BlankInstanceMirror implements InstanceM
 
     public ClassMirror getClassAt(int index) {
         String name = reader.readClass(reader.getItem(index), buf);
-        return HolographInternalUtils.loadClassMirrorInternal(klass, name);
+        return HolographInternalUtils.loadClassMirrorInternal(klass, Type.getObjectType(name).getClassName());
     }
     
     public InstanceMirror getStringAt(int index) {

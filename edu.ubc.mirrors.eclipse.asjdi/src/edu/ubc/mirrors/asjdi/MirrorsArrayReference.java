@@ -57,13 +57,13 @@ public class MirrorsArrayReference extends MirrorsObjectReference implements Arr
     }
 
     @Override
-    public void setValues(List values) throws InvalidTypeException, ClassNotLoadedException {
+    public void setValues(List<? extends Value> values) throws InvalidTypeException, ClassNotLoadedException {
         // TODO-RS: Bah, no time...
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void setValues(int arg0, List arg1, int arg2, int arg3) throws InvalidTypeException, ClassNotLoadedException {
+    public void setValues(int arg0, List<? extends Value> arg1, int arg2, int arg3) throws InvalidTypeException, ClassNotLoadedException {
         // TODO-RS: Bah, no time...
         throw new UnsupportedOperationException();
     }

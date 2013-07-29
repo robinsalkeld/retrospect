@@ -896,6 +896,11 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     }
     
     @Override
+    public String getSignature() {
+        return "L" + className.replace('.', '/') + ";";
+    }
+    
+    @Override
     public ClassMirror getClassMirror() {
         return getVM().findBootstrapClassMirror(Class.class.getName());
     }

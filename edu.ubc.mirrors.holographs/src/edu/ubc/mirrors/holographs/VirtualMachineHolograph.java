@@ -214,7 +214,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	        String[] paths = bootClassPath.split("" + pathSeparator);
 	        List<URL> urls = new ArrayList<URL>();
 	        for (int i = 0; i < paths.length; i++) {
-	            File mappedFile = getMappedFile(new File(paths[i]), false);
+	            File mappedFile = getMappedFile(new File(paths[i]), true);
 	            if (mappedFile != null) {
 	                urls.add(mappedFile.toURI().toURL());
 	            }
@@ -364,23 +364,23 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     @Override
     protected ObjectMirror wrapMirror(ObjectMirror mirror) {
-        final String internalClassName = mirror.getClassMirror().getClassName();
+        final String signature = mirror.getClassMirror().getSignature();
         
-        if (internalClassName.equals("[Z")) {
+        if (signature.equals("[Z")) {
             return new MutableBooleanArrayMirror(this, (BooleanArrayMirror)mirror);
-        } else if (internalClassName.equals("[B")) {
+        } else if (signature.equals("[B")) {
             return new MutableByteArrayMirror(this, (ByteArrayMirror)mirror);
-        } else if (internalClassName.equals("[C")) {
+        } else if (signature.equals("[C")) {
             return new MutableCharArrayMirror(this, (CharArrayMirror)mirror);
-        } else if (internalClassName.equals("[S")) {
+        } else if (signature.equals("[S")) {
             return new MutableShortArrayMirror(this, (ShortArrayMirror)mirror);
-        } else if (internalClassName.equals("[I")) {
+        } else if (signature.equals("[I")) {
             return new MutableIntArrayMirror(this, (IntArrayMirror)mirror);
-        } else if (internalClassName.equals("[J")) {
+        } else if (signature.equals("[J")) {
             return new MutableLongArrayMirror(this, (LongArrayMirror)mirror);
-        } else if (internalClassName.equals("[F")) {
+        } else if (signature.equals("[F")) {
             return new MutableFloatArrayMirror(this, (FloatArrayMirror)mirror);
-        } else if (internalClassName.equals("[D")) {
+        } else if (signature.equals("[D")) {
             return new MutableDoubleArrayMirror(this, (DoubleArrayMirror)mirror);
         } else if (mirror instanceof ObjectArrayMirror) {
             return new MutableObjectArrayMirror(this, (ObjectArrayMirror)mirror);

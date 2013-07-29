@@ -2,7 +2,6 @@ package edu.ubc.mirrors.jdi;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import com.sun.jdi.ArrayType;
@@ -68,13 +67,12 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public String getClassName() {
-        String name = refType.name();
-        if (name.endsWith("[]")) {
-            // TODO-RS: This is probably wrong - need to fix it and 
-            // deal with any caller-side issues.
-            name = Reflection.arrayClassName(name);
-        }
-        return name;
+        return refType.name();
+    }
+    
+    @Override
+    public String getSignature() {
+        return refType.signature();
     }
 
     @Override

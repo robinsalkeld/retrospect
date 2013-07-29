@@ -76,9 +76,12 @@ public class ArrayClassMirror extends BlankClassMirror {
     
     @Override
     public String getClassName() {
-        // Don't use Type#getClassName() - that will return strings like com.foo.Bar[]
-        // rather than [Lcom.foo.Bar;
-        return getArrayType().getInternalName().replace('/', '.');
+        return arrayType.getClassName();
+    }
+    
+    @Override
+    public String getSignature() {
+        return arrayType.getDescriptor();
     }
 
     @Override
@@ -144,7 +147,7 @@ public class ArrayClassMirror extends BlankClassMirror {
     
     @Override
     public String toString() {
-        return getClass().getName() + ": " + getArrayType();
+        return getClass().getName() + ": " + getClassName();
     }
 
     @Override

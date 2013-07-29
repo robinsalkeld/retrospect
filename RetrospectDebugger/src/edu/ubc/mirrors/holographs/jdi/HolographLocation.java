@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.holographs.jdi;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.Locatable;
 import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
@@ -17,8 +18,8 @@ public class HolographLocation extends Holograph implements Location {
      * @return
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
-    public int compareTo(Object o) {
-        return wrapped.compareTo(((HolographLocation)o).wrapped);
+    public int compareTo(Locatable o) {
+        return wrapped.compareTo(o);
     }
 
     public HolographLocation(JDIHolographVirtualMachine vm, Location location) {

@@ -21,6 +21,7 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.runtime.reflect.Factory;
+import org.objectweb.asm.Type;
 
 import polyglot.ast.Node;
 import polyglot.ast.TypeNode;
@@ -124,7 +125,7 @@ public class AspectJMirrors {
     
     private ClassMirror getAnnotClassMirror(AdviceKind kind) {
 	try {
-	    return Reflection.classMirrorForName(vm, thread, kind.annotationClass.getName(), true, loader);
+	    return Reflection.classMirrorForType(vm, thread, Type.getType(kind.annotationClass), true, loader);
 	} catch (ClassNotFoundException e) {
 	    throw new RuntimeException(e);
 	} catch (MirrorInvocationTargetException e) {
@@ -442,7 +443,7 @@ public class AspectJMirrors {
         this.loader = loader;
 	this.vm = vm;
 	this.thread = thread;
-        ClassMirror factoryClass = Reflection.classMirrorForName(vm, thread, Factory.class.getName(), false, loader);
+        ClassMirror factoryClass = Reflection.classMirrorForType(vm, thread, Type.getType(Factory.class), false, loader);
 	this.factoryConstructor = factoryClass.getConstructor(
 		vm.findBootstrapClassMirror(String.class.getName()), 
 		vm.findBootstrapClassMirror(Class.class.getName()));

@@ -25,7 +25,6 @@ import com.sun.jdi.Value;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
@@ -51,8 +50,8 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
     }
 
     @Override
-    public int compareTo(Object o) {
-        return name().compareTo(((ReferenceType)o).name());
+    public int compareTo(ReferenceType o) {
+        return name().compareTo(o.name());
     }
 
     @Override
@@ -337,7 +336,7 @@ public class MirrorsReferenceType extends MirrorsMirrorWithModifiers implements 
     }
 
     @Override
-    public Map<Field, Value> getValues(List fields) {
+    public Map<Field, Value> getValues(List<? extends Field> fields) {
         Map<Field, Value> result = new HashMap<Field, Value>();
         for (Object field : fields) {
             result.put((Field)field, getValue((Field)field));

@@ -13,14 +13,9 @@ import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 
-import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.asjdi.MirrorsInstanceReference;
-import edu.ubc.mirrors.asjdi.MirrorsStackFrame;
-import edu.ubc.mirrors.asjdi.MirrorsVirtualMachine;
-import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 
 public class MirrorsThreadReference extends MirrorsInstanceReference implements ThreadReference {
 

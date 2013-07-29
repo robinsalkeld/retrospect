@@ -322,7 +322,7 @@ public class HolographMethod extends Holograph implements Method {
      * @return
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
-    public int compareTo(Object o) {
-        return wrapped.compareTo(o);
+    public int compareTo(Method o) {
+        return wrapped.compareTo(((HolographMethod)o).wrapped);
     }
 }

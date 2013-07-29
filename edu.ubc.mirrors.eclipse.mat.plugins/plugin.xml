@@ -25,10 +25,4 @@
             impl="edu.ubc.mirrors.eclipse.mat.plugins.LoadObjectListQuery">
       </query>
    </extension>
-   <extension
-         point="org.eclipse.mat.api.factory">
-      <factory
-            impl="edu.ubc.mirrors.eclipse.mat.plugins.SnapshotFactoryWithHolographicVMImpl">
-      </factory>
-   </extension>
 </plugin>

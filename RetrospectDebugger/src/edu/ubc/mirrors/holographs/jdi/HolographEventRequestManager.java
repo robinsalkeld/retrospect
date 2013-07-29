@@ -34,7 +34,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#accessWatchpointRequests()
      */
-    public List<?> accessWatchpointRequests() {
+    public List<AccessWatchpointRequest> accessWatchpointRequests() {
         return wrapped.accessWatchpointRequests();
     }
 
@@ -42,7 +42,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#breakpointRequests()
      */
-    public List<?> breakpointRequests() {
+    public List<BreakpointRequest> breakpointRequests() {
         return wrapped.breakpointRequests();
     }
 
@@ -50,7 +50,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#classPrepareRequests()
      */
-    public List<?> classPrepareRequests() {
+    public List<ClassPrepareRequest> classPrepareRequests() {
         return wrapped.classPrepareRequests();
     }
 
@@ -58,7 +58,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#classUnloadRequests()
      */
-    public List<?> classUnloadRequests() {
+    public List<ClassUnloadRequest> classUnloadRequests() {
         return wrapped.classUnloadRequests();
     }
 
@@ -228,7 +228,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#exceptionRequests()
      */
-    public List<?> exceptionRequests() {
+    public List<ExceptionRequest> exceptionRequests() {
         return wrapped.exceptionRequests();
     }
 
@@ -236,7 +236,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#methodEntryRequests()
      */
-    public List<?> methodEntryRequests() {
+    public List<MethodEntryRequest> methodEntryRequests() {
         return wrapped.methodEntryRequests();
     }
 
@@ -244,7 +244,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#methodExitRequests()
      */
-    public List<?> methodExitRequests() {
+    public List<MethodExitRequest> methodExitRequests() {
         return wrapped.methodExitRequests();
     }
 
@@ -252,7 +252,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#modificationWatchpointRequests()
      */
-    public List<?> modificationWatchpointRequests() {
+    public List<ModificationWatchpointRequest> modificationWatchpointRequests() {
         return wrapped.modificationWatchpointRequests();
     }
 
@@ -260,7 +260,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#monitorContendedEnterRequests()
      */
-    public List<?> monitorContendedEnterRequests() {
+    public List<MonitorContendedEnterRequest> monitorContendedEnterRequests() {
         return wrapped.monitorContendedEnterRequests();
     }
 
@@ -268,7 +268,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#monitorContendedEnteredRequests()
      */
-    public List<?> monitorContendedEnteredRequests() {
+    public List<MonitorContendedEnteredRequest> monitorContendedEnteredRequests() {
         return wrapped.monitorContendedEnteredRequests();
     }
 
@@ -276,7 +276,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#monitorWaitRequests()
      */
-    public List<?> monitorWaitRequests() {
+    public List<MonitorWaitRequest> monitorWaitRequests() {
         return wrapped.monitorWaitRequests();
     }
 
@@ -284,7 +284,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#monitorWaitedRequests()
      */
-    public List<?> monitorWaitedRequests() {
+    public List<MonitorWaitedRequest> monitorWaitedRequests() {
         return wrapped.monitorWaitedRequests();
     }
 
@@ -292,7 +292,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#stepRequests()
      */
-    public List<?> stepRequests() {
+    public List<StepRequest> stepRequests() {
         return wrapped.stepRequests();
     }
 
@@ -300,7 +300,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#threadDeathRequests()
      */
-    public List<?> threadDeathRequests() {
+    public List<ThreadDeathRequest> threadDeathRequests() {
         return wrapped.threadDeathRequests();
     }
 
@@ -308,7 +308,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#threadStartRequests()
      */
-    public List<?> threadStartRequests() {
+    public List<ThreadStartRequest> threadStartRequests() {
         return wrapped.threadStartRequests();
     }
 
@@ -324,7 +324,7 @@ public class HolographEventRequestManager extends Holograph implements EventRequ
      * @return
      * @see com.sun.jdi.request.EventRequestManager#vmDeathRequests()
      */
-    public List<?> vmDeathRequests() {
+    public List<VMDeathRequest> vmDeathRequests() {
         return wrapped.vmDeathRequests();
     }
 

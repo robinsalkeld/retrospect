@@ -32,7 +32,7 @@ public class HolographReferenceType extends Holograph implements ReferenceType {
      * @return
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
-    public int compareTo(Object o) {
+    public int compareTo(ReferenceType o) {
         return wrapped.compareTo(((HolographReferenceType)o).wrapped);
     }
 
@@ -40,7 +40,7 @@ public class HolographReferenceType extends Holograph implements ReferenceType {
      * @return
      * @see com.sun.jdi.ReferenceType#allFields()
      */
-    public List<?> allFields() {
+    public List<Field> allFields() {
         ObjectReference classMirror = getClassMirror();
         ObjectReference fieldsMap = (ObjectReference)vm.invokeMethodHandle(classMirror, MethodHandle.CLASS_MIRROR_GET_DECLARED_FIELDS);
         
@@ -88,7 +88,7 @@ public class HolographReferenceType extends Holograph implements ReferenceType {
      * @throws AbsentInformationException
      * @see com.sun.jdi.ReferenceType#allLineLocations()
      */
-    public List<?> allLineLocations() throws AbsentInformationException {
+    public List<Location> allLineLocations() throws AbsentInformationException {
         return wrapped.allLineLocations();
     }
 
@@ -99,7 +99,7 @@ public class HolographReferenceType extends Holograph implements ReferenceType {
      * @throws AbsentInformationException
      * @see com.sun.jdi.ReferenceType#allLineLocations(java.lang.String, java.lang.String)
      */
-    public List<?> allLineLocations(String arg0, String arg1)
+    public List<Location> allLineLocations(String arg0, String arg1)
             throws AbsentInformationException {
         return wrapped.allLineLocations(arg0, arg1);
     }
@@ -108,7 +108,7 @@ public class HolographReferenceType extends Holograph implements ReferenceType {
      * @return
      * @see com.sun.jdi.ReferenceType#allMethods()
      */
-    public List<?> allMethods() {
+    public List<Method> allMethods() {
         return wrapped.allMethods();
     }
 
@@ -116,7 +116,7 @@ public class HolographReferenceType extends Holograph implements ReferenceType {
      * @return
      * @see com.sun.jdi.ReferenceType#availableStrata()
      */
-    public List<?> availableStrata() {
+    public List<String> availableStrata() {
         return wrapped.availableStrata();
     }
 

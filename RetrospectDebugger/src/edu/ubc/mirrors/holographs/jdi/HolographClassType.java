@@ -6,6 +6,7 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
@@ -27,7 +28,7 @@ public class HolographClassType extends HolographReferenceType implements ClassT
      * @return
      * @see com.sun.jdi.ClassType#allInterfaces()
      */
-    public List<?> allInterfaces() {
+    public List<InterfaceType> allInterfaces() {
         return wrapped.allInterfaces();
     }
 
@@ -45,7 +46,7 @@ public class HolographClassType extends HolographReferenceType implements ClassT
      * @return
      * @see com.sun.jdi.ClassType#interfaces()
      */
-    public List<?> interfaces() {
+    public List<InterfaceType> interfaces() {
         return wrapped.interfaces();
     }
 
