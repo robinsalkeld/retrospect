@@ -20,11 +20,7 @@ public class HeapDumpInstanceMirror extends BoxingInstanceMirror implements Heap
     
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !getClass().equals(obj.getClass())) {
-            return false;
-        }
-        
-        return ((HeapDumpInstanceMirror)obj).heapDumpObject.equals(heapDumpObject);
+        return HeapDumpVirtualMachineMirror.equalObjects(this, obj);
     }
     
     @Override

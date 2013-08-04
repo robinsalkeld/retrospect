@@ -46,6 +46,13 @@ public abstract class MethodHandle {
         }
     };
 
+    public static MethodHandle OBJECT_HOLOGRAM_INVOKE_METHOD_HANDLER = new MethodHandle() {
+        @Override
+        public void methodCall() throws Throwable {
+            ObjectHologram.invokeMethodHandler(null, null, null, null, null);
+        }
+    };
+    
     ////
     
     private MethodInsnNode method;

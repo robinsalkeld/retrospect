@@ -25,10 +25,9 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
-import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
 
-public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMirror {
+public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMirror, HeapDumpObjectMirror {
 
     private final HeapDumpVirtualMachineMirror vm;
     protected final IClass klass;
@@ -48,12 +47,7 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !getClass().equals(obj.getClass())) {
-            return false;
-        }
-        
-        HeapDumpClassMirror other = (HeapDumpClassMirror)obj;
-        return klass.equals(other.klass);
+        return HeapDumpVirtualMachineMirror.equalObjects(this, obj);
     }
     
     @Override
@@ -167,7 +161,7 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     }
     
     @Override
-    public ClassMirror getClassMirror() {
+    public HeapDumpClassMirror getClassMirror() {
         return vm.findBootstrapClassMirror(Class.class.getName());
     }
 
@@ -320,5 +314,10 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
 
     public void bytecodeLocated(File originalBytecodeLocation) {
         vm.bytecodeLocated(this, originalBytecodeLocation);
+    }
+
+    @Override
+    public IObject getHeapDumpObject() {
+        return klass;
     }
 }

@@ -2,13 +2,7 @@ package edu.ubc.mirrors.holograms;
 
 import static edu.ubc.mirrors.Reflection.getMirrorType;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,18 +21,13 @@ import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodHandle;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.holograms.ArrayHologram;
-import edu.ubc.mirrors.holograms.InstanceHologram;
-import edu.ubc.mirrors.holograms.Hologram;
-import edu.ubc.mirrors.holograms.HologramClassLoader;
-import edu.ubc.mirrors.holograms.HologramMethodGenerator;
-import edu.ubc.mirrors.holograms.ObjectArrayHologram;
-import edu.ubc.mirrors.holograms.ObjectHologram;
+import edu.ubc.mirrors.holographs.MirrorInvocationHandler;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
@@ -96,32 +85,16 @@ public class HologramClassGenerator extends ClassVisitor {
         };
     };
     
+    private final ClassMirror classMirror;
     private boolean isInterface;
     private String name;
     private String superName;
     
     private boolean hasClinit = false;
-    private final Type nativeStubsType;
-    private final Map<org.objectweb.asm.commons.Method, Method> mirrorMethods;
     
     public HologramClassGenerator(ClassMirror classMirror, ClassVisitor output) {
         super(Opcodes.ASM4, output);
-        Class<?> nativeStubsClass = ClassHolograph.getNativeStubsClass(classMirror.getClassName());
-        mirrorMethods = indexStubMethods(nativeStubsClass);
-        nativeStubsType = nativeStubsClass == null ? null : Type.getType(nativeStubsClass);
-    }
-    
-    public static Map<org.objectweb.asm.commons.Method, Method> indexStubMethods(Class<?> nativeStubsClass) {
-        if (nativeStubsClass != null) {
-            Map<org.objectweb.asm.commons.Method, Method> result = new HashMap<org.objectweb.asm.commons.Method, Method>();
-            for (Method m : nativeStubsClass.getMethods()) {
-                org.objectweb.asm.commons.Method method = org.objectweb.asm.commons.Method.getMethod(m);
-                result.put(method, m);
-            }
-            return result;
-        } else {
-            return Collections.emptyMap();
-        }
+        this.classMirror = classMirror;
     }
     
     @Override
@@ -365,7 +338,14 @@ public class HologramClassGenerator extends ClassVisitor {
     }
     
     public static Type getOriginalType(Type type) {
-        if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
+        if (type.getSort() == Type.METHOD) {
+            Type[] argumentTypes = type.getArgumentTypes();
+            Type[] originalArgTypes = new Type[argumentTypes.length];
+            for (int i = 0; i < argumentTypes.length; i++) {
+                originalArgTypes[i] = getOriginalType(argumentTypes[i]);
+            }
+            return Type.getMethodType(getOriginalType(type.getReturnType()), originalArgTypes);
+        } else if (type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY) {
             return Type.getObjectType(getOriginalInternalClassName(type.getInternalName()));
         } else {
             return type;
@@ -431,78 +411,35 @@ public class HologramClassGenerator extends ClassVisitor {
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
-        org.objectweb.asm.commons.Method methodDesc = getStubMethodDesc(this.name, name, access, desc);
-        Method mirrorMethod = mirrorMethods.get(methodDesc);
-        if (mirrorMethod != null && (Opcodes.ACC_ABSTRACT & access) == 0) {
-            generateNativeThunk(superVisitor, this.name, desc, mirrorMethod);
-            
-            return null;
-        } else if ((Opcodes.ACC_NATIVE & access) != 0) {
-            // Generate a method body that throws an exception
-            generator.visitCode();
-            Type exceptionType = Type.getType(InternalError.class); 
-            generator.anew(exceptionType);
-            generator.dup();
-            String message = "Unsupported native method: " + this.name + "#" + methodDesc.getName() + methodDesc.getDescriptor();
-            generator.aconst(message);
-            generator.invokespecial(exceptionType.getInternalName(), 
-                                    "<init>", 
-                                    Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(String.class)));
-            generator.athrow();
-            generator.visitMaxs(1, 0);
-            generator.visitEnd();
-
+        boolean needsThunk = (Opcodes.ACC_NATIVE & access) != 0;
+        if (!needsThunk && !name.startsWith("<")) {
+            if ((Opcodes.ACC_ABSTRACT & access) == 0) {
+                MethodMirror method;
+                try {
+                    method = Reflection.getDeclaredMethod(ThreadHolograph.currentThreadMirror(), classMirror, name, getOriginalType(Type.getMethodType(desc)));
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+                MirrorInvocationHandler handler = ClassHolograph.getMethodHandler(method);
+                if (handler != null) {
+                    needsThunk = true;
+                }
+            }
+        }
+        
+        if (needsThunk) {
+            generator.generateNativeThunk();
             return null;
         }
         
         return lvs;
     }
     
-    public static org.objectweb.asm.commons.Method getStubMethodDesc(String owner, String name, int access, String desc) {
-        Type methodType = Type.getMethodType(desc);
-        Type[] argumentTypes = methodType.getArgumentTypes();
-        List<Type> stubArgumentTypes = new ArrayList<Type>(argumentTypes.length + 1);
-        if ((Opcodes.ACC_STATIC & access) == 0) {
-            stubArgumentTypes.add(getMirrorTypeForHologramType(Type.getObjectType(owner)));
-        }
-        for (int i = 0; i < argumentTypes.length; i++) {
-            stubArgumentTypes.add(getMirrorTypeForHologramType(argumentTypes[i]));
-        }
-        Type stubReturnType = getMirrorTypeForHologramType(methodType.getReturnType());
-        return new org.objectweb.asm.commons.Method(name, stubReturnType, stubArgumentTypes.toArray(new Type[stubArgumentTypes.size()]));
-    }
-    
     public static Type getMirrorTypeForHologramType(Type hologramType) {
         return getMirrorType(getOriginalType(hologramType));
     }
     
-    public void generateNativeThunk(MethodVisitor visitor, String owner, String desc, Method method) {
-	Class<?>[] parameterClasses = method.getParameterTypes();
-        visitor.visitCode();
-        
-        visitor.visitFieldInsn(Opcodes.GETSTATIC, owner, "nativeStubs", nativeStubsType.getDescriptor());
-        int var = 0;
-        for (int param = 0; param < parameterClasses.length; param++) {
-            Type paramType = Type.getType(parameterClasses[param]);
-            visitor.visitVarInsn(paramType.getOpcode(Opcodes.ILOAD), var);
-            if (isRefType(paramType)) {
-                MethodHandle.OBJECT_HOLOGRAM_GET_MIRROR.invoke(visitor);
-            }
-            var += paramType.getSize();
-        }
-        
-        Type returnType = Type.getType(method.getReturnType());
-        
-        visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, nativeStubsType.getInternalName(), method.getName(), Type.getMethodDescriptor(method));
-        
-        if (isRefType(returnType)) {
-            MethodHandle.OBJECT_HOLOGRAM_MAKE.invoke(visitor);
-            visitor.visitTypeInsn(Opcodes.CHECKCAST, Type.getReturnType(desc).getInternalName());
-        }
-        visitor.visitInsn(returnType.getOpcode(Opcodes.IRETURN));
-        visitor.visitMaxs(Math.max(2, var + 1), Math.max(2, var + 1));
-        visitor.visitEnd();
-    }
+    
     
     @Override
     public FieldVisitor visitField(int access, String name, String desc,
@@ -517,9 +454,6 @@ public class HologramClassGenerator extends ClassVisitor {
         // Generate the static field used to store the corresponding ClassMirror
 	int staticAccess = Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_STATIC;
 	super.visitField(staticAccess, "classMirror", classMirrorType.getDescriptor(), null, null);
-	if (nativeStubsType != null) {
-	    super.visitField(staticAccess, "nativeStubs", nativeStubsType.getDescriptor(), null, null);
-	}
         
         // Generate the constructor that takes a mirror instance as an Object parameter
         String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));

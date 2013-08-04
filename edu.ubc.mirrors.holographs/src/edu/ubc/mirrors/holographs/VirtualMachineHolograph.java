@@ -11,6 +11,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationHandler;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -25,6 +26,11 @@ import java.util.zip.Inflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.objectweb.asm.Type;
 
@@ -104,17 +110,21 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             System.out.println("Creating VM holograph...");
         }
         
-        String bcdProperty = System.getProperty("edu.ubc.mirrors.holograms.bytecodeCacheDir");
-        if (bcdProperty != null) {
-            bytecodeCacheDir = new File(bcdProperty);
-        } else if (wrappedVM instanceof HeapDumpVirtualMachineMirror) {
-            HeapDumpVirtualMachineMirror hdVM = (HeapDumpVirtualMachineMirror)wrappedVM;
-            String snapshotPath = hdVM.getSnapshot().getSnapshotInfo().getPath();
-            int lastDot = snapshotPath.lastIndexOf('.');
-            bytecodeCacheDir = new File(snapshotPath.substring(0, lastDot) + "_hologram_classes");
-        } else {
-            bytecodeCacheDir = null;
-        }
+//        if (Boolean.getBoolean("edu.ubc.mirrors.holograms.bytecodeCaching")) { 
+            String bcdProperty = System.getProperty("edu.ubc.mirrors.holograms.bytecodeCacheDir");
+            if (bcdProperty != null) {
+                bytecodeCacheDir = new File(bcdProperty);
+            } else if (wrappedVM instanceof HeapDumpVirtualMachineMirror) {
+                HeapDumpVirtualMachineMirror hdVM = (HeapDumpVirtualMachineMirror)wrappedVM;
+                String snapshotPath = hdVM.getSnapshot().getSnapshotInfo().getPath();
+                int lastDot = snapshotPath.lastIndexOf('.');
+                bytecodeCacheDir = new File(snapshotPath.substring(0, lastDot) + "_hologram_classes");
+            } else {
+                bytecodeCacheDir = null;
+            }
+//        } else {
+//            bytecodeCacheDir = null;
+//        }
         
         this.hologramVM = new HologramVirtualMachine(this);
         this.hologramBootstrapLoader = new HologramClassLoader(this, null);

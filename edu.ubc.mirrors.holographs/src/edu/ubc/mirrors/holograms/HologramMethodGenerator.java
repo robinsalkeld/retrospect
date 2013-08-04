@@ -7,9 +7,9 @@ import static edu.ubc.mirrors.holograms.HologramClassGenerator.getHologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalInternalClassName;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getPrimitiveArrayMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getSortName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.hologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceHologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceMirrorType;
-import static edu.ubc.mirrors.holograms.HologramClassGenerator.hologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectHologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.stringType;
@@ -28,11 +28,6 @@ import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
-import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.holograms.Hologram;
-import edu.ubc.mirrors.holograms.HologramClassGenerator;
-import edu.ubc.mirrors.holograms.ObjectArrayHologram;
-import edu.ubc.mirrors.holograms.ObjectHologram;
 
 public class HologramMethodGenerator extends InstructionAdapter {
 
@@ -46,6 +41,8 @@ public class HologramMethodGenerator extends InstructionAdapter {
     
     private final boolean isToString;
     private final boolean isGetStackTrace;
+
+    private int access;
     
     public HologramMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString, boolean isGetStackTrace) {
         super(Opcodes.ASM4, null);
@@ -53,6 +50,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
         this.mv = analyzer;
         this.name = name;
         this.owner = Type.getObjectType(owner);
+        this.access = access;
         this.methodType = Type.getMethodType(desc);
         this.isToString = isToString;
         this.isGetStackTrace = isGetStackTrace;
@@ -494,20 +492,6 @@ public class HologramMethodGenerator extends InstructionAdapter {
         }.invoke(mv);
         mv.dup();
         mv.putstatic(owner.getInternalName(), "classMirror", classMirrorType.getDescriptor());
-        
-        // Initialize the static field that holds the native stubs instance (if any)
-        String originalClassName = HologramClassGenerator.getOriginalInternalClassName(owner.getInternalName());
-        Class<?> nativeStubsClass = ClassHolograph.getNativeStubsClass(originalClassName.replace('/', '.'));
-        if (nativeStubsClass != null) {
-            mv.dup();
-            new MethodHandle() {
-        	protected void methodCall() throws Throwable {
-        	    ObjectHologram.getNativeStubsInstanceForClassMirror(null);
-        	}
-            }.invoke(mv);
-            mv.checkcast(Type.getType(nativeStubsClass));
-            mv.putstatic(owner.getInternalName(), "nativeStubs", Type.getDescriptor(nativeStubsClass));
-        }
     }
     
     @Override
@@ -542,4 +526,60 @@ public class HologramMethodGenerator extends InstructionAdapter {
             }
         }
     }
+    
+    private void boxIfNeeded(Type type) {
+        Class<?> boxingType = Reflection.getBoxingType(type);
+        if (boxingType != null) {
+            invokestatic(Type.getInternalName(boxingType), "valueOf", Type.getMethodType(Type.getType(boxingType), type).getDescriptor());
+        }
+    }
+    
+    public void generateNativeThunk() {
+        visitCode();
+        
+        getClassMirror(owner);
+        aconst(name);
+        aconst(HologramClassGenerator.getOriginalType(methodType).getDescriptor());
+        
+        Type[] parameterTypes = methodType.getArgumentTypes();
+        int var = 0;
+        if ((Opcodes.ACC_STATIC & access) == 0) {
+            load(var, owner);
+            MethodHandle.OBJECT_HOLOGRAM_GET_MIRROR.invoke(this);
+            var++;
+        } else {
+            aconst(null);
+        }
+        aconst(parameterTypes.length);
+        newarray(OBJECT_TYPE);
+        
+        for (int param = 0; param < parameterTypes.length; param++) {
+            Type paramType = parameterTypes[param];
+            dup();
+            aconst(param);
+            load(var, paramType);
+            boxIfNeeded(paramType);
+            if (HologramClassGenerator.isRefType(paramType)) {
+                MethodHandle.OBJECT_HOLOGRAM_GET_MIRROR.invoke(this);
+            }
+            astore(OBJECT_TYPE);
+            var += paramType.getSize();
+        }
+        
+        MethodHandle.OBJECT_HOLOGRAM_INVOKE_METHOD_HANDLER.invoke(this);
+        
+        Type returnType = methodType.getReturnType();
+        Class<?> boxingType = Reflection.getBoxingType(returnType);
+        if (boxingType != null) {
+            checkcast(Type.getType(boxingType));
+            invokevirtual(Type.getInternalName(boxingType), returnType.getClassName() + "Value", Type.getMethodType(returnType).getDescriptor());
+        } else if (returnType.getSort() != Type.VOID) {
+            MethodHandle.OBJECT_HOLOGRAM_MAKE.invoke(this);
+            checkcast(returnType);
+        }
+        areturn(returnType);
+        visitMaxs(Math.max(2, var + 1), Math.max(2, var + 1));
+        visitEnd();
+    }
 }
+

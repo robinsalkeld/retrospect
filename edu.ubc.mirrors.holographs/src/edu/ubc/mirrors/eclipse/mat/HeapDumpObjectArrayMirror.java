@@ -23,11 +23,7 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
     
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !getClass().equals(obj.getClass())) {
-            return false;
-        }
-        
-        return ((HeapDumpObjectArrayMirror)obj).array.equals(array);
+        return HeapDumpVirtualMachineMirror.equalObjects(this, obj);
     }
     
     @Override

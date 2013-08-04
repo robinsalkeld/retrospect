@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: edu.ubc.mirrors.holographs.mnms
+Bundle-SymbolicName: edu.ubc.mirrors.holographs.jdkplugins;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Import-Package: edu.ubc.mirrors,
+ edu.ubc.mirrors.holograms,
+ edu.ubc.mirrors.holographs,
+ edu.ubc.mirrors.raw,
+ edu.ubc.mirrors.wrapping,
+ org.objectweb.asm;version="4.0.0",
+ org.objectweb.asm.commons;version="4.0.0"
+Export-Package: edu.ubc.mirrors.holographs.jdkplugins

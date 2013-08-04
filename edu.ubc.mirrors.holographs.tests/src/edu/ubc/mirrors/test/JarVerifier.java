@@ -29,7 +29,10 @@ import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.MirrorInvocationHandlerProvider;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.holographs.jdkplugins.JDKNativeStubsProvider;
+import edu.ubc.mirrors.holographs.jdkplugins.NativeStubsProvider;
 
 public class JarVerifier implements IApplication {
     public static void main(String[] args) throws Exception {
@@ -104,15 +107,13 @@ public class JarVerifier implements IApplication {
         
         StringBuilder missingMethods = new StringBuilder();
         StringBuilder unclassifiedMethods = new StringBuilder();
+        MirrorInvocationHandlerProvider provider = new JDKNativeStubsProvider();
         for (Map.Entry<String, Set<MethodNode>> entry : counter.classesWithNativeMethods.entrySet()) {
             String fullInternalName = entry.getKey();
             String fullName = fullInternalName.replace('/', '.');
             
-            Class<?> stubsClass = ClassHolograph.getNativeStubsClass(fullName);
-            Map<Method, java.lang.reflect.Method> stubsMethods = HologramClassGenerator.indexStubMethods(stubsClass);
-            
             for (MethodNode method : entry.getValue()) {
-                Method stubMethod = HologramClassGenerator.getStubMethodDesc(fullInternalName, method.name, method.access, method.desc);
+                Method stubMethod = NativeStubsProvider.getStubMethodDesc(fullInternalName, method.name, method.access, method.desc);
                 if (stubsMethods.containsKey(stubMethod)) {
                     implemented++;
                     continue;

@@ -138,7 +138,7 @@ public class MethodHolograph implements MethodMirror {
     
     @Override
     public ClassMirror getDeclaringClass() {
-        return wrapped.getDeclaringClass();
+        return klass;
     }
 
     @Override

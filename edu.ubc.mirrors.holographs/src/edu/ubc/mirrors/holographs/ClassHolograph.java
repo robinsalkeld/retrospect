@@ -16,6 +16,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.Platform;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
@@ -41,7 +46,7 @@ import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
-public class ClassHolograph extends WrappingClassMirror {
+public class ClassHolograph extends WrappingClassMirror implements MirrorInvocationHandler {
 
     private InstanceMirror memberFieldsDelegate;
     private StaticFieldValuesMirror staticFieldValues;
@@ -124,6 +129,21 @@ public class ClassHolograph extends WrappingClassMirror {
     
     private final VirtualMachineHolograph vm;
     
+    static final List<MirrorInvocationHandlerProvider> invocationHandlerProviders;
+    static {
+        IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint("edu.ubc.mirrors.holographs.nativeStubsProvider");
+        invocationHandlerProviders = new ArrayList<MirrorInvocationHandlerProvider>();
+        for (IExtension ext : extPoint.getExtensions()) {
+            for (IConfigurationElement config : ext.getConfigurationElements()) {
+                try {
+                    invocationHandlerProviders.add((MirrorInvocationHandlerProvider)config.createExecutableExtension("impl"));
+                } catch (CoreException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+    
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
         this.vm = vm;
@@ -140,13 +160,23 @@ public class ClassHolograph extends WrappingClassMirror {
         return wrapped;
     }
     
-    public static Class<?> getNativeStubsClass(String name) {
-        String nativeStubsName = "edu.ubc.mirrors.raw.nativestubs." + name + "Stubs";
-        try {
-            return Class.forName(nativeStubsName);
-        } catch (ClassNotFoundException e) {
-            return null;
+    public static MirrorInvocationHandler getMethodHandler(MethodMirror method) {
+        MirrorInvocationHandler handler;
+        for (MirrorInvocationHandlerProvider provider : invocationHandlerProviders) {
+            handler = provider.getInvocationHandler(method);
+            if (handler != null) {
+                return handler;
+            }
         }
+        return null;
+    }
+    
+    public Object invoke(InstanceMirror object, MethodMirror method, Object[] args) throws MirrorInvocationTargetException {
+        MirrorInvocationHandler handler = getMethodHandler(method);
+        if (handler == null) {
+            throw new InternalError("Unsupported native method: " + getClassName() + "#" + method.getName() + Reflection.getMethodType(method));
+        }
+        return handler.invoke(object, method, args);
     }
     
     public static String getIllegalNativeMethodMessage(String owner, org.objectweb.asm.commons.Method method) {

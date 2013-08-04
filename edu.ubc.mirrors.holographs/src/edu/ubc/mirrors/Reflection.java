@@ -38,7 +38,7 @@ public class Reflection {
     /*
      * "Binary class name":
      * java.lang.Object
-     * long[]
+     * int[]
      * java.lang.Object[]
      * 
      * "Internal class name" (non-array classes only):
@@ -46,7 +46,7 @@ public class Reflection {
      * 
      * "Descriptor":
      * Ljava/lang/Object;
-     * [L
+     * [I
      * [java/lang/Object;
      */
     
@@ -690,6 +690,22 @@ public class Reflection {
         return Type.getMethodType(Type.VOID_TYPE, argTypes);
     }
     
+    public static MethodMirror getDeclaredMethod(ThreadMirror thread, ClassMirror klass, String methodName, Type methodType) throws SecurityException, NoSuchMethodException {
+        Type[] argumentTypes = methodType.getArgumentTypes();
+        ClassMirror[] paramClasses = new ClassMirror[argumentTypes.length];
+        ClassMirrorLoader loader = klass.getLoader();
+        for (int i = 0; i < argumentTypes.length; i++) {
+            try {
+                paramClasses[i] = Reflection.classMirrorForType(klass.getVM(), thread, argumentTypes[i], false, loader);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (MirrorInvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return klass.getDeclaredMethod(methodName, paramClasses);
+    }
+    
     public static String getClassNameFromBytecode(byte[] bytecode) {
         BytecodeExtractor visitor = new BytecodeExtractor();
         new ClassReader(bytecode).accept(visitor, 0);
@@ -723,5 +739,19 @@ public class Reflection {
         }
         builder.append(elementType.getDescriptor());
         return Type.getObjectType(builder.toString());
+    }
+    
+    public static Class<?> getBoxingType(Type type) {
+        switch (type.getSort()) {
+        case Type.BOOLEAN: return Boolean.class;
+        case Type.BYTE: return Byte.class;
+        case Type.CHAR: return Character.class;
+        case Type.SHORT: return Short.class;
+        case Type.INT: return Integer.class;
+        case Type.LONG: return Long.class;
+        case Type.FLOAT: return Float.class;
+        case Type.DOUBLE: return Double.class;
+        default: return null;
+        }
     }
 }

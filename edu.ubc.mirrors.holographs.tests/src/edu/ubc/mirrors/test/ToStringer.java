@@ -22,7 +22,6 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
-import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIClassMirror;
@@ -71,6 +70,7 @@ public class ToStringer implements IApplication {
         while ((line = in.readLine()) != null) {
             sample.add(Integer.parseInt(line));
         }
+        in.close();
         return sample;
     }
     
@@ -99,16 +99,12 @@ public class ToStringer implements IApplication {
     
     // toString() ALL the objects!!!
     public static void toStringAllTheObjects(VirtualMachineMirror vm, ThreadMirror thread) {
-//        ClassMirror barClass = vm.findAllClasses(Bar.class.getName(), false).get(0);
-//        ObjectMirror bar = barClass.getInstances().get(0);
-//        System.out.println(bar.identityHashCode());
-//        if (true) return;
+        boolean catchErrors = Boolean.getBoolean("edu.ubc.mirrors.holograms.catchErrors");
         
         int count = 0;
         int collected = 0;
         long minTime = 0;
         long maxTime = 0;
-        String maxString = null;
         
         // Using Welford's algorithm for online variance calculation
         // http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
@@ -128,11 +124,8 @@ public class ToStringer implements IApplication {
                     }
                     Stopwatch perObjectSW = new Stopwatch();
                     perObjectSW.start();
-                    String s = Reflection.toString(object, thread);
+                    Reflection.toString(object, thread);
                     long time = perObjectSW.stop();
-                    if (time < 0) {
-                        System.out.println("WTF?");
-                    }
                     
                     count++;
                     delta = (float)time - mean;
@@ -141,9 +134,6 @@ public class ToStringer implements IApplication {
                             
                     minTime = Math.min(minTime, time);
                     maxTime = Math.max(maxTime, time);
-                    if (time >= maxTime) {
-                        maxString = s;
-                    }
                     
                     if (count % 25 == 0) {
                         System.out.print(".");
@@ -152,13 +142,17 @@ public class ToStringer implements IApplication {
                         System.out.println(count);
                     }
                 } catch (Throwable e) {
-                    errors++;
-                    try {
-                        System.out.println("Error on object " + object);
-                    } catch (Throwable e2) {
-                        //
+                    if (catchErrors) {
+                        errors++;
+                        try {
+                            System.out.println("Error on object " + object);
+                        } catch (Throwable e2) {
+                            //
+                        }
+                        e.printStackTrace();
+                    } else {
+                        throw new RuntimeException(e);
                     }
-                    e.printStackTrace();
                 }
             }
         } finally {

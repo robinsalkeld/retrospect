@@ -2,7 +2,7 @@ package edu.ubc.mirrors.holograms;
 
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinaryClassName;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 import org.objectweb.asm.Type;
 
@@ -11,6 +11,8 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
@@ -18,10 +20,6 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.holograms.Hologram;
-import edu.ubc.mirrors.holograms.HologramClassGenerator;
-import edu.ubc.mirrors.holograms.HologramClassLoader;
-import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 
 /**
@@ -169,25 +167,6 @@ public class ObjectHologram implements Hologram {
         return HolographInternalUtils.classMirrorForType(callingClass.getVM(), ThreadHolograph.currentThreadMirror(), type, false, callingClass.getLoader());
     }
     
-    public static Object getNativeStubsInstanceForClassMirror(ClassMirror classMirror) {
-	Class<?> nativeStubsClass = ClassHolograph.getNativeStubsClass(classMirror.getClassName());
-	try {
-	    return nativeStubsClass.getConstructor(ClassHolograph.class).newInstance(classMirror);
-	} catch (InstantiationException e) {
-	    throw new RuntimeException(e);
-	} catch (IllegalAccessException e) {
-	    throw new RuntimeException(e);
-	} catch (IllegalArgumentException e) {
-	    throw new RuntimeException(e);
-	} catch (InvocationTargetException e) {
-	    throw new RuntimeException(e);
-	} catch (NoSuchMethodException e) {
-	    throw new RuntimeException(e);
-	} catch (SecurityException e) {
-	    throw new RuntimeException(e);
-	}
-    }
-    
     public static Hologram makeClassHologram(Class<?> c, ClassMirror callingClass) {
 	if (c == null) {
             return null;
@@ -287,5 +266,17 @@ public class ObjectHologram implements Hologram {
         InstanceMirror throwableMirror = klass.newRawInstance();
         HolographInternalUtils.setField(throwableMirror, "detailMessage", Reflection.makeString(vm, t.getMessage()));
         return (Throwable)ObjectHologram.make(throwableMirror);
+    }
+    
+    public static Object invokeMethodHandler(ClassMirror klass, String methodName, String methodDesc, InstanceMirror object, Object[] args) throws Throwable {
+        Type methodType = Type.getMethodType(methodDesc);
+        ClassHolograph classHolograph = (ClassHolograph)klass;
+        MethodMirror method = Reflection.getDeclaredMethod(ThreadHolograph.currentThreadMirror(), klass, methodName, methodType);
+        
+        try {
+            return classHolograph.invoke(object, method, args);
+        } catch (MirrorInvocationTargetException e) {
+            throw (Throwable)ObjectHologram.make(e.getTargetException());
+        }
     }
 }

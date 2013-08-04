@@ -31,11 +31,7 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements H
     
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !getClass().equals(obj.getClass())) {
-            return false;
-        }
-        
-        return ((HeapDumpPrimitiveArrayMirror)obj).array.equals(array);
+        return HeapDumpVirtualMachineMirror.equalObjects(this, obj);
     }
     
     @Override

@@ -291,4 +291,16 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         cachedBytecode.put(key, value);
         VirtualMachineHolograph.addEntryToStringMapFile(bytecodeMappingPath, key, value);
     }
+    
+    static boolean equalObjects(HeapDumpObjectMirror obj, Object obj2) {
+        if (obj2 == null || !obj.getClass().equals(obj2.getClass())) {
+            return false;
+        }
+        
+        // The heap dump object only compares object IDs, but doesn't check the
+        // snapshot they come from, so make sure we check the VM.
+        HeapDumpObjectMirror other = (HeapDumpObjectMirror)obj2;
+        return obj.getClassMirror().getVM().equals(other.getClassMirror().getVM()) 
+                && obj.getHeapDumpObject().equals(other.getHeapDumpObject());
+    }
 }
