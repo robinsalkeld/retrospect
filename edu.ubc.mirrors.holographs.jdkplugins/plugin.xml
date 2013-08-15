@@ -7,5 +7,17 @@
             impl="edu.ubc.mirrors.holographs.jdkplugins.JDKNativeStubsProvider">
       </provider>
    </extension>
+   <extension
+         point="edu.ubc.mirrors.holographs.bytecodeProvider">
+      <provider
+            impl="edu.ubc.mirrors.holographs.jdkplugins.GeneratedBytecodeProvider">
+      </provider>
+   </extension>
+   <extension
+         point="edu.ubc.mirrors.holographs.initializedProvider">
+      <provider
+            impl="edu.ubc.mirrors.holographs.jdkplugins.IdempotentClassInitializedProvider">
+      </provider>
+   </extension>
 
 </plugin>

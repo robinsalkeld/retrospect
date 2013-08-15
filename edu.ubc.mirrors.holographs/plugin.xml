@@ -2,5 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension-point id="nativeStubsProvider" name="%extension-point.classResolver.name" schema="schema/edu.ubc.mirrors.holographs.nativeStubsProvider.exsd"/>
-
+   <extension-point id="bytecodeProvider" name="%extension-point.classResolver.name" schema="schema/edu.ubc.mirrors.holographs.bytecodeProvider.exsd"/>
+   <extension-point id="initializedProvider" name="%extension-point.classResolver.name" schema="schema/edu.ubc.mirrors.holographs.initializedProvider.exsd"/>
 </plugin>

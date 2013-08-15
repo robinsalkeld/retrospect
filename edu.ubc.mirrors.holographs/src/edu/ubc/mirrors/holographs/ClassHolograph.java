@@ -5,15 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
-import java.net.URLClassLoader;
-import java.security.SecureClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
@@ -144,6 +141,21 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         }
     }
     
+    static final List<ClassMirrorInitializedProvider> initializedProviders;
+    static {
+        IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint("edu.ubc.mirrors.holographs.initializedProvider");
+        initializedProviders = new ArrayList<ClassMirrorInitializedProvider>();
+        for (IExtension ext : extPoint.getExtensions()) {
+            for (IConfigurationElement config : ext.getConfigurationElements()) {
+                try {
+                    initializedProviders.add((ClassMirrorInitializedProvider)config.createExecutableExtension("impl"));
+                } catch (CoreException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+    
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
         this.vm = vm;
@@ -171,10 +183,15 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         return null;
     }
     
+    // TODO-RS: Temporary for evaluation
+    static final Set<String> unsupportedNativeMethods = new TreeSet<String>();
+    
     public Object invoke(InstanceMirror object, MethodMirror method, Object[] args) throws MirrorInvocationTargetException {
         MirrorInvocationHandler handler = getMethodHandler(method);
         if (handler == null) {
-            throw new InternalError("Unsupported native method: " + getClassName() + "#" + method.getName() + Reflection.getMethodType(method));
+            String methodSig = getClassName() + "#" + method.getName() + Reflection.getMethodType(method);
+            unsupportedNativeMethods.add(methodSig);
+            throw new InternalError("Unsupported native method: " + methodSig);
         }
         return handler.invoke(object, method, args);
     }
@@ -472,6 +489,9 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     private Boolean initialized = null;
     private boolean initializedResolved = false;
     
+    // TODO-RS: Temporary for evaluation
+    static final Set<String> inferInitFailures = new TreeSet<String>();
+    
     @Override
     public boolean initialized() {
         if (actuallyHasInitialization()) {
@@ -479,6 +499,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         } else {
             resolveInitialized();
             if (initialized == null) {
+                inferInitFailures.add(getClassName());
                 throw new InternalError("Unable to infer initialization status of class: " + this);
             }
             return initialized;
@@ -525,38 +546,20 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         }
     }
     
-    private static final Set<String> idempotentClassInits = new HashSet<String>(Arrays.asList(
-            Modifier.class.getName(),
-//            PatternSyntaxException.class.getName(),
-            URLClassLoader.class.getName(),
-            SecureClassLoader.class.getName(),
-//            "org.eclipse.core.internal.runtime.CompatibilityHelper",
-//            "com.ibm.icu.impl.ICUService",
-//            "org.eclipse.ui.internal.misc.Policy",
-            "org.eclipse.equinox.weaving.hooks.AbstractWeavingHook",
-//            "org.eclipse.osgi.internal.permadmin.EquinoxSecurityManager",
-//            "java.lang.invoke.MethodHandleNatives",
-            "sun.reflect.UnsafeStaticFieldAccessorImpl"
-//            // Hits illegal native methods anyway - this makes the classes untouchable
-//            "sun.nio.ch.NativeThread",
-//            "sun.reflect.ConstantPool",
-//            "java.lang.Compiler",
-//            "org.eclipse.swt.internal.cocoa.CGRect",
-//            // This one would be solved via inter-class analysis
-//            "org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor"
-            ));
-    
     private Boolean inferInitialized() {
         if (isArray()) {
             return true;
         }
      
-        BytecodeClassMirror bytecodeClassMirror = (BytecodeClassMirror)getBytecodeMirror();
-        
-        // TODO-RS: Make this pluggable
-        if (idempotentClassInits.contains(getClassName())) {
-            return false;
+        // Check the plugins first
+        for (ClassMirrorInitializedProvider provider : initializedProviders) {
+            Boolean result = provider.isInitialized(this);
+            if (result != null) {
+                return result;
+            }
         }
+        
+        BytecodeClassMirror bytecodeClassMirror = (BytecodeClassMirror)getBytecodeMirror();
         
         // If there is no <clinit> method, then we don't care.
         StaticsInfo classInitInfo = bytecodeClassMirror.classInitInfo();

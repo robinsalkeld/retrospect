@@ -11,7 +11,6 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.reflect.InvocationHandler;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -20,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.jar.JarFile;
 import java.util.zip.Inflater;
@@ -88,6 +88,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     private final Thread debuggingThread;
     
+    // TODO-RS: Move all this data that is only relevant for MNMs to
+    // the plugins.
+    
     private final Map<String, String> mappedFiles;
     private final ClassLoader bootstrapBytecodeLoader;
     private final Map<String, ClassHolograph> dynamicallyDefinedClasses =
@@ -103,6 +106,21 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     public Map<List<Long>, ZipEntry> zipEntriesByAddresses = new HashMap<List<Long>, ZipEntry>();
     
     public Map<Long, Inflater> inflaterByAddress = new HashMap<Long, Inflater>();
+    
+    static final List<ClassMirrorBytecodeProvider> bytecodeProviders;
+    static {
+        IExtensionPoint extPoint = Platform.getExtensionRegistry().getExtensionPoint("edu.ubc.mirrors.holographs.bytecodeProvider");
+        bytecodeProviders = new ArrayList<ClassMirrorBytecodeProvider>();
+        for (IExtension ext : extPoint.getExtensions()) {
+            for (IConfigurationElement config : ext.getConfigurationElements()) {
+                try {
+                    bytecodeProviders.add((ClassMirrorBytecodeProvider)config.createExecutableExtension("impl"));
+                } catch (CoreException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
     
     public VirtualMachineHolograph(VirtualMachineMirror wrappedVM, Map<String, String> mappedFiles) {
         super(wrappedVM);
@@ -467,10 +485,24 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         };
     }
     
+    // TODO-RS: Temporary for evaluation
+    static final Set<String> getBytecodeFailures = new TreeSet<String>();
+    
     public byte[] getBytecode(ClassMirror holographClass) {
+        byte[] result;
+        // Check any plugins first.
+        // TODO-RS: It probably makes sense to move the "load the matching resource"
+        // logic into a default plugin.
+        for (ClassMirrorBytecodeProvider provider : bytecodeProviders) {
+            result = provider.getBytecode(holographClass);
+            if (result != null) {
+                return result;
+            }
+        }
+        
         ClassMirrorLoader holographLoader = holographClass.getLoader();
         if (holographLoader == null) {
-            byte[] result = NativeClassMirror.getNativeBytecode(bootstrapBytecodeLoader, holographClass.getClassName());
+            result = NativeClassMirror.getNativeBytecode(bootstrapBytecodeLoader, holographClass.getClassName());
             if (result == null) {
                 throw new InternalError("Couldn't load bytecode for bootstrapped class: " + holographClass);
             }
@@ -496,11 +528,12 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             }
         }, resourceNameMirror);
         if (stream == null) {
-            throw new InternalError("Couldn't load bytecode for class " + resourceName + " from loader: " + holographLoader);
+            getBytecodeFailures.add(className);
+            throw new InternalError("Couldn't load bytecode for class " + className + " from loader: " + holographLoader);
         }
         
 //        System.out.println("Loaded bytecode stream for " + holographClass.getClassName() + ": " + timer.lap());
-        byte[] result = readBytecodeFromStream(thread, holographClass, stream);
+        result = readBytecodeFromStream(thread, holographClass, stream);
         
         ThreadHolograph.lowerMetalevel();
 //        System.out.println("Loaded bytecode for " + holographClass.getClassName() + ": " + timer.stop());
@@ -668,6 +701,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     public void prepare() {
         ThreadMirror thread = getThreads().get(0);
+        final boolean catchErrors = Boolean.getBoolean("edu.ubc.mirrors.holograms.catchErrors");
+
         Reflection.withThread(thread, new Callable<Void>() {
            @Override
             public Void call() throws Exception {
@@ -679,9 +714,12 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                    try {
                        prepareClass(klass);
                    } catch (Throwable e) {
-                       // TODO: for now
-                       e.printStackTrace();
-                       errors.add(klass.getClassName());
+                       if (catchErrors) {
+                           e.printStackTrace();
+                           errors.add(klass.getClassName());
+                       } else {
+                           throw new RuntimeException(e);
+                       }
                    }
                    classCount++;
                    System.out.print(".");
@@ -717,5 +755,21 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             internedStrings.put(realString, interned);
         }
         return interned;
+    }
+    
+    // TODO-RS: Temporary for evaluation
+    public void reportErrors() {
+        System.out.println("\n[ Missing bytecode ]");
+        for (String s : getBytecodeFailures) {
+            System.out.println(s);
+        }
+        System.out.println("\n[ Unsupported native methods ]");
+        for (String s : ClassHolograph.unsupportedNativeMethods) {
+            System.out.println(s);
+        }
+        System.out.println("\n[ Infer initialization failures ]");
+        for (String s : ClassHolograph.inferInitFailures) {
+            System.out.println(s);
+        }
     }
 }

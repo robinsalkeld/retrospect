@@ -40,4 +40,11 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.pde.PluginNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>README.md</name>
+			<type>1</type>
+			<locationURI>/Users/robinsalkeld/Documents/UBC/Code/Retrospect/README.md</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

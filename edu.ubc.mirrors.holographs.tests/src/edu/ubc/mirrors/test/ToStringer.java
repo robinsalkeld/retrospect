@@ -173,7 +173,9 @@ public class ToStringer implements IApplication {
 //                    System.out.println(s);
 //                }
             }
-//            HologramClassLoader.printStats();
+            if (vm instanceof VirtualMachineHolograph) {
+                ((VirtualMachineHolograph)vm).reportErrors();
+            }
         }
     }
     

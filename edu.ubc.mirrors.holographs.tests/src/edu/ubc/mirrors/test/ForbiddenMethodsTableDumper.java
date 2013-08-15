@@ -44,7 +44,7 @@ public class ForbiddenMethodsTableDumper {
                 } else {
                     out.append("\\\\ \\cline{2-3}\n");
                 }
-                String line = " & " + pattern.className + " & " + pattern.methodName;
+                String line = " & \\code{" + pattern.className + "} & \\code{" + pattern.methodName + "}";
                 out.append(line.replace("$", "\\$"));
             }
             out.append("\\\\ \\hline\n");
