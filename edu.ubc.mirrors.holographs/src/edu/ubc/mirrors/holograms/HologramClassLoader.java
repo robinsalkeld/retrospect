@@ -38,27 +38,10 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpClassMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.mirrors.holograms.BooleanArrayHologram;
-import edu.ubc.mirrors.holograms.ByteArrayHologram;
-import edu.ubc.mirrors.holograms.CharArrayHologram;
-import edu.ubc.mirrors.holograms.DoubleArrayHologram;
-import edu.ubc.mirrors.holograms.FloatArrayHologram;
-import edu.ubc.mirrors.holograms.FrameAnalyzerAdaptor;
-import edu.ubc.mirrors.holograms.IntArrayHologram;
-import edu.ubc.mirrors.holograms.LongArrayHologram;
-import edu.ubc.mirrors.holograms.Hologram;
-import edu.ubc.mirrors.holograms.HologramClassGenerator;
-import edu.ubc.mirrors.holograms.HologramClassLoader;
-import edu.ubc.mirrors.holograms.HologramClassMirror;
-import edu.ubc.mirrors.holograms.HologramClassLoaderMirror;
-import edu.ubc.mirrors.holograms.HologramMethodGenerator;
-import edu.ubc.mirrors.holograms.ShortArrayHologram;
-import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
@@ -333,13 +316,11 @@ public class HologramClassLoader extends ClassLoader {
             if (vm.getBytecodeCacheDir() != null) {
         	writeToBytecodeCache(cacheIndex, internalName, result);
 
-                // Optimization for heap dumps: let the underlying VM cache the location of bytecode,
-                // since it has stable, persistent object identifiers.
+                // Possible optimization: let the underlying VM cache the location of bytecode,
+                // if it has stable, persistent object identifiers.
                 ClassMirror wrappedClass = ((ClassHolograph)hologramClassMirror.getOriginal()).getWrappedClassMirror();
-                if (wrappedClass instanceof HeapDumpClassMirror) {
-                    File originalBytecodeLocation = createClassFile(cacheIndex, originalInternalName + ".class");
-                    ((HeapDumpClassMirror)wrappedClass).bytecodeLocated(originalBytecodeLocation);
-                }
+                File originalBytecodeLocation = createClassFile(cacheIndex, originalInternalName + ".class");
+                hologramClassMirror.bytecodeLocated(originalBytecodeLocation);
             }
             
             long time = sw.stop();

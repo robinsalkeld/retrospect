@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.wrapping;
 
+import java.io.File;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
@@ -197,5 +198,10 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     @Override
     public InstanceMirror getStaticFieldValues() {
         return (InstanceMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
+    }
+    
+    @Override
+    public void bytecodeLocated(File originalBytecodeLocation) {
+        wrapped.bytecodeLocated(originalBytecodeLocation);
     }
 }

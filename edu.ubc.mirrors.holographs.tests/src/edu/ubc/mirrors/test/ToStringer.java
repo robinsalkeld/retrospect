@@ -56,7 +56,9 @@ public class ToStringer implements IApplication {
         
         Map<String, String> mappedFiles = Collections.singletonMap("/", "/");
         
-        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, mappedFiles);
+        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
+                HeapDumpVirtualMachineMirror.defaultHolographicVMClassCacheDir(snapshot),
+                mappedFiles);
         
         holographVM.prepare();
         

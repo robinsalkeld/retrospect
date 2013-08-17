@@ -13,7 +13,7 @@ public class SnapshotAndPrepare implements IApplication {
     public void main(String[] args) throws Exception {
         int port = Integer.valueOf(args[0]);
         
-        final VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(port);
+        final VirtualMachine jdiVM = JDIUtils.connectOnPort(port);
         System.out.println("Connected.");
         
         File snapshotPath = LiveVersusDeadToStringEvaluation.pauseAndDump(jdiVM);

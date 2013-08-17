@@ -30,6 +30,7 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.CalculatedObjectArrayMirror;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
@@ -55,7 +56,7 @@ public class CDTBugTest implements IApplication {
                 Collections.<String, String>emptyMap(), 
                 new ConsoleProgressListener(System.out));
 
-        final VirtualMachineHolograph holographVM = VirtualMachineHolograph.fromSnapshotWithIniFile(snapshot);
+        final VirtualMachineHolograph holographVM = HeapDumpVirtualMachineMirror.holographicVMWithIniFile(snapshot);
         
         if (HologramClassLoader.debug) {
             System.out.println("Finding target class...");

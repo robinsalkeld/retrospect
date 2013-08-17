@@ -1,5 +1,6 @@
 package edu.ubc.mirrors;
 
+import java.io.File;
 import java.util.List;
 
 
@@ -59,4 +60,7 @@ public interface ClassMirror extends InstanceMirror {
     
     // This fake "object" must return the vm's Object type from getClassMirror()
     public InstanceMirror getStaticFieldValues();
+    
+    // For VM implementations that can cache this information effectively.
+    public void bytecodeLocated(File originalBytecodeLocation);
 }

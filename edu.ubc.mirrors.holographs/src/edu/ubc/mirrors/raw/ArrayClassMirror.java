@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.raw;
 
+import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -218,5 +219,9 @@ public class ArrayClassMirror extends BlankClassMirror {
     public byte[] getRawAnnotations() {
         // TODO-RS: Hope this is right...
         return new byte[0];
+    }
+    
+    @Override
+    public void bytecodeLocated(File originalBytecodeLocation) {
     }
 }

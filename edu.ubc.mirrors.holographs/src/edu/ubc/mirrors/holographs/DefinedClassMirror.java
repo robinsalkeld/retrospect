@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.holographs;
 
+import java.io.File;
+
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -88,5 +90,9 @@ public class DefinedClassMirror extends BytecodeClassMirror implements NewInstan
             });
             request.enable();
         }
+    }
+
+    @Override
+    public void bytecodeLocated(File originalBytecodeLocation) {
     }
 }

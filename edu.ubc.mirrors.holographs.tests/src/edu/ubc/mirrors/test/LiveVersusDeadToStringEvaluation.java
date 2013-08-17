@@ -41,7 +41,7 @@ public class LiveVersusDeadToStringEvaluation implements IApplication {
     public static void main(String[] args) throws Exception {
         int port = Integer.valueOf(args[0]);
         
-        final VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(port);
+        final VirtualMachine jdiVM = JDIUtils.connectOnPort(port);
         System.out.println("Connected.");
         run(jdiVM);
     }  
@@ -70,7 +70,7 @@ public class LiveVersusDeadToStringEvaluation implements IApplication {
         final JDIVirtualMachineMirror liveVM = new JDIVirtualMachineMirror(jdiVM);
         
         final ThreadMirror threadMirror = (ThreadMirror)liveVM.makeMirror(thread);
-        final VirtualMachineHolograph holograpOnLiveVM = new VirtualMachineHolograph(liveVM, Reflection.getStandardMappedFiles());
+        final VirtualMachineHolograph holograpOnLiveVM = new VirtualMachineHolograph(liveVM, null, Reflection.getStandardMappedFiles());
         final ThreadHolograph threadHolograph = (ThreadHolograph)holograpOnLiveVM.getWrappedMirror(threadMirror);
         Reflection.withThread(threadHolograph, new Callable<Object>() {
             @Override
@@ -105,7 +105,9 @@ public class LiveVersusDeadToStringEvaluation implements IApplication {
         // Create a holograph VM
         Map<String, String> mappedFiles = Collections.singletonMap("/", "/");
         
-        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(heapDumpVM, mappedFiles);
+        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(heapDumpVM, 
+                HeapDumpVirtualMachineMirror.defaultHolographicVMClassCacheDir(snapshot),
+                mappedFiles);
 
         holographVM.prepare();
         

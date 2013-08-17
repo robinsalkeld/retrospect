@@ -18,21 +18,20 @@ import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
-import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.MirrorInvocationHandler;
 import edu.ubc.mirrors.holographs.MirrorInvocationHandlerProvider;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.holographs.jdkplugins.JDKNativeStubsProvider;
-import edu.ubc.mirrors.holographs.jdkplugins.NativeStubsProvider;
 
 public class JarVerifier implements IApplication {
     public static void main(String[] args) throws Exception {
@@ -50,6 +49,7 @@ public class JarVerifier implements IApplication {
         Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
         
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
+                HeapDumpVirtualMachineMirror.defaultHolographicVMClassCacheDir(snapshot),
                 mappedFiles);
         
         new JarVerifier().verifyJars(holographVM);
@@ -71,36 +71,40 @@ public class JarVerifier implements IApplication {
         for (String path : paths) {
             if (new File(path).exists()) {
                 JarFile jarFile = new JarFile(path);
-                for (JarEntry entry : Collections.list(jarFile.entries())) {
-                    String name = entry.getName();
-                    if (name.endsWith(".class")) {
-                        classes++;
-                        new ClassReader(jarFile.getInputStream(entry)).accept(counter, 0);
-                        
-                        final String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
-                        try {
-                            Reflection.withThread(thread, new Callable<Void>() {
-                                @Override
-                                public Void call() throws Exception {
-                                    ClassMirror classMirror = vm.findBootstrapClassMirror(className);
-                                    if (classMirror == null) {
-                                        noBytecode++;
+                try {
+                    for (JarEntry entry : Collections.list(jarFile.entries())) {
+                        String name = entry.getName();
+                        if (name.endsWith(".class")) {
+                            classes++;
+                            new ClassReader(jarFile.getInputStream(entry)).accept(counter, 0);
+                            
+                            final String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
+                            try {
+                                Reflection.withThread(thread, new Callable<Void>() {
+                                    @Override
+                                    public Void call() throws Exception {
+                                        ClassMirror classMirror = vm.findBootstrapClassMirror(className);
+                                        if (classMirror == null) {
+                                            noBytecode++;
+                                            return null;
+                                        }
+                                        HologramClassLoader loader = ClassHolograph.getHologramClassLoader(classMirror);
+                                        loader.getHologramClass(classMirror, true);
                                         return null;
                                     }
-                                    HologramClassLoader loader = ClassHolograph.getHologramClassLoader(classMirror);
-                                    loader.getHologramClass(classMirror, true);
-                                    return null;
-                                }
-                            });
-                        } catch (Exception e) {
-                            errors++;
-                            e.printStackTrace();
-                        }
-                        
-                        if (classes % 100 == 0) {
-                            System.out.println("Processed " + classes);
+                                });
+                            } catch (Exception e) {
+                                errors++;
+                                e.printStackTrace();
+                            }
+                            
+                            if (classes % 100 == 0) {
+                                System.out.println("Processed " + classes);
+                            }
                         }
                     }
+                } finally {
+                    jarFile.close();
                 }
             }
         }
@@ -111,21 +115,24 @@ public class JarVerifier implements IApplication {
         for (Map.Entry<String, Set<MethodNode>> entry : counter.classesWithNativeMethods.entrySet()) {
             String fullInternalName = entry.getKey();
             String fullName = fullInternalName.replace('/', '.');
+            ClassMirror klass = vm.findAllClasses(fullName, false).get(0);
             
             for (MethodNode method : entry.getValue()) {
-                Method stubMethod = NativeStubsProvider.getStubMethodDesc(fullInternalName, method.name, method.access, method.desc);
-                if (stubsMethods.containsKey(stubMethod)) {
+                MethodMirror methodMirror = Reflection.getDeclaredMethod(thread, klass, method.name, Type.getType(method.desc));
+                
+                MirrorInvocationHandler handler = provider.getInvocationHandler(methodMirror);
+                if (handler != null) {
                     implemented++;
                     continue;
                 }
                 
-                String message = ClassHolograph.getIllegalNativeMethodMessage(fullName, stubMethod);
+                String message = ClassHolograph.getIllegalNativeMethodMessage(fullName, methodMirror);
                 if (message != null) {
                     illegal++;
                     continue;
                 }
                 
-                message = ClassHolograph.getMissingNativeMethodMessage(fullName, stubMethod);
+                message = ClassHolograph.getMissingNativeMethodMessage(fullName, methodMirror);
                 if (message != null) {
                     missing++;
                     missingMethods.append(fullName + '#' + method.name + method.desc + "\n");

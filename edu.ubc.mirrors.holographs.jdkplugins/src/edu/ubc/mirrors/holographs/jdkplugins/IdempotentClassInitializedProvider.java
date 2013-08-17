@@ -1,9 +1,5 @@
 package edu.ubc.mirrors.holographs.jdkplugins;
 
-import java.lang.reflect.Modifier;
-import java.net.URLClassLoader;
-import java.security.KeyFactory;
-import java.security.SecureClassLoader;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

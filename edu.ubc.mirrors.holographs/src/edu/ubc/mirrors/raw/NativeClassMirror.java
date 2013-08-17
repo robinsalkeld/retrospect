@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.raw;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -332,5 +333,9 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     @Override
     public InstanceMirror getStaticFieldValues() {
         return staticFieldValues;
+    }
+    
+    @Override
+    public void bytecodeLocated(File originalBytecodeLocation) {
     }
 }

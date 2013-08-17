@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.mat.snapshot.ISnapshot;
 import org.objectweb.asm.Type;
 
 import sun.misc.FileURLMapper;
@@ -64,7 +63,6 @@ import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holograms.HologramVirtualMachine;
 import edu.ubc.mirrors.holograms.Stopwatch;
@@ -122,27 +120,13 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
     }
     
-    public VirtualMachineHolograph(VirtualMachineMirror wrappedVM, Map<String, String> mappedFiles) {
+    public VirtualMachineHolograph(VirtualMachineMirror wrappedVM, File bytecodeCacheDir, Map<String, String> mappedFiles) {
         super(wrappedVM);
         if (HologramClassLoader.debug) {
             System.out.println("Creating VM holograph...");
         }
         
-//        if (Boolean.getBoolean("edu.ubc.mirrors.holograms.bytecodeCaching")) { 
-            String bcdProperty = System.getProperty("edu.ubc.mirrors.holograms.bytecodeCacheDir");
-            if (bcdProperty != null) {
-                bytecodeCacheDir = new File(bcdProperty);
-            } else if (wrappedVM instanceof HeapDumpVirtualMachineMirror) {
-                HeapDumpVirtualMachineMirror hdVM = (HeapDumpVirtualMachineMirror)wrappedVM;
-                String snapshotPath = hdVM.getSnapshot().getSnapshotInfo().getPath();
-                int lastDot = snapshotPath.lastIndexOf('.');
-                bytecodeCacheDir = new File(snapshotPath.substring(0, lastDot) + "_hologram_classes");
-            } else {
-                bytecodeCacheDir = null;
-            }
-//        } else {
-//            bytecodeCacheDir = null;
-//        }
+        this.bytecodeCacheDir = bytecodeCacheDir;
         
         this.hologramVM = new HologramVirtualMachine(this);
         this.hologramBootstrapLoader = new HologramClassLoader(this, null);
@@ -170,15 +154,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         if (HologramClassLoader.debug) {
             System.out.println("Done.");
         }
-    }
-    
-    public static VirtualMachineHolograph fromSnapshotWithIniFile(ISnapshot snapshot) {
-        String snapshotPath = snapshot.getSnapshotInfo().getPath();
-        int lastDot = snapshotPath.lastIndexOf('.');
-        File holographicFSConfigPath = new File(snapshotPath.substring(0, lastDot) + "_hfs.ini");
-        Map<String, String> mappedFiles = readStringMapFromFile(holographicFSConfigPath);
-        HeapDumpVirtualMachineMirror hdvm = new HeapDumpVirtualMachineMirror(snapshot);
-        return new VirtualMachineHolograph(hdvm, mappedFiles);
     }
     
     public static Map<String, String> readStringMapFromFile(File path) {

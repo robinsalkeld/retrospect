@@ -49,6 +49,7 @@ public class HeapDumpTest2 implements IApplication {
     mappedFiles.put(javaExtDir, javaExtDir);
   
     final VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
+            HeapDumpVirtualMachineMirror.defaultHolographicVMClassCacheDir(snapshot),
             mappedFiles);
     
     Reflection.withThread(holographVM.getThreads().get(0), new Callable<Void>() {

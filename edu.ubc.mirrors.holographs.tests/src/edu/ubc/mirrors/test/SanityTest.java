@@ -84,7 +84,7 @@ public class SanityTest extends TestCase {
     }
     
     public void testLiveToStringer() throws Exception {
-        final VirtualMachine jdiVM = JDIVirtualMachineMirror.commandLineLaunch(
+        final VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
                 "edu.ubc.mirrors.test.JREOnly", 
                 "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.holographs.tests/bin\"",
                 false);

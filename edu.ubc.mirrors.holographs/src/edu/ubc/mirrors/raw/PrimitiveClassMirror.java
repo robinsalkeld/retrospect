@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.raw;
 
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
@@ -177,4 +178,7 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
         return null;
     }
 
+    @Override
+    public void bytecodeLocated(File originalBytecodeLocation) {
+    }
 }

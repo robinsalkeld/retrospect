@@ -22,6 +22,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.retrospect.RetroactiveWeaver;
@@ -46,7 +47,7 @@ public class DebuggingTest {
         thing.properties.put("something", "else");
         thing.properties.put("who", "knows");
         
-        VirtualMachine jdiVM = JDIVirtualMachineMirror.commandLineLaunch(
+        VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
         	"tracing.ExampleMain", 
         	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"",
         	true);
@@ -67,7 +68,7 @@ public class DebuggingTest {
         URL urlPath = binDir.toURI().toURL();
         
         JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
-	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM,
+	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM, null,
                 Collections.singletonMap("/", "/"));
         final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));
         

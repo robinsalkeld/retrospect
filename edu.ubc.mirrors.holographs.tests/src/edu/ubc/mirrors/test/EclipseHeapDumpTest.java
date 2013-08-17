@@ -58,6 +58,7 @@ public class EclipseHeapDumpTest implements IApplication {
         
         // Create a holograph VM
         final VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
+                HeapDumpVirtualMachineMirror.defaultHolographicVMClassCacheDir(snapshot),
                 Reflection.getStandardMappedFiles());
         
         Reflection.withThread(holographVM.getThreads().get(0), new Callable<Void>() {

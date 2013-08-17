@@ -5,7 +5,6 @@ import java.util.Map;
 
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 
 public class FieldMapMirrorEventRequest implements MirrorEventRequest {
 

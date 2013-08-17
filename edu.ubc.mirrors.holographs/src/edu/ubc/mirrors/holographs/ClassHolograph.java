@@ -74,7 +74,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
             }
         }
         
-        public boolean matches(String owner, org.objectweb.asm.commons.Method method) {
+        public boolean matches(String owner, MethodMirror method) {
             return classNamePattern.matcher(owner).matches() && methodNamePattern.matcher(method.getName()).matches();
         }
         
@@ -196,7 +196,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         return handler.invoke(object, method, args);
     }
     
-    public static String getIllegalNativeMethodMessage(String owner, org.objectweb.asm.commons.Method method) {
+    public static String getIllegalNativeMethodMessage(String owner, MethodMirror method) {
         for (MethodPattern pattern : illegalMethodPatterns) {
             if (pattern.matches(owner, method)) {
                 return pattern.category;
@@ -205,7 +205,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         return null;
     }
     
-    public static String getMissingNativeMethodMessage(String owner, org.objectweb.asm.commons.Method method) {
+    public static String getMissingNativeMethodMessage(String owner, MethodMirror method) {
         for (MethodPattern pattern : missingMethodPatterns) {
             if (pattern.matches(owner, method)) {
                 return pattern.category;

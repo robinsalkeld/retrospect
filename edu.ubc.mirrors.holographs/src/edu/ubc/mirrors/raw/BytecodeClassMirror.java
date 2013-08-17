@@ -2,6 +2,7 @@ package edu.ubc.mirrors.raw;
 
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.classType;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1124,5 +1125,9 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     public StaticsInfo classInitInfo() {
         resolve();
         return staticInitInfo;
+    }
+
+    @Override
+    public void bytecodeLocated(File originalBytecodeLocation) {
     }
 }
