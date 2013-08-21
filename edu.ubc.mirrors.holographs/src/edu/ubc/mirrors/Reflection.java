@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -346,6 +347,57 @@ public class Reflection {
         ObjectMirror[] result = new ObjectMirror[mirror.length()];
         for (int i = 0; i < result.length; i++) {
             result[i] = mirror.get(i);
+        }
+        return result;
+    }
+    
+    public static Map<ObjectMirror, ObjectMirror> mapEntries(ObjectMirror map) {
+        InstanceMirror /* entry set */ entrySet = (InstanceMirror)Reflection.invokeMethodHandle(map, 
+                new MethodHandle() {
+                    protected void methodCall() throws Throwable {
+                        ((Map<?, ?>)null).entrySet();
+                    }
+                });
+        Map<ObjectMirror, ObjectMirror> entries = new HashMap<ObjectMirror, ObjectMirror>();
+        for (ObjectMirror entry : Reflection.collectionValues(entrySet)) {
+            ObjectMirror key = (ObjectMirror)Reflection.invokeMethodHandle(entry, new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ((Map.Entry<?, ?>)null).getKey();
+                }
+            });
+            ObjectMirror value = (ObjectMirror)Reflection.invokeMethodHandle(entry, new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ((Map.Entry<?, ?>)null).getValue();
+                }
+            });
+            entries.put(key, value);
+        }
+        return entries;
+    }
+    
+    public static List<ObjectMirror> collectionValues(ObjectMirror collection) {
+        ObjectMirror iterator = (ObjectMirror)Reflection.invokeMethodHandle(collection, new MethodHandle() {
+            @Override
+            protected void methodCall() throws Throwable {
+                ((Collection<?>)null).iterator();
+            }
+        });
+        MethodHandle nextMethod = new MethodHandle() {
+            @Override
+            protected void methodCall() throws Throwable {
+                ((Iterator<?>)null).next();
+            }  
+        };
+        MethodHandle hasNextMethod = new MethodHandle() {
+            @Override
+            protected void methodCall() throws Throwable {
+                ((Iterator<?>)null).hasNext();
+            }  
+        };
+        List<ObjectMirror> result = new ArrayList<ObjectMirror>();
+        while (((Boolean)Reflection.invokeMethodHandle(iterator, hasNextMethod)).booleanValue()) {
+            ObjectMirror element = (ObjectMirror)Reflection.invokeMethodHandle(iterator, nextMethod);
+            result.add(element);
         }
         return result;
     }

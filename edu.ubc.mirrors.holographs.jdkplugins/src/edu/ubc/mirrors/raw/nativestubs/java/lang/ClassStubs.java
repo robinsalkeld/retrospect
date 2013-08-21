@@ -41,6 +41,12 @@ public class ClassStubs extends NativeStubs {
         if (name == null) {
             throw new NullPointerException();
         }
+
+        // See JLS 20.3.2
+        if (klass.isArray()) {
+            name = Reflection.typeForClassMirror(klass).getDescriptor().replace('/', '.');
+        }
+        
         return Reflection.makeString(getVM(), name);
     }
     

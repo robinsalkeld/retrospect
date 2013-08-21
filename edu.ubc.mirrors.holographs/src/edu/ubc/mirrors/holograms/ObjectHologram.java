@@ -64,6 +64,11 @@ public class ObjectHologram implements Hologram {
         return mirror.getClassMirror();
     }
     
+    @Override
+    public int hashCode() {
+        return identityHashCode();
+    }
+    
     public int identityHashCode() {
         return mirror.identityHashCode();
     }
@@ -271,6 +276,7 @@ public class ObjectHologram implements Hologram {
     public static Object invokeMethodHandler(ClassMirror klass, String methodName, String methodDesc, InstanceMirror object, Object[] args) throws Throwable {
         Type methodType = Type.getMethodType(methodDesc);
         ClassHolograph classHolograph = (ClassHolograph)klass;
+        // TODO-RS: Caching! This is quite slow.
         MethodMirror method = Reflection.getDeclaredMethod(ThreadHolograph.currentThreadMirror(), klass, methodName, methodType);
         
         try {

@@ -93,6 +93,11 @@ public class DefinedClassMirror extends BytecodeClassMirror implements NewInstan
     }
 
     @Override
+    public int identityHashCode() {
+        return hashCode();
+    }
+    
+    @Override
     public void bytecodeLocated(File originalBytecodeLocation) {
     }
 }

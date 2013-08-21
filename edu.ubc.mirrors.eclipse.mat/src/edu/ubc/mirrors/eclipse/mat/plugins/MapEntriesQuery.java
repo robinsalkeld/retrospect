@@ -221,7 +221,7 @@ public class MapEntriesQuery implements IQuery
 		            ((Map<?, ?>)null).entrySet();
 		        }
 		    });
-		    List<ObjectMirror> entryMirrors = CollectionValuesQuery.getValues(entrySet);
+		    List<ObjectMirror> entryMirrors = Reflection.collectionValues(entrySet);
 		    for (ObjectMirror element : entryMirrors) {
 		        hashEntries.add(new Entry(mirror, element));
 		    }

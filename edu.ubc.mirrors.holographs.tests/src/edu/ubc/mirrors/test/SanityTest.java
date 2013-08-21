@@ -1,5 +1,7 @@
 package edu.ubc.mirrors.test;
 
+import static edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror.unhash;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +32,6 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery;
-import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 
 public class SanityTest extends TestCase {
 
@@ -103,6 +104,30 @@ public class SanityTest extends TestCase {
         jdiVM.eventQueue().remove();
         LiveVersusDeadToStringEvaluation.run(jdiVM);
         jdiVM.exit(0);
+    }
+    
+    private static int hash(int h) {
+        // Copied from HashMap$Entry#hash for reference and testing.
+        h ^= (h >>> 20) ^ (h >>> 12);
+        return h ^ (h >>> 7) ^ (h >>> 4);
+    }
+    private static int hashExpanded(int h, int[] shiftOffsets) {
+        int result = h;
+        for (int offset : shiftOffsets) {
+            result ^= h >>> offset;
+        }
+        return result;
+    }
+    public void testUnhash() {
+        int h = 1168935528;
+        int hashed = hash(h);
+        assertEquals(hashed, hashExpanded(h, new int[]{4, 7, 12, 16, 19, 20, 24, 27}));
+        
+        int unhashed = unhash(hashed, new int[]{4, 7, 12, 16, 19, 20, 24, 27});
+        assertEquals(Integer.toBinaryString(h), Integer.toBinaryString(unhashed));
+        
+        int unhashedFaster = unhash(unhash(hashed, new int[]{4, 7}), new int[]{12, 20});
+        assertEquals(Integer.toBinaryString(h), Integer.toBinaryString(unhashedFaster));
     }
     
     // TODO-RS: DebuggingTest

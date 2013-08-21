@@ -262,4 +262,9 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     public FrameMirror wrapFrameMirror(WrappingVirtualMachine vm, FrameMirror frame) {
         return new WrappingFrameMirror(vm, frame);
     }
+    
+    // Introducing a single choke point 
+    public int identityHashCode(WrappingMirror wrapper) {
+        return wrapper.identityHashCode();
+    }
 }

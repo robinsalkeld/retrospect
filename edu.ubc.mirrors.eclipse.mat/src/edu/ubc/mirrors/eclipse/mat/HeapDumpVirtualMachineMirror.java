@@ -18,6 +18,7 @@ import org.eclipse.mat.snapshot.model.IInstance;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
+import org.eclipse.mat.snapshot.model.NamedReference;
 import org.eclipse.mat.snapshot.model.ObjectReference;
 
 import edu.ubc.mirrors.ByteArrayMirror;
@@ -42,6 +43,8 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     
     private Map<String, String> cachedBytecode;
     private File bytecodeMappingPath;
+    
+    private Map<IObject, Integer> identityHashCodes = new HashMap<IObject, Integer>();
     
     public static VirtualMachineHolograph holographicVMWithIniFile(ISnapshot snapshot) {
         File bytecodeCacheDir = defaultHolographicVMClassCacheDir(snapshot);
@@ -135,7 +138,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
                     }
                 }
             }
-            ClassMirror mirror = new PrimitiveClassMirror(this, typeName, signature);
+            ClassMirror mirror = new HeapDumpPrimitiveClassMirror(this, primitiveInstance, typeName, signature);
             primitiveClasses.put(typeName, mirror);
             if (primitiveInstance != null) {
                 mirrors.put(primitiveInstance, mirror);
@@ -297,8 +300,59 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         return false;
     }
     
+    /**
+     * Given the value h ^ (h >>> shiftOffsets[0]) ^ ... ^ (h >>> shiftOffsets[n]),
+     * recover h.
+     * @param h
+     * @param shiftOffsets
+     * @return
+     */
+    public static int unhash(int h, int[] shiftOffsets) {
+        int firstOffset = shiftOffsets[0];
+        int mask = ~(~0 >>> firstOffset);
+        while (mask != 0) {
+            int bits = h & mask;
+            for (int shiftOffset : shiftOffsets) {
+                 h ^= bits >>> shiftOffset;
+            }
+            mask >>>= firstOffset;
+        }
+        return h;
+    }
+    
     int identityHashCode(IObject object) {
-        return System.identityHashCode(object);
+        Integer result = identityHashCodes.get(object);
+        if (result != null) {
+            return result;
+        }
+        
+        try {
+            // Luckily HashMap holds onto the hash value (or rather a perturbation of it).
+            for (int refererId : snapshot.getInboundRefererIds(object.getObjectId())) {
+                IObject referer = snapshot.getObject(refererId);
+                if (referer.getClazz().getName().equals("java.util.HashMap$Entry")) {
+                    for (NamedReference ref : referer.getOutboundReferences()) {
+                        if (ref.getObject().equals(object) && ref.getName().equals("key")) {
+                            IInstance refererInstance = (IInstance)referer;
+                            result = (Integer)refererInstance.getField("hash").getValue();
+                            
+                            // Reverse the extra bit-twiddling. See HashMap#hash().
+                            result = unhash(unhash(result.intValue(), new int[]{4, 7}), new int[]{12, 20});
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (SnapshotException e) {
+            throw new RuntimeException(e);
+        }
+        
+        if (result == null) {
+            result = object.hashCode();
+        }
+        
+        identityHashCodes.put(object, result);
+        return result.intValue();
     }
     
     public ISnapshot getSnapshot() {

@@ -12,11 +12,8 @@
 package edu.ubc.mirrors.eclipse.mat.plugins;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.mat.collect.ArrayInt;
 import org.eclipse.mat.query.IQuery;
 import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.annotations.Argument;
@@ -25,11 +22,8 @@ import org.eclipse.mat.query.annotations.Category;
 import org.eclipse.mat.query.annotations.CommandName;
 import org.eclipse.mat.query.annotations.Name;
 import org.eclipse.mat.snapshot.ISnapshot;
-import org.eclipse.mat.snapshot.model.IObject;
-import org.eclipse.mat.snapshot.query.ObjectListResult;
 import org.eclipse.mat.util.IProgressListener;
 
-import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 
@@ -49,37 +43,10 @@ public class CollectionValuesQuery implements IQuery
         List<Object> entries = new ArrayList<Object>();
 
         ObjectMirror collectionMirror = HolographVMRegistry.getObjectMirror(snapshot, collectionID, listener);
-        for (ObjectMirror mirror : getValues(collectionMirror)) {
+        for (ObjectMirror mirror : Reflection.collectionValues(collectionMirror)) {
             entries.add(mirror);
         }
         
         return new ObjectMirrorListResult.Outbound(snapshot, entries);
-    }
-    
-    public static List<ObjectMirror> getValues(ObjectMirror collection) {
-        ObjectMirror iterator = (ObjectMirror)Reflection.invokeMethodHandle(collection, new MethodHandle() {
-            @Override
-            protected void methodCall() throws Throwable {
-                ((Collection<?>)null).iterator();
-            }
-        });
-        MethodHandle nextMethod = new MethodHandle() {
-            @Override
-            protected void methodCall() throws Throwable {
-                ((Iterator<?>)null).next();
-            }  
-        };
-        MethodHandle hasNextMethod = new MethodHandle() {
-            @Override
-            protected void methodCall() throws Throwable {
-                ((Iterator<?>)null).hasNext();
-            }  
-        };
-        List<ObjectMirror> result = new ArrayList<ObjectMirror>();
-        while (((Boolean)Reflection.invokeMethodHandle(iterator, hasNextMethod)).booleanValue()) {
-            ObjectMirror element = (ObjectMirror)Reflection.invokeMethodHandle(iterator, nextMethod);
-            result.add(element);
-        }
-        return result;
     }
 }
