@@ -24,7 +24,7 @@ public class ProxyStubs extends NativeStubs {
             return klass.getVM().defineBootstrapClass(realClassName, b, off, len);
         } else {
             InstanceMirror className = Reflection.makeString(klass.getVM(), realClassName);
-            return ClassLoaderStubs.defineClass(loader, className, b, off, len, null, null);
+            return ClassLoaderStubs.defineClass(loader, className, b, off, len, null, null, false);
         }
     }
 }

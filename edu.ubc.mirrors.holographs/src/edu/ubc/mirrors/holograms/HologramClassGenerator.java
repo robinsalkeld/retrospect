@@ -97,6 +97,10 @@ public class HologramClassGenerator extends ClassVisitor {
         this.classMirror = classMirror;
     }
     
+    private static int forcePublic(int access) {
+        return (~(Opcodes.ACC_ENUM | Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED) & access) | Opcodes.ACC_PUBLIC;
+    }
+    
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         this.name = name;
@@ -107,7 +111,7 @@ public class HologramClassGenerator extends ClassVisitor {
         // Force everything to be public, since HologramClassLoader has to reflectively
         // construct holograms. Again, not a problem because the VM will see the original flags on the ClassMirror instead.
         // Also remove enum flags.
-        int hologramAccess = (~(Opcodes.ACC_ENUM | Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED) & access) | Opcodes.ACC_PUBLIC;
+        int hologramAccess = forcePublic(access);
         // Also remove abstract flag. Shouldn't be necessary, but the VM (OpenJDK at least)
         // creates objects that claim to be an instance of VirtualMachineError, which is abstract.
         if (name.equals("hologram/java/lang/VirtualMachineError")) {
@@ -404,6 +408,12 @@ public class HologramClassGenerator extends ClassVisitor {
         // Take off the native keyword if it's there - we're going to fill in an actual
         // method (even if it's a stub that throws an exception).
         int hologramAccess = ~Opcodes.ACC_NATIVE & access;
+        
+        // Mild hack: generated method accessors are defined using ClassDefiner and Unsafe,
+        // allowing them to make illegal access to this package-private constructor.
+        if (this.name.equals("hologram/sun/reflect/MethodAccessorImpl") && name.equals("<init>")) {
+            hologramAccess = forcePublic(hologramAccess);
+        }
         
         MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);
         

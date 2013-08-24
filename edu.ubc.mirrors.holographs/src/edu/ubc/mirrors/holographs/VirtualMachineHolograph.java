@@ -63,6 +63,7 @@ import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holograms.HologramVirtualMachine;
 import edu.ubc.mirrors.holograms.Stopwatch;
@@ -127,6 +128,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
         
         this.bytecodeCacheDir = bytecodeCacheDir;
+        HologramClassLoader.checkHologramBytecodeVersion(this);
         
         this.hologramVM = new HologramVirtualMachine(this);
         this.hologramBootstrapLoader = new HologramClassLoader(this, null);
@@ -609,7 +611,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         // apply etc.
         final byte[] bytecode = NativeClassMirror.getNativeBytecode(bootstrapBytecodeLoader, name);
         if (bytecode != null) {
-            ClassMirror newClass = new DefinedClassMirror(this, null, name, bytecode);
+            ClassMirror newClass = new DefinedClassMirror(this, null, name, bytecode, false);
             ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(newClass);
             dynamicallyDefinedClasses.put(name, newClassHolograph);
             
@@ -631,7 +633,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         final byte[] realBytecode = new byte[len];
         Reflection.arraycopy(b, off, new NativeByteArrayMirror(realBytecode), 0, len);
         
-        ClassMirror newClass = new DefinedClassMirror(this, null, name, realBytecode);
+        ClassMirror newClass = new DefinedClassMirror(this, null, name, realBytecode, false);
         ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(newClass);
         dynamicallyDefinedClasses.put(name, newClassHolograph);
         return newClassHolograph;

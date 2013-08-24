@@ -57,4 +57,11 @@ public class SystemStubs extends NativeStubs {
         return System.currentTimeMillis();
     }
     
+    @StubMethod
+    public InstanceMirror mapLibraryName(InstanceMirror libnameMirror) {
+        // TODO-RS: Switch based on supported platforms.
+        String libname = Reflection.getRealStringForMirror(libnameMirror);
+        String mappedLibname = libname + ".so";
+        return Reflection.makeString(getVM(), mappedLibname);
+    }
 }

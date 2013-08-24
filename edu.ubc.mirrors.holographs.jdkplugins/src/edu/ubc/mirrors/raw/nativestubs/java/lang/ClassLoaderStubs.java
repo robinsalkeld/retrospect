@@ -36,11 +36,11 @@ public class ClassLoaderStubs extends NativeStubs {
     }
     
     public static ClassMirror defineClass(ClassMirrorLoader classLoader, InstanceMirror name, ByteArrayMirror b, int off, int len,
-            InstanceMirror pd, InstanceMirror source) {
+            InstanceMirror pd, InstanceMirror source, boolean unsafe) {
 	
         String realName = Reflection.getRealStringForMirror(name);
         
-        return classLoader.defineClass1(realName, b, off, len, pd, source);
+        return classLoader.defineClass(realName, b, off, len, pd, source, unsafe);
     }
     
     // JDK 7 version
@@ -48,7 +48,7 @@ public class ClassLoaderStubs extends NativeStubs {
     public ClassMirror defineClass1(ClassMirrorLoader classLoader, InstanceMirror name, ByteArrayMirror b, int off, int len,
             InstanceMirror pd, InstanceMirror source) {
         
-        return defineClass(classLoader, name, b, off, len, pd, source);
+        return defineClass(classLoader, name, b, off, len, pd, source, false);
     }
     
     // Note: the generic return type Class<? extends ClassLoader> of this method seems broken: it implies the result should

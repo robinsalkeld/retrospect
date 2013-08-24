@@ -2,6 +2,7 @@ package edu.ubc.mirrors.holograms;
 
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinaryClassName;
 
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 import org.objectweb.asm.Type;
@@ -162,8 +163,12 @@ public class ObjectHologram implements Hologram {
         
 	String name = klass.getName();
 	String originalClassName = HologramClassGenerator.getOriginalBinaryClassName(name);
-        HologramClassLoader loader = (HologramClassLoader)klass.getClassLoader();
-        return loader.loadOriginalClassMirror(originalClassName);
+	ClassLoader loader = klass.getClassLoader();
+	while (!(loader instanceof HologramClassLoader)) {
+	    loader = loader.getParent();
+	}
+        HologramClassLoader hologramLoader = (HologramClassLoader)loader;
+        return hologramLoader.loadOriginalClassMirror(originalClassName);
     }
     
     public static ClassMirror getClassMirrorForType(ClassMirror callingClass, String descriptor) {
@@ -225,30 +230,32 @@ public class ObjectHologram implements Hologram {
             InstanceMirror result = mirror.getClassMirror().newRawInstance();
             ClassMirror classMirror = instanceMirror.getClassMirror();
             for (FieldMirror field : Reflection.getAllFields(classMirror)) {
-                ClassMirror fieldType = field.getType();
-                String typeName = fieldType.getClassName();
-                try {
-                    if (typeName.equals(Boolean.TYPE.getName())) {
-                        result.setBoolean(field, instanceMirror.getBoolean(field));
-                    } else if (typeName.equals(Byte.TYPE.getName())) {
-                        result.setByte(field, instanceMirror.getByte(field));
-                    } else if (typeName.equals(Character.TYPE.getName())) {
-                        result.setChar(field, instanceMirror.getChar(field));
-                    } else if (typeName.equals(Short.TYPE.getName())) {
-                        result.setShort(field, instanceMirror.getShort(field));
-                    } else if (typeName.equals(Integer.TYPE.getName())) {
-                        result.setInt(field, instanceMirror.getInt(field));
-                    } else if (typeName.equals(Long.TYPE.getName())) {
-                        result.setLong(field, instanceMirror.getLong(field));
-                    } else if (typeName.equals(Float.TYPE.getName())) {
-                        result.setFloat(field, instanceMirror.getFloat(field));
-                    } else if (typeName.equals(Double.TYPE.getName())) {
-                        result.setDouble(field, instanceMirror.getDouble(field));
-                    } else {
-                        result.set(field, instanceMirror.get(field));
+                if (!Modifier.isStatic(field.getModifiers())) {
+                    ClassMirror fieldType = field.getType();
+                    String typeName = fieldType.getClassName();
+                    try {
+                        if (typeName.equals(Boolean.TYPE.getName())) {
+                            result.setBoolean(field, instanceMirror.getBoolean(field));
+                        } else if (typeName.equals(Byte.TYPE.getName())) {
+                            result.setByte(field, instanceMirror.getByte(field));
+                        } else if (typeName.equals(Character.TYPE.getName())) {
+                            result.setChar(field, instanceMirror.getChar(field));
+                        } else if (typeName.equals(Short.TYPE.getName())) {
+                            result.setShort(field, instanceMirror.getShort(field));
+                        } else if (typeName.equals(Integer.TYPE.getName())) {
+                            result.setInt(field, instanceMirror.getInt(field));
+                        } else if (typeName.equals(Long.TYPE.getName())) {
+                            result.setLong(field, instanceMirror.getLong(field));
+                        } else if (typeName.equals(Float.TYPE.getName())) {
+                            result.setFloat(field, instanceMirror.getFloat(field));
+                        } else if (typeName.equals(Double.TYPE.getName())) {
+                            result.setDouble(field, instanceMirror.getDouble(field));
+                        } else {
+                            result.set(field, instanceMirror.get(field));
+                        }
+                    } catch (IllegalAccessException e) {
+                        throw new IllegalAccessError(e.getMessage());
                     }
-                } catch (IllegalAccessException e) {
-                    throw new IllegalAccessError(e.getMessage());
                 }
             }
             return make(result);

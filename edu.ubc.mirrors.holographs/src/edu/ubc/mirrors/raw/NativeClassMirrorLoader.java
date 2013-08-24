@@ -54,8 +54,8 @@ public class NativeClassMirrorLoader extends NativeInstanceMirror implements Cla
     }
     
     @Override
-    public ClassMirror defineClass1(String name, ByteArrayMirror b, int off,
-            int len, InstanceMirror pd, InstanceMirror source) {
+    public ClassMirror defineClass(String name, ByteArrayMirror b, int off,
+            int len, InstanceMirror pd, InstanceMirror source, boolean unsafe) {
         // TODO-RS: Bah, no time...
         throw new UnsupportedOperationException();
     }

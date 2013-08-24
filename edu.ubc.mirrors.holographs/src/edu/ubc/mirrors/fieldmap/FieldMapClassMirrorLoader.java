@@ -25,7 +25,7 @@ public class FieldMapClassMirrorLoader extends FieldMapMirror implements ClassMi
     }
 
     @Override
-    public ClassMirror defineClass1(String name, ByteArrayMirror b, int off, int len, InstanceMirror pd, InstanceMirror source) {
+    public ClassMirror defineClass(String name, ByteArrayMirror b, int off, int len, InstanceMirror pd, InstanceMirror source, boolean unsafe) {
         throw new UnsupportedOperationException();
     }
 }

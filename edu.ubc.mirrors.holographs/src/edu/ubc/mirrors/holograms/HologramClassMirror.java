@@ -2,6 +2,7 @@ package edu.ubc.mirrors.holograms;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.DefinedClassMirror;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holograms.HologramClassMirror;
 import edu.ubc.mirrors.holograms.HologramVirtualMachine;
@@ -72,6 +73,16 @@ public class HologramClassMirror extends WrappingClassMirror {
             return getFrameworkClassMirror(hologramMirror.getClassName());
         }
         return hologramMirror;
+    }
+    
+    public boolean isUnsafe() {
+        if (wrapped instanceof ClassHolograph) {
+            ClassMirror inner = ((ClassHolograph)wrapped).getWrappedClassMirror();
+            if (inner instanceof DefinedClassMirror) {
+                return ((DefinedClassMirror)inner).isUnsafe();
+            }
+        }
+        return false;
     }
     
 }

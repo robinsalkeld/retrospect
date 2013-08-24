@@ -62,4 +62,19 @@ public class FileSystemStubs extends NativeStubs {
         File mappedFile = getMappedFile(f, false);
         return mappedFile.length();
     }
+    
+    @StubMethod
+    public boolean checkAccess(InstanceMirror fs, InstanceMirror f, int access) {
+        File mappedFile = getMappedFile(f, false);
+        if (access == 0x04) {
+            return mappedFile.canRead();
+        }
+        if (access == 0x02) {
+            return mappedFile.canWrite();
+        }
+        if (access == 0x01) {
+            return mappedFile.canExecute();
+        }
+        return false;
+    }
 }

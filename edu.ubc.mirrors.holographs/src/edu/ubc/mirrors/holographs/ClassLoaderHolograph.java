@@ -53,8 +53,8 @@ public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirr
     }
     
     @Override
-    public ClassMirror defineClass1(String name, ByteArrayMirror b, int off, int len,
-            InstanceMirror pd, InstanceMirror source) {
+    public ClassMirror defineClass(String name, ByteArrayMirror b, int off, int len,
+            InstanceMirror pd, InstanceMirror source, boolean unsafe) {
         
         if (findLoadedClassMirror(name) != null) {
             throw new IllegalArgumentException("Attempt to define already defined class: " + name);
@@ -63,7 +63,7 @@ public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirr
         final byte[] realBytecode = new byte[len];
         Reflection.arraycopy(b, off, new NativeByteArrayMirror(realBytecode), 0, len);
         
-        ClassMirror newClass = new DefinedClassMirror(vm, this, name, realBytecode);
+        ClassMirror newClass = new DefinedClassMirror(vm, this, name, realBytecode, unsafe);
         final ClassHolograph newClassHolograph = (ClassHolograph)vm.getWrappedClassMirror(newClass);
         dynamicallyDefinedClasses.put(name, newClassHolograph);
         

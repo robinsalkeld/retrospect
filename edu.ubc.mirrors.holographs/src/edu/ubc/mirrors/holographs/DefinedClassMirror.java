@@ -16,11 +16,14 @@ import edu.ubc.mirrors.raw.BytecodeClassMirror;
 
 public class DefinedClassMirror extends BytecodeClassMirror implements NewInstanceMirror {
     
-    public DefinedClassMirror(VirtualMachineHolograph vm, ClassLoaderHolograph loader, String className, byte[] bytecode) {
+    private final boolean unsafe;
+    
+    public DefinedClassMirror(VirtualMachineHolograph vm, ClassLoaderHolograph loader, String className, byte[] bytecode, boolean unsafe) {
         super(className);
         this.vm = vm;
         this.loader = loader;
         this.bytecode = bytecode;
+        this.unsafe = unsafe;
     }
 
     private final VirtualMachineHolograph vm;
@@ -99,5 +102,9 @@ public class DefinedClassMirror extends BytecodeClassMirror implements NewInstan
     
     @Override
     public void bytecodeLocated(File originalBytecodeLocation) {
+    }
+
+    public boolean isUnsafe() {
+        return unsafe;
     }
 }

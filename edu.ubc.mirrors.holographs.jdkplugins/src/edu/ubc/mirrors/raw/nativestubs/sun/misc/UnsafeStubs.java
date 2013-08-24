@@ -316,7 +316,7 @@ public class UnsafeStubs extends NativeStubs {
         String realClassName = realInternalName.replace('/', '.');
         InstanceMirror className = Reflection.makeString(getVM(), realClassName);
         
-        return ClassLoaderStubs.defineClass(classLoader, className, b, off, len, pd, null);
+        return ClassLoaderStubs.defineClass(classLoader, className, b, off, len, pd, null, true);
     }
     
     @StubMethod

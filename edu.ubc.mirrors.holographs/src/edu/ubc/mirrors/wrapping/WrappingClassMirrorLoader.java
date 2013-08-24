@@ -32,8 +32,8 @@ public class WrappingClassMirrorLoader extends WrappingInstanceMirror implements
     }
 
     @Override
-    public ClassMirror defineClass1(String name, ByteArrayMirror b,
-            int off, int len, InstanceMirror pd, InstanceMirror source) {
-        return vm.getWrappedClassMirror(wrappedLoader.defineClass1(name, b, off, len, pd, source));
+    public ClassMirror defineClass(String name, ByteArrayMirror b,
+            int off, int len, InstanceMirror pd, InstanceMirror source, boolean unsafe) {
+        return vm.getWrappedClassMirror(wrappedLoader.defineClass(name, b, off, len, pd, source, unsafe));
     }
 }

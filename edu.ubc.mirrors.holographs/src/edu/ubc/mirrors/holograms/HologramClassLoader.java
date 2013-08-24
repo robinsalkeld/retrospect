@@ -1,11 +1,14 @@
 package edu.ubc.mirrors.holograms;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -47,6 +50,7 @@ import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
 
 public class HologramClassLoader extends ClassLoader {
+
     public static String traceClass = null;
     public static boolean debug = Boolean.getBoolean("edu.ubc.mirrors.holograms.debug");
     public static boolean preverify = Boolean.getBoolean("edu.ubc.mirrors.holograms.preverify");
@@ -168,7 +172,15 @@ public class HologramClassLoader extends ClassLoader {
             }
             throw new RuntimeException("Error caught while generating bytecode for " + target, e);
         }
-        return defineDynamicClass(name, b);
+        try {
+//            if (hologramMirror.isUnsafe()) {
+//                return (Class<?>)defineClassMethod.invoke(null, name, b, 0, b.length, this);
+//            } else {
+                return defineClass(name, b, 0, b.length);    
+//            }
+        } catch (Throwable e) {
+            throw new RuntimeException("Error caught while defining class " + name, e);
+        }
     }
     
     @Override
@@ -194,14 +206,6 @@ public class HologramClassLoader extends ClassLoader {
             return c;
         } else {
             return super.loadClass(name, resolve);
-        }
-    }
-    
-    protected Class<?> defineDynamicClass(String name, byte[] b) {
-        try {
-            return defineClass(name, b, 0, b.length);
-        } catch (Throwable e) {
-            throw new RuntimeException("Error caught while defining class " + name, e);
         }
     }
     
@@ -318,7 +322,6 @@ public class HologramClassLoader extends ClassLoader {
 
                 // Possible optimization: let the underlying VM cache the location of bytecode,
                 // if it has stable, persistent object identifiers.
-                ClassMirror wrappedClass = ((ClassHolograph)hologramClassMirror.getOriginal()).getWrappedClassMirror();
                 File originalBytecodeLocation = createClassFile(cacheIndex, originalInternalName + ".class");
                 hologramClassMirror.bytecodeLocated(originalBytecodeLocation);
             }
@@ -447,5 +450,38 @@ public class HologramClassLoader extends ClassLoader {
     @Override
     public String toString() {
         return "HologramClassLoader: " + originalLoader;
+    }
+
+    private static final String VERSION_FILE_NAME = "version.txt";
+    private static final String CURRENT_VERSION = "1.1";
+    
+    public static void checkHologramBytecodeVersion(VirtualMachineHolograph vm) {
+        File bytecodeCacheDir = vm.getBytecodeCacheDir();
+        if (bytecodeCacheDir != null) {
+            File versionFile = new File(bytecodeCacheDir, VERSION_FILE_NAME);
+            if (bytecodeCacheDir.exists()) {
+                String versionString;
+                try {
+                    versionString = new BufferedReader(new FileReader(versionFile)).readLine();
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException("Invalid hologram class cache directory: " + bytecodeCacheDir);
+                } catch (IOException e) {
+                    throw new RuntimeException("Invalid hologram class cache directory: " + bytecodeCacheDir);
+                }
+                if (!versionString.equals(CURRENT_VERSION)) {
+                    throw new RuntimeException("Invalid hologram class cache directory: " + bytecodeCacheDir);
+                }
+            } else {
+                bytecodeCacheDir.mkdir();
+                try {
+                    PrintStream fileOut = new PrintStream(new FileOutputStream(versionFile));
+                    fileOut.print(CURRENT_VERSION);
+                    fileOut.flush();
+                    fileOut.close();
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 }
