@@ -181,6 +181,10 @@ public class UnsafeStubs extends NativeStubs {
         long fieldOffset = objectFieldBaseOffset();
         for (FieldMirror declaredField : klass.getDeclaredFields()) {
             if (Modifier.isStatic(declaredField.getModifiers()) == isStatic) {
+                if (fieldName.equals(declaredField.getName())) {
+                    return fieldOffset;
+                }
+                
                 ClassMirror fieldType = declaredField.getType();
                 if (fieldType.isPrimitive()) {
                     String name = fieldType.getClassName();
@@ -191,10 +195,6 @@ public class UnsafeStubs extends NativeStubs {
                     }
                 } else {
                     fieldOffset += 4;
-                }
-                
-                if (fieldName.equals(declaredField.getName())) {
-                    return fieldOffset;
                 }
             }
         }
@@ -215,6 +215,12 @@ public class UnsafeStubs extends NativeStubs {
         long fieldOffset = objectFieldBaseOffset();
         for (FieldMirror field : klass.getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers()) == isStatic) {
+                if (fieldOffset == offset) {
+                    return field;
+                } else if (fieldOffset > offset) {
+                    throw new InternalError("Non-aligned offset???");
+                }
+                
                 ClassMirror fieldType = field.getType();
                 if (fieldType.isPrimitive()) {
                     String name = fieldType.getClassName();
@@ -228,12 +234,6 @@ public class UnsafeStubs extends NativeStubs {
                 } else {
                     fieldOffset += 4;
                 }
-                
-                if (fieldOffset == offset) {
-                    return field;
-                } else if (fieldOffset > offset) {
-                    throw new InternalError("Non-aligned offset???");
-                }
             }
         }
         
@@ -244,7 +244,6 @@ public class UnsafeStubs extends NativeStubs {
     public boolean compareAndSwapObject(InstanceMirror unsafe, ObjectMirror mirror, long offset, ObjectMirror oldValue, ObjectMirror newValue) throws IllegalAccessException, NoSuchFieldException {
         if (mirror instanceof ObjectArrayMirror) {
             ObjectArrayMirror array = (ObjectArrayMirror)mirror;
-            // TODO-RS: Need to be much more careful about this!
             int index = (int)((offset - arrayBaseOffset(unsafe, array.getClassMirror())) / 4);
             ObjectMirror current = array.get(index);
             if (current == oldValue) {

@@ -355,13 +355,15 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     /*
      * Checks that the class defined by the bytecode mirror matches the definition
      * of the class from the heap dump. This will catch a lot of version mismatches.
+     * At the same time, make sure the fields are ordered according to the bytecode.
      */ 
     private void validateBytecodeClass() {
         Map<String, FieldMirror> expectedFields = new HashMap<String, FieldMirror>();
-        for (FieldMirror f : getDeclaredFields()) {
+        for (FieldMirror f : super.getDeclaredFields()) {
             expectedFields.put(f.getName(), f);
         }
         
+        declaredFields = new ArrayList<FieldMirror>(expectedFields.size());
         for (FieldMirror bytecodeField : bytecodeMirror.getDeclaredFields()) {
             String fieldName = bytecodeField.getName();
             FieldMirror expectedField = expectedFields.remove(fieldName);
@@ -380,6 +382,8 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
             if (expectedField.getModifiers() != bytecodeField.getModifiers()) {
                 throw new IllegalStateException("Modifiers mismatch for field " + expectedField.getName() + ": expected " + expectedField.getModifiers() + " but was " + bytecodeField.getModifiers());
             }
+            
+            declaredFields.add(expectedField);
         }
         
         if (!expectedFields.isEmpty()) {
@@ -664,6 +668,19 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         ensureInitialized();
 
         return super.getDeclaredField(name);
+    }
+    
+    private List<FieldMirror> declaredFields;
+    
+    @Override
+    public List<FieldMirror> getDeclaredFields() {
+        if (wrapped instanceof DefinedClassMirror) {
+            return super.getDeclaredFields();
+        } else {
+            // Ensure the correctly ordered list is initialized.
+            getBytecodeMirror();
+            return declaredFields;
+        }
     }
     
     public byte[] getRawAnnotations() {
