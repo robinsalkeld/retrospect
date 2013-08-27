@@ -338,4 +338,9 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     @Override
     public void bytecodeLocated(File originalBytecodeLocation) {
     }
+    
+    @Override
+    public List<ClassMirror> getSubclassMirrors() {
+        throw new UnsupportedOperationException();
+    }
 }

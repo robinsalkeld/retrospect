@@ -1130,4 +1130,9 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     @Override
     public void bytecodeLocated(File originalBytecodeLocation) {
     }
+    
+    @Override
+    public List<ClassMirror> getSubclassMirrors() {
+        throw new UnsupportedOperationException();
+    }
 }

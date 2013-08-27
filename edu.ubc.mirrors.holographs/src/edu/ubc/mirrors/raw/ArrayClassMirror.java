@@ -224,4 +224,10 @@ public class ArrayClassMirror extends BlankClassMirror {
     @Override
     public void bytecodeLocated(File originalBytecodeLocation) {
     }
+    
+    @Override
+    public List<ClassMirror> getSubclassMirrors() {
+        // Hopefully don't need to ever implement this
+        throw new UnsupportedOperationException();
+    }
 }

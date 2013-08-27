@@ -110,6 +110,15 @@ public class HologramClassLoader extends ClassLoader {
         }
     }
     
+    private static void deleteRecursive(File path) {
+        if (path.isDirectory()) {
+            for (File child : path.listFiles()) {
+                deleteRecursive(child);
+            }
+        }
+        path.delete();
+    }
+    
     public ClassLoader getOriginalLoader() {
         return getParent();
     }
@@ -391,16 +400,13 @@ public class HologramClassLoader extends ClassLoader {
     }
     
     public byte[] generateBytecode(int cacheIndex, HologramClassMirror hologramClassMirror) {
-        if (hologramClassMirror.getOriginal().isArray()) {
-            return HologramClassGenerator.generateArray(this, hologramClassMirror.getOriginal(), !hologramClassMirror.isImplementationClass());
-        }
-        
+        boolean isArrayClass = hologramClassMirror.getOriginal().isArray();
         String internalName = hologramClassMirror.getClassName().replace('.', '/');
         
         ClassMirror original = hologramClassMirror.getOriginal();
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassVisitor visitor = classWriter;
-        if (preverify) {
+        if (!isArrayClass && preverify) {
             visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, false, true);
         }
         if (vm.getBytecodeCacheDir() != null) {
@@ -413,37 +419,41 @@ public class HologramClassLoader extends ClassLoader {
             }
             visitor = new TraceClassVisitor(visitor, textFileWriter);
         }
-        visitor = new HologramClassGenerator(original, visitor);
-        visitor = new RemappingClassAdapter(visitor, HologramClassGenerator.REMAPPER);
-        if (vm.getBytecodeCacheDir() != null) {
-            File txtFile = createClassFile(cacheIndex, internalName + ".afterframes.txt");
-            PrintWriter textFileWriter;
-            try {
-                textFileWriter = new PrintWriter(txtFile);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
+        if (isArrayClass) {
+            HologramClassGenerator.generateArray(visitor, this, hologramClassMirror);
+        } else {
+            visitor = new HologramClassGenerator(original, visitor);
+            visitor = new RemappingClassAdapter(visitor, HologramClassGenerator.REMAPPER);
+            if (vm.getBytecodeCacheDir() != null) {
+                File txtFile = createClassFile(cacheIndex, internalName + ".afterframes.txt");
+                PrintWriter textFileWriter;
+                try {
+                    textFileWriter = new PrintWriter(txtFile);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
+                ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), traceVisitor, true, false);
+                byte[] bytecode = hologramClassMirror.getOriginal().getBytecode();
+                if (bytecode == null) {
+                    hologramClassMirror.getOriginal().getBytecode();
+                }
+                new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
             }
-            ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
-            ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), traceVisitor, true, false);
-            byte[] bytecode = hologramClassMirror.getOriginal().getBytecode();
-            if (bytecode == null) {
-                hologramClassMirror.getOriginal().getBytecode();
+            visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true, false);
+            if (vm.getBytecodeCacheDir() != null) {
+                File txtFile = createClassFile(cacheIndex, internalName + ".original.txt");
+                PrintWriter textFileWriter;
+                try {
+                    textFileWriter = new PrintWriter(txtFile);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                visitor = new TraceClassVisitor(visitor, textFileWriter);
             }
-            new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
+            ClassReader reader = new ClassReader(original.getBytecode());
+            reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         }
-        visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true, false);
-        if (vm.getBytecodeCacheDir() != null) {
-            File txtFile = createClassFile(cacheIndex, internalName + ".original.txt");
-            PrintWriter textFileWriter;
-            try {
-                textFileWriter = new PrintWriter(txtFile);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-            visitor = new TraceClassVisitor(visitor, textFileWriter);
-        }
-        ClassReader reader = new ClassReader(original.getBytecode());
-        reader.accept(visitor, ClassReader.EXPAND_FRAMES);
         return classWriter.toByteArray();
     }
 
@@ -453,35 +463,39 @@ public class HologramClassLoader extends ClassLoader {
     }
 
     private static final String VERSION_FILE_NAME = "version.txt";
-    private static final String CURRENT_VERSION = "1.1";
     
     public static void checkHologramBytecodeVersion(VirtualMachineHolograph vm) {
         File bytecodeCacheDir = vm.getBytecodeCacheDir();
         if (bytecodeCacheDir != null) {
             File versionFile = new File(bytecodeCacheDir, VERSION_FILE_NAME);
             if (bytecodeCacheDir.exists()) {
-                String versionString;
-                try {
-                    versionString = new BufferedReader(new FileReader(versionFile)).readLine();
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException("Invalid hologram class cache directory: " + bytecodeCacheDir);
-                } catch (IOException e) {
-                    throw new RuntimeException("Invalid hologram class cache directory: " + bytecodeCacheDir);
-                }
-                if (!versionString.equals(CURRENT_VERSION)) {
-                    throw new RuntimeException("Invalid hologram class cache directory: " + bytecodeCacheDir);
-                }
-            } else {
-                bytecodeCacheDir.mkdir();
-                try {
-                    PrintStream fileOut = new PrintStream(new FileOutputStream(versionFile));
-                    fileOut.print(CURRENT_VERSION);
-                    fileOut.flush();
-                    fileOut.close();
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
+                if (validVersionFile(versionFile)) {
+                    return;
+                } else {
+                    System.out.println("Deleting invalid cache directory: " + bytecodeCacheDir);
                 }
             }
+            
+            deleteRecursive(bytecodeCacheDir);
+            bytecodeCacheDir.mkdir();
+            try {
+                PrintStream fileOut = new PrintStream(new FileOutputStream(versionFile));
+                fileOut.print(HologramClassGenerator.VERSION);
+                fileOut.flush();
+                fileOut.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
+    }
+    
+    public static boolean validVersionFile(File versionFile) {
+        String versionString;
+        try {
+            versionString = new BufferedReader(new FileReader(versionFile)).readLine();
+        } catch (IOException e) {
+            return false;
+        }
+        return versionString.equals(HologramClassGenerator.VERSION);
     }
 }

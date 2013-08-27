@@ -204,4 +204,9 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     public void bytecodeLocated(File originalBytecodeLocation) {
         wrapped.bytecodeLocated(originalBytecodeLocation);
     }
+    
+    @Override
+    public List<ClassMirror> getSubclassMirrors() {
+        return vm.getWrappedClassMirrorList(wrapped.getSubclassMirrors());
+    }
 }

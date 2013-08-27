@@ -56,7 +56,7 @@ public class SanityTest extends TestCase {
     
     public void testExpressionQuery() throws Exception {
         ConsoleProgressListener listener = new ConsoleProgressListener(System.out);
-        ISnapshot snapshot = SnapshotFactory.openSnapshot(new File("/Users/robinsalkeld/Documents/UBC/Code/snapshots/cdt_oom_bug/java_pid7720.hprof"), 
+        ISnapshot snapshot = SnapshotFactory.openSnapshot(new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/cdt_oom_bug/java_pid7720.hprof"), 
                 listener);
         int objectID = snapshot.getClassesByName(CDTBugTest.CPPASTName, false).iterator().next().getObjectIds()[0];
         
@@ -130,5 +130,8 @@ public class SanityTest extends TestCase {
         assertEquals(Integer.toBinaryString(h), Integer.toBinaryString(unhashedFaster));
     }
     
-    // TODO-RS: DebuggingTest
+    // TODO-RS
+//    public void testAspects() throws Exception {
+//        DebuggingTest.main(new String[0]);
+//    }
 }

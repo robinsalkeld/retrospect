@@ -3,6 +3,7 @@ package edu.ubc.mirrors.jdi;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.sun.jdi.ArrayType;
@@ -295,5 +296,14 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     
     @Override
     public void bytecodeLocated(File originalBytecodeLocation) {
+    }
+    
+    @Override
+    public List<ClassMirror> getSubclassMirrors() {
+        if (refType instanceof ClassType) {
+            return vm.makeClassMirrorList(((ClassType)refType).subclasses());
+        } else {
+            return Collections.emptyList();
+        }
     }
 }

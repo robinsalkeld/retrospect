@@ -56,11 +56,20 @@ public class AccessControllerStubs extends NativeStubs {
             if (runException instanceof MirrorInvocationTargetException) {
                 MirrorInvocationTargetException ite = (MirrorInvocationTargetException)runException;
                 InstanceMirror causeMirror = ite.getTargetException();
-                ClassMirror paeClass = klass.getVM().findBootstrapClassMirror(PrivilegedActionException.class.getName());
-                ClassMirror exceptionClass = klass.getVM().findBootstrapClassMirror(Exception.class.getName());
-                InstanceMirror toThrowMirror = paeClass.getConstructor(exceptionClass).newInstance(ThreadHolograph.currentThreadMirror(), causeMirror);
-                toThrowMirror.set(paeClass.getDeclaredField("exception"), causeMirror);
-                throw new MirrorInvocationTargetException(toThrowMirror);
+                
+                ClassMirror runtimeExceptionClass = klass.getVM().findBootstrapClassMirror(RuntimeException.class.getName());
+                ClassMirror errorClass = klass.getVM().findBootstrapClassMirror(Error.class.getName());
+                ClassMirror causeClass = causeMirror.getClassMirror();
+                if (Reflection.isAssignableFrom(runtimeExceptionClass, causeClass)
+                        || Reflection.isAssignableFrom(errorClass, causeClass)) {
+                    throw ite;
+                } else {
+                    ClassMirror paeClass = klass.getVM().findBootstrapClassMirror(PrivilegedActionException.class.getName());
+                    ClassMirror exceptionClass = klass.getVM().findBootstrapClassMirror(Exception.class.getName());
+                    InstanceMirror toThrowMirror = paeClass.getConstructor(exceptionClass).newInstance(ThreadHolograph.currentThreadMirror(), causeMirror);
+                    toThrowMirror.set(paeClass.getDeclaredField("exception"), causeMirror);
+                    throw new MirrorInvocationTargetException(toThrowMirror);
+                }
             }
             
             // Anything else is an internal error

@@ -567,8 +567,10 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
             return true;
         }
         
-        // If the class has any instances the initialization must have run.
-        if (!getInstances().isEmpty()) {
+        // If the class (or any subclass) has any instances the initialization must have run.
+        // TODO-RS: Ideally this would be a combination of checking direct instances and
+        // recursing on subclasses, but we'd have to be careful about infinite recursion!
+        if (hasInstances(this)) {
             return true;
         }
         
@@ -623,6 +625,18 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         return null;
     }
     
+    private static boolean hasInstances(ClassMirror klass) {
+        if (!klass.getInstances().isEmpty()) {
+            return true;
+        }
+        for (ClassMirror subclass : klass.getSubclassMirrors()) {
+            if (hasInstances(subclass)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * @param field Static field
      * @return

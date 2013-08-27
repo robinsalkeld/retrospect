@@ -181,4 +181,9 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
     @Override
     public void bytecodeLocated(File originalBytecodeLocation) {
     }
+    
+    @Override
+    public List<ClassMirror> getSubclassMirrors() {
+        return Collections.emptyList();
+    }
 }

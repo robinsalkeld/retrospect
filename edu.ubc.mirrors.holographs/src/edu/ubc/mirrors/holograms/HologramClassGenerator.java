@@ -32,6 +32,8 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
 
+    public static final String VERSION = "1.2";
+    
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type classMirrorType = Type.getType(ClassMirror.class);
     public static Type instanceMirrorType = Type.getType(InstanceMirror.class);
@@ -118,9 +120,9 @@ public class HologramClassGenerator extends ClassVisitor {
             hologramAccess = ~Opcodes.ACC_ABSTRACT & access;
         }
         
-        // We need at least 49 to use class literal constants
+        // We need at least 1.5 to use class literal constants
         // TODO-RS: Work out a better way to interpret 45.X numbers correctly
-        if (version < 49 || version > 100) {
+        if (version == Opcodes.V1_1 || version < Opcodes.V1_5) {
             version = 49;
         }
         
@@ -462,8 +464,8 @@ public class HologramClassGenerator extends ClassVisitor {
     @Override
     public void visitEnd() {
         // Generate the static field used to store the corresponding ClassMirror
-	int staticAccess = Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_STATIC;
-	super.visitField(staticAccess, "classMirror", classMirrorType.getDescriptor(), null, null);
+        int staticAccess = Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_STATIC;
+        super.visitField(staticAccess, "classMirror", classMirrorType.getDescriptor(), null, null);
         
         // Generate the constructor that takes a mirror instance as an Object parameter
         String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));
@@ -518,8 +520,10 @@ public class HologramClassGenerator extends ClassVisitor {
         
         super.visitEnd();
     }
-
-    public static byte[] generateArray(HologramClassLoader loader, ClassMirror classMirror, boolean isInterface) {
+    
+    public static void generateArray(ClassVisitor visitor, HologramClassLoader loader, HologramClassMirror hologramClassMirror) {
+        boolean isInterface = !hologramClassMirror.isImplementationClass();
+        ClassMirror classMirror = hologramClassMirror.getOriginal();
         
         Type originalType = Reflection.typeForClassMirror(classMirror);
         Type originalElementType = originalType.getElementType();
@@ -559,18 +563,17 @@ public class HologramClassGenerator extends ClassVisitor {
             interfaces.add(getHologramType(originalType, false).getInternalName());
         }
         
-        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        writer.visit(Opcodes.V1_1, access, internalName, null, superName, interfaces.toArray(new String[0]));
+        visitor.visit(Opcodes.V1_5, access, internalName, null, superName, interfaces.toArray(new String[0]));
 
         if (isInterface) {
             // Generate clone()
             String cloneDesc = Type.getMethodDescriptor(objectType);
-            MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "clone", cloneDesc, null, null);
+            MethodVisitor mv = visitor.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT, "clone", cloneDesc, null, null);
             mv.visitEnd();
         } else {
             // Generate thunk constructors
             String initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class));
-            MethodVisitor mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
+            MethodVisitor mv = visitor.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
             mv.visitCode();
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             mv.visitVarInsn(Opcodes.ALOAD, 1);
@@ -580,7 +583,7 @@ public class HologramClassGenerator extends ClassVisitor {
             mv.visitEnd();
             
             initDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.INT_TYPE);
-            mv = writer.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
+            mv = visitor.visitMethod(Opcodes.ACC_PUBLIC, "<init>", initDesc, null, null);
             mv.visitCode();
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             mv.visitVarInsn(Opcodes.ILOAD, 1);
@@ -589,6 +592,19 @@ public class HologramClassGenerator extends ClassVisitor {
             mv.visitMaxs(2, 2);
             mv.visitEnd();
         }
-        return writer.toByteArray();
+        
+        // Generate the static field used to store the corresponding ClassMirror and the static initializer to set it
+        int staticAccess = Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_STATIC;
+        visitor.visitField(staticAccess, "classMirror", classMirrorType.getDescriptor(), null, null);
+        
+        InstructionAdapter mv = new InstructionAdapter(visitor.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, 
+                "<clinit>", "()V", null, null));
+        mv.visitCode();
+        HologramMethodGenerator.initializeStaticFields(Type.getObjectType(internalName), mv);
+        mv.areturn(Type.VOID_TYPE);
+        mv.visitMaxs(2, 2);
+        mv.visitEnd();
+        
+        visitor.visitEnd();
     }
 }

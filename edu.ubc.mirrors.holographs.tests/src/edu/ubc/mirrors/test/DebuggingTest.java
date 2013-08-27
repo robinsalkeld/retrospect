@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -20,6 +21,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
@@ -29,23 +31,7 @@ import edu.ubc.retrospect.RetroactiveWeaver;
 
 public class DebuggingTest {
 
-    private static class Thing {
-        public Map<String, String> properties;
-        public String toString() {
-            return "Hi, I'm a Thing named 'Fred'";
-        }
-    }
-    
     public static void main(String[] args) throws Exception {
-        Thing thing = new Thing();
-        thing.properties = new HashMap<String, String>();
-        
-        thing.properties.put("foo", "bar");
-        thing.properties.put("qaz", "quz");
-        thing.properties.put("arfle", "barfle");
-        thing.properties.put("blip", "blop");
-        thing.properties.put("something", "else");
-        thing.properties.put("who", "knows");
         
         VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
         	"tracing.ExampleMain", 
@@ -68,6 +54,9 @@ public class DebuggingTest {
         URL urlPath = binDir.toURI().toURL();
         
         JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
+        ClassMirror c = jdiVMM.findBootstrapClassMirror(ClassLoader.class.getName());
+        List<ObjectMirror> i = c.getInstances();
+        
 	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM, null,
                 Collections.singletonMap("/", "/"));
         final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));

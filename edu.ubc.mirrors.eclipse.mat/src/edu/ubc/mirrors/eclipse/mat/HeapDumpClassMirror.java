@@ -150,6 +150,15 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         return result;
     }
 
+    @Override
+    public List<ClassMirror> getSubclassMirrors() {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (IClass subclass : klass.getAllSubclasses()) {
+            result.add(vm.makeClassMirror(subclass));
+        }
+        return result;
+    }
+    
     private void addDirectInstances(List<ObjectMirror> list, IClass klass) throws SnapshotException {
         for (int id : klass.getObjectIds()) {
             IObject object = (IObject)klass.getSnapshot().getObject(id);

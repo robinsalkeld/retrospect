@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -23,6 +24,7 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holograms.Stopwatch;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIClassMirror;
 import edu.ubc.mirrors.jdi.JDIObjectMirror;
@@ -41,26 +43,13 @@ public class ToStringer implements IApplication {
         // Create an instance of the mirrors API backed by the snapshot
         HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
         
-        // Create a holograph VM
-//        Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
-////        String launchFolder = "/Users/robinsalkeld/Documents/workspace/.metadata/.plugins/org.eclipse.pde.core/Eclipse + holograph connector (java 7)";
-////        mappedFiles.put(launchFolder, launchFolder);
-////        String jrubyBuildLib = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/build_lib";
-////        mappedFiles.put(jrubyBuildLib, jrubyBuildLib);
-////        String workspace = "/Users/robinsalkeld/Documents/workspace";
-////        mappedFiles.put(workspace, workspace);
-////        String jrubyJar = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/dist/jruby-complete-1.6.4.jar";
-////        mappedFiles.put(jrubyJar, jrubyJar);
-//        String javaExtDir = "/System/Library/Java/Extensions";
-//        mappedFiles.put(javaExtDir, javaExtDir);
-        
         Map<String, String> mappedFiles = Collections.singletonMap("/", "/");
         
         VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
                 HeapDumpVirtualMachineMirror.defaultHolographicVMClassCacheDir(snapshot),
                 mappedFiles);
         
-        holographVM.prepare();
+//        holographVM.prepare();
         
         toStringAllTheObjects(holographVM, holographVM.getThreads().get(0));
     }
@@ -143,7 +132,7 @@ public class ToStringer implements IApplication {
                     if (count % 1000 == 0) {
                         System.out.println(count);
                     }
-                } catch (Throwable e) {
+                } catch (final Throwable e) {
                     if (catchErrors) {
                         errors++;
                         try {
@@ -151,7 +140,13 @@ public class ToStringer implements IApplication {
                         } catch (Throwable e2) {
                             //
                         }
-                        e.printStackTrace();
+                        Reflection.withThread(thread, new Callable<Void>() {
+                            public Void call() throws Exception {
+                                e.printStackTrace();
+                                return null;
+                            }
+                        });
+                        
                     } else {
                         throw new RuntimeException(e);
                     }

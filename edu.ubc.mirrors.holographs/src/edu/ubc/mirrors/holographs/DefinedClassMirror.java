@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.holographs;
 
 import java.io.File;
+import java.util.List;
 
 import org.objectweb.asm.Type;
 
@@ -106,5 +107,11 @@ public class DefinedClassMirror extends BytecodeClassMirror implements NewInstan
 
     public boolean isUnsafe() {
         return unsafe;
+    }
+    
+    @Override
+    public List<ClassMirror> getSubclassMirrors() {
+        // TODO-RS: Need more tracking to implement this, but doable.
+        throw new UnsupportedOperationException();
     }
 }
