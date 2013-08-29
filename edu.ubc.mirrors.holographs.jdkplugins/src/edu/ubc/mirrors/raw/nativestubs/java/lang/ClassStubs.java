@@ -3,6 +3,7 @@ package edu.ubc.mirrors.raw.nativestubs.java.lang;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.objectweb.asm.Type;
@@ -20,6 +21,7 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -217,5 +219,26 @@ public class ClassStubs extends NativeStubs {
         
         String realName = Reflection.getRealStringForMirror(name);
 	return vm.getPrimitiveClass(realName);
+    }
+    
+    @StubMethod
+    public ClassMirror getDeclaringClass(ClassMirror klass) {
+        return klass.getEnclosingClassMirror();
+    }
+    
+    @StubMethod
+    public ObjectArrayMirror getEnclosingMethod0(ClassMirror klass) {
+        MethodMirror enclosingMethod = klass.getEnclosingMethodMirror();
+        if (enclosingMethod == null) {
+            return null;
+        } else {
+            Type methodType = Reflection.getMethodType(enclosingMethod);
+            String methodDesc = methodType.getDescriptor();
+            
+            return (ObjectArrayMirror)Reflection.toArray(getVM().findBootstrapClassMirror(Object.class.getName()), 
+                    enclosingMethod.getDeclaringClass(), 
+                    Reflection.makeString(getVM(), enclosingMethod.getName()), 
+                    Reflection.makeString(getVM(), methodDesc));
+        }
     }
 }

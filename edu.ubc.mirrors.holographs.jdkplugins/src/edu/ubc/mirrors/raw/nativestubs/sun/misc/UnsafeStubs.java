@@ -3,7 +3,10 @@ package edu.ubc.mirrors.raw.nativestubs.sun.misc;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.ubc.mirrors.ArrayMirror;
@@ -203,40 +206,45 @@ public class UnsafeStubs extends NativeStubs {
     }
     
     private FieldMirror fieldForOffset(InstanceMirror instance, long offset) {
-        ClassMirror klass;
         boolean isStatic;
+        List<ClassMirror> classes = new ArrayList<ClassMirror>();
         if (instance instanceof StaticFieldValuesMirror) {
-            klass = ((StaticFieldValuesMirror)instance).forClassMirror();
+            ClassMirror klass = ((StaticFieldValuesMirror)instance).forClassMirror();
             isStatic = true;
+            classes.add(klass);
         } else {
-            klass = instance.getClassMirror();
             isStatic = false;
+            for (ClassMirror c = instance.getClassMirror(); c != null; c = c.getSuperClassMirror()) {
+                classes.add(c);
+            }
+            Collections.reverse(classes);
         }
         long fieldOffset = objectFieldBaseOffset();
-        for (FieldMirror field : klass.getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers()) == isStatic) {
-                if (fieldOffset == offset) {
-                    return field;
-                } else if (fieldOffset > offset) {
-                    throw new InternalError("Non-aligned offset???");
-                }
-                
-                ClassMirror fieldType = field.getType();
-                if (fieldType.isPrimitive()) {
-                    String name = fieldType.getClassName();
-                    if (name.equals("int")) {
-                        fieldOffset += 4;
-                    } else if (name.equals("long")) {
-                        fieldOffset += 4;
-                    } else {
-                        throw new InternalError("Unsupported type: " + name);
+        for (ClassMirror klass : classes) {
+            for (FieldMirror field : klass.getDeclaredFields()) {
+                if (Modifier.isStatic(field.getModifiers()) == isStatic) {
+                    if (fieldOffset == offset) {
+                        return field;
+                    } else if (fieldOffset > offset) {
+                        throw new InternalError("Non-aligned offset???");
                     }
-                } else {
-                    fieldOffset += 4;
+                    
+                    ClassMirror fieldType = field.getType();
+                    if (fieldType.isPrimitive()) {
+                        String name = fieldType.getClassName();
+                        if (name.equals("int")) {
+                            fieldOffset += 4;
+                        } else if (name.equals("long")) {
+                            fieldOffset += 4;
+                        } else {
+                            throw new InternalError("Unsupported type: " + name);
+                        }
+                    } else {
+                        fieldOffset += 4;
+                    }
                 }
             }
         }
-        
         throw new InternalError("offset overflow???");
     }
     

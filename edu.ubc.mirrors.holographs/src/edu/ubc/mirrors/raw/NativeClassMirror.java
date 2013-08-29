@@ -343,4 +343,16 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     public List<ClassMirror> getSubclassMirrors() {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public ClassMirror getEnclosingClassMirror() {
+        Class<?> enclosingClass = klass.getEnclosingClass();
+        return enclosingClass == null ? null : findClassMirror(enclosingClass);
+    }
+    
+    @Override
+    public MethodMirror getEnclosingMethodMirror() {
+        Method enclosingMethod = klass.getEnclosingMethod();
+        return enclosingMethod == null ? null : new NativeMethodMirror(enclosingMethod);
+    }
 }

@@ -72,7 +72,7 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements H
     
     @Override
     public double getDouble(int index) throws ArrayIndexOutOfBoundsException {
-        return ((long[])getValueArray())[index];
+        return ((double[])getValueArray())[index];
     }
     
     @Override

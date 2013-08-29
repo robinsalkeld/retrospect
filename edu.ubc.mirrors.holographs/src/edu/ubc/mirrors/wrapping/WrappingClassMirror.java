@@ -209,4 +209,14 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     public List<ClassMirror> getSubclassMirrors() {
         return vm.getWrappedClassMirrorList(wrapped.getSubclassMirrors());
     }
+    
+    @Override
+    public ClassMirror getEnclosingClassMirror() {
+        return vm.getWrappedClassMirror(wrapped.getEnclosingClassMirror());
+    }
+    
+    @Override
+    public MethodMirror getEnclosingMethodMirror() {
+        return vm.wrapMethod(wrapped.getEnclosingMethodMirror());
+    }
 }

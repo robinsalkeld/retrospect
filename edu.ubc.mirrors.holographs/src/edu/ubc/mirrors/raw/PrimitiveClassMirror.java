@@ -186,4 +186,14 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
     public List<ClassMirror> getSubclassMirrors() {
         return Collections.emptyList();
     }
+    
+    @Override
+    public ClassMirror getEnclosingClassMirror() {
+        return null;
+    }
+    
+    @Override
+    public MethodMirror getEnclosingMethodMirror() {
+        return null;
+    }
 }

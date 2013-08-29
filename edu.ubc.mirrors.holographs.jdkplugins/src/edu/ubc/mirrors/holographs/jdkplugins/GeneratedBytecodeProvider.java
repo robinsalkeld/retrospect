@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.holographs.jdkplugins;
 
 import java.lang.ref.Reference;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -14,9 +15,9 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 
-import sun.misc.ProxyGenerator;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodHandle;
@@ -26,7 +27,6 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holographs.ClassMirrorBytecodeProvider;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -85,7 +85,7 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
             }
             
             // Could cache this per VM, but likely not worth it.
-            ClassMirror generator = vm.findBootstrapClassMirror(ProxyGenerator.class.getName());
+            ClassMirror generator = vm.findBootstrapClassMirror("sun.misc.ProxyGenerator");
             MethodMirror generateMethod = generator.getDeclaredMethod("generateProxyClass", 
                         vm.findBootstrapClassMirror(String.class.getName()),
                         vm.getArrayClass(1, classClass));
@@ -106,6 +106,77 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public byte[] getGeneratedConstructorAccessorBytecode(ClassMirror classMirror) {
+        VirtualMachineMirror vm = classMirror.getVM();
+        try {
+            ClassMirror consClass = vm.findBootstrapClassMirror(Constructor.class.getName());
+            FieldMirror accessorField = consClass.getDeclaredField("constructorAccessor");
+            ClassMirror delegatingClass = vm.findBootstrapClassMirror("sun.reflect.DelegatingConstructorAccessorImpl");
+            FieldMirror delegateField = delegatingClass.getDeclaredField("delegate");
+            for (ObjectMirror method : consClass.getInstances()) {
+                InstanceMirror m = (InstanceMirror)method;
+                ObjectMirror accessor = m.get(accessorField);
+                if (accessor != null) {
+                    while (accessor.getClassMirror().equals(delegatingClass)) {
+                        accessor = ((InstanceMirror)accessor).get(delegateField);
+                    }
+                    
+                    if (accessor.getClassMirror().equals(classMirror)) {
+                        ConstructorMirror consMirror = Reflection.constructorMirrorForConstructorInstance(m);
+                        
+                        // Could cache this per VM, but likely not worth it.
+                        ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
+                        ClassMirror classArrayClass = vm.getArrayClass(1, classClass);
+                        ClassMirror generatorClass = vm.findBootstrapClassMirror("sun.reflect.MethodAccessorGenerator");
+                        MethodMirror generateMethod = generatorClass.getDeclaredMethod("generateConstructor", 
+                                    classClass,
+                                    classArrayClass,
+                                    classArrayClass,
+                                    vm.getPrimitiveClass("int"));
+                        
+                        // This will have the side-effect of defining a new class, but it should
+                        // be totally transparent.
+                        InstanceMirror generator = generatorClass.getConstructor().newInstance(ThreadHolograph.currentThreadMirror());
+                        InstanceMirror duplicateAccessor = (InstanceMirror)generateMethod.invoke(ThreadHolograph.currentThreadMirror(), generator, 
+                                consMirror.getDeclaringClass(),
+                                Reflection.toArray(classClass, consMirror.getParameterTypes()),
+                                Reflection.toArray(classClass, consMirror.getExceptionTypes()),
+                                consMirror.getModifiers());
+                        ClassMirror newClass = duplicateAccessor.getClassMirror();
+                        
+                        // Rename from whatever was generated to what we want.
+                        byte[] generatedBytecode = newClass.getBytecode();
+                        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+                        ClassVisitor visitor = classWriter;
+                        final String internalName = classMirror.getClassName().replace('.', '/');
+                        final String generatedInternalName = newClass.getClassName().replace('.', '/');
+                        visitor = new RemappingClassAdapter(visitor, new Remapper() {
+                            @Override
+                            public String map(String typeName) {
+                                if (typeName.equals(generatedInternalName)) {
+                                    return internalName;
+                                }
+                                return super.map(typeName);
+                            }
+                        });
+                        new ClassReader(generatedBytecode).accept(visitor, 0);
+                        return classWriter.toByteArray();
+                    }
+                }
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (SecurityException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+        
+        return null;
     }
     
     public byte[] getGeneratedMethodAccessorBytecode(ClassMirror classMirror) {
@@ -191,6 +262,8 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
             return getProxyBytecode(classMirror);
         } else if (classMirror.getClassName().startsWith("sun.reflect.GeneratedMethodAccessor")) {
             return getGeneratedMethodAccessorBytecode(classMirror);
+        } else if (classMirror.getClassName().startsWith("sun.reflect.GeneratedConstructorAccessor")) {
+            return getGeneratedConstructorAccessorBytecode(classMirror);
         }
 
         return null;

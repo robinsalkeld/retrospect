@@ -11,6 +11,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -99,6 +100,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             new HashMap<String, InstanceMirror>();
      
     public Map<Integer, FileInputStream> fileInputStreams = new HashMap<Integer, FileInputStream>();
+    public Map<Integer, RandomAccessFile> randomAccessFiles = new HashMap<Integer, RandomAccessFile>();
     
     public Map<Long, ZipFile> zipFilesByAddress = new HashMap<Long, ZipFile>();
     public Map<Long, File> zipPathsByAddress = new HashMap<Long, File>();

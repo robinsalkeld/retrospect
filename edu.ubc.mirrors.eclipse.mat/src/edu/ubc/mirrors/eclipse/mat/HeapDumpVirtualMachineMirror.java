@@ -23,6 +23,7 @@ import org.eclipse.mat.snapshot.model.ObjectReference;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
@@ -262,6 +263,23 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
+        String name = elementClass.getClassName();
+        for (int d = 0; d < dimensions; d++) {
+            name += "[]";
+        }
+        
+        ClassMirrorLoader elementLoader = elementClass.getLoader();
+        for (ClassMirror existing : findAllClasses(name, false)) {
+            ClassMirrorLoader l = existing.getLoader();
+            if (elementLoader == null) {
+                if (l == null) {
+                    return existing;
+                }
+            } else if (elementLoader.equals(l)) {
+                return existing;
+            }
+        }
+        
         return new ArrayClassMirror(dimensions, elementClass);
     }
 

@@ -334,6 +334,10 @@ public class Reflection {
         return false;
     }
     
+    public static ObjectArrayMirror toArray(ClassMirror elementType, ObjectMirror... objs) {
+        return toArray(elementType, Arrays.asList(objs));
+    }
+    
     public static ObjectArrayMirror toArray(ClassMirror elementType, Collection<? extends ObjectMirror> c) {
         ObjectArrayMirror result = (ObjectArrayMirror)elementType.newArray(c.size());
         int i = 0;
@@ -560,8 +564,23 @@ public class Reflection {
         }
     }
     
+    public static ConstructorMirror constructorMirrorForConstructorInstance(InstanceMirror constructor) {
+        ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(constructor, "clazz");
+        ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)HolographInternalUtils.getField(constructor, "parameterTypes");
+        ClassMirror[] parameterTypes = new ClassMirror[parameterTypesMirror.length()];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            parameterTypes[i] = (ClassMirror)parameterTypesMirror.get(i);
+        }
+
+        try {
+            return declaringClass.getConstructor(parameterTypes);
+        } catch (NoSuchMethodException e) {
+            throw new NoSuchMethodError(e.getMessage());
+        }
+    }
+    
     public static MethodMirror methodMirrorForMethodInstance(InstanceMirror m) {
-	ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(m, "clazz");
+        ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(m, "clazz");
         String name = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(m, "name"));
         ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)HolographInternalUtils.getField(m, "parameterTypes");
         ClassMirror[] parameterTypes = new ClassMirror[parameterTypesMirror.length()];

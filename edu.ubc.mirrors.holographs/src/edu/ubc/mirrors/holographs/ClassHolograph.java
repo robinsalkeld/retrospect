@@ -778,4 +778,22 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         this.wrapped = wrapped;
         // TODO-RS: Do the right thing with the fields delegates!!!
     }
+    
+    @Override
+    public ClassMirror getEnclosingClassMirror() {
+        if (hasBytecode()) {
+            return super.getEnclosingClassMirror();
+        } else {
+            return getBytecodeMirror().getEnclosingClassMirror();
+        }
+    }
+    
+    @Override
+    public MethodMirror getEnclosingMethodMirror() {
+        if (hasBytecode()) {
+            return super.getEnclosingMethodMirror();
+        } else {
+            return getBytecodeMirror().getEnclosingMethodMirror();
+        }
+    }
 }

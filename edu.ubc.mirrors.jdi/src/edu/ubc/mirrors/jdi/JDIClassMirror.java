@@ -306,4 +306,14 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
             return Collections.emptyList();
         }
     }
+    
+    @Override
+    public ClassMirror getEnclosingClassMirror() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public MethodMirror getEnclosingMethodMirror() {
+        throw new UnsupportedOperationException();
+    }
 }

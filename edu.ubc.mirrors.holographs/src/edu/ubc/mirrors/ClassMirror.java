@@ -65,4 +65,7 @@ public interface ClassMirror extends InstanceMirror {
     
     // For VM implementations that can cache this information effectively.
     public void bytecodeLocated(File originalBytecodeLocation);
+    
+    public ClassMirror getEnclosingClassMirror();
+    public MethodMirror getEnclosingMethodMirror();
 }

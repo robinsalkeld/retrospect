@@ -110,7 +110,7 @@ public class ArrayClassMirror extends BlankClassMirror {
         if (dims == 1) {
             return elementClassMirror;
         } else { 
-            return new ArrayClassMirror(dims - 1, elementClassMirror);
+            return elementClassMirror.getVM().getArrayClass(dims - 1, elementClassMirror);
         }
     }
 
@@ -229,5 +229,15 @@ public class ArrayClassMirror extends BlankClassMirror {
     public List<ClassMirror> getSubclassMirrors() {
         // Hopefully don't need to ever implement this
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ClassMirror getEnclosingClassMirror() {
+        return null;
+    }
+    
+    @Override
+    public MethodMirror getEnclosingMethodMirror() {
+        return null;
     }
 }

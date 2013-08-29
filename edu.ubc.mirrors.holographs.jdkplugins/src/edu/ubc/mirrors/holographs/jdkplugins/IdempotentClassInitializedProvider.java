@@ -10,9 +10,9 @@ import edu.ubc.mirrors.holographs.ClassMirrorInitializedProvider;
 public class IdempotentClassInitializedProvider implements ClassMirrorInitializedProvider {
 
     private static final Set<String> idempotentClassInits = new HashSet<String>(Arrays.asList(
-            "java.lang.reflect.Modifier"
+            "java.lang.reflect.Modifier",
 //            "java.net.URLClassLoader",
-//            "java.security.KeyFactory",
+            "java.security.KeyFactory"
 //            "java.security.SecureClassLoader",
 //            "org.eclipse.equinox.weaving.hooks.AbstractWeavingHook",
 //            "org.eclipse.e4.core.di.internal.extensions.EventObjectSupplier",

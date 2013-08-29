@@ -326,6 +326,11 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     private String[] interfaceNames;
     private List<ClassMirror> interfaces;
     private boolean isInterface;
+    private String enclosingClassName;
+    private ClassMirror enclosingClass;
+    private String enclosingMethodName;
+    private String enclosingMethodDesc;
+    private MethodMirror enclosingMethod;
     private List<BytecodeFieldMirror> fields = new ArrayList<BytecodeFieldMirror>();
     private final List<BytecodeMethodMirror> methods = new ArrayList<BytecodeMethodMirror>();
     private byte[] rawAnnotations;
@@ -382,6 +387,13 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
             isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
             superclassName = superName;
             interfaceNames = interfaces;
+        }
+        
+        @Override
+        public void visitOuterClass(String owner, String name, String desc) {
+            enclosingClassName = owner; 
+            enclosingMethodName = name;
+            enclosingMethodDesc = desc;
         }
         
         @Override
@@ -1042,10 +1054,12 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
             }
         }
 
-        try {
-            return getSuperClassMirror().getConstructor(paramClasses);
-        } catch (NoSuchMethodException e) {
-            // Fall through
+        if (getSuperClassMirror() != null) {
+            try {
+                return getSuperClassMirror().getConstructor(paramClasses);
+            } catch (NoSuchMethodException e) {
+                // Fall through
+            }
         }
         
         for (ClassMirror interfaceMirror : getInterfaceMirrors()) {
@@ -1134,5 +1148,25 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     @Override
     public List<ClassMirror> getSubclassMirrors() {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ClassMirror getEnclosingClassMirror() {
+        if (enclosingClass == null && enclosingClassName != null) {
+            enclosingClass = loadClassMirrorInternal(Type.getObjectType(enclosingClassName));
+        }
+        return enclosingClass;
+    }
+    
+    @Override
+    public MethodMirror getEnclosingMethodMirror() {
+        if (enclosingMethod == null && enclosingMethodName != null) {
+            try {
+                enclosingMethod = Reflection.getDeclaredMethod(ThreadHolograph.currentThreadMirror(), getEnclosingClassMirror(), enclosingMethodName, Type.getType(enclosingMethodDesc));
+            } catch (NoSuchMethodException e) {
+                throw new NoSuchMethodError(e.getMessage());
+            }
+        }
+        return enclosingMethod;
     }
 }

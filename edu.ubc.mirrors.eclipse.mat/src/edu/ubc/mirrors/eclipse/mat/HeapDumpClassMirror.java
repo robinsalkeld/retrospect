@@ -329,4 +329,14 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     public IObject getHeapDumpObject() {
         return klass;
     }
+    
+    @Override
+    public ClassMirror getEnclosingClassMirror() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public MethodMirror getEnclosingMethodMirror() {
+        throw new UnsupportedOperationException();
+    }
 }
