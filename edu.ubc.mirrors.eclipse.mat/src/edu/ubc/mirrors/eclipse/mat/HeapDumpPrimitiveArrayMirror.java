@@ -112,4 +112,9 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements H
     public int identityHashCode() {
         return vm.identityHashCode(array);
     }
+    
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
 }

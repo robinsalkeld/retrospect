@@ -36,4 +36,9 @@ public abstract class CalculatedObjectArrayMirror implements ObjectArrayMirror {
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
         throw new InternalError();
     }
+    
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
 }

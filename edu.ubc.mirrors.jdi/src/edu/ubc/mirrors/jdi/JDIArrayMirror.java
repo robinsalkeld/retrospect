@@ -94,4 +94,9 @@ public class JDIArrayMirror extends BoxingArrayMirror implements ObjectArrayMirr
     protected void setBoxedValue(int index, Object o) throws ArrayIndexOutOfBoundsException {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
 }

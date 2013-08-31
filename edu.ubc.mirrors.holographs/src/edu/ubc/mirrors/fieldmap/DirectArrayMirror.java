@@ -22,6 +22,11 @@ public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayM
         this(classMirror, dimsList(dims));
     }
     
+    public DirectArrayMirror(DirectArrayMirror other) {
+        this.classMirror = other.classMirror;
+        this.array = other.array.clone();
+    }
+    
     private static List<Integer> dimsList(int[] dims) {
         List<Integer> result = new ArrayList<Integer>(dims.length);
         for (int dim : dims) {
@@ -104,5 +109,11 @@ public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayM
     @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + classMirror.getClassName();
+    }
+    
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

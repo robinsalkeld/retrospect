@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.wrapping;
 
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 
 public class WrappingMirror implements ObjectMirror {
@@ -42,6 +43,15 @@ public class WrappingMirror implements ObjectMirror {
     @Override
     public int identityHashCode() {
         return wrapped.identityHashCode();
+    }
+    
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        if (wrapped instanceof ArrayMirror) {
+            return vm.getWrappedMirror((ObjectMirror)((ArrayMirror)wrapped).clone());
+        } else {
+            throw new CloneNotSupportedException();
+        }
     }
     
     @Override

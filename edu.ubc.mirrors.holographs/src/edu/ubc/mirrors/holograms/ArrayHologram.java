@@ -14,4 +14,9 @@ public class ArrayHologram extends ObjectHologram {
     public int length() {
         return mirror.length();
     }
+    
+    @Override
+    public ArrayMirror clone() throws CloneNotSupportedException {
+        return (ArrayMirror)ObjectHologram.clone(this);
+    }
 }

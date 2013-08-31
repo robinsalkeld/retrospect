@@ -34,6 +34,11 @@ public class NativeObjectMirror implements ObjectMirror {
         return 17 + System.identityHashCode(object);
     }
     
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new UnsupportedOperationException();
+    }
+    
     public ClassMirror getClassMirror() {
         return new NativeClassMirror(object.getClass());
     }

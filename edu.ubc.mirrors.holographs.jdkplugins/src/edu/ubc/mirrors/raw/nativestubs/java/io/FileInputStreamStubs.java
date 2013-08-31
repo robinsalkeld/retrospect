@@ -49,6 +49,12 @@ public class FileInputStreamStubs extends NativeStubs {
     }
     
     @StubMethod
+    public long skip(InstanceMirror fis, long n) throws IllegalAccessException, NoSuchFieldException, IOException {
+        FileInputStream hostFIS = getHostFIS(fis);
+        return hostFIS.skip(n);
+    }
+    
+    @StubMethod
     public int readBytes(InstanceMirror fis, ByteArrayMirror b, int off, int len) throws IllegalAccessException, NoSuchFieldException, IOException {
         FileInputStream hostFIS = getHostFIS(fis);
         

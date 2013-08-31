@@ -78,4 +78,6 @@ public abstract class BoxingArrayMirror implements
         setBoxedValue(index, Boolean.valueOf(b));
     }
 
+    @Override
+    public abstract Object clone() throws CloneNotSupportedException;
 }

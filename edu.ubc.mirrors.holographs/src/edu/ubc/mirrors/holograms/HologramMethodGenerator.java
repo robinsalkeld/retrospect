@@ -89,6 +89,9 @@ public class HologramMethodGenerator extends InstructionAdapter {
     
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+        // Various special cases here to adjust for the fact that Object and Throwable
+        // are still in the hierarchy and have some methods with incompatible types.
+        
         Type stringHologramType = getHologramType(String.class);
         if (name.equals("toString") && desc.equals(Type.getMethodDescriptor(stringHologramType))) {
             desc = Type.getMethodDescriptor(Type.getType(String.class));
@@ -142,6 +145,18 @@ public class HologramMethodGenerator extends InstructionAdapter {
         if (name.equals("clone")) {
             if (desc.equals(Type.getMethodDescriptor(hologramType))) {
                 desc = Type.getMethodDescriptor(OBJECT_TYPE);
+                
+                // Object.clone() on an array type is legal since array types
+                // are treated specially by the JVM, but the mirror interfaces 
+                // are not granted the same leeway.
+                Object t = stackType(0);
+                if (t instanceof String) {
+                    String internalName = (String)t;
+                    Type type = Type.getObjectType(internalName);
+                    if (HologramClassGenerator.getOriginalType(type).getSort() == Type.ARRAY) {
+                        owner = internalName;
+                    }
+                }
             } 
             if (owner.equals(Type.getType(ObjectArrayMirror.class).getInternalName()) ||
                             (owner.startsWith("hologramarray") && !owner.startsWith("hologramarrayimpl"))) {

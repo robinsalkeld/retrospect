@@ -13,7 +13,6 @@ import java.util.concurrent.Callable;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
-import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
@@ -50,13 +49,28 @@ public class ToStringer implements IApplication {
         
         Map<String, String> mappedFiles = Collections.singletonMap("/", "/");
         
-        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
+        final VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
                 HeapDumpVirtualMachineMirror.defaultHolographicVMClassCacheDir(snapshot),
                 mappedFiles);
         
+        final ThreadMirror thread = holographVM.getThreads().get(0);
+        Reflection.withThread(thread, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                ClassMirror obr = holographVM.findAllClasses("org.apache.felix.gogo.command.OBR", false).iterator().next();
+                Reflection.classMirrorForName(holographVM, thread, "org.apache.felix.bundlerepository.Repository", true, obr.getLoader());
+                String[] badClassNames = new String[] {"org.eclipse.jface.resource.ArrayFontDescriptor", "org.apache.felix.gogo.command.OBR", "org.eclipse.jface.resource.FontDescriptor"};
+                for (String name : badClassNames) {
+                    ClassMirror klass = holographVM.findAllClasses(name, false).iterator().next();
+                    holographVM.prepareClass(klass);
+                }
+                return null;
+            }
+        });
+        
 //        holographVM.prepare();
         
-        toStringAllTheObjects(holographVM, holographVM.getThreads().get(0));
+        toStringAllTheObjects(holographVM, thread);
     }
 
     public static List<Integer> readSample(String samplePath) throws NumberFormatException, IOException {
@@ -110,21 +124,22 @@ public class ToStringer implements IApplication {
         
         List<Integer> errorObjects = new ArrayList<Integer>();
         
-//        List<ObjectMirror> objects = collectObjects(vm, thread);
+        List<ObjectMirror> objects = collectObjects(vm, thread);
         
-        int[] errorObjectIds = new int[]{360988, 319641, 316713, 316708, 316703, 316698, 316693, 304594, 304589, 304584, 304579, 304574, 300932, 300927, 300920, 290282, 290277, 290272, 290191, 290184, 290177, 290170, 288166, 288161, 288156, 288151, 288146, 288141, 288136, 288131, 288126, 288121, 283254, 283249, 283242, 283237, 283232, 283227, 283222, 283217, 283212, 283207, 283202, 283197, 283192, 283187, 283182, 283177, 283172, 283167, 283162, 283157, 283150, 283145, 276879, 273501, 269948, 269943, 269938, 269933, 268219, 268214, 268209, 268081, 268076, 258174, 258169, 258164, 258159, 256027, 256022, 256017, 256012, 256007, 250976, 250971, 250966, 250961, 246313, 234255, 234250, 234245, 234240, 234235, 234230, 234225, 234220, 234215, 234210, 234205, 234200, 234195, 234190, 229099, 229094, 229089, 229084, 229079, 229074, 229069, 229064, 229059, 226876, 226638, 186715, 185756, 185686, 185591, 185464, 184511, 184377, 183146, 180820, 177799, 177794, 177440, 176508, 176034, 174964, 174849, 172107, 171389, 171345, 171084, 170793, 170681, 170595, 170371, 170046, 169566, 169225, 169013, 169006, 168725, 168312, 166172, 165487, 165008, 164855, 164625, 164615, 164410, 163560, 161838, 160357, 160208, 159388, 159383, 158158, 157751, 156642, 156344, 154909, 154164, 152733, 152655, 150653, 150474, 148490, 144956, 143215, 143200, 143012, 142049, 140797, 139641, 139491, 139471, 139429, 136879, 135059, 134944, 133302, 133297, 132002, 130763, 129262, 129009, 128294, 128072, 126724, 126719, 88682, 88067, 88019, 87390, 87081, 86765, 86735, 86415, 86293, 85747, 85742, 85714, 85359, 85081, 84968, 84871, 84789, 84453, 84211, 84206, 84152, 83909, 83446, 83342, 82775, 82678, 82580, 82460, 82320, 81710, 81676, 81117, 81105, 80948, 80756, 79773, 79707, 79463, 79189, 78984, 78937, 78798, 78652, 78439, 78411, 77454, 76945, 359200, 359164, 349052, 339894, 237783, 302550, 302549, 303262, 255337, 126053, 361378, 335366, 319637, 316957, 316689, 304570, 300914, 291683, 290563, 290268, 290164, 290161, 288117, 288114, 287372, 283141, 276875, 273968, 273495, 269929, 268205, 268072, 258155, 256003, 250957, 246309, 234186, 230205, 229055, 184874, 183398, 179668, 179496, 177768, 176713, 176229, 174035, 173859, 170661, 170455, 170133, 169318, 168847, 166915, 166254, 166253, 165167, 162212, 156613, 154738, 154169, 154067, 152701, 151773, 149082, 146568, 146063, 145179, 145136, 143361, 141473, 139407, 134948, 129194, 128603, 128166, 88656, 88016, 87675, 84117, 83046, 81691, 81681, 80923, 80682, 80458, 79608, 78889, 77812, 77451, };
-
-        List<ObjectMirror> objects = new ArrayList<ObjectMirror>();
-        VirtualMachineHolograph holographVM = (VirtualMachineHolograph)vm;
-        HeapDumpVirtualMachineMirror heapDumpVM = (HeapDumpVirtualMachineMirror)holographVM.getWrappedVM();
-        ISnapshot snapshot = heapDumpVM.getSnapshot();
-        for (int id : errorObjectIds) {
-            try {
-                objects.add(holographVM.getWrappedMirror(heapDumpVM.makeMirror(snapshot.getObject(id))));
-            } catch (SnapshotException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        // Object that has a legitimate error: 126053
+//        int[] errorObjectIds = new int[]{359200, 359164, 349052, 339894, 237783, 302550, 302549, 303262, 255337, };
+//
+//        List<ObjectMirror> objects = new ArrayList<ObjectMirror>();
+//        VirtualMachineHolograph holographVM = (VirtualMachineHolograph)vm;
+//        HeapDumpVirtualMachineMirror heapDumpVM = (HeapDumpVirtualMachineMirror)holographVM.getWrappedVM();
+//        ISnapshot snapshot = heapDumpVM.getSnapshot();
+//        for (int id : errorObjectIds) {
+//            try {
+//                objects.add(holographVM.getWrappedMirror(heapDumpVM.makeMirror(snapshot.getObject(id))));
+//            } catch (SnapshotException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
                 
         try {
             for (ObjectMirror object : objects) {

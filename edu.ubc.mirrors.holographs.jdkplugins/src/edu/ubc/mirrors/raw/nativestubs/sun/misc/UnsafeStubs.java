@@ -5,9 +5,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
@@ -182,22 +185,31 @@ public class UnsafeStubs extends NativeStubs {
         ClassMirror klass = (ClassMirror)HolographInternalUtils.getField(fieldMirror, "clazz");
         String fieldName = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(fieldMirror, "name"));
         long fieldOffset = objectFieldBaseOffset();
-        for (FieldMirror declaredField : klass.getDeclaredFields()) {
-            if (Modifier.isStatic(declaredField.getModifiers()) == isStatic) {
-                if (fieldName.equals(declaredField.getName())) {
-                    return fieldOffset;
-                }
-                
-                ClassMirror fieldType = declaredField.getType();
-                if (fieldType.isPrimitive()) {
-                    String name = fieldType.getClassName();
-                    if (name.equals("int")) {
-                        fieldOffset += 4;
-                    } else {
-                        throw new InternalError("Unsupported type: " + name);
+        List<ClassMirror> classes = new ArrayList<ClassMirror>();
+        for (ClassMirror c = klass; c != null; c = c.getSuperClassMirror()) {
+            classes.add(c);
+        }
+        Collections.reverse(classes);
+        for (ClassMirror c : classes) {
+            List<FieldMirror> orderedFields = c.getDeclaredFields();
+            Collections.sort(orderedFields, new FieldSorter());
+            for (FieldMirror declaredField : orderedFields) {
+                if (Modifier.isStatic(declaredField.getModifiers()) == isStatic) {
+                    if (fieldName.equals(declaredField.getName())) {
+                        return fieldOffset;
                     }
-                } else {
-                    fieldOffset += 4;
+                    
+                    ClassMirror fieldType = declaredField.getType();
+                    if (fieldType.isPrimitive()) {
+                        String name = fieldType.getClassName();
+                        if (name.equals("int")) {
+                            fieldOffset += 4;
+                        } else {
+                            throw new InternalError("Unsupported type: " + name);
+                        }
+                    } else {
+                        fieldOffset += 4;
+                    }
                 }
             }
         }
@@ -221,7 +233,9 @@ public class UnsafeStubs extends NativeStubs {
         }
         long fieldOffset = objectFieldBaseOffset();
         for (ClassMirror klass : classes) {
-            for (FieldMirror field : klass.getDeclaredFields()) {
+            List<FieldMirror> orderedFields = klass.getDeclaredFields();
+            Collections.sort(orderedFields, new FieldSorter());
+            for (FieldMirror field : orderedFields) {
                 if (Modifier.isStatic(field.getModifiers()) == isStatic) {
                     if (fieldOffset == offset) {
                         return field;
@@ -246,6 +260,36 @@ public class UnsafeStubs extends NativeStubs {
             }
         }
         throw new InternalError("offset overflow???");
+    }
+    
+    private static class FieldSorter implements Comparator<FieldMirror> {
+
+        private int getTypeOrdinal(FieldMirror field) {
+            switch (Reflection.typeForClassMirror(field.getType()).getSort()) {
+            case Type.DOUBLE:
+            case Type.LONG: 
+                return 0;
+            case Type.INT:
+            case Type.FLOAT: 
+                return 1;
+            case Type.SHORT:
+            case Type.CHAR: 
+                return 2;
+            case Type.BOOLEAN:
+            case Type.BYTE: 
+                return 3;
+            case Type.OBJECT:
+            case Type.ARRAY:
+                return 4;
+            default:
+                throw new IllegalArgumentException();
+            }
+        }
+        
+        @Override
+        public int compare(FieldMirror first, FieldMirror second) {
+            return Integer.compare(getTypeOrdinal(first), getTypeOrdinal(second));
+        }
     }
     
     @StubMethod
