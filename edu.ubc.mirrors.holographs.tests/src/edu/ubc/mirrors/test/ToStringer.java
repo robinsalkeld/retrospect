@@ -13,6 +13,7 @@ import java.util.concurrent.Callable;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
@@ -54,19 +55,19 @@ public class ToStringer implements IApplication {
                 mappedFiles);
         
         final ThreadMirror thread = holographVM.getThreads().get(0);
-        Reflection.withThread(thread, new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                ClassMirror obr = holographVM.findAllClasses("org.apache.felix.gogo.command.OBR", false).iterator().next();
-                Reflection.classMirrorForName(holographVM, thread, "org.apache.felix.bundlerepository.Repository", true, obr.getLoader());
-                String[] badClassNames = new String[] {"org.eclipse.jface.resource.ArrayFontDescriptor", "org.apache.felix.gogo.command.OBR", "org.eclipse.jface.resource.FontDescriptor"};
-                for (String name : badClassNames) {
-                    ClassMirror klass = holographVM.findAllClasses(name, false).iterator().next();
-                    holographVM.prepareClass(klass);
-                }
-                return null;
-            }
-        });
+//        Reflection.withThread(thread, new Callable<Void>() {
+//            @Override
+//            public Void call() throws Exception {
+////                ClassMirror obr = holographVM.findAllClasses("org.apache.felix.gogo.command.OBR", false).iterator().next();
+////                Reflection.classMirrorForName(holographVM, thread, "org.apache.felix.bundlerepository.Repository", true, obr.getLoader());
+//                String[] badClassNames = new String[] {"org.eclipse.jface.resource.ArrayFontDescriptor", "org.eclipse.jface.resource.FontDescriptor"};
+//                for (String name : badClassNames) {
+//                    ClassMirror klass = holographVM.findAllClasses(name, false).iterator().next();
+//                    holographVM.prepareClass(klass);
+//                }
+//                return null;
+//            }
+//        });
         
 //        holographVM.prepare();
         
@@ -126,8 +127,8 @@ public class ToStringer implements IApplication {
         
         List<ObjectMirror> objects = collectObjects(vm, thread);
         
-        // Object that has a legitimate error: 126053
-//        int[] errorObjectIds = new int[]{359200, 359164, 349052, 339894, 237783, 302550, 302549, 303262, 255337, };
+        // Object that has a legitimate error (would have been garbage collected in a live system): 126053
+//        int[] errorObjectIds = new int[]{118992};
 //
 //        List<ObjectMirror> objects = new ArrayList<ObjectMirror>();
 //        VirtualMachineHolograph holographVM = (VirtualMachineHolograph)vm;
@@ -170,9 +171,10 @@ public class ToStringer implements IApplication {
                 } catch (final Throwable e) {
                     if (catchErrors) {
                         HeapDumpObjectMirror wrapped = (HeapDumpObjectMirror)((WrappingMirror)object).getWrapped();
-                        errorObjects.add(wrapped.getHeapDumpObject().getObjectId());
+                        int objectId = wrapped.getHeapDumpObject().getObjectId();
+                        errorObjects.add(objectId);
                         try {
-                            System.out.println("Error on object " + object);
+                            System.out.println("Error on object " + object + " (" + objectId + ")");
                         } catch (Throwable e2) {
                             //
                         }

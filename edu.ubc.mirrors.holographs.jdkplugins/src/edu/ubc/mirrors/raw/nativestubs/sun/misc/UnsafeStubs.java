@@ -350,16 +350,6 @@ public class UnsafeStubs extends NativeStubs {
     }
     
     @StubMethod
-    public long getLong(InstanceMirror unsafe, long address) {
-        // TODO-RS: Need to figure this one out...
-        return 0;
-    }
-    @StubMethod
-    public void putLong(InstanceMirror unsafe, long address, long value) {
-        // TODO-RS: Need to figure this one out...
-    }
-    
-    @StubMethod
     public ClassMirror defineClass(InstanceMirror unsafe, InstanceMirror internalName, ByteArrayMirror b, int off, int len,
             ClassMirrorLoader classLoader, InstanceMirror pd) {
 

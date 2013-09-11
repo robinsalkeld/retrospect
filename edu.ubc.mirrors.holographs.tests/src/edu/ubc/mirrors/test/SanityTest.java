@@ -130,6 +130,14 @@ public class SanityTest extends TestCase {
         assertEquals(Integer.toBinaryString(h), Integer.toBinaryString(unhashedFaster));
     }
     
+//    public void testToStringOnEclipse() throws Exception {
+//        ToStringer.main(new String[] {"/Users/robinsalkeld/snapshots/3341.hprof"});
+//    }
+    
+//    public void testToStringOnTomcat() throws Exception {
+//        ToStringer.main(new String[] {"/Users/robinsalkeld/snapshots/3780.hprof"});
+//    }
+    
     // TODO-RS
 //    public void testAspects() throws Exception {
 //        DebuggingTest.main(new String[0]);
