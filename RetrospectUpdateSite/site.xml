@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/Retrospect_1.0.0.201309111352.jar" id="Retrospect" version="1.0.0.201309111352">
+   <feature url="features/Retrospect_1.0.0.201309111523.jar" id="Retrospect" version="1.0.0.201309111523">
       <category name="Retrospect"/>
    </feature>
-   <category-def name="Retrospect" label="Retrospect"/>
+   <category-def name="Retrospect" label="Retrospect">
+      <description>
+         The Retrospect Project
+      </description>
+   </category-def>
 </site>
