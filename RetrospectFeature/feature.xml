@@ -17,27 +17,27 @@
    </license>
 
    <plugin
-         id="edu.ubc.mirrors.eclipse.mat.plugins"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="edu.ubc.mirrors.holographs"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
 
    <plugin
-         id="org.eclipse.mat.ui"
+         id="edu.ubc.mirrors.jdi"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="edu.ubc.mirrors.eclipse.asjdi"
+         id="edu.ubc.mirrors.eclipse.mat"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="edu.ubc.mirrors.holographs.jdkplugins"
          download-size="0"
          install-size="0"
          version="0.0.0"
