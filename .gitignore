@@ -7,6 +7,7 @@ edu.ubc.mirrors.eclipse.asjdi/bin
 edu.ubc.mirrors.eclipse.mat.plugins/bin
 edu.ubc.mirrors.holographs/bin
 edu.ubc.mirrors.holographs/mirage_classes
+edu.ubc.mirrors.holographs.mapreduce/bin
 edu.ubc.mirrors.tod/bin
 
 org.eclipse.mat.ui/bin

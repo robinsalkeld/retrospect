@@ -62,4 +62,4 @@ Integrating holographic JVMs into other tools, implementing other sources of pro
 Enjoy!
 ------
 
-If you have any difficulties please don't hesitate to contact me! ([rsalkeld@cs.ubc.ca](mailto://rsalkeld@cs.ubc.ca))
+If you have any difficulties please don't hesitate to contact me! \(rsalkeld "at" cs.ubc.ca\)
