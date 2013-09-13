@@ -53,7 +53,7 @@ public class ExpressionQuery implements IQuery {
     public ISnapshot snapshot;
 
     @Argument(flag = Argument.UNFLAGGED, advice = Advice.HEAP_OBJECT)
-    public int[] objectIds;
+    public int[] objects;
 
     @Argument(isMandatory = true)
     public String expression = "toString()";
@@ -121,18 +121,18 @@ public class ExpressionQuery implements IQuery {
             ThreadReference jdiThread = (ThreadReference)jdiVM.wrapMirror(threadMirror);
             evalThread = debugTarget.findThread(jdiThread);
             
-            int count = objectIds.length;
+            int count = objects.length;
             if (maxObjects != null) {
                 count = Math.min(maxObjects, count);
             }
             
             List<ObjectMirror> input;
             if (aggregate) {
-                input = Collections.singletonList(createCalculatedObjectList(objectIds, count));
+                input = Collections.singletonList(createCalculatedObjectList(objects, count));
             } else {
-                input = new ArrayList<ObjectMirror>(objectIds.length);
+                input = new ArrayList<ObjectMirror>(objects.length);
                 for (int index = 0; index < count; index++) {
-                    input.add(HolographVMRegistry.getObjectMirror(snapshot, objectIds[index], listener));
+                    input.add(HolographVMRegistry.getObjectMirror(snapshot, objects[index], listener));
                 }
             }
             

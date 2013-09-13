@@ -80,7 +80,7 @@ public class SanityTest extends TestCase {
         ExpressionQuery query = new ExpressionQuery();
         query.expression = "toString()";
         query.snapshot = snapshot;
-        query.objectIds = new int[] {objectID};
+        query.objects = new int[] {objectID};
         query.execute(listener);
     }
     

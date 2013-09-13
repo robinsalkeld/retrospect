@@ -41,13 +41,11 @@ import edu.ubc.mirrors.Reflection;
 @Category("Java Collections")
 public class MapEntriesQuery implements IQuery
 {
-	private static final String NULL = "<null>"; //$NON-NLS-1$
-
 	@Argument
 	public ISnapshot snapshot;
 
 	@Argument(flag = Argument.UNFLAGGED, advice = Advice.HEAP_OBJECT)
-	public int[] objectsIds;
+	public int[] objects;
 
 	static class Entry
 	{
@@ -212,7 +210,7 @@ public class MapEntriesQuery implements IQuery
 
 		List<Entry> hashEntries = new ArrayList<Entry>();
 		
-		for (int id : objectsIds)
+		for (int id : objects)
 		{
 		    ObjectMirror mirror = HolographVMRegistry.getObjectMirror(snapshot, id, listener);
 		    ObjectMirror entrySet = (ObjectMirror)Reflection.invokeMethodHandle(mirror, new MethodHandle() {

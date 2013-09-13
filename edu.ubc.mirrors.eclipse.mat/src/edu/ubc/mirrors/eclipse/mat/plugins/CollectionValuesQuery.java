@@ -36,13 +36,13 @@ public class CollectionValuesQuery implements IQuery
     public ISnapshot snapshot;
 
     @Argument(flag = Argument.UNFLAGGED, advice = Advice.HEAP_OBJECT)
-    public int collectionID;
+    public int collection;
 
     public IResult execute(IProgressListener listener) throws Exception
     {
         List<Object> entries = new ArrayList<Object>();
 
-        ObjectMirror collectionMirror = HolographVMRegistry.getObjectMirror(snapshot, collectionID, listener);
+        ObjectMirror collectionMirror = HolographVMRegistry.getObjectMirror(snapshot, collection, listener);
         for (ObjectMirror mirror : Reflection.collectionValues(collectionMirror)) {
             entries.add(mirror);
         }
