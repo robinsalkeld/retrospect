@@ -23,6 +23,7 @@ package edu.ubc.mirrors.raw.nativestubs.sun.reflect;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.jdkplugins.NativeStubs;
 import edu.ubc.mirrors.holographs.jdkplugins.StubMethod;
@@ -35,13 +36,13 @@ public class ConstantPoolStubs extends NativeStubs {
     }
 
     @StubMethod
-    public ClassMirror getClassAt0(InstanceMirror pool, InstanceMirror reader, int index) {
+    public ClassMirror getClassAt0(InstanceMirror pool, ObjectMirror reader, int index) {
         ConstantPoolReader poolReader = (ConstantPoolReader)reader;
         return poolReader.getClassAt(index);
     }
     
     @StubMethod
-    public InstanceMirror getUTF8At0(InstanceMirror pool, InstanceMirror reader, int index) {
+    public InstanceMirror getUTF8At0(InstanceMirror pool, ObjectMirror reader, int index) {
         ConstantPoolReader poolReader = (ConstantPoolReader)reader;
         return poolReader.getStringAt(index);
     }

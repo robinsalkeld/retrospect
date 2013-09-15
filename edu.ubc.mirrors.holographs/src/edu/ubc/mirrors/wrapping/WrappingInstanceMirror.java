@@ -27,7 +27,8 @@ import edu.ubc.mirrors.ObjectMirror;
 
 public class WrappingInstanceMirror extends WrappingMirror implements InstanceMirror {
 
-    protected final InstanceMirror wrapped;
+    // See WrappingClassMirror.wrapped for why this is not final.
+    protected InstanceMirror wrapped;
     
     public WrappingInstanceMirror(WrappingVirtualMachine vm, InstanceMirror wrappedInstance) {
         super(vm, wrappedInstance);
@@ -123,5 +124,10 @@ public class WrappingInstanceMirror extends WrappingMirror implements InstanceMi
     @Override
     public void setDouble(FieldMirror field, double d) throws IllegalAccessException {
         wrapped.setDouble(vm.unwrapFieldMirror(field), d);
+    }
+    
+    public void setWrapped(InstanceMirror wrapped) {
+        super.setWrapped(wrapped);
+        this.wrapped = wrapped;
     }
 }

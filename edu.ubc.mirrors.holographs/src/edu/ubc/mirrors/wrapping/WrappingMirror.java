@@ -27,7 +27,8 @@ import edu.ubc.mirrors.ObjectMirror;
 public class WrappingMirror implements ObjectMirror {
 
     protected final WrappingVirtualMachine vm;
-    protected final ObjectMirror wrapped;
+    // See WrappingClassMirror.wrapped for why this is not final.
+    protected ObjectMirror wrapped;
     
     public WrappingMirror(WrappingVirtualMachine vm, ObjectMirror wrapped) {
         this.vm = vm;
@@ -78,5 +79,9 @@ public class WrappingMirror implements ObjectMirror {
     @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + wrapped;
+    }
+    
+    public void setWrapped(ObjectMirror wrapped) {
+        this.wrapped = wrapped;
     }
 }

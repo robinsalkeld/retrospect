@@ -73,6 +73,7 @@ public class DebuggingTest {
         
         File binDir = new File("/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
         URL urlPath = binDir.toURI().toURL();
+        URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
         
         JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
         ClassMirror c = jdiVMM.findBootstrapClassMirror(ClassLoader.class.getName());
@@ -82,7 +83,7 @@ public class DebuggingTest {
                 Collections.singletonMap("/", "/"));
         final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));
         
-        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath});
+        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath, aspectRuntimeJar});
         Reflection.withThread(thread, new Callable<Void>() {
             public Void call() throws Exception {
         	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);

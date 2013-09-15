@@ -240,4 +240,9 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     public MethodMirror getEnclosingMethodMirror() {
         return vm.wrapMethod(wrapped.getEnclosingMethodMirror());
     }
+    
+    public void setWrapped(ClassMirror wrapped) {
+        super.setWrapped(wrapped);
+        this.wrapped = wrapped;
+    }
 }

@@ -63,6 +63,7 @@ import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
+import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
 
 public class ClassHolograph extends WrappingClassMirror implements MirrorInvocationHandler {
 
@@ -180,6 +181,10 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
         this.vm = vm;
+        sychronizeWithWrapped();
+    }
+    
+    private void sychronizeWithWrapped() {
         memberFieldsDelegate = new InstanceHolograph(vm, wrapped);
         staticFieldValues = (StaticFieldValuesMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
         if (!vm.canBeModified() || wrapped instanceof DefinedClassMirror) {
@@ -796,8 +801,9 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     }
     
     public void setWrapped(ClassMirror wrapped) {
-        this.wrapped = wrapped;
-        // TODO-RS: Do the right thing with the fields delegates!!!
+        super.setWrapped(wrapped);
+        this.declaredFields = null;
+        sychronizeWithWrapped();
     }
     
     @Override

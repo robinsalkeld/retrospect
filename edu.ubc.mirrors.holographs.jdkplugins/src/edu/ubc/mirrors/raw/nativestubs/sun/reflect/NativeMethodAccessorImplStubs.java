@@ -40,7 +40,7 @@ public class NativeMethodAccessorImplStubs extends NativeStubs {
     }
 
     @StubMethod
-    public ObjectMirror invoke0(InstanceMirror method, InstanceMirror target, ObjectArrayMirror argsMirror) throws IllegalArgumentException, InstantiationException, IllegalAccessException, MirrorInvocationTargetException {
+    public ObjectMirror invoke0(InstanceMirror method, ObjectMirror target, ObjectArrayMirror argsMirror) throws IllegalArgumentException, InstantiationException, IllegalAccessException, MirrorInvocationTargetException {
         MethodMirror methodMirror = Reflection.methodMirrorForMethodInstance(method);
         
         Object[] argsArray = new Object[argsMirror == null ? 0 : argsMirror.length()];

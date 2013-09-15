@@ -160,7 +160,7 @@ public class SanityTest extends TestCase {
 //    }
     
     // TODO-RS
-//    public void testAspects() throws Exception {
-//        DebuggingTest.main(new String[0]);
-//    }
+    public void testAspects() throws Exception {
+        DebuggingTest.main(new String[0]);
+    }
 }
