@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw;
 
+import java.util.Arrays;
+
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
@@ -50,7 +52,23 @@ public class NativeBooleanArrayMirror extends NativeObjectMirror implements Bool
         return getBoolean(index) ? (byte)1 : 0;
     }
     
+    @Override
+    public byte[] getBytes(int index, int length) throws ArrayIndexOutOfBoundsException {
+        byte[] result = new byte[length];
+        for (int i = 0; i < length; i++) {
+            result[i] = getByte(index + i);
+        }
+        return result;
+    }
+    
     public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {
         setBoolean(index, b != 0);
     };
+    
+    @Override
+    public void setBytes(int index, byte[] b) throws ArrayIndexOutOfBoundsException {
+        for (int i = 0; i < b.length; i++) {
+            setByte(index + i, b[i]);
+        }
+    }
 }

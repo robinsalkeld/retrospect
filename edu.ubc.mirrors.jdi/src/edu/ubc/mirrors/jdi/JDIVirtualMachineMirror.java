@@ -69,6 +69,8 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 
     private final Map<Mirror, ObjectMirror> mirrors = new HashMap<Mirror, ObjectMirror>();
     
+    private final Map<String, ClassMirror> bootstrapClasses = new HashMap<String, ClassMirror>();
+    
     public JDIVirtualMachineMirror(VirtualMachine jdiVM) {
         this.jdiVM = jdiVM;
     }
@@ -90,11 +92,19 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public ClassMirror findBootstrapClassMirror(String name) {
+        ClassMirror result = bootstrapClasses.get(name);
+        if (result != null) {
+            return result;
+        }
+            
         for (ReferenceType t : jdiVM.classesByName(name)) {
             if (t.classLoader() == null) {
-                return makeClassMirror(t.classObject());
+                result = makeClassMirror(t.classObject());
+                bootstrapClasses.put(name, result);
+                return result;
             }
         }
+        
         return null;
     }
 

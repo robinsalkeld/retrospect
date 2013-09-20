@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw;
 
+import java.util.Arrays;
+
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
@@ -41,8 +43,17 @@ public class NativeByteArrayMirror extends NativeObjectMirror implements ByteArr
         return array[index];
     }
 
+    @Override
+    public byte[] getBytes(int index, int length) throws ArrayIndexOutOfBoundsException {
+        return Arrays.copyOfRange(array, index, index + length);
+    }
+    
     public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {
         array[index] = b;
     }
 
+    @Override
+    public void setBytes(int index, byte[] b) throws ArrayIndexOutOfBoundsException {
+        System.arraycopy(b, 0, array, index, b.length);
+    }
 }

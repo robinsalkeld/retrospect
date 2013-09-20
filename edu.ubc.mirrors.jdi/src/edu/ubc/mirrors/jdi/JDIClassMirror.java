@@ -78,6 +78,8 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     protected final ReferenceType refType;
     
+    private ClassMirrorLoader loader;
+    
     public JDIClassMirror(JDIVirtualMachineMirror vm, ClassObjectReference t) {
         super(vm, t);
         this.refType = t.reflectedType();
@@ -100,7 +102,10 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public ClassMirrorLoader getLoader() {
-        return (ClassMirrorLoader)vm.makeMirror(refType.classLoader());
+        if (loader == null) {
+            loader = (ClassMirrorLoader)vm.makeMirror(refType.classLoader());
+        }
+        return loader;
     }
 
     @Override

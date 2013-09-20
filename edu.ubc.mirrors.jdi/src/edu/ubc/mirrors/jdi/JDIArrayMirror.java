@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.List;
+
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteValue;
@@ -106,6 +108,21 @@ public class JDIArrayMirror extends BoxingArrayMirror implements ObjectArrayMirr
         }
     }
 
+    @Override
+    public byte[] getBytes(int index, int length) throws ArrayIndexOutOfBoundsException {
+        // Special case to avoid incorrect range check in JDI code
+        if (length == 0) {
+            return new byte[0];
+        }
+        
+        List<Value> values = array.getValues(index, length);
+        byte[] result = new byte[values.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = ((ByteValue)values.get(i)).byteValue();
+        }
+        return result;
+    }
+    
     @Override
     public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
         throw new UnsupportedOperationException();

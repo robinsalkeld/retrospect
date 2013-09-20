@@ -23,6 +23,7 @@ package edu.ubc.mirrors.wrapping;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 
 public class WrappingFrameMirror implements FrameMirror {
@@ -55,5 +56,9 @@ public class WrappingFrameMirror implements FrameMirror {
 	return wrapped.lineNumber();
     }
     
+    @Override
+    public InstanceMirror thisObject() {
+        return (InstanceMirror)vm.getWrappedMirror(wrapped.thisObject());
+    }
     
 }

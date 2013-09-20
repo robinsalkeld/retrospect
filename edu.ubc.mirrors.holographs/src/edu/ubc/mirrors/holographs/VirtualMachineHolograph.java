@@ -107,7 +107,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     private final HologramClassLoader hologramBootstrapLoader;
     
-    private final Thread debuggingThread;
+//    private final Thread debuggingThread;
     
     // TODO-RS: Move all this data that is only relevant for MNMs to
     // the plugins.
@@ -170,9 +170,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         
         // Start a thread dedicated to debugging, so the debugger has something to
         // execute mirror interface methods on without messing up the rest of the VM.
-        this.debuggingThread = new HolographDebuggingThread("HolographDebuggingThread");
-        this.debuggingThread.setDaemon(true);
-        this.debuggingThread.start();
+//        this.debuggingThread = new HolographDebuggingThread("HolographDebuggingThread");
+//        this.debuggingThread.setDaemon(true);
+//        this.debuggingThread.start();
         
         collectZipFiles();
         

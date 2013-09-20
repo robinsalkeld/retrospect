@@ -53,7 +53,17 @@ public class WrappingBooleanArrayMirror extends WrappingMirror implements Boolea
     }
 
     @Override
+    public byte[] getBytes(int index, int length) throws ArrayIndexOutOfBoundsException {
+        return wrappedArray.getBytes(index, length);
+    }
+    
+    @Override
     public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {
         wrappedArray.setByte(index, b);
+    }
+    
+    @Override
+    public void setBytes(int index, byte[] b) throws ArrayIndexOutOfBoundsException {
+        wrappedArray.setBytes(index, b);
     }
 }

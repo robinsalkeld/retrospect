@@ -79,14 +79,16 @@ public class DebuggingTest {
         ClassMirror c = jdiVMM.findBootstrapClassMirror(ClassLoader.class.getName());
         List<ObjectMirror> i = c.getInstances();
         
-	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM, null,
+        // TODO-RS: Cheating for now...
+        File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid2675.0001.subeclipseonjava7_hologram_classes");
+	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM, cachePath,
                 Collections.singletonMap("/", "/"));
         final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));
         
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath, aspectRuntimeJar});
         Reflection.withThread(thread, new Callable<Void>() {
             public Void call() throws Exception {
-        	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);
+        	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version3.Trace", true, loader);
         	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
         	
         	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
@@ -94,7 +96,7 @@ public class DebuggingTest {
         	MethodMirror method = traceClass.getDeclaredMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
                 method.invoke(thread, null, stream);
         	
-        	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version1.TraceMyClasses", true, loader);
+        	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version3.TraceMyClasses", true, loader);
                 RetroactiveWeaver.weave(aspect, thread);
                 
                 return null;

@@ -38,6 +38,10 @@ public class JDIFieldMirror extends JDIMirror implements FieldMirror {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        
         if (!(obj instanceof JDIFieldMirror)) {
             return false;
         }

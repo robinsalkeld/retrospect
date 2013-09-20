@@ -69,7 +69,7 @@ public class WrappingMethodMirror implements MethodMirror {
     public String getName() {
         return wrapped.getName();
     }
-
+    
     @Override
     public List<String> getParameterTypeNames() {
         return wrapped.getParameterTypeNames();

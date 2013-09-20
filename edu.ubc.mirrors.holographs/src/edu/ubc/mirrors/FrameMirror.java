@@ -28,5 +28,6 @@ public interface FrameMirror {
     MethodMirror method();
     String fileName();
     int lineNumber();
+    InstanceMirror thisObject();
     
 }

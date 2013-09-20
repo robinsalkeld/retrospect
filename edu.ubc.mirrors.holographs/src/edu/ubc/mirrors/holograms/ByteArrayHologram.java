@@ -39,8 +39,18 @@ public class ByteArrayHologram extends ArrayHologram implements ByteArrayMirror 
     }
 
     @Override
+    public byte[] getBytes(int index, int length) throws ArrayIndexOutOfBoundsException {
+        return mirror.getBytes(index, length);
+    }
+    
+    @Override
     public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {
         mirror.setByte(index, b);
+    }
+    
+    @Override
+    public void setBytes(int index, byte[] b) throws ArrayIndexOutOfBoundsException {
+        mirror.setBytes(index, b);
     }
     
     public static byte getHologram(ByteArrayMirror mirror, int index) throws Throwable {

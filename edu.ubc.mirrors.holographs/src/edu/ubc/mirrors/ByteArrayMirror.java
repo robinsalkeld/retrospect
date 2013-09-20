@@ -25,5 +25,9 @@ public interface ByteArrayMirror extends ArrayMirror {
 
     public byte getByte(int index) throws ArrayIndexOutOfBoundsException;
     
+    public byte[] getBytes(int index, int length) throws ArrayIndexOutOfBoundsException;
+    
     public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException;
+    
+    public void setBytes(int index, byte[] b) throws ArrayIndexOutOfBoundsException;
 }

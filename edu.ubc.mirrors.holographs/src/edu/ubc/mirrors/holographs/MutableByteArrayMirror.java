@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.holographs;
 
+import java.util.Arrays;
+
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.wrapping.WrappingByteArrayMirror;
 
@@ -40,13 +42,33 @@ public class MutableByteArrayMirror extends WrappingByteArrayMirror {
     }
 
     @Override
-    public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {
-        if (values == null) {
-            this.values = new byte[immutableMirror.length()];
-            for (int i = 0; i < values.length; i++) {
-                values[i] = immutableMirror.getByte(i);
+    public byte[] getBytes(int index, int length) throws ArrayIndexOutOfBoundsException {
+        if (values != null) {
+            if (index == 0 && length == values.length) {
+                return values;
+            } else {
+                return Arrays.copyOfRange(values, index, index + length);
             }
+        } else {
+            return super.getBytes(index, length);
         }
+    }
+    
+    private void copyOnWrite() {
+        if (values == null) {
+            this.values = immutableMirror.getBytes(0, length());
+        }
+    }
+    
+    @Override
+    public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {
+        copyOnWrite();
         values[index] = b;
+    }
+
+    @Override
+    public void setBytes(int index, byte[] b) throws ArrayIndexOutOfBoundsException {
+        copyOnWrite();
+        System.arraycopy(b, 0, values, index, b.length);
     }
 }

@@ -23,6 +23,7 @@ package edu.ubc.mirrors.fieldmap;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 
 public class FieldMapFrameMirror implements FrameMirror {
@@ -62,4 +63,8 @@ public class FieldMapFrameMirror implements FrameMirror {
         return lineNumber;
     }
 
+    @Override
+    public InstanceMirror thisObject() {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 
 public class HeapDumpFrameMirror implements FrameMirror {
@@ -89,4 +90,8 @@ public class HeapDumpFrameMirror implements FrameMirror {
 	return lineNumber;
     }
 
+    @Override
+    public InstanceMirror thisObject() {
+        throw new UnsupportedOperationException();
+    }
 }

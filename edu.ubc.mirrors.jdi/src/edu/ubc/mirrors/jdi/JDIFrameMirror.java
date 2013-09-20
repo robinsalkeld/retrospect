@@ -26,6 +26,7 @@ import com.sun.jdi.StackFrame;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 
 public class JDIFrameMirror extends JDIMirror implements FrameMirror {
@@ -66,4 +67,9 @@ public class JDIFrameMirror extends JDIMirror implements FrameMirror {
 	return frame.location().lineNumber();
     }
 
+    @Override
+    public InstanceMirror thisObject() {
+        return (InstanceMirror)vm.makeMirror(frame.thisObject());
+    }
+    
 }

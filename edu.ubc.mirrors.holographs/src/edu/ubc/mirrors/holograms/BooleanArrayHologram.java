@@ -51,12 +51,22 @@ public class BooleanArrayHologram extends ArrayHologram implements BooleanArrayM
 
     @Override
     public byte getByte(int index) throws ArrayIndexOutOfBoundsException {
-        return mirror.getBoolean(index) ? (byte)1 : (byte)0;
+        return mirror.getByte(index);
+    }
+    
+    @Override
+    public byte[] getBytes(int index, int length) throws ArrayIndexOutOfBoundsException {
+        return mirror.getBytes(index, length);
     }
 
     @Override
     public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {
-        mirror.setBoolean(index, b != 0);
+        mirror.setByte(index, b);
+    }
+    
+    @Override
+    public void setBytes(int index, byte[] b) throws ArrayIndexOutOfBoundsException {
+        mirror.setBytes(index, b);
     }
     
     public static boolean getHologram(BooleanArrayMirror mirror, int index) throws Throwable {

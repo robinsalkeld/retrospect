@@ -22,6 +22,7 @@
 package edu.ubc.mirrors.eclipse.mat;
 
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 
 import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.mat.snapshot.model.IObjectArray;
@@ -70,7 +71,7 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements H
     private Object getValueArray() {
         Object valArray = valueArray != null ? valueArray.get() : null;
         if (valArray == null) {
-            valArray = ((IPrimitiveArray)array).getValueArray();
+            valArray = array.getValueArray();
             valueArray = new WeakReference<Object>(valArray);
         }
         return valArray;
@@ -83,7 +84,27 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements H
     
     @Override
     public byte getByte(int index) throws ArrayIndexOutOfBoundsException {
-        return ((byte[])getValueArray())[index];
+        Object valArray = getValueArray();
+        if (valArray instanceof boolean[]) {
+            return ((boolean[])valArray)[index] ? (byte)1 : 0;
+        } else {
+            return ((byte[])valArray)[index];
+        }
+    }
+    
+    @Override
+    public byte[] getBytes(int index, int length) throws ArrayIndexOutOfBoundsException {
+        Object a = array.getValueArray();
+        if (a instanceof byte[]) {
+            byte[] valArray = (byte[])a;
+            if (index == 0 && length == valArray.length) {
+                return valArray;
+            } else {
+                return Arrays.copyOfRange(valArray, index, index + length);
+            }
+        } else {
+            return super.getBytes(index, length);
+        }
     }
     
     @Override

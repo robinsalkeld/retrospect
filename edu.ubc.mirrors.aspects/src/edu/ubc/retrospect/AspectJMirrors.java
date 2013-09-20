@@ -40,6 +40,7 @@ import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.runtime.reflect.Factory;
 import org.objectweb.asm.Type;
@@ -97,6 +98,7 @@ import abc.weaving.aspectinfo.MethodCall;
 import abc.weaving.aspectinfo.NotPointcut;
 import abc.weaving.aspectinfo.OrPointcut;
 import abc.weaving.aspectinfo.Pointcut;
+import abc.weaving.aspectinfo.ThisVar;
 import abc.weaving.aspectinfo.Within;
 import abc.weaving.aspectinfo.WithinConstructor;
 import abc.weaving.aspectinfo.WithinMethod;
@@ -127,6 +129,7 @@ public class AspectJMirrors {
     private final ThreadMirror thread;
     private final ClassMirrorLoader loader;
     private final ConstructorMirror factoryConstructor;
+    private final ClassMirror aspectAnnotClass;
     
     // org.aspectj.lang.annotation classes
     public enum AdviceKind {
@@ -165,6 +168,7 @@ public class AspectJMirrors {
 	// This holds the formal declarations
 	private final ObjectMirror method;
 	private final MethodMirror methodMirror;
+	private final String[] parameterNames;
 	// Null for abstract pointcuts. Non-final because of the resolution phase.
 	private abc.aspectj.ast.Pointcut astPC;
 	private abc.weaving.aspectinfo.Pointcut aiPC;
@@ -192,19 +196,30 @@ public class AspectJMirrors {
 	    this.name = getPointcutName(method);
 	    this.methodMirror = Reflection.methodMirrorForMethodInstance((InstanceMirror)method);
 	    
+	    String parameterNamesString;
+	    try {
+	        parameterNamesString = Reflection.getRealStringForMirror((InstanceMirror)annotation.getClassMirror().getMethod("argNames").invoke(thread, annotation));
+	    } catch (IllegalAccessException e1) {
+	        throw new RuntimeException(e1);
+	    } catch (NoSuchMethodException e1) {
+	        throw new RuntimeException(e1);
+	    } catch (MirrorInvocationTargetException e1) {
+	        throw new RuntimeException(e1);
+	    }
+	    this.parameterNames = parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(",");
+            
 	    int pointcutFlags = (Integer)Reflection.invokeMethodHandle(method, thread, new MethodHandle() {
 		protected void methodCall() throws Throwable {
 		    ((Method)null).getModifiers();
 		}   
 	    });
+	    
 	    if (Modifier.isAbstract(pointcutFlags)) {
 		astPC = null;
 	    } else {
 		String pointcut;
-		String parameterNamesString;
 		try {
 		    pointcut = Reflection.getRealStringForMirror((InstanceMirror)annotation.getClassMirror().getDeclaredMethod("value").invoke(thread, annotation));
-		    parameterNamesString = Reflection.getRealStringForMirror((InstanceMirror)annotation.getClassMirror().getMethod("argNames").invoke(thread, annotation));
 		} catch (IllegalAccessException e) {
 		    throw new RuntimeException(e);
 		} catch (MirrorInvocationTargetException e) {
@@ -213,7 +228,6 @@ public class AspectJMirrors {
 		    throw new RuntimeException(e);
 		}
 		Map<String, String> locals = new HashMap<String, String>();
-		String[] parameterNames = parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(",");
 		ObjectArrayMirror parameterTypes = (ObjectArrayMirror)Reflection.invokeMethodHandle(method, thread, new MethodHandle() {
 		    protected void methodCall() throws Throwable {
 			((Method)null).getParameterTypes();
@@ -239,6 +253,10 @@ public class AspectJMirrors {
 	public Node getASTPointcut() {
 	    return astPC;
 	}
+	
+	public boolean isAbstract() {
+	    return astPC == null;
+	}
     }
 
     public AdviceMirror getAdviceForMethod(ObjectMirror method) {
@@ -255,8 +273,18 @@ public class AspectJMirrors {
 	return null;
     }
     
+    public boolean isAspect(ClassMirror klass) {
+        ObjectMirror annot = (ObjectMirror)Reflection.invokeMethodHandle(klass, thread, new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((Class<?>)null).getAnnotation(null);
+            }
+        }, aspectAnnotClass);
+        return annot != null;
+    }
+    
     public class AspectMirror {
 	private final ClassMirror klass;
+	private final AspectMirror superAspect;
 	private final List<AdviceMirror> adviceDecls = new ArrayList<AdviceMirror>();
 	private final Map<String, AdviceMirror> pointcutDecls = new HashMap<String, AdviceMirror>();
 	
@@ -265,6 +293,12 @@ public class AspectJMirrors {
 	
 	public AspectMirror(ClassMirror klass) {
 	    this.klass = klass;
+	    ClassMirror superClassMirror = klass.getSuperClassMirror();
+            if (superClassMirror != null && isAspect(superClassMirror)) {
+	        this.superAspect = getAspectMirror(superClassMirror);
+	    } else {
+	        this.superAspect = null;
+	    }
 	    
 	    ObjectArrayMirror methods = (ObjectArrayMirror)Reflection.invokeMethodHandle(klass, thread, new MethodHandle() {
 		protected void methodCall() throws Throwable {
@@ -285,14 +319,20 @@ public class AspectJMirrors {
 	    }
 	}
 	
-	public List<AdviceMirror> getAdvice() {
-	    return Collections.unmodifiableList(adviceDecls);
+	public List<AdviceMirror> getAllAdvice() {
+	    List<AdviceMirror> result = new ArrayList<AdviceMirror>();
+	    AspectMirror aspect = this;
+	    while (aspect != null) {
+	        result.addAll(aspect.adviceDecls);
+	        aspect = aspect.superAspect;
+	    }
+	    return result;
 	}
 
 	public void installRequests() {
 	    MirrorEventRequestManager manager = vm.eventRequestManager();
 	    final Set<MirrorEvent> joinpointEvents = new HashSet<MirrorEvent>();
-	    for (AdviceMirror advice : adviceDecls) {
+	    for (AdviceMirror advice : getAllAdvice()) {
 		Pointcut pc = advice.getAIPointcut();
 		Pointcut dnf = pc.dnf().makePointcut(pc.getPosition());
 		List<List<Pointcut>> actualDNF = disjuncts(dnf);
@@ -397,18 +437,25 @@ public class AspectJMirrors {
 	}
 
 	public void executeAdvice(Set<MirrorEvent> eventSet) {
-	    for (AdviceMirror advice : adviceDecls) {
+	    for (AdviceMirror advice : getAllAdvice()) {
 		// Note the break below - each advice should only apply at most once to
 		// each joinpoint, even if there are multiple events at that joinpoint
 		// that match its pointcut
 		for (MirrorEvent event : eventSet) {
-		    if (adviceMatchesEvent(advice.getKind(), advice.getAIPointcut(), event)) {
-			InstanceMirror staticJoinPoint = makeStaticJoinPoint(event);
+		    Map<String, Object> binding = adviceBinding(advice.getKind(), advice.getAIPointcut(), event);
+                    if (binding != null) {
 			InstanceMirror aspectInstance = getInstance();
+			Object[] args = new Object[advice.parameterNames.length + 1];
+			
+			for (int i = 0; i < advice.parameterNames.length; i++) {
+                            args[i] = binding.get(advice.parameterNames[i]);
+                        }
+			// TODO-RS: Actually check that we're passing in the right kind of join point,
+                        // if it's a parameter at all.
+                        args[args.length - 1] = makeStaticJoinPoint(event);
+                        
 			try {
-			    // TODO-RS: Actually check that we're passing in the right kind of join point,
-			    // if it's a parameter at all.
-			    advice.methodMirror.invoke(thread, aspectInstance, staticJoinPoint);
+			    advice.methodMirror.invoke(thread, aspectInstance, args);
 			    break;
 			} catch (IllegalAccessException e) {
 			    throw new RuntimeException(e);
@@ -436,6 +483,39 @@ public class AspectJMirrors {
 		}
 	    }
 	    return instance;	
+	}
+	
+	private void resolve(PCResolver v) {
+	    if (superAspect != null) {
+	        superAspect.resolve(v);
+	    }
+	    
+	    for (AdviceMirror advice : pointcutDecls.values()) {
+	        if (!advice.isAbstract()) {
+	            advice.astPC = (abc.aspectj.ast.Pointcut)advice.getASTPointcut().visit(v);
+	            advice.aiPC = advice.astPC.makeAIPointcut();
+	        }
+	    }
+	    for (AdviceMirror advice : adviceDecls) {
+	        advice.astPC = (abc.aspectj.ast.Pointcut)advice.getASTPointcut().visit(v);
+	        advice.aiPC = advice.astPC.makeAIPointcut();
+	    }
+	}
+
+	public AdviceMirror getPointcut(String name) {
+	    AdviceMirror result = pointcutDecls.get(name);
+	    if (result != null) {
+	        return result;
+	    }
+	    
+	    if (superAspect != null) {
+	        result = superAspect.getPointcut(name);
+	        if (result != null) {
+	            return result;
+	        }
+	    }
+	    
+	    return null; 
 	}
     }
 
@@ -468,6 +548,7 @@ public class AspectJMirrors {
 	this.factoryConstructor = factoryClass.getConstructor(
 		vm.findBootstrapClassMirror(String.class.getName()), 
 		vm.findBootstrapClassMirror(Class.class.getName()));
+	this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
     }
     
     public abc.aspectj.ast.Pointcut parsePointcut(Map<String, String> locals, String expr) {
@@ -512,14 +593,14 @@ public class AspectJMirrors {
 	    if (n instanceof PCName) {
 		PCName_c pcName = (PCName_c)n;
 		String name = pcName.name();
-		AdviceMirror pcDecl = aspect.pointcutDecls.get(name);
+		AdviceMirror pcDecl = aspect.getPointcut(name);
 		if (pcDecl == null) {
 		    throw new IllegalStateException();
 		}
 		// TODO-RS: Handle argument binding
-		if (!pcName.arguments().isEmpty()) {
-		    throw new UnsupportedOperationException("Argument binding not yet supported");
-		}
+//		if (!pcName.arguments().isEmpty()) {
+//		    throw new UnsupportedOperationException("Argument binding not yet supported");
+//		}
 		return pcDecl.getASTPointcut();
 	    } else {
 		return super.leave(old, n, v);
@@ -532,17 +613,10 @@ public class AspectJMirrors {
      * pointcut;
      */
     public void resolve() {
-	PCResolver v = new PCResolver();
 	for (AspectMirror aspect : aspects.values()) {
-	    v.aspect = aspect;
-	    for (AdviceMirror advice : aspect.pointcutDecls.values()) {
-		advice.astPC = (abc.aspectj.ast.Pointcut)advice.getASTPointcut().visit(v);
-		advice.aiPC = advice.astPC.makeAIPointcut();
-	    }
-	    for (AdviceMirror advice : aspect.adviceDecls) {
-		advice.astPC = (abc.aspectj.ast.Pointcut)advice.getASTPointcut().visit(v);
-		advice.aiPC = advice.astPC.makeAIPointcut();
-	    }
+	    PCResolver v = new PCResolver();
+            v.aspect = aspect;
+	    aspect.resolve(v);
 	}
     }
     
@@ -555,32 +629,60 @@ public class AspectJMirrors {
 	return aspect;
     }
     
-    // TODO-RS: Extend to bind pointcut formals
+    private Map<String, Object> asBinding(boolean b) {
+        return b ? Collections.<String, Object>emptyMap() : null;
+    }
+    
+    private Map<String, Object> bindingNot(Map<String, Object> binding) {
+        return asBinding(binding == null);
+    }
+    
+    private Map<String, Object> bindingOr(Map<String, Object> lhs, Map<String, Object> rhs) {
+        return lhs != null ? lhs : rhs;
+    }
+    
+    private Map<String, Object> bindingAnd(Map<String, Object> lhs, Map<String, Object> rhs) {
+        if (lhs == null || rhs == null) {
+            return null;
+        }
+        
+        if (lhs.isEmpty()) {
+            return rhs;
+        } else if (rhs.isEmpty()) {
+            return lhs;
+        }
+        
+        
+        Map<String, Object> result = new HashMap<String, Object>(lhs);
+        result.putAll(rhs);
+        return result;
+    }
+    
     // TODO-RS: Will also have to be stateful to handle cflow and similar dynamic tests
-    public boolean adviceMatchesEvent(AdviceKind kind, abc.weaving.aspectinfo.Pointcut pc, MirrorEvent event) {
+    public Map<String, Object> adviceBinding(AdviceKind kind, abc.weaving.aspectinfo.Pointcut pc, MirrorEvent event) {
 	if (pc instanceof AndPointcut) {
 	    AndPointcut andPC = (AndPointcut)pc;
-	    return adviceMatchesEvent(kind, andPC.getLeftPointcut(), event) 
-		&& adviceMatchesEvent(kind, andPC.getRightPointcut(), event);
+	    return bindingAnd(adviceBinding(kind, andPC.getLeftPointcut(), event), 
+	                      adviceBinding(kind, andPC.getRightPointcut(), event));
 	} else if (pc instanceof OrPointcut) {
 	    OrPointcut orPC = (OrPointcut)pc;
-	    return adviceMatchesEvent(kind, orPC.getLeftPointcut(), event) 
-		|| adviceMatchesEvent(kind, orPC.getRightPointcut(), event);
+	    return bindingOr(adviceBinding(kind, orPC.getLeftPointcut(), event), 
+	                     adviceBinding(kind, orPC.getRightPointcut(), event));
 	} else if (pc instanceof NotPointcut) {
 	    NotPointcut notPC = (NotPointcut)pc;
-	    return !adviceMatchesEvent(kind, notPC, event);
+	    return bindingNot(adviceBinding(kind, notPC.getPointcut(), event));
 	} else if (pc instanceof Execution) {
 	    if ((event instanceof MethodMirrorEntryEvent || event instanceof ConstructorMirrorEntryEvent) && kind == AdviceKind.BEFORE) {
-		return true;
+		return Collections.emptyMap();
 	    } else if ((event instanceof MethodMirrorExitEvent || event instanceof ConstructorMirrorExitEvent) && kind == AdviceKind.AFTER) {
-		return true;
+		return Collections.emptyMap();
 	    } else {
-		return false;
+		return null;
 	    }
 	} else if (pc instanceof MethodCall) {
 	    // TODO-RS: Need to either find method calls in bytecode and set breakpoints 
 	    // or fake things by hiding the extra stack frame (probably the former)
-	    return false;
+	    return null;
 	} else if (pc instanceof Within) {
 	    Within within = (Within)pc;
 	    ClassnamePatternExpr pattern = within.getPattern().getPattern();
@@ -588,21 +690,21 @@ public class AspectJMirrors {
 	    if (event instanceof ConstructorMirrorEntryEvent && kind == AdviceKind.BEFORE) {
 		ConstructorMirrorEntryEvent mmee = (ConstructorMirrorEntryEvent)event;
 		ClassMirror klass = mmee.constructor().getDeclaringClass();
-		return classMatches(klass, pattern);
+		return asBinding(classMatches(klass, pattern));
 	    } else if (event instanceof ConstructorMirrorExitEvent && kind == AdviceKind.AFTER) {
 		ConstructorMirrorExitEvent mmee = (ConstructorMirrorExitEvent)event;
 		ClassMirror klass = mmee.constructor().getDeclaringClass();
-		return classMatches(klass, pattern);
+		return asBinding(classMatches(klass, pattern));
 	    } else if (event instanceof MethodMirrorEntryEvent && kind == AdviceKind.BEFORE) {
 		MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
 		ClassMirror klass = mmee.method().getDeclaringClass();
-		return classMatches(klass, pattern);
+		return asBinding(classMatches(klass, pattern));
 	    } else if (event instanceof MethodMirrorExitEvent && kind == AdviceKind.AFTER) {
 		MethodMirrorExitEvent mmee = (MethodMirrorExitEvent)event;
 		ClassMirror klass = mmee.method().getDeclaringClass();
-		return classMatches(klass, pattern);
+		return asBinding(classMatches(klass, pattern));
 	    } else {
-		return false;
+		return null;
 	    }
 	} else if (pc instanceof WithinMethod) {
 	    WithinMethod withinMethod = (WithinMethod)pc;
@@ -611,13 +713,13 @@ public class AspectJMirrors {
 	    if (event instanceof MethodMirrorEntryEvent && kind == AdviceKind.BEFORE) {
 		MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
 		MethodMirror method = mmee.method();
-		return methodMatches(method, pattern);
+		return asBinding(methodMatches(method, pattern));
 	    } else if (event instanceof MethodMirrorExitEvent && kind == AdviceKind.AFTER) {
 		MethodMirrorExitEvent mmee = (MethodMirrorExitEvent)event;
 		MethodMirror method = mmee.method();
-		return methodMatches(method, pattern);
+		return asBinding(methodMatches(method, pattern));
 	    } else {
-		return false;
+		return null;
 	    }
 	} else if (pc instanceof WithinConstructor) {
 	    WithinConstructor within = (WithinConstructor)pc;
@@ -626,14 +728,31 @@ public class AspectJMirrors {
 	    if (event instanceof ConstructorMirrorEntryEvent && kind == AdviceKind.BEFORE) {
 		ConstructorMirrorEntryEvent cmee = (ConstructorMirrorEntryEvent)event;
 		ConstructorMirror constructor = cmee.constructor();
-		return constructorMatches(constructor, pattern);
+		return asBinding(constructorMatches(constructor, pattern));
 	    } else if (event instanceof ConstructorMirrorExitEvent && kind == AdviceKind.AFTER) {
 		ConstructorMirrorExitEvent mmee = (ConstructorMirrorExitEvent)event;
 		ConstructorMirror constructor = mmee.constructor();
-		return constructorMatches(constructor, pattern);
+		return asBinding(constructorMatches(constructor, pattern));
 	    } else {
-		return false;
+		return null;
 	    }
+	} else if (pc instanceof ThisVar) {
+	    ThisVar thisVar = (ThisVar)pc;
+	    String varName = thisVar.getVar().getName();
+	    ThreadMirror thread = null;
+	    if (event instanceof MethodMirrorEntryEvent) {
+	        thread = ((MethodMirrorEntryEvent)event).thread();
+	    } else if (event instanceof MethodMirrorExitEvent) {
+                thread = ((MethodMirrorExitEvent)event).thread();
+	    } else if (event instanceof ConstructorMirrorEntryEvent) {
+	        thread = ((ConstructorMirrorEntryEvent)event).thread();
+	    } else if (event instanceof ConstructorMirrorExitEvent) {
+	        thread = ((ConstructorMirrorExitEvent)event).thread();
+	    } else {
+	        return null;
+	    }
+	    InstanceMirror thisObject = thread.getStackTrace().get(0).thisObject();
+            return Collections.<String, Object>singletonMap(varName, thisObject);
 	} else {
 	    throw new IllegalArgumentException("Unsupported pointcut type: " + pc);
 	}

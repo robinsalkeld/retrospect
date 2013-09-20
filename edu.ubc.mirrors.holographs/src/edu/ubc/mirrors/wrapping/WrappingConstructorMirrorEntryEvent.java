@@ -23,6 +23,7 @@ package edu.ubc.mirrors.wrapping;
 
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingConstructorMirrorEntryEvent extends WrappingMirrorEvent implements ConstructorMirrorEntryEvent {
 
@@ -36,5 +37,10 @@ public class WrappingConstructorMirrorEntryEvent extends WrappingMirrorEvent imp
     @Override
     public ConstructorMirror constructor() {
 	return vm.wrapConstructor(wrapped.constructor());
+    }
+    
+    @Override
+    public ThreadMirror thread() {
+        return (ThreadMirror)vm.getWrappedMirror(wrapped.thread());
     }
 }

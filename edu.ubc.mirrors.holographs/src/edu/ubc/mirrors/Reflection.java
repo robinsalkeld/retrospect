@@ -661,6 +661,16 @@ public class Reflection {
     }
     
     public static void arraycopy(ObjectMirror src, int srcPos, ObjectMirror dest, int destPos, int length) {
+        String signature = src.getClassMirror().getSignature();
+        if (signature.equals("[B")) {
+            if (!dest.getClassMirror().getSignature().equals("[B")) {
+                throw new ArrayStoreException();
+            }
+            byte[] values = ((ByteArrayMirror)src).getBytes(srcPos, length);
+            ((ByteArrayMirror)dest).setBytes(destPos, values);
+            return;
+        }
+        
         for (int off = 0; off < length; off++) {
             setArrayElement(dest, destPos + off, getArrayElement(src, srcPos + off));
         }

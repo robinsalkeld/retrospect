@@ -25,6 +25,7 @@ import com.sun.jdi.event.MethodEntryEvent;
 
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIConstructorMirrorEntryEvent extends JDIMirrorEvent implements ConstructorMirrorEntryEvent {
 
@@ -52,6 +53,11 @@ public class JDIConstructorMirrorEntryEvent extends JDIMirrorEvent implements Co
 	    return null;
 	}
 	return result;
+    }
+    
+    @Override
+    public ThreadMirror thread() {
+        return (ThreadMirror)vm.makeMirror(wrapped.thread());
     }
 
 }
