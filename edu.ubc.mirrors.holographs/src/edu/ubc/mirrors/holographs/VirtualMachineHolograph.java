@@ -93,6 +93,7 @@ import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
+import edu.ubc.mirrors.raw.PrimitiveClassMirror;
 import edu.ubc.mirrors.raw.SandboxedClassLoader;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
@@ -638,7 +639,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(newClass);
             dynamicallyDefinedClasses.put(name, newClassHolograph);
             
-            DefinedClassMirror.registerPrepareCallback(newClassHolograph);
+            newClassHolograph.registerPrepareCallback();
             
             return newClassHolograph;
         } 
@@ -659,6 +660,27 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         ClassMirror newClass = new DefinedClassMirror(this, null, name, realBytecode, false);
         ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(newClass);
         dynamicallyDefinedClasses.put(name, newClassHolograph);
+        return newClassHolograph;
+    }
+    
+    @Override
+    public ClassMirror getPrimitiveClass(String name) {
+        ClassMirror result = super.getPrimitiveClass(name);
+        if (result != null) {
+            return result;
+        }
+        
+        result = dynamicallyDefinedClasses.get(name);
+        if (result != null) {
+            return result;
+        }
+        
+        ClassMirror primitiveClass = new PrimitiveClassMirror(this, name, null);
+        ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(primitiveClass);
+        dynamicallyDefinedClasses.put(name, newClassHolograph);
+
+        newClassHolograph.registerPrepareCallback();
+        
         return newClassHolograph;
     }
     

@@ -94,4 +94,9 @@ public class HeapDumpFrameMirror implements FrameMirror {
     public InstanceMirror thisObject() {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public List<Object> arguments() {
+        throw new UnsupportedOperationException();
+    }
 }

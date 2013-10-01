@@ -35,11 +35,17 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
+import com.sun.jdi.event.MonitorContendedEnterEvent;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.MonitorContendedEnterRequest;
+import com.sun.jdi.request.MonitorContendedEnteredRequest;
+import com.sun.jdi.request.MonitorWaitRequest;
+import com.sun.jdi.request.MonitorWaitedRequest;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -71,13 +77,17 @@ public class DebuggingTest {
         ClassPrepareEvent cpe = (ClassPrepareEvent)es.eventIterator().next();
         final ThreadReference threadRef = cpe.thread();
         
+//        MonitorContendedEnteredRequest mwr = jdiVM.eventRequestManager().createMonitorContendedEnteredRequest();
+//        mwr.addClassFilter("tracing.Square");
+//        mwr.enable();
+        
+        final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
+//        new EventDispatch(jdiVMM).start();
+//        if (true) return;
+        
         File binDir = new File("/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
         URL urlPath = binDir.toURI().toURL();
         URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
-        
-        JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
-        ClassMirror c = jdiVMM.findBootstrapClassMirror(ClassLoader.class.getName());
-        List<ObjectMirror> i = c.getInstances();
         
         // TODO-RS: Cheating for now...
         File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid2675.0001.subeclipseonjava7_hologram_classes");
@@ -88,11 +98,15 @@ public class DebuggingTest {
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath, aspectRuntimeJar});
         Reflection.withThread(thread, new Callable<Void>() {
             public Void call() throws Exception {
+                // TODO-RS: Necessary to avoid some weird deadlock I haven't figured out yet.
+                jdiVMM.getPrimitiveClass("float");
+                jdiVMM.getPrimitiveClass("double");
+                
         	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version3.Trace", true, loader);
         	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
         	
         	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
-                InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("out"));
+                InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("err"));
         	MethodMirror method = traceClass.getDeclaredMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
                 method.invoke(thread, null, stream);
         	

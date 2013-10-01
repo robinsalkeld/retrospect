@@ -22,9 +22,7 @@
 package edu.ubc.mirrors.jdi;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ReferenceType;
@@ -36,25 +34,28 @@ import edu.ubc.mirrors.InstanceMirror;
 
 public class JDIClassLoaderMirror extends JDIInstanceMirror implements ClassMirrorLoader {
 
-    private final Map<String, ReferenceType> loadedClasses = new HashMap<String, ReferenceType>();
+    private final ClassLoaderReference wrapped;
     
-    public JDIClassLoaderMirror(JDIVirtualMachineMirror vm, ClassLoaderReference loader) {
-        super(vm, loader);
-        for (ReferenceType klass : loader.definedClasses()) {
-            loadedClasses.put(klass.name(), klass);
-        }
+    public JDIClassLoaderMirror(JDIVirtualMachineMirror vm, ClassLoaderReference wrapped) {
+        super(vm, wrapped);
+        this.wrapped = wrapped;
     }
 
     @Override
     public ClassMirror findLoadedClassMirror(String name) {
-        return vm.makeClassMirror(loadedClasses.get(name));
+        for (ReferenceType klass : wrapped.definedClasses()) {
+            if (klass.name().equals(name)) {
+                return vm.makeClassMirror(klass.classObject());
+            }
+        }
+        return null;
     }
 
     @Override
     public List<ClassMirror> loadedClassMirrors() {
         List<ClassMirror> result = new ArrayList<ClassMirror>();
-        for (ReferenceType klass : loadedClasses.values()) {
-            result.add((ClassMirror)vm.makeMirror(klass.classObject()));
+        for (ReferenceType klass : wrapped.definedClasses()) {
+            result.add(vm.makeClassMirror(klass.classObject()));
         }
         return result;
     }

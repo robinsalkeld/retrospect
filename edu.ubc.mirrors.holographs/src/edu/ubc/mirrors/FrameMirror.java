@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors;
 
+import java.util.List;
+
 public interface FrameMirror {
 
     ClassMirror declaringClass();
@@ -29,5 +31,5 @@ public interface FrameMirror {
     String fileName();
     int lineNumber();
     InstanceMirror thisObject();
-    
+    List<Object> arguments();
 }

@@ -298,7 +298,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 	} else if (value instanceof FloatValue) {
 	    return ((FloatValue)value).floatValue();
 	} else if (value instanceof DoubleValue) {
-	    return ((FloatValue)value).doubleValue();
+	    return ((DoubleValue)value).doubleValue();
 	} else {
 	    return makeMirror((ObjectReference)value);
 	}

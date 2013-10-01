@@ -91,32 +91,6 @@ public class DefinedClassMirror extends BytecodeClassMirror implements NewInstan
         return false;
     }
     
-    public static void registerPrepareCallback(final ClassHolograph newClassHolograph) {
-        // Set up a callback so that if the wrapped VM defines this same class later on,
-        // we can replace the holograph version with the "real" one. 
-        // TODO-RS: Make sure this is sound by checking the side-effects
-        // in the class initialization method!!!
-        VirtualMachineHolograph vm = newClassHolograph.getVM();
-        if (vm.canBeModified()) {
-            ClassMirrorPrepareRequest request = vm.eventRequestManager().createClassMirrorPrepareRequest();
-            request.addClassFilter(newClassHolograph.getClassName());
-            vm.dispatch().addCallback(request, new EventCallback() {
-                @Override
-                public void handle(MirrorEvent event) {
-                    ClassMirrorPrepareEvent prepareEvent = (ClassMirrorPrepareEvent)event;
-                    ClassHolograph prepared = (ClassHolograph)prepareEvent.classMirror();
-                    // The name will match, but we have to check the class loader manually.
-                    ClassMirrorLoader preparedLoader = prepared.getLoader();
-                    ClassLoaderHolograph holographLoader = newClassHolograph.getLoader();
-                    if (preparedLoader == null ? holographLoader == null : preparedLoader.equals(holographLoader)) {
-                        newClassHolograph.setWrapped(prepared.getWrappedClassMirror());
-                    }
-                }
-            });
-            request.enable();
-        }
-    }
-
     @Override
     public int identityHashCode() {
         return hashCode();

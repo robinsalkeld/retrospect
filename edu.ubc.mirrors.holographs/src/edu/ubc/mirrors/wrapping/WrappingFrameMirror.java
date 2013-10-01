@@ -21,10 +21,14 @@
  ******************************************************************************/
 package edu.ubc.mirrors.wrapping;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.ObjectMirror;
 
 public class WrappingFrameMirror implements FrameMirror {
 
@@ -59,6 +63,23 @@ public class WrappingFrameMirror implements FrameMirror {
     @Override
     public InstanceMirror thisObject() {
         return (InstanceMirror)vm.getWrappedMirror(wrapped.thisObject());
+    }
+    
+    @Override
+    public List<Object> arguments() {
+        List<Object> result = new ArrayList<Object>();
+        List<Object> arguments = wrapped.arguments();
+        if (arguments == null) {
+            return null;
+        }
+        for (Object arg : arguments) {
+            if (arg instanceof ObjectMirror) {
+                result.add(vm.getWrappedMirror((ObjectMirror)arg));
+            } else {
+                result.add(arg);
+            }
+        }
+        return result;
     }
     
 }

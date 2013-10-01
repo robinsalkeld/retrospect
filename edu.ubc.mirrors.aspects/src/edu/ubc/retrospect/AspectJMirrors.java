@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import java_cup.runtime.Symbol;
 
@@ -45,6 +46,7 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.runtime.reflect.Factory;
 import org.objectweb.asm.Type;
 
+import polyglot.ast.Local;
 import polyglot.ast.Node;
 import polyglot.ast.TypeNode;
 import polyglot.frontend.Job;
@@ -93,6 +95,10 @@ import abc.aspectj.visit.NoSourceJob;
 import abc.main.CompilerAbortedException;
 import abc.om.ast.CPEFlags;
 import abc.weaving.aspectinfo.AndPointcut;
+import abc.weaving.aspectinfo.ArgVar;
+import abc.weaving.aspectinfo.Args;
+import abc.weaving.aspectinfo.Cflow;
+import abc.weaving.aspectinfo.CflowPointcut;
 import abc.weaving.aspectinfo.Execution;
 import abc.weaving.aspectinfo.MethodCall;
 import abc.weaving.aspectinfo.NotPointcut;
@@ -131,6 +137,35 @@ public class AspectJMirrors {
     private final ConstructorMirror factoryConstructor;
     private final ClassMirror aspectAnnotClass;
     
+    private static class CflowStack {
+        
+        private Map<ThreadMirror, Stack<Map<String, Object>>> stateStacks = new HashMap<ThreadMirror, Stack<Map<String, Object>>>();
+        
+        private Stack<Map<String, Object>> stackForThread(ThreadMirror thread) {
+            Stack<Map<String, Object>> stack = stateStacks.get(thread);
+            if (stack == null) {
+                stack = new Stack<Map<String, Object>>();
+                stateStacks.put(thread, stack);
+            }
+            return stack;
+        }
+        
+        public void pushState(ThreadMirror thread, Map<String, Object> state) {
+            stackForThread(thread).push(state);
+        }
+        
+        public void popState(ThreadMirror thread) {
+            stackForThread(thread).pop();
+        }
+        
+        public Map<String, Object> getBinding(ThreadMirror thread) {
+            Stack<Map<String, Object>> stack = stackForThread(thread);
+            return stack.empty() ? null : stack.peek();
+        }
+    }
+    
+    private final Map<Pointcut, CflowStack> cflowStacks = new HashMap<Pointcut, CflowStack>();
+    
     // org.aspectj.lang.annotation classes
     public enum AdviceKind {
 	BEFORE(Before.class),
@@ -157,7 +192,11 @@ public class AspectJMirrors {
         }
     }
     
-	
+    private interface PointcutCallback {
+        public void call(MirrorEvent event, Map<String, Object> binding);
+    }
+    
+    
     // Used for pointcut declarations as well
     public class AdviceMirror {
 	// Name of the pointcut or
@@ -166,7 +205,6 @@ public class AspectJMirrors {
 	// @Before, @Pointcut, etc
 	private final AdviceKind kind;
 	// This holds the formal declarations
-	private final ObjectMirror method;
 	private final MethodMirror methodMirror;
 	private final String[] parameterNames;
 	// Null for abstract pointcuts. Non-final because of the resolution phase.
@@ -190,12 +228,12 @@ public class AspectJMirrors {
 	    return name;
 	}
 	
-	public AdviceMirror(AdviceKind kind, ObjectMirror method, ObjectMirror annotation) {
-	    this.method = method;
+	public AdviceMirror(AspectMirror aspect, AdviceKind kind, ObjectMirror method, ObjectMirror annotation) {
 	    this.kind = kind;
 	    this.name = getPointcutName(method);
 	    this.methodMirror = Reflection.methodMirrorForMethodInstance((InstanceMirror)method);
-	    
+	    System.out.println("Processing advice: " + methodMirror);
+            
 	    String parameterNamesString;
 	    try {
 	        parameterNamesString = Reflection.getRealStringForMirror((InstanceMirror)annotation.getClassMirror().getMethod("argNames").invoke(thread, annotation));
@@ -257,17 +295,206 @@ public class AspectJMirrors {
 	public boolean isAbstract() {
 	    return astPC == null;
 	}
+	
+	private void installPointcutCallback(MirrorEventRequestManager manager, final AdviceKind kind, final Pointcut pc, final PointcutCallback callback) {
+	    Pointcut dnf = pc.dnf().makePointcut(pc.getPosition());
+            List<List<Pointcut>> actualDNF = disjuncts(dnf);
+            final Set<MirrorEvent> joinpointEvents = new HashSet<MirrorEvent>();
+            
+            for (List<Pointcut> disjunct : actualDNF) {
+                MirrorEventRequest request = extractRequest(manager, kind, disjunct);
+                
+                vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
+                    @Override
+                    public void handle(MirrorEvent event) {
+                        joinpointEvents.add(event);
+                    }
+                });
+                request.enable();
+            }
+        
+            vm.dispatch().addSetCallback(new Runnable() {
+                @Override
+                public void run() {
+                    // Note the return below - each pointcut should only apply at most once to
+                    // each joinpoint, even if there are multiple events at that joinpoint
+                    // that match.
+                    for (MirrorEvent event : joinpointEvents) {
+                        Map<String, Object> binding = adviceBinding(kind, pc, event);
+                        if (binding != null) {
+                            callback.call(event, binding);
+                            break;
+                        }
+                    }
+                    joinpointEvents.clear();
+                }
+            });
+	}
+	
+	public void install(final AspectMirror aspect) {
+            MirrorEventRequestManager manager = vm.eventRequestManager();
+            
+            // Make sure the cflow trackers are pushed before normal advice, and popped
+            // after.
+            installCflows(manager, true, aiPC);
+            installPointcutCallback(manager, kind, aiPC, new PointcutCallback() {
+                public void call(MirrorEvent event, Map<String, Object> binding) {
+                    execute(aspect, binding, event);
+                }
+            });
+            installCflows(manager, false, aiPC);
+	}
+	
+	private CflowStack getCflowStack(Pointcut pc) {
+	    CflowStack stack = cflowStacks.get(pc);
+            if (!cflowStacks.containsKey(pc)) {
+                stack = new CflowStack();
+                cflowStacks.put(pc, stack);
+            }
+            return stack;
+	}
+	
+	private void installCflows(MirrorEventRequestManager manager, final boolean before, final Pointcut pc) {
+            if (pc instanceof CflowPointcut) {
+                final CflowStack stack = getCflowStack(pc);
+                final Pointcut child = ((CflowPointcut)pc).getPointcut();
+                AdviceKind kind = before ? AdviceKind.BEFORE : AdviceKind.AFTER;
+                installPointcutCallback(manager, kind, child, new PointcutCallback() {
+                    public void call(MirrorEvent event, Map<String, Object> binding) {
+                        ThreadMirror thread = threadForEvent(event);
+                        if (before) {
+                            stack.pushState(thread, binding);
+                        } else {
+                            stack.popState(thread);
+                        }
+                    }
+                });
+                
+            } else if (pc instanceof AndPointcut) {
+                AndPointcut andPC = (AndPointcut)pc;
+                installCflows(manager, before, andPC.getLeftPointcut());
+                installCflows(manager, before, andPC.getRightPointcut());
+            } else if (pc instanceof OrPointcut) {
+                OrPointcut orPC = (OrPointcut)pc;
+                installCflows(manager, before, orPC.getLeftPointcut());
+                installCflows(manager, before, orPC.getRightPointcut());
+            } else if (pc instanceof NotPointcut) {
+                installCflows(manager, before, ((NotPointcut)pc).getPointcut());
+            }
+	}
+
+        // Collect DNF assuming the argument is already a DNF pointcut
+        private List<List<Pointcut>> disjuncts(Pointcut pc) {
+            if (pc instanceof OrPointcut) {
+                OrPointcut or = (OrPointcut)pc;
+                List<List<Pointcut>> result = new ArrayList<List<Pointcut>>();
+                result.addAll(disjuncts(or.getLeftPointcut()));
+                result.addAll(disjuncts(or.getRightPointcut()));
+                return result;
+            } else {
+                List<List<Pointcut>> result = new ArrayList<List<Pointcut>>(1);
+                result.add(conjuncts(pc));
+                return result;
+            }
+        }
+
+        private List<Pointcut> conjuncts(Pointcut pc) {
+            if (pc instanceof AndPointcut) {
+                AndPointcut or = (AndPointcut)pc;
+                List<Pointcut> result = new ArrayList<Pointcut>();
+                result.addAll(conjuncts(or.getLeftPointcut()));
+                result.addAll(conjuncts(or.getRightPointcut()));
+                return result;
+            } else {
+                List<Pointcut> result = new ArrayList<Pointcut>(1);
+                result.add(pc);
+                return result;
+            }
+        }
+
+        private MirrorEventRequest extractRequest(MirrorEventRequestManager manager, AdviceKind adviceKind, List<Pointcut> disjunct) {
+            boolean isExecution = false;
+            boolean isConstructor = false;
+            for (Iterator<Pointcut> pcIter = disjunct.iterator(); pcIter.hasNext();) {
+        	Pointcut pc = pcIter.next();
+        	
+        	// TODO-RS: Be more rigorous about conflicting specifications
+        	if (pc instanceof Execution) {
+        	    isExecution = true;
+        	    pcIter.remove();
+        	} else if (pc instanceof WithinConstructor) {
+        	    isConstructor = true;
+        	}
+            }
+            
+            MirrorEventRequest request;
+            if (isExecution) {
+        	if (adviceKind == AdviceKind.BEFORE) {
+        	    if (isConstructor) {
+        		request = manager.createConstructorMirrorEntryRequest();
+        	    } else {
+        		request = manager.createMethodMirrorEntryRequest();
+        	    }
+        	} else {
+        	    if (isConstructor) {
+        		request = manager.createConstructorMirrorExitRequest();
+        	    } else {
+        		request = manager.createMethodMirrorExitRequest();
+        	    }
+        	}
+            } else {
+        	throw new IllegalStateException("Unsupported pointcut: " + disjunct);
+            }
+            
+            for (Pointcut otherPC : disjunct) {
+        	// TODO-RS: Should remove clauses that are completely expressed
+        	// as request filters, to avoid redundant checking.
+        	if (otherPC instanceof Within) {
+        	    Within within = (Within)otherPC;
+        	    // TODO-RS: toString() is likely wrong here. Need to decide on 
+        	    // what pattern DSL the mirrors API should accept.
+        	    request.addClassFilter(within.getPattern().toString());
+        	}
+            }
+            
+            return request;
+        }
+
+        public void execute(AspectMirror aspect, Map<String, Object> binding, MirrorEvent event) {
+                    InstanceMirror aspectInstance = aspect.getInstance();
+                    Object[] args = new Object[parameterNames.length + 1];
+
+                    for (int i = 0; i < parameterNames.length; i++) {
+                        args[i] = binding.get(parameterNames[i]);
+                    }
+                    // TODO-RS: Actually check that we're passing in the right kind of join point,
+                    // if it's a parameter at all.
+                    args[args.length - 1] = makeStaticJoinPoint(event);
+
+                    try {
+                        methodMirror.invoke(thread, aspectInstance, args);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    } catch (MirrorInvocationTargetException e) {
+                        // TODO-RS: Think about exceptions in general. Advice throwing exceptions
+                        // would perturb the original execution so they need to be handled specially.
+                        throw new RuntimeException(e);
+                    }
+
+                    return;
+                }
+
     }
 
-    public AdviceMirror getAdviceForMethod(ObjectMirror method) {
-	for (AdviceKind kind : AdviceKind.values()) {
+    public AdviceMirror getAdviceForMethod(AspectMirror aspect, ObjectMirror method) {
+        for (AdviceKind kind : AdviceKind.values()) {
 	    ObjectMirror annot = (ObjectMirror)Reflection.invokeMethodHandle(method, thread, new MethodHandle() {
 		protected void methodCall() throws Throwable {
 		    ((Method)null).getAnnotation(null);
 		}
 	    }, getAnnotClassMirror(kind));
 	    if (annot != null) {
-		return new AdviceMirror(kind, method, annot);
+		return new AdviceMirror(aspect, kind, method, annot);
 	    }
 	}
 	return null;
@@ -308,7 +535,7 @@ public class AspectJMirrors {
 	    int n = methods.length();
 	    for (int i = 0; i < n; i++) {
 		ObjectMirror method = methods.get(i);
-		AdviceMirror advice = getAdviceForMethod(method);
+		AdviceMirror advice = getAdviceForMethod(this, method);
 		if (advice != null) {
 		    if (advice.kind == AdviceKind.POINTCUT) {
 			pointcutDecls.put(advice.name, advice);
@@ -330,145 +557,11 @@ public class AspectJMirrors {
 	}
 
 	public void installRequests() {
-	    MirrorEventRequestManager manager = vm.eventRequestManager();
-	    final Set<MirrorEvent> joinpointEvents = new HashSet<MirrorEvent>();
 	    for (AdviceMirror advice : getAllAdvice()) {
-		Pointcut pc = advice.getAIPointcut();
-		Pointcut dnf = pc.dnf().makePointcut(pc.getPosition());
-		List<List<Pointcut>> actualDNF = disjuncts(dnf);
-		
-		for (List<Pointcut> disjunct : actualDNF) {
-		    MirrorEventRequest request = extractRequest(manager, advice.getKind(), disjunct);
-		    
-		    vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
-		        @Override
-		        public void handle(MirrorEvent event) {
-		            joinpointEvents.add(event);
-		        }
-		    });
-		    request.enable();
-		}
-	    }
-	    
-	    vm.dispatch().addSetCallback(new Runnable() {
-		@Override
-		public void run() {
-		    executeAdvice(joinpointEvents);
-		    joinpointEvents.clear();
-		}
-	    });
+	        advice.install(this);
+	    }	    
 	}
 	
-	private MirrorEventRequest extractRequest(MirrorEventRequestManager manager, AdviceKind adviceKind, List<Pointcut> disjunct) {
-	    boolean isExecution = false;
-	    boolean isConstructor = false;
-	    for (Iterator<Pointcut> pcIter = disjunct.iterator(); pcIter.hasNext();) {
-		Pointcut pc = pcIter.next();
-		
-		// TODO-RS: Be more rigorous about conflicting specifications
-		if (pc instanceof Execution) {
-		    isExecution = true;
-		    pcIter.remove();
-		} else if (pc instanceof WithinConstructor) {
-		    isConstructor = true;
-		}
-	    }
-	    
-	    MirrorEventRequest request;
-	    if (isExecution) {
-		if (adviceKind == AdviceKind.BEFORE) {
-		    if (isConstructor) {
-			request = manager.createConstructorMirrorEntryRequest();
-		    } else {
-			request = manager.createMethodMirrorEntryRequest();
-		    }
-		} else {
-		    if (isConstructor) {
-			request = manager.createConstructorMirrorExitRequest();
-		    } else {
-			request = manager.createMethodMirrorExitRequest();
-		    }
-		}
-	    } else {
-		throw new IllegalStateException("Unsupported pointcut: " + disjunct);
-	    }
-	    
-	    for (Pointcut otherPC : disjunct) {
-		// TODO-RS: Should remove clauses that are completely expressed
-		// as request filters, to avoid redundant checking.
-		if (otherPC instanceof Within) {
-		    Within within = (Within)otherPC;
-		    // TODO-RS: toString() is likely wrong here. Need to decide on 
-		    // what pattern DSL the mirrors API should accept.
-		    request.addClassFilter(within.getPattern().toString());
-		}
-	    }
-	    
-	    return request;
-	}
-
-	// Collect DNF assuming the argument is already a DNF pointcut
-	private List<List<Pointcut>> disjuncts(Pointcut pc) {
-	    if (pc instanceof OrPointcut) {
-		OrPointcut or = (OrPointcut)pc;
-		List<List<Pointcut>> result = new ArrayList<List<Pointcut>>();
-		result.addAll(disjuncts(or.getLeftPointcut()));
-		result.addAll(disjuncts(or.getRightPointcut()));
-		return result;
-	    } else {
-		List<List<Pointcut>> result = new ArrayList<List<Pointcut>>(1);
-		result.add(conjuncts(pc));
-		return result;
-	    }
-	}
-
-	private List<Pointcut> conjuncts(Pointcut pc) {
-	    if (pc instanceof AndPointcut) {
-		AndPointcut or = (AndPointcut)pc;
-		List<Pointcut> result = new ArrayList<Pointcut>();
-		result.addAll(conjuncts(or.getLeftPointcut()));
-		result.addAll(conjuncts(or.getRightPointcut()));
-		return result;
-	    } else {
-		List<Pointcut> result = new ArrayList<Pointcut>(1);
-		result.add(pc);
-		return result;
-	    }
-	}
-
-	public void executeAdvice(Set<MirrorEvent> eventSet) {
-	    for (AdviceMirror advice : getAllAdvice()) {
-		// Note the break below - each advice should only apply at most once to
-		// each joinpoint, even if there are multiple events at that joinpoint
-		// that match its pointcut
-		for (MirrorEvent event : eventSet) {
-		    Map<String, Object> binding = adviceBinding(advice.getKind(), advice.getAIPointcut(), event);
-                    if (binding != null) {
-			InstanceMirror aspectInstance = getInstance();
-			Object[] args = new Object[advice.parameterNames.length + 1];
-			
-			for (int i = 0; i < advice.parameterNames.length; i++) {
-                            args[i] = binding.get(advice.parameterNames[i]);
-                        }
-			// TODO-RS: Actually check that we're passing in the right kind of join point,
-                        // if it's a parameter at all.
-                        args[args.length - 1] = makeStaticJoinPoint(event);
-                        
-			try {
-			    advice.methodMirror.invoke(thread, aspectInstance, args);
-			    break;
-			} catch (IllegalAccessException e) {
-			    throw new RuntimeException(e);
-			} catch (MirrorInvocationTargetException e) {
-			    // TODO-RS: Think about exceptions in general. Advice throwing exceptions
-			    // would perturb the original execution so they need to be handled specially.
-			    throw new RuntimeException(e);
-			}
-		    }
-		}
-	    }
-	}
-
 	private InstanceMirror getInstance() {
 	    if (instance == null) {
 		try {
@@ -597,10 +690,7 @@ public class AspectJMirrors {
 		if (pcDecl == null) {
 		    throw new IllegalStateException();
 		}
-		// TODO-RS: Handle argument binding
-//		if (!pcName.arguments().isEmpty()) {
-//		    throw new UnsupportedOperationException("Argument binding not yet supported");
-//		}
+		// TODO-RS: Handle argument binding properly - need to rename!
 		return pcDecl.getASTPointcut();
 	    } else {
 		return super.leave(old, n, v);
@@ -658,7 +748,20 @@ public class AspectJMirrors {
         return result;
     }
     
-    // TODO-RS: Will also have to be stateful to handle cflow and similar dynamic tests
+    private ThreadMirror threadForEvent(MirrorEvent event) {
+        if (event instanceof ConstructorMirrorEntryEvent) {
+            return ((ConstructorMirrorEntryEvent)event).thread();
+        } else if (event instanceof ConstructorMirrorExitEvent) {
+            return ((ConstructorMirrorExitEvent)event).thread();
+        } else if (event instanceof MethodMirrorEntryEvent) {
+            return ((MethodMirrorEntryEvent)event).thread();
+        } else if (event instanceof MethodMirrorExitEvent) {
+            return ((MethodMirrorExitEvent)event).thread();
+        } else {
+            return null;
+        }
+    }
+    
     public Map<String, Object> adviceBinding(AdviceKind kind, abc.weaving.aspectinfo.Pointcut pc, MirrorEvent event) {
 	if (pc instanceof AndPointcut) {
 	    AndPointcut andPC = (AndPointcut)pc;
@@ -671,6 +774,12 @@ public class AspectJMirrors {
 	} else if (pc instanceof NotPointcut) {
 	    NotPointcut notPC = (NotPointcut)pc;
 	    return bindingNot(adviceBinding(kind, notPC.getPointcut(), event));
+	} else if (pc instanceof Cflow) {
+	    ThreadMirror thread = threadForEvent(event);
+	    if (thread == null) {
+	        return null;
+	    }
+	    return cflowStacks.get(pc).getBinding(thread);
 	} else if (pc instanceof Execution) {
 	    if ((event instanceof MethodMirrorEntryEvent || event instanceof ConstructorMirrorEntryEvent) && kind == AdviceKind.BEFORE) {
 		return Collections.emptyMap();
@@ -739,21 +848,41 @@ public class AspectJMirrors {
 	} else if (pc instanceof ThisVar) {
 	    ThisVar thisVar = (ThisVar)pc;
 	    String varName = thisVar.getVar().getName();
-	    ThreadMirror thread = null;
-	    if (event instanceof MethodMirrorEntryEvent) {
-	        thread = ((MethodMirrorEntryEvent)event).thread();
-	    } else if (event instanceof MethodMirrorExitEvent) {
-                thread = ((MethodMirrorExitEvent)event).thread();
-	    } else if (event instanceof ConstructorMirrorEntryEvent) {
-	        thread = ((ConstructorMirrorEntryEvent)event).thread();
-	    } else if (event instanceof ConstructorMirrorExitEvent) {
-	        thread = ((ConstructorMirrorExitEvent)event).thread();
-	    } else {
-	        return null;
-	    }
+	    ThreadMirror thread = threadForEvent(event);
+	    if (thread == null) {
+                return null;
+            }
 	    InstanceMirror thisObject = thread.getStackTrace().get(0).thisObject();
             return Collections.<String, Object>singletonMap(varName, thisObject);
-	} else {
+	} else if (pc instanceof Args) {
+            Args args = (Args)pc;
+            ThreadMirror thread = threadForEvent(event);
+            if (thread == null) {
+                return null;
+            }
+            List<Object> arguments = thread.getStackTrace().get(0).arguments();
+            if (arguments == null) {
+                // TODO-RS: JDI returns null if variable information is missing.
+                // A more sound approach here would be to throw an exception only if
+                // the rest of the pointcut would have matched.
+                return null;
+            }
+            Map<String, Object> binding = new HashMap<String, Object>();
+            int argIndex = 0;
+            for (Object pattern : args.getArgs()) {
+                if (pattern instanceof ArgVar) {
+                    String argName = ((ArgVar)pattern).getVar().getName();
+                    if (argIndex >= arguments.size()) {
+                        return null;
+                    }
+                    binding.put(argName, arguments.get(argIndex));
+                } else {
+                    throw new UnsupportedOperationException("Unsupported arg() parameter: " + pattern);
+                }
+                argIndex++;
+            }
+            return binding;
+        } else {
 	    throw new IllegalArgumentException("Unsupported pointcut type: " + pc);
 	}
     }
@@ -793,7 +922,7 @@ public class AspectJMirrors {
 	return true;
     }
 
-    private boolean formalsMatch(List<ClassMirror> parameterTypes, List formalPatterns) {
+    private boolean formalsMatch(List<ClassMirror> parameterTypes, List<?> formalPatterns) {
 	int size = formalPatterns.size();
 	for (int i = 0; i < size; i++) {
 	    FormalPattern pattern = (FormalPattern)formalPatterns.get(i);

@@ -342,4 +342,9 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     public MethodMirror getEnclosingMethodMirror() {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public String toString() {
+        return super.toString() + '"' + getClassName() + '"';
+    }
 }

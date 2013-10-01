@@ -88,7 +88,7 @@ public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirr
         final ClassHolograph newClassHolograph = (ClassHolograph)vm.getWrappedClassMirror(newClass);
         dynamicallyDefinedClasses.put(name, newClassHolograph);
         
-        DefinedClassMirror.registerPrepareCallback(newClassHolograph);
+        newClassHolograph.registerPrepareCallback();
         
         return newClassHolograph;
     }

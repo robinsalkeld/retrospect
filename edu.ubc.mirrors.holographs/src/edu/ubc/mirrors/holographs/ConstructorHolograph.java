@@ -84,6 +84,8 @@ public class ConstructorHolograph implements ConstructorMirror {
         ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
         threadHolograph.enterHologramExecution();
         try {
+            klass.ensureInitialized();
+            
             resolveConstructor();
             
             // Add the extra implicit mirror parameter

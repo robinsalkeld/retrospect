@@ -44,15 +44,19 @@ import org.objectweb.asm.Type;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ClassMirrorPrepareEvent;
+import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.EventDispatch.EventCallback;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
@@ -821,6 +825,32 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
             return super.getEnclosingMethodMirror();
         } else {
             return getBytecodeMirror().getEnclosingMethodMirror();
+        }
+    }
+    
+    public void registerPrepareCallback() {
+        // Set up a callback so that if the wrapped VM defines this same class later on,
+        // we can replace the holograph version with the "real" one. 
+        // TODO-RS: Make sure this is sound by checking the side-effects
+        // in the class initialization method!!!
+        VirtualMachineHolograph vm = getVM();
+        if (vm.canBeModified()) {
+            ClassMirrorPrepareRequest request = vm.eventRequestManager().createClassMirrorPrepareRequest();
+            request.addClassFilter(getClassName());
+            vm.dispatch().addCallback(request, new EventCallback() {
+                @Override
+                public void handle(MirrorEvent event) {
+                    ClassMirrorPrepareEvent prepareEvent = (ClassMirrorPrepareEvent)event;
+                    ClassHolograph prepared = (ClassHolograph)prepareEvent.classMirror();
+                    // The name will match, but we have to check the class loader manually.
+                    ClassMirrorLoader preparedLoader = prepared.getLoader();
+                    ClassLoaderHolograph holographLoader = getLoader();
+                    if (preparedLoader == null ? holographLoader == null : preparedLoader.equals(holographLoader)) {
+                        setWrapped(prepared.getWrappedClassMirror());
+                    }
+                }
+            });
+            request.enable();
         }
     }
 }

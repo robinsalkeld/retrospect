@@ -21,8 +21,14 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.LocalVariable;
 import com.sun.jdi.StackFrame;
+import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
@@ -72,4 +78,22 @@ public class JDIFrameMirror extends JDIMirror implements FrameMirror {
         return (InstanceMirror)vm.makeMirror(frame.thisObject());
     }
     
+    @Override
+    public List<Object> arguments() {
+        // Don't call getArgumentValues() - that logs warnings like crazy if
+        // local variable information is missing.
+        List<LocalVariable> list;
+        try {
+            list = frame.location().method().variables();
+        } catch (AbsentInformationException e) {
+            return null;
+        }
+        ArrayList<Object> result = new ArrayList<Object>();
+        for (LocalVariable var : list) {
+            if (var.isArgument()) {
+                result.add(vm.wrapValue(frame.getValue(var)));
+            }
+        }
+        return result;
+    }
 }
