@@ -44,7 +44,6 @@ public class RetroactiveWeaver {
             
             aspectMirror.installRequests();
             ThreadHolograph.lowerMetalevel();
-            vm.dispatch().start();
         } finally {
             threadHolograph.exitHologramExecution();
         }

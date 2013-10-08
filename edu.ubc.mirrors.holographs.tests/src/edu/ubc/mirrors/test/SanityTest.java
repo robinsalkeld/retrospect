@@ -159,8 +159,11 @@ public class SanityTest extends TestCase {
 //        ToStringer.main(new String[] {"/Users/robinsalkeld/snapshots/3780.hprof"});
 //    }
     
-    // TODO-RS
-    public void testAspects() throws Exception {
-        DebuggingTest.main(new String[0]);
+    public void testTracingAspect() throws Exception {
+        TracingExampleTest.main(new String[0]);
+    }
+    
+    public void testRacerAspects() throws Exception {
+        RacerTest.main(new String[0]);
     }
 }

@@ -56,7 +56,7 @@ import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.retrospect.RetroactiveWeaver;
 
-public class DebuggingTest {
+public class TracingExampleTest {
 
     public static void main(String[] args) throws Exception {
         
@@ -112,6 +112,7 @@ public class DebuggingTest {
         	
         	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version3.TraceMyClasses", true, loader);
                 RetroactiveWeaver.weave(aspect, thread);
+                vm.dispatch().start();
                 
                 return null;
             }
