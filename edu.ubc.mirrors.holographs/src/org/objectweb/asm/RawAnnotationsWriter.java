@@ -22,6 +22,12 @@
 package org.objectweb.asm;
 
 import java.util.Arrays;
+import java.util.List;
+
+import edu.ubc.mirrors.AnnotationMirror;
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.AnnotationMirror.EnumMirror;
 
 public class RawAnnotationsWriter extends ClassVisitor {
 
@@ -51,5 +57,48 @@ public class RawAnnotationsWriter extends ClassVisitor {
             anns.put(out);
         }
         return Arrays.copyOf(out.data, out.length);
+    }
+    
+    public static byte[] getRawBytes(List<AnnotationMirror> annotations) {
+        RawAnnotationsWriter writer = new RawAnnotationsWriter(new ClassWriter(Opcodes.ASM4));
+        for (AnnotationMirror a : annotations) {
+            AnnotationVisitor subVisitor = writer.visitAnnotation(descForClassMirror(a.getClassMirror()), true);
+            visitAnnotationMirror(subVisitor, a);
+        }
+        return writer.rawAnnotations();
+    }
+    
+    private static void visitAnnotationMirror(AnnotationVisitor visitor, AnnotationMirror mirror) {
+        for (String key : mirror.getKeys()) {
+            Object value = mirror.getValue(key);
+            visitAnnotationMirrorValue(visitor, key, value);
+        }
+    }
+    
+    private static void visitAnnotationMirrorValue(AnnotationVisitor visitor, String key, Object value) {
+        if (value instanceof AnnotationMirror) {
+            AnnotationMirror subAnnot = (AnnotationMirror)value;
+            String desc = descForClassMirror(subAnnot.getClassMirror());
+            AnnotationVisitor subVisitor = visitor.visitAnnotation(key, desc);
+            visitAnnotationMirror(subVisitor, subAnnot);
+        } else if (value instanceof EnumMirror) {
+            EnumMirror e = (EnumMirror)value;
+            String desc = Reflection.typeForClassMirror(e.getClassMirror()).getDescriptor();
+            visitor.visitEnum(key, desc, e.getName());
+        } else if (value instanceof EnumMirror) {
+            EnumMirror e = (EnumMirror)value;
+            String desc = Reflection.typeForClassMirror(e.getClassMirror()).getDescriptor();
+            visitor.visitEnum(key, desc, e.getName());
+        } else if (value instanceof List) {
+            for (Object element : (List<?>)value) {
+                visitAnnotationMirrorValue(visitor, key, element);
+            }
+        } else {
+            visitor.visit(key, value);
+        }
+    }
+
+    private static String descForClassMirror(ClassMirror klass) {
+        return Reflection.typeForClassMirror(klass).getDescriptor();
     }
 }

@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.objectweb.asm.RawAnnotationsWriter;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
@@ -222,7 +223,7 @@ public class ClassStubs extends NativeStubs {
     
     @StubMethod
     public ByteArrayMirror getRawAnnotations(ClassMirror classMirror) {
-        byte[] bytes = classMirror.getRawAnnotations();
+        byte[] bytes = RawAnnotationsWriter.getRawBytes(classMirror.getAnnotations());
         return (ByteArrayMirror)Reflection.copyArray(classMirror.getVM(), new NativeByteArrayMirror(bytes));
     }
     

@@ -21,13 +21,14 @@
  ******************************************************************************/
 package edu.ubc.retrospect;
 
+import org.aspectj.weaver.ReferenceType;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
-import edu.ubc.retrospect.AspectJMirrors.AspectMirror;
 
 public class RetroactiveWeaver {
     
@@ -38,11 +39,9 @@ public class RetroactiveWeaver {
         try {
             ThreadHolograph.raiseMetalevel();
             ClassMirrorLoader loader = aspect.getLoader();
-            AspectJMirrors mirrors = new AspectJMirrors(vm, loader, thread);
-            AspectMirror aspectMirror = mirrors.getAspectMirror(aspect);
-            mirrors.resolve();
-            
-            aspectMirror.installRequests();
+            MirrorWorld world = new MirrorWorld(vm, loader, thread);
+            ReferenceType aspectType = (ReferenceType)world.resolve(aspect);
+            ((MirrorReferenceTypeDelegate)aspectType.getDelegate()).installAspect();
             ThreadHolograph.lowerMetalevel();
         } finally {
             threadHolograph.exitHologramExecution();

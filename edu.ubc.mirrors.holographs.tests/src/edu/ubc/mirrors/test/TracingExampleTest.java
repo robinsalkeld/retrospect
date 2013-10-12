@@ -25,9 +25,6 @@ import java.io.File;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 import com.sun.jdi.ThreadReference;
@@ -35,23 +32,15 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
-import com.sun.jdi.event.MonitorContendedEnterEvent;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.MonitorContendedEnterRequest;
-import com.sun.jdi.request.MonitorContendedEnteredRequest;
-import com.sun.jdi.request.MonitorWaitRequest;
-import com.sun.jdi.request.MonitorWaitedRequest;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.retrospect.RetroactiveWeaver;
@@ -102,7 +91,7 @@ public class TracingExampleTest {
                 jdiVMM.getPrimitiveClass("float");
                 jdiVMM.getPrimitiveClass("double");
                 
-        	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version3.Trace", true, loader);
+        	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);
         	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
         	
         	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
@@ -110,7 +99,7 @@ public class TracingExampleTest {
         	MethodMirror method = traceClass.getDeclaredMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
                 method.invoke(thread, null, stream);
         	
-        	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version3.TraceMyClasses", true, loader);
+        	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version1.TraceMyClasses", true, loader);
                 RetroactiveWeaver.weave(aspect, thread);
                 vm.dispatch().start();
                 

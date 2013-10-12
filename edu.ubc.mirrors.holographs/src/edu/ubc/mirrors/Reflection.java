@@ -856,4 +856,13 @@ public class Reflection {
         default: return null;
         }
     }
+    
+    public static AnnotationMirror getAnnotation(List<AnnotationMirror> annotations, ClassMirror annotationClass) {
+        for (AnnotationMirror a : annotations) {
+            if (a.getClassMirror().equals(annotationClass)) {
+                return a;
+            }
+        }
+        return null;
+    }
 }

@@ -76,11 +76,6 @@ public interface ClassMirror extends InstanceMirror {
     
     public boolean initialized();
     
-    // It would feel more natural to return the parsed annotations (i.e. InstanceMirrors)
-    // but this works better since the annotations are parsed and instantiated in normal Java code
-    // rather than in the VM itself.
-    public byte[] getRawAnnotations();
-    
     // This fake "object" must return the vm's Object type from getClassMirror()
     public InstanceMirror getStaticFieldValues();
     
@@ -89,4 +84,6 @@ public interface ClassMirror extends InstanceMirror {
     
     public ClassMirror getEnclosingClassMirror();
     public MethodMirror getEnclosingMethodMirror();
+    
+    public List<AnnotationMirror> getAnnotations();
 }

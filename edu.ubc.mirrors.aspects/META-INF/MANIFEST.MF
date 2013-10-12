@@ -8,12 +8,15 @@ Export-Package: edu.ubc.retrospect
 Import-Package: edu.ubc.mirrors,
  edu.ubc.mirrors.holographs,
  edu.ubc.mirrors.wrapping,
+ org.aspectj.bridge;version="1.6.4",
  org.aspectj.lang;version="1.6.4",
  org.aspectj.lang.annotation;version="1.6.4",
+ org.aspectj.lang.reflect;version="1.6.4",
  org.aspectj.runtime.reflect;version="1.6.4",
+ org.aspectj.weaver;version="1.6.4",
+ org.aspectj.weaver.ast;version="1.6.4",
+ org.aspectj.weaver.internal.tools;version="1.6.4",
+ org.aspectj.weaver.patterns;version="1.6.4",
+ org.aspectj.weaver.tools;version="1.6.4",
  org.objectweb.asm;version="4.0.0"
-Bundle-ClassPath: lib/abc.jar,
- lib/java_cup.jar,
- lib/polyglot.jar,
- lib/sootclasses.jar,
- .
+Bundle-ClassPath: .

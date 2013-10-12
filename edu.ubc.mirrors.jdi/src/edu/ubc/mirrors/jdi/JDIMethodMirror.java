@@ -33,6 +33,7 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
@@ -76,5 +77,10 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
             // TODO-RS: Use MirrorInvocationTargetException?
             throw new RuntimeException(e);
         }
+    }
+    
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
+        throw new UnsupportedOperationException();
     }
 }

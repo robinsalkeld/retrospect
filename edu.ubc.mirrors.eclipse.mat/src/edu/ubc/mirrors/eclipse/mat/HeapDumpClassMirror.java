@@ -37,6 +37,7 @@ import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.snapshot.model.IObject;
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.BoxingInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -101,11 +102,6 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
             return result;
         }
         
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public byte[] getRawAnnotations() {
         throw new UnsupportedOperationException();
     }
     
@@ -358,6 +354,11 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     
     @Override
     public MethodMirror getEnclosingMethodMirror() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
         throw new UnsupportedOperationException();
     }
 }

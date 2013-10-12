@@ -36,6 +36,7 @@ import java.util.List;
 
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -339,12 +340,6 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     @Override
-    public byte[] getRawAnnotations() {
-        // TODO-RS: For now...
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
     public String toString() {
         return getClass().getSimpleName() + ": " + klass;
     }
@@ -375,5 +370,10 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     public MethodMirror getEnclosingMethodMirror() {
         Method enclosingMethod = klass.getEnclosingMethod();
         return enclosingMethod == null ? null : new NativeMethodMirror(enclosingMethod);
+    }
+    
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
+        throw new UnsupportedOperationException();
     }
 }

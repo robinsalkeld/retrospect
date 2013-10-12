@@ -23,6 +23,7 @@ package edu.ubc.mirrors.wrapping;
 
 import java.util.List;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -88,6 +89,11 @@ public class WrappingMethodMirror implements MethodMirror {
     @Override
     public ClassMirror getReturnType() {
         return vm.getWrappedClassMirror(wrapped.getReturnType());
+    }
+    
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
+        return vm.wrapAnnotations(wrapped.getAnnotations());
     }
     
     @Override

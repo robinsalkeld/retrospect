@@ -26,6 +26,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.BlankClassMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -195,11 +196,6 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
     }
 
     @Override
-    public byte[] getRawAnnotations() {
-        return null;
-    }
-
-    @Override
     public void bytecodeLocated(File originalBytecodeLocation) {
     }
     
@@ -216,5 +212,10 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
     @Override
     public MethodMirror getEnclosingMethodMirror() {
         return null;
+    }
+    
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
+        return Collections.emptyList();
     }
 }

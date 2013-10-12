@@ -41,6 +41,7 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.Platform;
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -713,11 +714,12 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         }
     }
     
-    public byte[] getRawAnnotations() {
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
         if (hasBytecode()) {
-            return super.getRawAnnotations(); 
+            return super.getAnnotations(); 
         } else {
-            return getBytecodeMirror().getRawAnnotations();
+            return getBytecodeMirror().getAnnotations();
         }
     }
     

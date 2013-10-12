@@ -38,6 +38,7 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Value;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -91,6 +92,11 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
+    public List<AnnotationMirror> getAnnotations() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public String getClassName() {
         return refType.name();
     }
@@ -113,11 +119,6 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public byte[] getRawAnnotations() {
-        throw new UnsupportedOperationException();
-    }
-    
     @Override
     public boolean isPrimitive() {
 	// Well ain't I just too clever :)

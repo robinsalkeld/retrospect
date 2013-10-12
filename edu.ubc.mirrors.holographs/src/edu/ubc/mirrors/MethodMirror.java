@@ -25,6 +25,8 @@ import java.util.List;
 
 public interface MethodMirror {
     
+    public List<AnnotationMirror> getAnnotations();
+    
     public ClassMirror getDeclaringClass();
     
     public int getSlot();

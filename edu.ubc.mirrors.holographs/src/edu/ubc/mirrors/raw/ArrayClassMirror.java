@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.BlankClassMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -237,12 +238,6 @@ public class ArrayClassMirror extends BlankClassMirror {
     }
     
     @Override
-    public byte[] getRawAnnotations() {
-        // TODO-RS: Hope this is right...
-        return new byte[0];
-    }
-    
-    @Override
     public void bytecodeLocated(File originalBytecodeLocation) {
     }
     
@@ -260,5 +255,10 @@ public class ArrayClassMirror extends BlankClassMirror {
     @Override
     public MethodMirror getEnclosingMethodMirror() {
         return null;
+    }
+    
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
+        return Collections.emptyList();
     }
 }

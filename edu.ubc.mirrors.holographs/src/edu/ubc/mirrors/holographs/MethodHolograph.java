@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -73,6 +74,11 @@ public class MethodHolograph implements MethodMirror {
             throw new NoSuchMethodError(getName());
         }
         hologramClassMethod.setAccessible(accessible);
+    }
+    
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
+        return wrapped.getAnnotations();
     }
     
     @Override

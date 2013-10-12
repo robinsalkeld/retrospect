@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.CharArrayMirror;
@@ -248,6 +249,8 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     public Object wrapValue(Object value) {
         if (value instanceof ObjectMirror) {
             return getWrappedMirror((ObjectMirror)value);
+        } else if (value instanceof AnnotationMirror) {
+            return wrapAnnotation((AnnotationMirror)value);
         } else {
             return value;
         }
@@ -287,5 +290,17 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     // Introducing a single choke point 
     public int identityHashCode(WrappingMirror wrapper) {
         return wrapper.identityHashCode();
+    }
+
+    public List<AnnotationMirror> wrapAnnotations(List<AnnotationMirror> annotations) {
+        List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
+        for (AnnotationMirror a : annotations) {
+            result.add(wrapAnnotation(a));
+        }
+        return result;
+    }
+    
+    public AnnotationMirror wrapAnnotation(AnnotationMirror a) {
+        return new WrappingAnnotationMirror(this, a);
     }
 }

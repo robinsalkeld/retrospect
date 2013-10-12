@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -116,6 +117,12 @@ public class NativeMethodMirror implements MethodMirror {
     @Override
     public ClassMirror getReturnType() {
         return new NativeClassMirror(nativeMethod.getReturnType());
+    }
+    
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
+        // TODO For now
+        throw new UnsupportedOperationException();
     }
 
     @Override

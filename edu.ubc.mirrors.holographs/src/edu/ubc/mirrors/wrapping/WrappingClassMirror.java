@@ -26,6 +26,7 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -73,11 +74,6 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
         return wrapped.getBytecode();
     }
 
-    @Override
-    public byte[] getRawAnnotations() {
-        return wrapped.getRawAnnotations();
-    }
-    
     @Override
     public boolean isArray() {
         return wrapped.isArray();
@@ -244,5 +240,14 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     public void setWrapped(ClassMirror wrapped) {
         super.setWrapped(wrapped);
         this.wrapped = wrapped;
+    }
+    
+    @Override
+    public List<AnnotationMirror> getAnnotations() {
+        List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
+        for (AnnotationMirror a : wrapped.getAnnotations()) {
+            result.add(vm.wrapAnnotation(a));
+        }
+        return result;
     }
 }

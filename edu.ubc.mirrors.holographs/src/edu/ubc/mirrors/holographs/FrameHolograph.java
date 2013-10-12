@@ -23,6 +23,7 @@ package edu.ubc.mirrors.holographs;
 
 import java.util.List;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -75,6 +76,12 @@ public class FrameHolograph extends WrappingFrameMirror {
             return FrameHolograph.this.methodName();
         }
 
+        @Override
+        public List<AnnotationMirror> getAnnotations() {
+            resolve();
+            return wrapped.getAnnotations();
+        }
+        
         /**
          * @return
          * @see edu.ubc.mirrors.MethodMirror#getSlot()
