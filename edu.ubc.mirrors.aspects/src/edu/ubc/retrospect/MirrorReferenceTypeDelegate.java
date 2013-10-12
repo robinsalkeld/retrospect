@@ -48,42 +48,51 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
         return (MirrorWorld)getResolvedTypeX().getWorld();
     }
     
+    private Object memberForMethodMirror(MethodMirror m) {
+        for (AdviceKind kind : MirrorWorld.SUPPORTED_ADVICE_KINDS) {
+            AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(), getWorld().getAnnotClassMirror(kind));
+            if (annot != null) {
+                return new AdviceMirror(getWorld(), klass, kind, m, annot);
+            }
+        }
+        AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(), getWorld().getPointcutAnnotClass());
+        if (annot != null) {
+            String parameterNamesString = (String)annot.getValue("argNames");
+            String[] parameterNames = parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(",");
+            
+            String pointcut = (String)annot.getValue("value");
+            Pointcut pc = getWorld().parsePointcut(pointcut);
+            
+            UnresolvedType[] parameterTypes = new UnresolvedType[m.getParameterTypes().size()];
+            for (int i = 0; i < parameterTypes.length; i++) {
+                parameterTypes[i] = forClassMirror(m.getParameterTypes().get(1));
+            }
+            
+            String name = AdviceMirror.getPointcutName(m);
+            
+            ResolvedPointcutDefinition def = new ResolvedPointcutDefinition(getResolvedTypeX(), m.getModifiers(), name,
+                    parameterTypes, pc);
+            def.setParameterNames(parameterNames);
+            return def;
+        } else {
+            return MethodMirrorMember.make(getWorld(), m);
+        }
+    }
+    
     private void resolveMembers() {
         if (!membersResolved) {
             List<ResolvedMember> methods = new ArrayList<ResolvedMember>();
             List<ResolvedMember> pointcuts = new ArrayList<ResolvedMember>();
             declaredAdvice = new ArrayList<AdviceMirror>();
-            nextMethod:
             for (MethodMirror m : klass.getDeclaredMethods(false)) {
-                for (AdviceKind kind : MirrorWorld.SUPPORTED_ADVICE_KINDS) {
-                    AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(), getWorld().getAnnotClassMirror(kind));
-                    if (annot != null) {
-                        declaredAdvice.add(new AdviceMirror(getWorld(), klass, kind, m, annot));
-                        break nextMethod;
-                    }
-                }
-                AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(), getWorld().getPointcutAnnotClass());
-                if (annot != null) {
-                    String parameterNamesString = (String)annot.getValue("argNames");
-                    String[] parameterNames = parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(",");
-                    
-                    String pointcut = (String)annot.getValue("value");
-                    Pointcut pc = getWorld().parsePointcut(pointcut);
-                    
-                    UnresolvedType[] parameterTypes = new UnresolvedType[m.getParameterTypes().size()];
-                    for (int i = 0; i < parameterTypes.length; i++) {
-                        parameterTypes[i] = forClassMirror(m.getParameterTypes().get(1));
-                    }
-                    
-                    String name = AdviceMirror.getPointcutName(m);
-                    
-                    ResolvedPointcutDefinition def = new ResolvedPointcutDefinition(getResolvedTypeX(), m.getModifiers(), name,
-                            parameterTypes, pc);
-                    def.setParameterNames(parameterNames);
-                    pointcuts.add(def);
-                } else {
-                    methods.add(MethodMirrorMember.make(getWorld(), m));
-                }
+                Object member = memberForMethodMirror(m);
+                if (member instanceof AdviceMirror) {
+                    declaredAdvice.add((AdviceMirror)member);
+                } else if (member instanceof ResolvedPointcutDefinition) {
+                    pointcuts.add((ResolvedPointcutDefinition)member);
+                } else if (member instanceof MethodMirrorMember) {
+                    methods.add((MethodMirrorMember)member);
+                }                
             }
             
             declaredMethods = methods.toArray(new ResolvedMember[methods.size()]);

@@ -15,7 +15,7 @@ public class ConstructorMirrorExitShadow extends MirrorEventShadow {
     private final ConstructorMirrorExitEvent event;
     
     protected ConstructorMirrorExitShadow(MirrorWorld world, ConstructorMirrorExitEvent event, Member signature, Shadow enclosingShadow) {
-        super(world, event, Shadow.MethodExecution, signature, enclosingShadow);
+        super(world, event, Shadow.ConstructorExecution, signature, enclosingShadow);
         this.event = event;
     }
 

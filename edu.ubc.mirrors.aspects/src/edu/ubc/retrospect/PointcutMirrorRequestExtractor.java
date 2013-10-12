@@ -31,7 +31,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     }
 
     private void addTypePatternFilter(TypePattern pattern) {
-     // TODO-RS: toString() is likely wrong here. Need to decide on 
+        // TODO-RS: toString() is likely wrong here. Need to decide on 
         // what pattern DSL the mirrors API should accept.
         request.addClassFilter(pattern.toString());
     }
