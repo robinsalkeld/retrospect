@@ -90,6 +90,7 @@ public class TracingExampleTest {
                 // TODO-RS: Necessary to avoid some weird deadlock I haven't figured out yet.
                 jdiVMM.getPrimitiveClass("float");
                 jdiVMM.getPrimitiveClass("double");
+                jdiVMM.getPrimitiveClass("void");
                 
         	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);
         	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);

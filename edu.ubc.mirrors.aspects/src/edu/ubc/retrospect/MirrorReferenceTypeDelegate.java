@@ -1,7 +1,5 @@
 package edu.ubc.retrospect;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,10 +24,8 @@ import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 
 public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
@@ -79,7 +75,9 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
                         parameterTypes[i] = forClassMirror(m.getParameterTypes().get(1));
                     }
                     
-                    ResolvedPointcutDefinition def = new ResolvedPointcutDefinition(getResolvedTypeX(), m.getModifiers(), m.getName(),
+                    String name = AdviceMirror.getPointcutName(m);
+                    
+                    ResolvedPointcutDefinition def = new ResolvedPointcutDefinition(getResolvedTypeX(), m.getModifiers(), name,
                             parameterTypes, pc);
                     def.setParameterNames(parameterNames);
                     pointcuts.add(def);

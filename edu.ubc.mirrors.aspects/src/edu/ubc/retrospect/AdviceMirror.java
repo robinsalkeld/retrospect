@@ -6,8 +6,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.aspectj.bridge.ISourceLocation;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.BindingScope;
+import org.aspectj.weaver.IHasPosition;
+import org.aspectj.weaver.ISourceContext;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.UnresolvedType;
@@ -102,16 +105,40 @@ public class AdviceMirror {
             UnresolvedType paramType = world.resolve(methodMirror.getParameterTypes().get(i));
             formals[i] = new FormalBinding(paramType, parameterNames[i], i);
         }
-        BindingScope scope = new BindingScope(myType, null, formals);
+        ISourceContext context = new ISourceContext() {
+
+            @Override
+            public ISourceLocation makeSourceLocation(IHasPosition position) {
+                return null;
+            }
+
+            @Override
+            public ISourceLocation makeSourceLocation(int line, int offset) {
+                return null;
+            }
+
+            @Override
+            public int getOffset() {
+                return 0;
+            }
+
+            @Override
+            public void tidy() {
+            }
+            
+        };
+        BindingScope scope = new BindingScope(myType, context, formals);
         pc = pc.resolve(scope);
+        
+        pc = pc.concretize(myType, myType, formals.length);
     }
     
     private void installPointcutCallback(MirrorEventRequestManager manager, final AdviceKind kind, final Pointcut pc, final PointcutCallback callback) {
         Pointcut dnf = new PointcutRewriter().rewrite(pc);
-        List<List<Pointcut>> actualDNF = disjuncts(dnf);
+        List<Pointcut> actualDNF = disjuncts(dnf);
         final Set<MirrorEvent> joinpointEvents = new HashSet<MirrorEvent>();
         
-        for (List<Pointcut> disjunct : actualDNF) {
+        for (Pointcut disjunct : actualDNF) {
             MirrorEventRequest request = extractRequest(manager, kind, disjunct);
             
             world.vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
@@ -144,6 +171,8 @@ public class AdviceMirror {
     }
     
     public void install(final MirrorReferenceTypeDelegate aspect) {
+        resolve();
+        
         MirrorEventRequestManager manager = world.vm.eventRequestManager();
         
         // Make sure the cflow trackers are pushed before normal advice, and popped
@@ -196,16 +225,16 @@ public class AdviceMirror {
     }
 
     // Collect DNF assuming the argument is already a DNF pointcut
-    private List<List<Pointcut>> disjuncts(Pointcut pc) {
+    private List<Pointcut> disjuncts(Pointcut pc) {
         if (pc instanceof OrPointcut) {
             OrPointcut or = (OrPointcut)pc;
-            List<List<Pointcut>> result = new ArrayList<List<Pointcut>>();
+            List<Pointcut> result = new ArrayList<Pointcut>();
             result.addAll(disjuncts(or.getLeft()));
             result.addAll(disjuncts(or.getRight()));
             return result;
         } else {
-            List<List<Pointcut>> result = new ArrayList<List<Pointcut>>(1);
-            result.add(conjuncts(pc));
+            List<Pointcut> result = new ArrayList<Pointcut>(1);
+            result.add(pc);
             return result;
         }
     }
@@ -224,23 +253,15 @@ public class AdviceMirror {
         }
     }
 
-    private MirrorEventRequest extractRequest(MirrorEventRequestManager manager, AdviceKind adviceKind, List<Pointcut> disjunct) {
-        MirrorEventRequest request = null;
-        for (Pointcut pc : disjunct) {
-            request = PointcutMirrorRequestExtractor.extractRequest(world.vm, adviceKind, pc);
-            if (request != null) {
-                break;
-            }
-        }
-        
-        return request;
+    private MirrorEventRequest extractRequest(MirrorEventRequestManager manager, AdviceKind adviceKind, Pointcut disjunct) {
+        return PointcutMirrorRequestExtractor.extractRequest(world.vm, adviceKind, disjunct);
     }
 
     public void execute(MirrorReferenceTypeDelegate aspect, MirrorEventShadow shadow, ExposedState state) {
         InstanceMirror aspectInstance = aspect.getInstance();
-        Object[] args = new Object[state.size() + 1];
+        Object[] args = new Object[state.size()];
 
-        for (int i = 0; i < args.length; i++) {
+        for (int i = 0; i < args.length - 1; i++) {
             args[i] = ((MirrorEventVar)state.get(i)).getValue();
         }
         

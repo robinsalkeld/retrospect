@@ -20,14 +20,14 @@ public class ConstructorMirrorMember extends ResolvedMemberImpl {
         UnresolvedType declaringType = world.resolve(cons.getDeclaringClass());
         UnresolvedType returnType = declaringType;
         
-        UnresolvedType[] parameterTypes = new UnresolvedType[cons.getParameterTypes().size()];
+        UnresolvedType[] parameterTypes = new UnresolvedType[cons.getParameterTypeNames().size()];
         for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = world.resolve(cons.getParameterTypes().get(i));
+            parameterTypes[i] = UnresolvedType.forName(cons.getParameterTypeNames().get(i));
         }
         
-        UnresolvedType[] exceptionTypes = new UnresolvedType[cons.getExceptionTypes().size()];
+        UnresolvedType[] exceptionTypes = new UnresolvedType[cons.getExceptionTypeNames().size()];
         for (int i = 0; i < exceptionTypes.length; i++) {
-            exceptionTypes[i] = world.resolve(cons.getExceptionTypes().get(i));
+            exceptionTypes[i] = UnresolvedType.forName(cons.getExceptionTypeNames().get(i));
         }
         
         return new ConstructorMirrorMember(cons, declaringType, cons.getModifiers(), returnType, "<init>", parameterTypes, exceptionTypes);

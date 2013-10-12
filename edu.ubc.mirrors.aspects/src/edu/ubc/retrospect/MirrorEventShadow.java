@@ -9,7 +9,10 @@ import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.World;
 import org.aspectj.weaver.ast.Var;
 
+import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.ConstructorMirrorExitEvent;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
+import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -55,10 +58,22 @@ public abstract class MirrorEventShadow extends Shadow {
     }
     
     public static MirrorEventShadow make(MirrorWorld world, MirrorEvent event) {
-        if (event instanceof MethodMirrorEntryEvent) {
+        if (event instanceof ConstructorMirrorEntryEvent) {
+            ConstructorMirrorEntryEvent cmee = (ConstructorMirrorEntryEvent)event;
+            Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
+            return new ConstructorMirrorEntryShadow(world, cmee, signature, null);
+        } else if (event instanceof ConstructorMirrorExitEvent) {
+            ConstructorMirrorExitEvent cmee = (ConstructorMirrorExitEvent)event;
+            Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
+            return new ConstructorMirrorExitShadow(world, cmee, signature, null);
+        } else if (event instanceof MethodMirrorEntryEvent) {
             MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
             Member signature = MethodMirrorMember.make(world, mmee.method());
             return new MethodMirrorEntryShadow(world, mmee, signature, null);
+        } else if (event instanceof MethodMirrorExitEvent) {
+            MethodMirrorExitEvent mmee = (MethodMirrorExitEvent)event;
+            Member signature = MethodMirrorMember.make(world, mmee.method());
+            return new MethodMirrorExitShadow(world, mmee, signature, null);
         } else {
             throw new IllegalArgumentException();
         }
