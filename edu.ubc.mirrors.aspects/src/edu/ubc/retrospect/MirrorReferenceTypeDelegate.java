@@ -2,10 +2,10 @@ package edu.ubc.retrospect;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.aspectj.weaver.AbstractReferenceTypeDelegate;
-import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AnnotationAJ;
 import org.aspectj.weaver.AnnotationTargetKind;
 import org.aspectj.weaver.ConcreteTypeMunger;
@@ -18,6 +18,7 @@ import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.WeaverStateInfo;
 import org.aspectj.weaver.patterns.Declare;
 import org.aspectj.weaver.patterns.PerClause;
+import org.aspectj.weaver.patterns.PerSingleton;
 import org.aspectj.weaver.patterns.Pointcut;
 
 import edu.ubc.mirrors.AnnotationMirror;
@@ -35,7 +36,6 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
     private boolean membersResolved = false;
     private ResolvedMember[] declaredMethods;
     private ResolvedMember[] declaredPointcuts;
-    private List<AdviceMirror> declaredAdvice;
     
     private InstanceMirror instance;
     
@@ -49,12 +49,6 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
     }
     
     private Object memberForMethodMirror(MethodMirror m) {
-        for (AdviceKind kind : MirrorWorld.SUPPORTED_ADVICE_KINDS) {
-            AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(), getWorld().getAnnotClassMirror(kind));
-            if (annot != null) {
-                return new AdviceMirror(getWorld(), klass, kind, m, annot);
-            }
-        }
         AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(), getWorld().getPointcutAnnotClass());
         if (annot != null) {
             String parameterNamesString = (String)annot.getValue("argNames");
@@ -65,7 +59,7 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
             
             UnresolvedType[] parameterTypes = new UnresolvedType[m.getParameterTypes().size()];
             for (int i = 0; i < parameterTypes.length; i++) {
-                parameterTypes[i] = forClassMirror(m.getParameterTypes().get(1));
+                parameterTypes[i] = forClassMirror(m.getParameterTypes().get(i));
             }
             
             String name = AdviceMirror.getPointcutName(m);
@@ -83,12 +77,9 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
         if (!membersResolved) {
             List<ResolvedMember> methods = new ArrayList<ResolvedMember>();
             List<ResolvedMember> pointcuts = new ArrayList<ResolvedMember>();
-            declaredAdvice = new ArrayList<AdviceMirror>();
             for (MethodMirror m : klass.getDeclaredMethods(false)) {
                 Object member = memberForMethodMirror(m);
-                if (member instanceof AdviceMirror) {
-                    declaredAdvice.add((AdviceMirror)member);
-                } else if (member instanceof ResolvedPointcutDefinition) {
+                if (member instanceof ResolvedPointcutDefinition) {
                     pointcuts.add((ResolvedPointcutDefinition)member);
                 } else if (member instanceof MethodMirrorMember) {
                     methods.add((MethodMirrorMember)member);
@@ -230,25 +221,23 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
     @Override
     public PerClause getPerClause() {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO-RS
+        return new PerSingleton();
     }
 
     @Override
     public Collection<Declare> getDeclares() {
-        // TODO Auto-generated method stub
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public Collection<ConcreteTypeMunger> getTypeMungers() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public Collection<ResolvedMember> getPrivilegedAccesses() {
-        // TODO Auto-generated method stub
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -293,12 +282,5 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
             }
         }
         return instance;    
-    }
-    
-    public void installAspect() {
-        resolveMembers();
-        for (AdviceMirror advice : declaredAdvice) {
-            advice.install(this);
-        }
     }
 }

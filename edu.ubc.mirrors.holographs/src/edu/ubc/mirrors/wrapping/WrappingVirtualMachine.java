@@ -303,4 +303,9 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     public AnnotationMirror wrapAnnotation(AnnotationMirror a) {
         return new WrappingAnnotationMirror(this, a);
     }
+    
+    @Override
+    public InstanceMirror getInternedString(String s) {
+        return (InstanceMirror)getWrappedMirror(wrappedVM.getInternedString(s));
+    }
 }

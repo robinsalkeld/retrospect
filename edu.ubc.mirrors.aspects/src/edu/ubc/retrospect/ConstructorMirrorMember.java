@@ -16,6 +16,10 @@ public class ConstructorMirrorMember extends ResolvedMemberImpl {
         this.cons = cons;
     }
 
+    public ConstructorMirror getConstructor() {
+        return cons;
+    }
+    
     public static ConstructorMirrorMember make(MirrorWorld world, ConstructorMirror cons) {
         UnresolvedType declaringType = world.resolve(cons.getDeclaringClass());
         UnresolvedType returnType = declaringType;

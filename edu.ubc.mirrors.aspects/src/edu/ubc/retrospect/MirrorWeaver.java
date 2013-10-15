@@ -21,7 +21,9 @@
  ******************************************************************************/
 package edu.ubc.retrospect;
 
+import org.aspectj.weaver.CrosscuttingMembersSet;
 import org.aspectj.weaver.ReferenceType;
+import org.aspectj.weaver.ShadowMunger;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -30,18 +32,30 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
-public class RetroactiveWeaver {
+public class MirrorWeaver {
     
-    public static void weave(ClassMirror aspect, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, InterruptedException, MirrorInvocationTargetException {
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)aspect.getVM();
-        ThreadHolograph threadHolograph = (ThreadHolograph)thread;
+    private final MirrorWorld world;
+    private final CrosscuttingMembersSet xcutSet;
+    
+    public MirrorWeaver(VirtualMachineHolograph vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+        this.world = new MirrorWorld(vm, loader, thread);
+        this.xcutSet = new CrosscuttingMembersSet(world);
+    }
+
+    public void weave(ClassMirror aspect) throws ClassNotFoundException, NoSuchMethodException, InterruptedException, MirrorInvocationTargetException {
+        ThreadHolograph threadHolograph = (ThreadHolograph)world.thread;
         threadHolograph.enterHologramExecution();
         try {
             ThreadHolograph.raiseMetalevel();
-            ClassMirrorLoader loader = aspect.getLoader();
-            MirrorWorld world = new MirrorWorld(vm, loader, thread);
+
             ReferenceType aspectType = (ReferenceType)world.resolve(aspect);
-            ((MirrorReferenceTypeDelegate)aspectType.getDelegate()).installAspect();
+            xcutSet.addOrReplaceAspect(aspectType);
+            
+            for (ShadowMunger munger : xcutSet.getShadowMungers()) {
+                AdviceMirror advice = (AdviceMirror)munger;
+                advice.install();
+            }
+            
             ThreadHolograph.lowerMetalevel();
         } finally {
             threadHolograph.exitHologramExecution();

@@ -54,7 +54,7 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
-import edu.ubc.retrospect.RetroactiveWeaver;
+import edu.ubc.retrospect.MirrorWeaver;
 
 public class RacerTest {
 
@@ -98,11 +98,12 @@ public class RacerTest {
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath, aspectRuntimeJar});
         Reflection.withThread(thread, new Callable<Void>() {
             public Void call() throws Exception {
+                MirrorWeaver weaver = new MirrorWeaver(vm, loader, thread);
         	ClassMirror locking = Reflection.classMirrorForName(vm, thread, "ca.mcgill.sable.racer.Locking", true, loader);
-                RetroactiveWeaver.weave(locking, thread);
+        	weaver.weave(locking);
                 
                 ClassMirror racer = Reflection.classMirrorForName(vm, thread, "ca.mcgill.sable.racer.Racer", true, loader);
-                RetroactiveWeaver.weave(racer, thread);
+                weaver.weave(racer);
                 
                 vm.dispatch().start();
                 

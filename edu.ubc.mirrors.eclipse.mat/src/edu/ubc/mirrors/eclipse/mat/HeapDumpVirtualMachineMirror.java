@@ -45,6 +45,7 @@ import org.eclipse.mat.snapshot.model.ObjectReference;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
@@ -415,5 +416,10 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
         HeapDumpObjectMirror other = (HeapDumpObjectMirror)obj2;
         return obj.getClassMirror().getVM().equals(other.getClassMirror().getVM()) 
                 && obj.getHeapDumpObject().equals(other.getHeapDumpObject());
+    }
+    
+    @Override
+    public InstanceMirror getInternedString(String s) {
+        throw new UnsupportedOperationException();
     }
 }

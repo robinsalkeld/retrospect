@@ -34,6 +34,7 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
 /**
@@ -56,7 +57,7 @@ public class MirrorWorld extends World {
     private final Map<ReferenceType, ReferenceTypeDelegate> delegates =
             new HashMap<ReferenceType, ReferenceTypeDelegate>();
     
-    private final Map<String, AspectMirror> aspects = new HashMap<String, AspectMirror>();
+    private final MirrorWeavingSupport weavingSupport = new MirrorWeavingSupport(this);
     
     public MirrorWorld(VirtualMachineHolograph vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
@@ -98,7 +99,7 @@ public class MirrorWorld extends World {
     
     @Override
     public IWeavingSupport getWeavingSupport() {
-        return null;
+        return weavingSupport;
     }
 
     @Override
@@ -249,29 +250,7 @@ public class MirrorWorld extends World {
         return Reflection.getAnnotation(klass.getAnnotations(), aspectAnnotClass) != null;
     }
     
-    public class AspectMirror {
-        private final ClassMirror klass;
-        
-        // TODO-RS: This will have to be more complex when we deal with other "per" clauses
-        private InstanceMirror instance;
-        
-        public AspectMirror(ClassMirror klass) {
-            this.klass = klass;
-        }
-        
-        
-    }
-
     public Pointcut parsePointcut(String expr) {
         return new PatternParser(expr).parsePointcut();
-    }
-    
-    public AspectMirror getAspectMirror(ClassMirror klass) {
-        AspectMirror aspect = aspects.get(klass.getClassName());
-        if (aspect == null) {
-            aspect = new AspectMirror(klass);
-            aspects.put(klass.getClassName(), aspect);
-        }
-        return aspect;
     }
 }

@@ -50,4 +50,5 @@ public interface VirtualMachineMirror {
     public boolean canGetBytecodes();
     public boolean hasClassInitialization();
 
+    public InstanceMirror getInternedString(String s);
 }

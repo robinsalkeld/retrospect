@@ -1,19 +1,23 @@
 package edu.ubc.retrospect;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.aspectj.bridge.ISourceLocation;
+import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
+import org.aspectj.weaver.AjAttribute;
 import org.aspectj.weaver.BindingScope;
-import org.aspectj.weaver.IHasPosition;
-import org.aspectj.weaver.ISourceContext;
+import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
+import org.aspectj.weaver.ShadowMunger;
 import org.aspectj.weaver.UnresolvedType;
+import org.aspectj.weaver.ast.CallExpr;
+import org.aspectj.weaver.ast.Expr;
 import org.aspectj.weaver.ast.Test;
 import org.aspectj.weaver.patterns.AndPointcut;
 import org.aspectj.weaver.patterns.CflowPointcut;
@@ -24,8 +28,6 @@ import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.aspectj.weaver.patterns.PointcutRewriter;
 
-import edu.ubc.mirrors.AnnotationMirror;
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -34,24 +36,11 @@ import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.retrospect.MirrorWorld.AspectMirror;
 import edu.ubc.retrospect.MirrorWorld.CflowStack;
 import edu.ubc.retrospect.MirrorWorld.PointcutCallback;
 
-// Used for pointcut declarations as well
-public class AdviceMirror {
+public class AdviceMirror extends Advice {
     private final MirrorWorld world;
-    private final ClassMirror aspect;
-    // Name of the pointcut or
-    // Name of the advice - @AdviceName for code-style advice, method name for annotation-style advice
-    private final String name;
-    // @Before, @Pointcut, etc
-    private final AdviceKind kind;
-    // This holds the formal declarations
-    private final MethodMirror methodMirror;
-    private final String[] parameterNames;
-    // Null for abstract pointcuts. Non-final because of the resolution phase.
-    private Pointcut pc;
     
     public static String getPointcutName(MethodMirror method) {
         String name = method.getName();
@@ -66,71 +55,27 @@ public class AdviceMirror {
         return name;
     }
     
-    public AdviceMirror(MirrorWorld world, ClassMirror aspect, AdviceKind kind, MethodMirror method, AnnotationMirror annotation) {
+    public AdviceMirror(MirrorWorld world, AjAttribute.AdviceAttribute attribute, ResolvedType concreteAspect, Member signature, Pointcut pointcut) {
+        super(attribute, pointcut, signature);
         this.world = world;
-        this.aspect = aspect;
-        this.kind = kind;
-        this.name = getPointcutName(method);
-        this.methodMirror = method;
-        
-        String parameterNamesString = (String)annotation.getValue("argNames");
-        this.parameterNames = parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(",");
-        
-        int pointcutFlags = method.getModifiers();
-        
-        if (Modifier.isAbstract(pointcutFlags)) {
-            pc = null;
-        } else {
-            String pointcut = (String)annotation.getValue("value");
-            pc = world.parsePointcut(pointcut);
-        }
+        this.concreteAspect = concreteAspect;
     }
 
-    public Pointcut getPointcut() {
-        return pc;
+    public AdviceMirror(MirrorWorld world, ResolvedType concreteAspect, AdviceKind kind, Member signature, Pointcut pointcut) {
+        this(world, new AjAttribute.AdviceAttribute(kind, pointcut, 0, pointcut.getStart(), pointcut.getEnd(), pointcut.getSourceContext()), concreteAspect, signature, pointcut);
     }
 
-    public AdviceKind getKind() {
-        return kind;
-    }
-    
-    public boolean isAbstract() {
-        return pc == null;
-    }
-    
     private void resolve() {
-        ResolvedType myType = world.resolve(aspect);
+        String[] parameterNames = signature.getParameterNames(world);
         FormalBinding[] formals = new FormalBinding[parameterNames.length];
         for (int i = 0; i < formals.length; i++) {
-            UnresolvedType paramType = world.resolve(methodMirror.getParameterTypes().get(i));
+            UnresolvedType paramType = signature.getParameterTypes()[i];
             formals[i] = new FormalBinding(paramType, parameterNames[i], i);
         }
-        ISourceContext context = new ISourceContext() {
-
-            @Override
-            public ISourceLocation makeSourceLocation(IHasPosition position) {
-                return null;
-            }
-
-            @Override
-            public ISourceLocation makeSourceLocation(int line, int offset) {
-                return null;
-            }
-
-            @Override
-            public int getOffset() {
-                return 0;
-            }
-
-            @Override
-            public void tidy() {
-            }
-            
-        };
-        BindingScope scope = new BindingScope(myType, context, formals);
-        pc = pc.resolve(scope);
+        BindingScope scope = new BindingScope(concreteAspect, pointcut.getSourceContext(), formals);
+        pointcut = pointcut.resolve(scope);
         
-        pc = pc.concretize(myType, myType, formals.length);
+        pointcut = pointcut.concretize(concreteAspect, concreteAspect, formals.length);
     }
     
     private void installPointcutCallback(MirrorEventRequestManager manager, final AdviceKind kind, final Pointcut pc, final PointcutCallback callback) {
@@ -158,9 +103,9 @@ public class AdviceMirror {
                 // that match.
                 for (MirrorEvent event : joinpointEvents) {
                     MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
-                    ExposedState state = new ExposedState(MethodMirrorMember.make(world, methodMirror));
+                    ExposedState state = new ExposedState(signature);
                     Test test = pc.findResidue(shadow, state);
-                    if (MirrorTestEvaluator.evaluate(test)) {
+                    if (shadow.evaluateTest(test)) {
                         callback.call(shadow, state);
                         break;
                     }
@@ -170,20 +115,18 @@ public class AdviceMirror {
         });
     }
     
-    public void install(final MirrorReferenceTypeDelegate aspect) {
-        resolve();
-        
+    public void install() {
         MirrorEventRequestManager manager = world.vm.eventRequestManager();
         
         // Make sure the cflow trackers are pushed before normal advice, and popped
         // after.
-        installCflows(manager, true, pc);
-        installPointcutCallback(manager, kind, pc, new PointcutCallback() {
+        installCflows(manager, true, pointcut);
+        installPointcutCallback(manager, kind, pointcut, new PointcutCallback() {
             public void call(MirrorEventShadow shadow, ExposedState state) {
-                execute(aspect, shadow, state);
+                execute(shadow, state);
             }
         });
-        installCflows(manager, false, pc);
+        installCflows(manager, false, pointcut);
     }
     
     private CflowStack getCflowStack(Pointcut pc) {
@@ -257,20 +200,21 @@ public class AdviceMirror {
         return PointcutMirrorRequestExtractor.extractRequest(world.vm, adviceKind, disjunct);
     }
 
-    public void execute(MirrorReferenceTypeDelegate aspect, MirrorEventShadow shadow, ExposedState state) {
-        InstanceMirror aspectInstance = aspect.getInstance();
+    public void execute(MirrorEventShadow shadow, ExposedState state) {
+        InstanceMirror aspectInstance = (InstanceMirror)shadow.evaluateExpr(state.getAspectInstance());
         Object[] args = new Object[state.size()];
 
         for (int i = 0; i < args.length - 1; i++) {
-            args[i] = ((MirrorEventVar)state.get(i)).getValue();
+            args[i] = shadow.evaluateExpr(state.get(i));
         }
         
         // TODO-RS: Actually check that we're passing in the right kind of join point,
         // if it's a parameter at all.
-        args[args.length - 1] = ((MirrorEventVar)shadow.getThisJoinPointStaticPartVar()).getValue();
+        args[args.length - 1] = shadow.evaluateExpr(shadow.getThisJoinPointStaticPartVar());;
 
         try {
-            methodMirror.invoke(shadow.getThread(), aspectInstance, args);
+            MethodMirrorMember member = (MethodMirrorMember)signature;
+            member.method.invoke(shadow.getThread(), aspectInstance, args);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (MirrorInvocationTargetException e) {
@@ -280,5 +224,46 @@ public class AdviceMirror {
         }
 
         return;
+    }
+
+    @Override
+    public int compareTo(Object other) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public boolean hasDynamicTests() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void specializeOn(Shadow shadow) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public boolean implementOn(Shadow shadow) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public ShadowMunger parameterizeWith(ResolvedType declaringType, Map<String, UnresolvedType> typeVariableMap) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Collection<ResolvedType> getThrownExceptions() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean mustCheckExceptions() {
+        return false;
     }
 }

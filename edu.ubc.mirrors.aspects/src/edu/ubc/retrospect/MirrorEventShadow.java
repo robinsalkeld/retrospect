@@ -7,6 +7,8 @@ import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.World;
+import org.aspectj.weaver.ast.Expr;
+import org.aspectj.weaver.ast.Test;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
@@ -18,21 +20,36 @@ import edu.ubc.mirrors.ThreadMirror;
 
 public abstract class MirrorEventShadow extends Shadow {
 
+    protected final MirrorWorld world;
+    protected final MirrorEvent event;
+    private MirrorTestEvaluator evaluator;
+    
     protected MirrorEventShadow(MirrorWorld world, MirrorEvent event, Shadow.Kind kind, Member signature, Shadow enclosingShadow) {
         super(kind, signature, enclosingShadow);
         this.world = world;
         this.event = event;
     }
 
-    protected final MirrorWorld world;
-    private final MirrorEvent event;
-    
-    
     @Override
     public World getIWorld() {
         return world;
     }
 
+    public MirrorTestEvaluator getEvaluator() {
+        if (evaluator == null) {
+            evaluator = new MirrorTestEvaluator(world, getThread());
+        }
+        return evaluator;
+    }
+    
+    public Object evaluateExpr(Expr expr) {
+        return getEvaluator().evaluateExpr(expr);
+    }
+    
+    public boolean evaluateTest(Test test) {
+        return getEvaluator().evaluateTest(test);
+    }
+    
     @Override
     public ISourceLocation getSourceLocation() {
         // TODO Auto-generated method stub
@@ -150,4 +167,8 @@ public abstract class MirrorEventShadow extends Shadow {
         return null;
     }
     
+    @Override
+    public Var getThisAspectInstanceVar(ResolvedType aspectType) {
+        return null;
+    }
 }

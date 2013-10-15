@@ -55,6 +55,7 @@ import com.sun.jdi.VirtualMachine;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
@@ -364,5 +365,10 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         } catch (InvocationException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    @Override
+    public InstanceMirror getInternedString(String s) {
+        throw new UnsupportedOperationException();
     }
 }

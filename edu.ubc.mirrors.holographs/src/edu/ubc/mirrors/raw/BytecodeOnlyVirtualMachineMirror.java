@@ -29,6 +29,7 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ThreadMirror;
@@ -125,5 +126,10 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public boolean hasClassInitialization() {
         return false;
+    }
+    
+    @Override
+    public InstanceMirror getInternedString(String s) {
+        throw new UnsupportedOperationException();
     }
 }
