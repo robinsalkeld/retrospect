@@ -255,19 +255,19 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
 
     @Override
     public MethodMirror getDeclaredMethod(String name,
-            ClassMirror... paramTypes) throws SecurityException,
+            String... paramTypeNames) throws SecurityException,
             NoSuchMethodException {
         throw new UnsupportedOperationException();
     }
     
     @Override
-    public MethodMirror getMethod(String name, ClassMirror... paramTypes)
+    public MethodMirror getMethod(String name, String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
         throw new UnsupportedOperationException();
     }
     
     @Override
-    public ConstructorMirror getConstructor(ClassMirror... paramTypes)
+    public ConstructorMirror getConstructor(String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
         throw new UnsupportedOperationException();
     }
@@ -359,6 +359,10 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     
     @Override
     public List<AnnotationMirror> getAnnotations() {
+        throw new UnsupportedOperationException();
+    }
+    
+    public FieldMirror createField(int modifiers, ClassMirror type, String name) {
         throw new UnsupportedOperationException();
     }
 }

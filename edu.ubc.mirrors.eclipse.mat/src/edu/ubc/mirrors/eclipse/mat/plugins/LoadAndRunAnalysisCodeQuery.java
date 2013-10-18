@@ -132,7 +132,7 @@ public class LoadAndRunAnalysisCodeQuery implements IQuery {
                 }
             }
         };
-        return (ObjectMirror)vm.findBootstrapClassMirror(Arrays.class.getName()).getDeclaredMethod("asList", objectArrayClass).invoke(threadMirror, null, array);
+        return (ObjectMirror)vm.findBootstrapClassMirror(Arrays.class.getName()).getDeclaredMethod("asList", "java.lang.Object[]").invoke(threadMirror, null, array);
     }
     
     private MethodMirror defineClassAndGetMethod(final IProgressListener listener) throws IOException, SnapshotException, SecurityException, NoSuchMethodException {

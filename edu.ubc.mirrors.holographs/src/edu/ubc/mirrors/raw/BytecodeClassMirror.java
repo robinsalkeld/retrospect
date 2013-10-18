@@ -70,52 +70,22 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.fieldmap.FieldMapFieldMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 
 // TODO-RS: This should probably be split up into multiple top-level classes in their
 // own package at this point.
 public abstract class BytecodeClassMirror extends BoxingInstanceMirror implements ClassMirror {
 
-    public class BytecodeFieldMirror implements FieldMirror {
+    public class BytecodeFieldMirror extends FieldMapFieldMirror {
 
-        private final BytecodeClassMirror klass;
-        private final String name;
         private final String desc;
-        private ClassMirror type;
-        private final int access;
         private final Object value;
         
         public BytecodeFieldMirror(BytecodeClassMirror klass, int access, String name, String desc, Object value) {
-            this.klass = klass;
-            this.access = access;
-            this.name = name;
+            super(klass, access, name, null);
             this.desc = desc;
             this.value = value;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof BytecodeFieldMirror)) {
-                return false;
-            }
-            
-            BytecodeFieldMirror other = (BytecodeFieldMirror)obj;
-            return klass.equals(other.klass) && name.equals(other.name);
-        }
-        
-        @Override
-        public int hashCode() {
-            return 17 + klass.hashCode() + name.hashCode();
-        }
-        
-        @Override
-        public ClassMirror getDeclaringClass() {
-            return klass;
-        }
-        
-        @Override
-        public String getName() {
-            return name;
         }
 
         @Override
@@ -129,16 +99,6 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
                 type = loadClassMirrorInternal(Type.getType(desc));
             }
             return type;
-        }
-
-        @Override
-        public int getModifiers() {
-            return access;
-        }
-        
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + ": " + type + " " + name;
         }
     }
 
@@ -1083,28 +1043,19 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         return false;
     }
     
-    public boolean methodMatches(MethodMirror m, String name, ClassMirror... paramClasses) {
+    public boolean methodMatches(MethodMirror m, String name, String... paramClassNames) {
 	if (!m.getName().equals(name)) {
             return false;
         }
-        List<ClassMirror> paramTypes = m.getParameterTypes();
-        if (paramTypes.size() != paramClasses.length) {
-            return false;
-        }
-        for (int i = 0; i < paramClasses.length; i++) {
-            if (!paramClasses[i].equals(paramTypes.get(i))) {
-                return false;
-            }
-        }
-        return true;
+	return m.getParameterTypeNames().equals(Arrays.asList(paramClassNames));
     }
     
     @Override
-    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramClasses) 
+    public MethodMirror getDeclaredMethod(String name, String... paramClassNames) 
             throws SecurityException, NoSuchMethodException {
         resolve();
         for (MethodMirror m : methods) {
-            if (methodMatches(m, name, paramClasses)) {
+            if (methodMatches(m, name, paramClassNames)) {
                 return m;
             }
         }
@@ -1112,18 +1063,18 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     }
     
     @Override
-    public MethodMirror getMethod(String name, ClassMirror... paramClasses)
+    public MethodMirror getMethod(String name, String... paramClassNames)
             throws SecurityException, NoSuchMethodException {
         resolve();
         for (MethodMirror m : methods) {
-            if (methodMatches(m, name, paramClasses)) {
+            if (methodMatches(m, name, paramClassNames)) {
         	return m;
             }
         }
 
         if (getSuperClassMirror() != null) {
             try {
-                return getSuperClassMirror().getMethod(name, paramClasses);
+                return getSuperClassMirror().getMethod(name, paramClassNames);
             } catch (NoSuchMethodException e) {
                 // Fall through
             }
@@ -1131,7 +1082,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         
         for (ClassMirror interfaceMirror : getInterfaceMirrors()) {
             try {
-                return interfaceMirror.getMethod(name, paramClasses);
+                return interfaceMirror.getMethod(name, paramClassNames);
             } catch (NoSuchMethodException e) {
                 // Fall through
             }
@@ -1141,19 +1092,19 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     }
     
     @Override
-    public ConstructorMirror getConstructor(ClassMirror... paramClasses)
+    public ConstructorMirror getConstructor(String... paramClassNames)
             throws SecurityException, NoSuchMethodException {
         
 	resolve();
         for (BytecodeMethodMirror m : methods) {
-            if (methodMatches(m, "<init>", paramClasses)) {
+            if (methodMatches(m, "<init>", paramClassNames)) {
         	return m;
             }
         }
 
         if (getSuperClassMirror() != null) {
             try {
-                return getSuperClassMirror().getConstructor(paramClasses);
+                return getSuperClassMirror().getConstructor(paramClassNames);
             } catch (NoSuchMethodException e) {
                 // Fall through
             }
@@ -1161,7 +1112,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         
         for (ClassMirror interfaceMirror : getInterfaceMirrors()) {
             try {
-                return interfaceMirror.getConstructor(paramClasses);
+                return interfaceMirror.getConstructor(paramClassNames);
             } catch (NoSuchMethodException e) {
                 // Fall through
             }
@@ -1265,5 +1216,10 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     public List<AnnotationMirror> getAnnotations() {
         resolve();
         return new ArrayList<AnnotationMirror>(annotations);
+    }
+    
+    @Override
+    public FieldMirror createField(int modifiers, ClassMirror type, String name) {
+        throw new UnsupportedOperationException();
     }
 }

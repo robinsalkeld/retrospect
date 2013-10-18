@@ -47,7 +47,6 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
@@ -205,11 +204,11 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
-    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-        List<ClassMirror> requestedTypes = Arrays.asList(paramTypes);
+    public MethodMirror getDeclaredMethod(String name, String... paramTypes) throws SecurityException, NoSuchMethodException {
+        List<String> requestedTypes = Arrays.asList(paramTypes);
         for (Method method : refType.methodsByName(name)) {
             MethodMirror mirror = new JDIMethodMirror(vm, method);
-            if (mirror.getParameterTypes().equals(requestedTypes)) {
+            if (mirror.getParameterTypeNames().equals(requestedTypes)) {
                 return mirror;
             }
         }
@@ -217,11 +216,11 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
     
     @Override
-    public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
-        List<ClassMirror> requestedTypes = Arrays.asList(paramTypes);
+    public MethodMirror getMethod(String name, String... paramTypes) throws SecurityException, NoSuchMethodException {
+        List<String> requestedTypes = Arrays.asList(paramTypes);
 	for (Method method : refType.methodsByName(name)) {
 	    MethodMirror mirror = new JDIMethodMirror(vm, method);
-	    if (mirror.getParameterTypes().equals(requestedTypes)) {
+	    if (mirror.getParameterTypeNames().equals(requestedTypes)) {
 		return mirror;
 	    }
 	}
@@ -252,12 +251,12 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
     
     @Override
-    public ConstructorMirror getConstructor(ClassMirror... paramTypes)
+    public ConstructorMirror getConstructor(String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
-	List<ClassMirror> requestedTypes = Arrays.asList(paramTypes);
+	List<String> requestedTypeNames = Arrays.asList(paramTypeNames);
 	for (Method method : refType.methodsByName("<init>")) {
 	    ConstructorMirror mirror = new JDIConstructorMirror(vm, method);
-	    if (mirror.getParameterTypes().equals(requestedTypes)) {
+	    if (mirror.getParameterTypeNames().equals(requestedTypeNames)) {
 		return mirror;
 	    }
 	}
@@ -265,7 +264,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 	ClassMirror superClassMirror = getSuperClassMirror();
 	if (superClassMirror != null) {    
 	    try {
-		return superClassMirror.getConstructor(paramTypes);
+		return superClassMirror.getConstructor(paramTypeNames);
 	    } catch (NoSuchMethodException e) {
 		// Fall through
 	    }
@@ -273,7 +272,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 	
         for (ClassMirror interfaceMirror : getInterfaceMirrors()) {
             try {
-                return interfaceMirror.getConstructor(paramTypes);
+                return interfaceMirror.getConstructor(paramTypeNames);
             } catch (NoSuchMethodException e) {
                 // Fall through
             }
@@ -347,5 +346,9 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     @Override
     public String toString() {
         return super.toString() + '"' + getClassName() + '"';
+    }
+    
+    public FieldMirror createField(int modifiers, ClassMirror type, String name) {
+        throw new UnsupportedOperationException();
     }
 }

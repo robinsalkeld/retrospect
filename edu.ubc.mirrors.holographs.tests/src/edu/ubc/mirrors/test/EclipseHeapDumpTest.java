@@ -117,7 +117,7 @@ public class EclipseHeapDumpTest implements IApplication {
         ClassMirror bundleArrayClass = vm.getArrayClass(1, loader.findLoadedClassMirror(Bundle.class.getName()));
         ClassMirror printerClass = (ClassMirror)getWrapped(vm, new NativeClassMirror(PrintOSGiBundles.class));
         
-        MethodMirror method = printerClass.getDeclaredMethod("printBundles", bundleArrayClass);
+        MethodMirror method = printerClass.getDeclaredMethod("printBundles", bundleArrayClass.getClassName());
         
         // Invoke PrintOSGiBundles#print reflectively.
         long before = System.currentTimeMillis();
@@ -140,7 +140,7 @@ public class EclipseHeapDumpTest implements IApplication {
         NativeClassMirror nativePrinterClass = new NativeClassMirror(PrintOSGiBundles.class);
         ClassMirror printerClass = Reflection.injectBytecode(vm, thread, bundleRepositoryClass.getLoader(), 
                 nativePrinterClass.getClassName(), nativePrinterClass.getBytecode());
-        MethodMirror method = printerClass.getDeclaredMethod("print", bundleRepositoryClass);
+        MethodMirror method = printerClass.getDeclaredMethod("print", bundleRepositoryClass.getClassName());
         
         // Invoke PrintOSGiBundles#print reflectively.
         if (HologramClassLoader.debug) {

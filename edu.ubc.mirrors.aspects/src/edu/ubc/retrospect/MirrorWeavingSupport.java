@@ -28,14 +28,12 @@ public class MirrorWeavingSupport implements IWeavingSupport {
 
     @Override
     public ConcreteTypeMunger makeCflowStackFieldAdder(ResolvedMember cflowField) {
-        // TODO Auto-generated method stub
-        return null;
+        return new MirrorCflowFieldAdder(cflowField);
     }
 
     @Override
     public ConcreteTypeMunger makeCflowCounterFieldAdder(ResolvedMember cflowField) {
-        // TODO Auto-generated method stub
-        return null;
+        return new MirrorCflowFieldAdder(cflowField);
     }
 
     @Override

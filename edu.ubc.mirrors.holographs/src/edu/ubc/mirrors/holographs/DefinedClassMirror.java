@@ -30,6 +30,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ClassMirrorPrepareEvent;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.EventDispatch.EventCallback;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -107,6 +108,11 @@ public class DefinedClassMirror extends BytecodeClassMirror implements NewInstan
     @Override
     public List<ClassMirror> getSubclassMirrors() {
         // TODO-RS: Need more tracking to implement this, but doable.
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public FieldMirror createField(int modifiers, ClassMirror type, String name) {
         throw new UnsupportedOperationException();
     }
 }

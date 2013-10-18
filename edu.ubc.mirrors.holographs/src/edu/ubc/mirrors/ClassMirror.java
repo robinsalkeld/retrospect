@@ -57,10 +57,10 @@ public interface ClassMirror extends InstanceMirror {
 
     public List<ClassMirror> getSubclassMirrors();
     
-    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
-    public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
+    public MethodMirror getDeclaredMethod(String name, String... paramTypeNames) throws SecurityException, NoSuchMethodException;
+    public MethodMirror getMethod(String name, String... paramTypeNames) throws SecurityException, NoSuchMethodException;
 
-    public ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException;
+    public ConstructorMirror getConstructor(String... paramTypeNames) throws SecurityException, NoSuchMethodException;
     
     public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly);
     
@@ -86,4 +86,8 @@ public interface ClassMirror extends InstanceMirror {
     public MethodMirror getEnclosingMethodMirror();
     
     public List<AnnotationMirror> getAnnotations();
+    
+    // Mutation support
+    
+    public FieldMirror createField(int modifiers, ClassMirror type, String name);
 }

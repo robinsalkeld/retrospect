@@ -37,6 +37,19 @@ import edu.ubc.mirrors.test.PrintOSGiBundles;
 
 public class OopslaPaperExamples {
 
+public IObject mapLookupMeta(IObject map, String key) {
+        
+    IObjectArray entries = (IObjectArray)map.getField("entries");
+    for (int i = 0; i < entries.length(); i++) {
+        IObject entry = entries.getElement(i);  
+        if (entry.getField("key").equals(key)) {
+            entry.getField("value");
+        }
+    }
+    return null;
+}
+
+    
 // Looking up a property using a heap dump model 
 public String getPropertyMeta(
         IObject service, 

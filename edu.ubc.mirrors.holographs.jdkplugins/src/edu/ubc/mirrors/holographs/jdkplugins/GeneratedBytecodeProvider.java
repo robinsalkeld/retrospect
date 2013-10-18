@@ -108,8 +108,8 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
             // Could cache this per VM, but likely not worth it.
             ClassMirror generator = vm.findBootstrapClassMirror("sun.misc.ProxyGenerator");
             MethodMirror generateMethod = generator.getDeclaredMethod("generateProxyClass", 
-                        vm.findBootstrapClassMirror(String.class.getName()),
-                        vm.getArrayClass(1, classClass));
+                        String.class.getName(),
+                        "java.lang.Class[]");
             
             ByteArrayMirror bytesArray;
             bytesArray = (ByteArrayMirror)generateMethod.invoke(ThreadHolograph.currentThreadMirror(), null,
@@ -149,13 +149,12 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
                         
                         // Could cache this per VM, but likely not worth it.
                         ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
-                        ClassMirror classArrayClass = vm.getArrayClass(1, classClass);
                         ClassMirror generatorClass = vm.findBootstrapClassMirror("sun.reflect.MethodAccessorGenerator");
                         MethodMirror generateMethod = generatorClass.getDeclaredMethod("generateConstructor", 
-                                    classClass,
-                                    classArrayClass,
-                                    classArrayClass,
-                                    vm.getPrimitiveClass("int"));
+                                    "java.lang.Class",
+                                    "java.lang.Class[]",
+                                    "java.lang.Class[]",
+                                    "int");
                         
                         // This will have the side-effect of defining a new class, but it should
                         // be totally transparent.
@@ -220,15 +219,14 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
                         
                         // Could cache this per VM, but likely not worth it.
                         ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
-                        ClassMirror classArrayClass = vm.getArrayClass(1, classClass);
                         ClassMirror generatorClass = vm.findBootstrapClassMirror("sun.reflect.MethodAccessorGenerator");
                         MethodMirror generateMethod = generatorClass.getDeclaredMethod("generateMethod", 
-                                    classClass,
-                                    vm.findBootstrapClassMirror(String.class.getName()),
-                                    classArrayClass,
-                                    classClass,
-                                    classArrayClass,
-                                    vm.getPrimitiveClass("int"));
+                                    "java.lang.Class",
+                                    "java.lang.String",
+                                    "java.lang.Class[]",
+                                    "java.lang.Class",
+                                    "java.lang.Class[]",
+                                    "int");
                         
                         // This will have the side-effect of defining a new class, but it should
                         // be totally transparent.

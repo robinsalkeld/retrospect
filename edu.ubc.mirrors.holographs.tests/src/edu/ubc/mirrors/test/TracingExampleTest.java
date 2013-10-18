@@ -88,6 +88,7 @@ public class TracingExampleTest {
         Reflection.withThread(thread, new Callable<Void>() {
             public Void call() throws Exception {
                 // TODO-RS: Necessary to avoid some weird deadlock I haven't figured out yet.
+                jdiVMM.getPrimitiveClass("short");
                 jdiVMM.getPrimitiveClass("float");
                 jdiVMM.getPrimitiveClass("double");
                 jdiVMM.getPrimitiveClass("void");
@@ -97,7 +98,7 @@ public class TracingExampleTest {
         	
         	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
                 InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("err"));
-        	MethodMirror method = traceClass.getDeclaredMethod("initStream", vm.findBootstrapClassMirror(PrintStream.class.getName()));
+        	MethodMirror method = traceClass.getDeclaredMethod("initStream", PrintStream.class.getName());
                 method.invoke(thread, null, stream);
         	
         	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version1.TraceMyClasses", true, loader);

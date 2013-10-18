@@ -44,14 +44,14 @@ public class NativeConstructorAccessorImplStubs extends NativeStubs {
         
         ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(constructor, "clazz");
         ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)HolographInternalUtils.getField(constructor, "parameterTypes");
-        ClassMirror[] parameterTypes = new ClassMirror[parameterTypesMirror.length()];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = (ClassMirror)parameterTypesMirror.get(i);
+        String[] parameterTypeNames = new String[parameterTypesMirror.length()];
+        for (int i = 0; i < parameterTypeNames.length; i++) {
+            parameterTypeNames[i] = ((ClassMirror)parameterTypesMirror.get(i)).getClassName();
         }
 
         ConstructorMirror consMirror;
         try {
-            consMirror = declaringClass.getConstructor(parameterTypes);
+            consMirror = declaringClass.getConstructor(parameterTypeNames);
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         }

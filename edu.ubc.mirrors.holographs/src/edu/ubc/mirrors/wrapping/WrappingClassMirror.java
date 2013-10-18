@@ -136,35 +136,23 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
 
     @Override
-    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes)
+    public MethodMirror getDeclaredMethod(String name, String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
         
-        ClassMirror[] unwrappedParamTypes = new ClassMirror[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            unwrappedParamTypes[i] = (ClassMirror)vm.unwrapMirror(paramTypes[i]);
-        }
-        return vm.wrapMethod(wrapped.getDeclaredMethod(name, unwrappedParamTypes));
+        return vm.wrapMethod(wrapped.getDeclaredMethod(name, paramTypeNames));
     }
     
     @Override
-    public MethodMirror getMethod(String name, ClassMirror... paramTypes)
+    public MethodMirror getMethod(String name, String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
         
-        ClassMirror[] unwrappedParamTypes = new ClassMirror[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            unwrappedParamTypes[i] = (ClassMirror)vm.unwrapMirror(paramTypes[i]);
-        }
-        return vm.wrapMethod(wrapped.getMethod(name, unwrappedParamTypes));
+        return vm.wrapMethod(wrapped.getMethod(name, paramTypeNames));
     }
     
     @Override
-    public ConstructorMirror getConstructor(ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+    public ConstructorMirror getConstructor(String... paramTypeNames) throws SecurityException, NoSuchMethodException {
         
-        ClassMirror[] unwrappedParamTypes = new ClassMirror[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            unwrappedParamTypes[i] = (ClassMirror)vm.unwrapMirror(paramTypes[i]);
-        }
-        return vm.wrapConstructor(wrapped.getConstructor(unwrappedParamTypes));
+        return vm.wrapConstructor(wrapped.getConstructor(paramTypeNames));
     }
     
     @Override
@@ -249,5 +237,10 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
             result.add(vm.wrapAnnotation(a));
         }
         return result;
+    }
+    
+    @Override
+    public FieldMirror createField(int modifiers, ClassMirror type, String name) {
+        return vm.wrapFieldMirror(wrapped.createField(modifiers, vm.unwrapClassMirror(type), name));
     }
 }

@@ -18,20 +18,20 @@ import org.aspectj.weaver.ast.Or;
 import org.aspectj.weaver.ast.Test;
 import org.aspectj.weaver.internal.tools.MatchingContextBasedTest;
 
-import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class MirrorTestEvaluator implements ITestVisitor {
+public class MirrorEvaluator implements ITestVisitor {
 
     private final MirrorWorld world;
     private final ThreadMirror thread;
     private boolean success;
     
-    public MirrorTestEvaluator(MirrorWorld world, ThreadMirror thread) {
+    public MirrorEvaluator(MirrorWorld world, ThreadMirror thread) {
         this.world = world;
         this.thread = thread;
     }
@@ -56,6 +56,7 @@ public class MirrorTestEvaluator implements ITestVisitor {
             success = targetType.isAssignableFrom(world.resolve(((ObjectMirror)var).getClassMirror()));
         } else {
             // etc for primitive values
+            success = false;
         }
     }
 
@@ -85,7 +86,21 @@ public class MirrorTestEvaluator implements ITestVisitor {
 
     @Override
     public void visit(FieldGetCall fieldGetCall) {
-        throw new UnsupportedOperationException();
+        Member field = fieldGetCall.getField();
+        
+        // If this isn't wrapping a mirror member, look it up so it is.
+        if (field instanceof ResolvedMemberImpl) {
+            field = ((ReferenceType)field.getDeclaringType()).lookupField(field);
+        }
+        
+        FieldMirror fieldMirror = ((FieldMirrorMember)field).getField();
+        try {
+            InstanceMirror obj = (InstanceMirror)fieldMirror.getDeclaringClass().getStaticFieldValues().get(fieldMirror);
+            Object result = evaluateCall(obj, fieldGetCall.getMethod(), fieldGetCall.getArgs());
+            success = ((Boolean)result).booleanValue();
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -110,15 +125,10 @@ public class MirrorTestEvaluator implements ITestVisitor {
         }
     }
     
-    public Object evaluateCall(Expr obj, Member member, Expr[] args) {
+    private Object evaluateCall(InstanceMirror obj, Member member, Expr[] args) {
         // If this isn't wrapping a mirror member, look it up so it is.
         if (member instanceof ResolvedMemberImpl) {
             member = ((ReferenceType)member.getDeclaringType()).lookupMethod(member);
-        }
-        
-        InstanceMirror objMirror = null;
-        if (obj != null) {
-            objMirror = (InstanceMirror)evaluateExpr(obj);
         }
         
         Object[] argMirrors = new Object[args.length];
@@ -129,16 +139,12 @@ public class MirrorTestEvaluator implements ITestVisitor {
         try {
             if (member instanceof MethodMirrorMember) {
                 MethodMirror method = ((MethodMirrorMember)member).getMethod();
-                return method.invoke(thread, objMirror, argMirrors);
-            } else if (member instanceof ConstructorMirrorMember) {
-                ConstructorMirror cons = ((ConstructorMirrorMember)member).getConstructor();
-                return cons.newInstance(thread, argMirrors);
+                return method.invoke(thread, obj, argMirrors);
             } else {
                 throw new IllegalArgumentException("Unsupported member type: " + member);
             }
         } catch (IllegalArgumentException | IllegalAccessException | MirrorInvocationTargetException e) {
             throw new RuntimeException(e);
         }
-        
     }
 }

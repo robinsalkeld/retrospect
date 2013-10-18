@@ -30,8 +30,6 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.holograms.Hologram;
-import edu.ubc.mirrors.holograms.ObjectHologram;
 
 public class ConstructorHolograph implements ConstructorMirror {
 
@@ -48,7 +46,7 @@ public class ConstructorHolograph implements ConstructorMirror {
     private ConstructorMirror getBytecodeConstructor() {
 	if (bytecodeConstructor == null) {
 	    try {
-		bytecodeConstructor = klass.getBytecodeMirror().getConstructor(wrapped.getParameterTypes().toArray(new ClassMirror[0]));
+		bytecodeConstructor = klass.getBytecodeMirror().getConstructor(wrapped.getParameterTypeNames().toArray(new String[0]));
 	    } catch (NoSuchMethodException e) {
 		throw new RuntimeException(e);
 	    }

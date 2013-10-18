@@ -39,4 +39,9 @@ public abstract class BlankClassMirror extends BlankInstanceMirror implements Cl
             return BlankClassMirror.this;
         }
     }
+    
+    @Override
+    public FieldMirror createField(int modifiers, ClassMirror type, String name) {
+        throw new UnsupportedOperationException();
+    }
 }

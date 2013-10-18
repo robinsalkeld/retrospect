@@ -127,7 +127,7 @@ public class ExpressionQuery implements IQuery {
                 }
             }
         };
-        return (ObjectMirror)vm.findBootstrapClassMirror(Arrays.class.getName()).getDeclaredMethod("asList", objectArrayClass).invoke(threadMirror, null, array);
+        return (ObjectMirror)vm.findBootstrapClassMirror(Arrays.class.getName()).getDeclaredMethod("asList", "java.lang.Object[]").invoke(threadMirror, null, array);
     }
     
     public IResult execute(IProgressListener listener) throws Exception

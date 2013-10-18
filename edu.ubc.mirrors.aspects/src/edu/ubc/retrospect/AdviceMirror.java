@@ -42,19 +42,6 @@ import edu.ubc.retrospect.MirrorWorld.PointcutCallback;
 public class AdviceMirror extends Advice {
     private final MirrorWorld world;
     
-    public static String getPointcutName(MethodMirror method) {
-        String name = method.getName();
-        // Stolen from org.aspectj.internal.lang.reflect.AjTypeImpl#asPointcut(Method)
-        if (name.startsWith("ajc$")) {
-            // extract real name
-            int nameStart = name.indexOf("$$");
-            name = name.substring(nameStart +2,name.length());
-            int nextDollar = name.indexOf("$");
-            if (nextDollar != -1) name = name.substring(0,nextDollar);
-        }
-        return name;
-    }
-    
     public AdviceMirror(MirrorWorld world, AjAttribute.AdviceAttribute attribute, ResolvedType concreteAspect, Member signature, Pointcut pointcut) {
         super(attribute, pointcut, signature);
         this.world = world;
@@ -103,12 +90,7 @@ public class AdviceMirror extends Advice {
                 // that match.
                 for (MirrorEvent event : joinpointEvents) {
                     MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
-                    ExposedState state = new ExposedState(signature);
-                    Test test = pc.findResidue(shadow, state);
-                    if (shadow.evaluateTest(test)) {
-                        callback.call(shadow, state);
-                        break;
-                    }
+                    implementOn(shadow);
                 }
                 joinpointEvents.clear();
             }
@@ -240,14 +222,23 @@ public class AdviceMirror extends Advice {
 
     @Override
     public void specializeOn(Shadow shadow) {
-        // TODO Auto-generated method stub
-        
     }
 
     @Override
     public boolean implementOn(Shadow shadow) {
-        // TODO Auto-generated method stub
-        return false;
+        ExposedState state = new ExposedState(signature);
+        Test test = getPointcut().findResidue(shadow, state);
+        MirrorEventShadow eventShadow = (MirrorEventShadow)shadow;
+        if (eventShadow.evaluateTest(test)) {
+            if (getSignature() instanceof MethodMirrorMember) {
+                execute(eventShadow, state);
+            } else if (getKind().isCflow()) {
+                
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

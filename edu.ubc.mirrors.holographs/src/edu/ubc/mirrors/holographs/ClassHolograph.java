@@ -60,6 +60,7 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.EventDispatch.EventCallback;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
+import edu.ubc.mirrors.fieldmap.FieldMapFieldMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapThreadMirror;
 import edu.ubc.mirrors.holograms.Hologram;
@@ -245,29 +246,29 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         return null;
     }
         
-    public MethodMirror getDeclaredMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+    public MethodMirror getDeclaredMethod(String name, String... paramTypeNames) throws SecurityException, NoSuchMethodException {
         if (hasBytecode()) {
-            return super.getMethod(name, paramTypes);
+            return super.getMethod(name, paramTypeNames);
         } else {
-            return new MethodHolograph(this, getBytecodeMirror().getDeclaredMethod(name, paramTypes));
+            return new MethodHolograph(this, getBytecodeMirror().getDeclaredMethod(name, paramTypeNames));
         }
     }
     
-    public MethodMirror getMethod(String name, ClassMirror... paramTypes) throws SecurityException, NoSuchMethodException {
+    public MethodMirror getMethod(String name, String... paramTypeNames) throws SecurityException, NoSuchMethodException {
         if (hasBytecode()) {
-            return super.getMethod(name, paramTypes);
+            return super.getMethod(name, paramTypeNames);
         } else {
-            return new MethodHolograph(this, getBytecodeMirror().getMethod(name, paramTypes));
+            return new MethodHolograph(this, getBytecodeMirror().getMethod(name, paramTypeNames));
         }
     }
     
     @Override
-    public ConstructorMirror getConstructor(ClassMirror... paramTypes)
+    public ConstructorMirror getConstructor(String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
         if (hasBytecode()) {
-	    return super.getConstructor(paramTypes);
+	    return super.getConstructor(paramTypeNames);
 	} else {
-	    return new ConstructorHolograph(this, getBytecodeMirror().getConstructor(paramTypes));
+	    return new ConstructorHolograph(this, getBytecodeMirror().getConstructor(paramTypeNames));
 	}
     }
     
@@ -854,5 +855,17 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
             });
             request.enable();
         }
+    }
+    
+    @Override
+    public FieldMirror createField(int modifiers, ClassMirror type, String name) {
+        // Resolve the list first
+        getBytecodeMirror();
+        
+        FieldMirror field = new FieldMapFieldMirror(this, modifiers, name, type);
+        
+        declaredFields.add(field);
+        
+        return field;
     }
 }

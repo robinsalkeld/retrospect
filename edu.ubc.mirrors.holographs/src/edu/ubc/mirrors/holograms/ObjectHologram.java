@@ -24,7 +24,6 @@ package edu.ubc.mirrors.holograms;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinaryClassName;
 
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 
 import org.objectweb.asm.Type;
 
@@ -219,9 +218,8 @@ public class ObjectHologram implements Hologram {
     public static Hologram cleanAndSetStackTrace(Hologram throwable, StackTraceElement[] nativeTrace) {
         VirtualMachineMirror vm = throwable.getMirror().getClassMirror().getVM();
         ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
-        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
-        ClassMirror intClass = vm.getPrimitiveClass("int");
-        ConstructorMirror constructor = HolographInternalUtils.getConstructor(stackTraceElementClass, stringClass, stringClass, stringClass, intClass);
+        String stringClassName = String.class.getName();
+        ConstructorMirror constructor = HolographInternalUtils.getConstructor(stackTraceElementClass, stringClassName, stringClassName, stringClassName, "int");
                 
         ObjectArrayMirror correctedTrace = (ObjectArrayMirror)stackTraceElementClass.newArray(nativeTrace.length);
         for (int i = 0; i < nativeTrace.length; i++) {

@@ -119,9 +119,9 @@ public class HolographInternalUtils {
         }
     }
     
-    public static MethodMirror getMethod(ClassMirror klass, String name, ClassMirror... parameterTypes) {
+    public static MethodMirror getMethod(ClassMirror klass, String name, String... parameterTypeNames) {
         try {
-            return klass.getMethod(name, parameterTypes);
+            return klass.getMethod(name, parameterTypeNames);
         } catch (NoSuchMethodException e) {
             NoSuchMethodError error = new NoSuchMethodError(e.getMessage());
             error.initCause(e);
@@ -129,9 +129,9 @@ public class HolographInternalUtils {
         }
     }
 
-    public static ConstructorMirror getConstructor(ClassMirror klass, ClassMirror... parameterTypes) {
+    public static ConstructorMirror getConstructor(ClassMirror klass, String... paramTypeNames) {
         try {
-            return klass.getConstructor(parameterTypes);
+            return klass.getConstructor(paramTypeNames);
         } catch (NoSuchMethodException e) {
             NoSuchMethodError error = new NoSuchMethodError(e.getMessage());
             error.initCause(e);

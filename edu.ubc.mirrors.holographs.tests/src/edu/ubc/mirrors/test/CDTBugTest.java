@@ -103,7 +103,7 @@ public class CDTBugTest implements IApplication {
                 analyzerClassName, analyzerClassBytecode);
         return Reflection.withThread(thread, new Callable<MethodMirror>() {
             public MethodMirror call() throws Exception {
-               return analyzerClass.getDeclaredMethod("nameWithLocation", nameClass);
+               return analyzerClass.getDeclaredMethod("nameWithLocation", nameClass.getClassName());
             } 
         });
     }

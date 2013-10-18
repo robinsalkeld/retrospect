@@ -151,18 +151,14 @@ public abstract class MethodHandle {
             throw new NoClassDefFoundError(e.getMessage());
         }
         Type[] paramTypes = Type.getArgumentTypes(getMethod().desc);
-        final ClassMirror[] paramClasses = new ClassMirror[paramTypes.length];
+        final String[] paramClassNames = new String[paramTypes.length];
         for (int i = 0; i < paramTypes.length; i++) {
-            try {
-                paramClasses[i] = Reflection.classMirrorForType(vm, thread, paramTypes[i], false, klass.getLoader());
-            } catch (ClassNotFoundException e) {
-                throw new NoClassDefFoundError(e.getMessage());
-            }
+            paramClassNames[i] = paramTypes[i].getClassName();
         }
         MethodMirror method = Reflection.withThread(thread, new Callable<MethodMirror>() {
             @Override
             public MethodMirror call() throws Exception {
-                return HolographInternalUtils.getMethod(targetClass, getMethod().name, paramClasses);
+                return HolographInternalUtils.getMethod(targetClass, getMethod().name, paramClassNames);
             }
         });
                 

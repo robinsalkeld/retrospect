@@ -42,6 +42,10 @@ public class MirrorWeaver {
         this.xcutSet = new CrosscuttingMembersSet(world);
     }
 
+    public MirrorWorld getWorld() {
+        return world;
+    }
+    
     public void weave(ClassMirror aspect) throws ClassNotFoundException, NoSuchMethodException, InterruptedException, MirrorInvocationTargetException {
         ThreadHolograph threadHolograph = (ThreadHolograph)world.thread;
         threadHolograph.enterHologramExecution();

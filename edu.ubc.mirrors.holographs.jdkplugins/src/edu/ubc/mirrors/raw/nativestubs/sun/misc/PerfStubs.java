@@ -50,7 +50,7 @@ public class PerfStubs extends NativeStubs {
 	
 	// Just create an arbitrary buffer - this VM doesn't expose any performance tracking API.
 	ClassMirror byteBufferClass = vm.findBootstrapClassMirror(ByteBuffer.class.getName());
-	MethodMirror method = HolographInternalUtils.getMethod(byteBufferClass, "allocate", vm.getPrimitiveClass("int"));
+	MethodMirror method = HolographInternalUtils.getMethod(byteBufferClass, "allocate", "int");
 	return (InstanceMirror)HolographInternalUtils.mirrorInvoke(ThreadHolograph.currentThreadMirror(), method, null, 16);
     }
 }

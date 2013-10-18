@@ -22,7 +22,7 @@ public abstract class MirrorEventShadow extends Shadow {
 
     protected final MirrorWorld world;
     protected final MirrorEvent event;
-    private MirrorTestEvaluator evaluator;
+    private MirrorEvaluator evaluator;
     
     protected MirrorEventShadow(MirrorWorld world, MirrorEvent event, Shadow.Kind kind, Member signature, Shadow enclosingShadow) {
         super(kind, signature, enclosingShadow);
@@ -35,9 +35,9 @@ public abstract class MirrorEventShadow extends Shadow {
         return world;
     }
 
-    public MirrorTestEvaluator getEvaluator() {
+    public MirrorEvaluator getEvaluator() {
         if (evaluator == null) {
-            evaluator = new MirrorTestEvaluator(world, getThread());
+            evaluator = new MirrorEvaluator(world, getThread());
         }
         return evaluator;
     }
@@ -49,6 +49,8 @@ public abstract class MirrorEventShadow extends Shadow {
     public boolean evaluateTest(Test test) {
         return getEvaluator().evaluateTest(test);
     }
+    
+    public abstract boolean isEntry();
     
     @Override
     public ISourceLocation getSourceLocation() {

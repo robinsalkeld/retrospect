@@ -1,5 +1,6 @@
 package edu.ubc.retrospect;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import org.aspectj.weaver.patterns.Pointcut;
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -31,11 +33,12 @@ import edu.ubc.mirrors.Reflection;
 
 public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
-    private final ClassMirror klass;
+    final ClassMirror klass;
     
     private boolean membersResolved = false;
     private ResolvedMember[] declaredMethods;
     private ResolvedMember[] declaredPointcuts;
+    private ResolvedMember[] declaredFields;
     
     private InstanceMirror instance;
     
@@ -48,9 +51,22 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
         return (MirrorWorld)getResolvedTypeX().getWorld();
     }
     
+    public static String getPointcutName(MethodMirror method) {
+        String name = method.getName();
+        // Stolen from org.aspectj.internal.lang.reflect.AjTypeImpl#asPointcut(Method)
+        if (name.startsWith("ajc$")) {
+            // extract real name
+            int nameStart = name.indexOf("$$");
+            name = name.substring(nameStart +2,name.length());
+            int nextDollar = name.indexOf("$");
+            if (nextDollar != -1) name = name.substring(0,nextDollar);
+        }
+        return name;
+    }
+    
     private Object memberForMethodMirror(MethodMirror m) {
         AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(), getWorld().getPointcutAnnotClass());
-        if (annot != null) {
+        if (annot != null && !Modifier.isAbstract(m.getModifiers())) {
             String parameterNamesString = (String)annot.getValue("argNames");
             String[] parameterNames = parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(",");
             
@@ -62,7 +78,7 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
                 parameterTypes[i] = forClassMirror(m.getParameterTypes().get(i));
             }
             
-            String name = AdviceMirror.getPointcutName(m);
+            String name = getPointcutName(m);
             
             ResolvedPointcutDefinition def = new ResolvedPointcutDefinition(getResolvedTypeX(), m.getModifiers(), name,
                     parameterTypes, pc);
@@ -89,12 +105,15 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
             declaredMethods = methods.toArray(new ResolvedMember[methods.size()]);
             declaredPointcuts = pointcuts.toArray(new ResolvedMember[pointcuts.size()]);
             
+            List<ResolvedMember> fields = new ArrayList<ResolvedMember>();
+            for (FieldMirror field : klass.getDeclaredFields()) {
+                fields.add(FieldMirrorMember.make(getWorld(), field));            
+            }
+            
+            declaredFields = fields.toArray(new ResolvedMember[fields.size()]);
+            
             membersResolved = true;
         }
-    }
-    
-    private ClassMirror mirrorForType(ResolvedType type) {
-        return ((MirrorReferenceTypeDelegate)((ReferenceType)type).getDelegate()).klass;
     }
     
     @Override
@@ -166,7 +185,7 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
     @Override
     public boolean hasAnnotation(UnresolvedType ofType) {
-        return Reflection.getAnnotation(klass.getAnnotations(), mirrorForType(getWorld().resolve(ofType))) != null;
+        return Reflection.getAnnotation(klass.getAnnotations(), getWorld().mirrorForType(getWorld().resolve(ofType))) != null;
     }
 
     @Override

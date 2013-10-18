@@ -115,14 +115,11 @@ public class Reflection {
             public ClassMirror call() throws Exception {
                 ClassMirror secureClassLoaderClass = vm.findBootstrapClassMirror(SecureClassLoader.class.getName());
                 ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
-                ConstructorMirror constructor = HolographInternalUtils.getConstructor(secureClassLoaderClass, classLoaderClass);
+                ConstructorMirror constructor = HolographInternalUtils.getConstructor(secureClassLoaderClass, ClassLoader.class.getName());
                 
                 ClassMirrorLoader newLoader = (ClassMirrorLoader)HolographInternalUtils.newInstance(constructor, thread, parent);
                 
-                ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
-                ClassMirror byteArrayClass = HolographInternalUtils.loadClassMirrorInternal(vm, null, "byte[]");
-                ClassMirror intClass = vm.getPrimitiveClass("int");
-                MethodMirror defineClassMethod = HolographInternalUtils.getMethod(classLoaderClass, "defineClass", stringClass, byteArrayClass, intClass, intClass);
+                MethodMirror defineClassMethod = HolographInternalUtils.getMethod(classLoaderClass, "defineClass", String.class.getName(), "byte[]", "int", "int");
                 defineClassMethod.setAccessible(true);
                 
                 InstanceMirror nameMirror = makeString(vm, name);
@@ -139,18 +136,16 @@ public class Reflection {
         threadHolograph.enterHologramExecution();
         try {
             ClassMirror urlClass = vm.findBootstrapClassMirror(URL.class.getName());
-            ConstructorMirror urlConstructor = HolographInternalUtils.getConstructor(urlClass, vm.findBootstrapClassMirror(String.class.getName()));
+            ConstructorMirror urlConstructor = HolographInternalUtils.getConstructor(urlClass, String.class.getName());
             
             ObjectArrayMirror urlsMirror = (ObjectArrayMirror)urlClass.newArray(urls.length);
-            ClassMirror urlArrayClass = urlsMirror.getClassMirror();
             for (int i = 0; i < urls.length; i++) {
                 InstanceMirror url = (InstanceMirror)HolographInternalUtils.newInstance(urlConstructor, thread, makeString(vm, urls[i].toString()));
                 urlsMirror.set(i, url);
             }
             
             ClassMirror urlClassLoaderClass = vm.findBootstrapClassMirror(URLClassLoader.class.getName());
-            ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
-            ConstructorMirror constructor = HolographInternalUtils.getConstructor(urlClassLoaderClass, urlArrayClass, classLoaderClass);
+            ConstructorMirror constructor = HolographInternalUtils.getConstructor(urlClassLoaderClass, urlsMirror.getClassMirror().getClassName(), ClassLoader.class.getName());
             
             return (ClassMirrorLoader)HolographInternalUtils.newInstance(constructor, thread, urlsMirror, parent);
         } finally {
@@ -225,11 +220,10 @@ public class Reflection {
         if (originalLoader == null || name.equals(String.class.getName()) || name.equals(getHologramBinaryClassName(String.class.getName(), false))) {
             result = vm.findBootstrapClassMirror(name);
         } else {
-            final ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
             final ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
             MethodMirror method = Reflection.withoutThread(thread, new Callable<MethodMirror>() {
                 public MethodMirror call() throws Exception {
-                    return HolographInternalUtils.getMethod(classLoaderClass, "loadClass", stringClass);
+                    return HolographInternalUtils.getMethod(classLoaderClass, "loadClass", String.class.getName());
                 }
             });
                     
@@ -471,17 +465,14 @@ public class Reflection {
     }
     
     public static Object invokeStaticMethodHandle(ThreadMirror thread, ClassMirror targetClass, MethodHandle m, Object ... args) throws IllegalAccessException, MirrorInvocationTargetException {
-        VirtualMachineMirror vm = targetClass.getVM();
-        Type[] paramTypes = Type.getArgumentTypes(m.getMethod().desc);
-        ClassMirror[] paramClasses = new ClassMirror[paramTypes.length];
-        for (int i = 0; i < paramTypes.length; i++) {
-            try {
-                paramClasses[i] = classMirrorForType(vm, thread, paramTypes[i], false, targetClass.getLoader());
-            } catch (ClassNotFoundException e) {
-                throw new NoClassDefFoundError(e.getMessage());
-            }
-        }
-        MethodMirror method = HolographInternalUtils.getMethod(targetClass, m.getMethod().name, paramClasses);
+        MethodMirror method;
+        try {
+            method = getDeclaredMethod(thread, targetClass, m.getMethod().name, Type.getType(m.getMethod().desc));
+        } catch (SecurityException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } 
         return method.invoke(thread, null, args);
     }
     
@@ -588,13 +579,13 @@ public class Reflection {
     public static ConstructorMirror constructorMirrorForConstructorInstance(InstanceMirror constructor) {
         ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(constructor, "clazz");
         ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)HolographInternalUtils.getField(constructor, "parameterTypes");
-        ClassMirror[] parameterTypes = new ClassMirror[parameterTypesMirror.length()];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = (ClassMirror)parameterTypesMirror.get(i);
+        String[] parameterTypeNames = new String[parameterTypesMirror.length()];
+        for (int i = 0; i < parameterTypeNames.length; i++) {
+            parameterTypeNames[i] = ((ClassMirror)parameterTypesMirror.get(i)).getClassName();
         }
 
         try {
-            return declaringClass.getConstructor(parameterTypes);
+            return declaringClass.getConstructor(parameterTypeNames);
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         }
@@ -604,13 +595,13 @@ public class Reflection {
         ClassMirror declaringClass = (ClassMirror)HolographInternalUtils.getField(m, "clazz");
         String name = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(m, "name"));
         ObjectArrayMirror parameterTypesMirror = (ObjectArrayMirror)HolographInternalUtils.getField(m, "parameterTypes");
-        ClassMirror[] parameterTypes = new ClassMirror[parameterTypesMirror.length()];
-        for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = (ClassMirror)parameterTypesMirror.get(i);
+        String[] parameterTypeNames = new String[parameterTypesMirror.length()];
+        for (int i = 0; i < parameterTypeNames.length; i++) {
+            parameterTypeNames[i] = ((ClassMirror)parameterTypesMirror.get(i)).getClassName();
         }
 
         try {
-            return declaringClass.getDeclaredMethod(name, parameterTypes);
+            return declaringClass.getDeclaredMethod(name, parameterTypeNames);
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         }
@@ -621,7 +612,7 @@ public class Reflection {
 	InstanceMirror baos = vm.findBootstrapClassMirror(ByteArrayOutputStream.class.getName())
 		.getConstructor().newInstance(thread);
 	return vm.findBootstrapClassMirror(PrintStream.class.getName())
-		.getConstructor(vm.findBootstrapClassMirror(OutputStream.class.getName())).newInstance(thread, baos);
+		.getConstructor(OutputStream.class.getName()).newInstance(thread, baos);
 	      
     }
     
@@ -794,18 +785,12 @@ public class Reflection {
     
     public static MethodMirror getDeclaredMethod(ThreadMirror thread, ClassMirror klass, String methodName, Type methodType) throws SecurityException, NoSuchMethodException {
         Type[] argumentTypes = methodType.getArgumentTypes();
-        ClassMirror[] paramClasses = new ClassMirror[argumentTypes.length];
+        String[] paramClassNames = new String[argumentTypes.length];
         ClassMirrorLoader loader = klass.getLoader();
         for (int i = 0; i < argumentTypes.length; i++) {
-            try {
-                paramClasses[i] = Reflection.classMirrorForType(klass.getVM(), thread, argumentTypes[i], false, loader);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (MirrorInvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
+            paramClassNames[i] = argumentTypes[i].getClassName();
         }
-        return klass.getDeclaredMethod(methodName, paramClasses);
+        return klass.getDeclaredMethod(methodName, paramClassNames);
     }
     
     public static String getClassNameFromBytecode(byte[] bytecode) {

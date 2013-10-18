@@ -48,16 +48,16 @@ public class MethodMirrorMember extends ResolvedMemberImpl {
     
     public static MethodMirrorMember make(MirrorWorld world, MethodMirror method) {
         UnresolvedType declaringType = world.resolve(method.getDeclaringClass());
-        UnresolvedType returnType = world.resolve(method.getReturnType());
+        UnresolvedType returnType = UnresolvedType.forName(method.getReturnTypeName());
         
-        UnresolvedType[] parameterTypes = new UnresolvedType[method.getParameterTypes().size()];
+        UnresolvedType[] parameterTypes = new UnresolvedType[method.getParameterTypeNames().size()];
         for (int i = 0; i < parameterTypes.length; i++) {
-            parameterTypes[i] = world.resolve(method.getParameterTypes().get(i));
+            parameterTypes[i] = UnresolvedType.forName(method.getParameterTypeNames().get(i));
         }
         
-        UnresolvedType[] exceptionTypes = new UnresolvedType[method.getExceptionTypes().size()];
+        UnresolvedType[] exceptionTypes = new UnresolvedType[method.getExceptionTypeNames().size()];
         for (int i = 0; i < exceptionTypes.length; i++) {
-            exceptionTypes[i] = world.resolve(method.getExceptionTypes().get(i));
+            exceptionTypes[i] = UnresolvedType.forName(method.getExceptionTypeNames().get(i));
         }
         
         return new MethodMirrorMember(world, method, declaringType, method.getModifiers(), returnType, method.getName(), parameterTypes, exceptionTypes);

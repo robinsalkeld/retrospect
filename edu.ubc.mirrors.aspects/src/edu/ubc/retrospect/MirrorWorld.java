@@ -34,7 +34,6 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
 /**
@@ -64,9 +63,7 @@ public class MirrorWorld extends World {
         this.loader = loader;
         this.thread = thread;
         ClassMirror factoryClass = Reflection.classMirrorForType(vm, thread, Type.getType(Factory.class), false, loader);
-        this.factoryConstructor = factoryClass.getConstructor(
-                vm.findBootstrapClassMirror(String.class.getName()), 
-                vm.findBootstrapClassMirror(Class.class.getName()));
+        this.factoryConstructor = factoryClass.getConstructor(String.class.getName(), Class.class.getName());
         this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
         this.pointcutAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(org.aspectj.lang.annotation.Pointcut.class), false, loader);
     }
@@ -253,4 +250,10 @@ public class MirrorWorld extends World {
     public Pointcut parsePointcut(String expr) {
         return new PatternParser(expr).parsePointcut();
     }
+    
+    public ClassMirror mirrorForType(ResolvedType type) {
+        return ((MirrorReferenceTypeDelegate)((ReferenceType)type).getDelegate()).klass;
+    }
+    
+    
 }

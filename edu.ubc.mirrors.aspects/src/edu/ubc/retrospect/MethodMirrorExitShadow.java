@@ -20,6 +20,11 @@ public class MethodMirrorExitShadow extends MirrorEventShadow {
     }
 
     @Override
+    public boolean isEntry() {
+        return false;
+    }
+    
+    @Override
     public ThreadMirror getThread() {
         return event.thread();
     }

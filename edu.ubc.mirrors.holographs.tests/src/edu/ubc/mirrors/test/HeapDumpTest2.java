@@ -88,7 +88,7 @@ public class HeapDumpTest2 implements IApplication {
             InstanceMirror baos = (InstanceMirror)printerClass.getDeclaredMethod("redirectStdErr").invoke(thread, null);
 
             // For each class instance (in this case we only expect one)...
-            MethodMirror method = printerClass.getDeclaredMethod("printStackTraces", rubyClass);
+            MethodMirror method = printerClass.getDeclaredMethod("printStackTraces", rubyClass.getClassName());
             for (ObjectMirror ruby : rubyClass.getInstances()) {
         	// Invoke JRubyStackTraces#printStackTraces reflectively.
         	method.invoke(thread, null, ruby);
