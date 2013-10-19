@@ -127,8 +127,9 @@ public class MirrorEvaluator implements ITestVisitor {
     
     private Object evaluateCall(InstanceMirror obj, Member member, Expr[] args) {
         // If this isn't wrapping a mirror member, look it up so it is.
-        if (member instanceof ResolvedMemberImpl) {
-            member = ((ReferenceType)member.getDeclaringType()).lookupMethod(member);
+        if (!(member instanceof MethodMirrorMember)) {
+            ReferenceType declaringType = (ReferenceType)world.resolve(member.getDeclaringType());
+            member = declaringType.lookupMethod(member);
         }
         
         Object[] argMirrors = new Object[args.length];

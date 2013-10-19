@@ -93,7 +93,7 @@ public class TracingExampleTest {
                 jdiVMM.getPrimitiveClass("double");
                 jdiVMM.getPrimitiveClass("void");
                 
-        	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version1.Trace", true, loader);
+        	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version3.Trace", true, loader);
         	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
         	
         	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
@@ -101,7 +101,7 @@ public class TracingExampleTest {
         	MethodMirror method = traceClass.getDeclaredMethod("initStream", PrintStream.class.getName());
                 method.invoke(thread, null, stream);
         	
-        	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version1.TraceMyClasses", true, loader);
+        	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version3.TraceMyClasses", true, loader);
         	MirrorWeaver weaver = new MirrorWeaver(vm, loader, thread);
                 weaver.weave(aspect);
                 vm.dispatch().start();

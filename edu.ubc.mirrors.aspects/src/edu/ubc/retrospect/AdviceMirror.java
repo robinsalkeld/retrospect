@@ -16,27 +16,20 @@ import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.ShadowMunger;
 import org.aspectj.weaver.UnresolvedType;
-import org.aspectj.weaver.ast.CallExpr;
-import org.aspectj.weaver.ast.Expr;
 import org.aspectj.weaver.ast.Test;
 import org.aspectj.weaver.patterns.AndPointcut;
-import org.aspectj.weaver.patterns.CflowPointcut;
 import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.FormalBinding;
-import org.aspectj.weaver.patterns.NotPointcut;
 import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.aspectj.weaver.patterns.PointcutRewriter;
 
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.retrospect.MirrorWorld.CflowStack;
 import edu.ubc.retrospect.MirrorWorld.PointcutCallback;
 
 public class AdviceMirror extends Advice {
@@ -52,34 +45,23 @@ public class AdviceMirror extends Advice {
         this(world, new AjAttribute.AdviceAttribute(kind, pointcut, 0, pointcut.getStart(), pointcut.getEnd(), pointcut.getSourceContext()), concreteAspect, signature, pointcut);
     }
 
-    private void resolve() {
-        String[] parameterNames = signature.getParameterNames(world);
-        FormalBinding[] formals = new FormalBinding[parameterNames.length];
-        for (int i = 0; i < formals.length; i++) {
-            UnresolvedType paramType = signature.getParameterTypes()[i];
-            formals[i] = new FormalBinding(paramType, parameterNames[i], i);
-        }
-        BindingScope scope = new BindingScope(concreteAspect, pointcut.getSourceContext(), formals);
-        pointcut = pointcut.resolve(scope);
-        
-        pointcut = pointcut.concretize(concreteAspect, concreteAspect, formals.length);
-    }
-    
     private void installPointcutCallback(MirrorEventRequestManager manager, final AdviceKind kind, final Pointcut pc, final PointcutCallback callback) {
         Pointcut dnf = new PointcutRewriter().rewrite(pc);
         List<Pointcut> actualDNF = disjuncts(dnf);
         final Set<MirrorEvent> joinpointEvents = new HashSet<MirrorEvent>();
         
         for (Pointcut disjunct : actualDNF) {
-            MirrorEventRequest request = extractRequest(manager, kind, disjunct);
+            List<MirrorEventRequest> requests = extractRequests(manager, kind, disjunct);
             
-            world.vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
-                @Override
-                public void handle(MirrorEvent event) {
-                    joinpointEvents.add(event);
-                }
-            });
-            request.enable();
+            for (MirrorEventRequest request : requests) {
+                world.vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
+                    @Override
+                    public void handle(MirrorEvent event) {
+                        joinpointEvents.add(event);
+                    }
+                });
+                request.enable();
+            }
         }
     
         world.vm.dispatch().addSetCallback(new Runnable() {
@@ -99,56 +81,13 @@ public class AdviceMirror extends Advice {
     
     public void install() {
         MirrorEventRequestManager manager = world.vm.eventRequestManager();
-        
-        // Make sure the cflow trackers are pushed before normal advice, and popped
-        // after.
-        installCflows(manager, true, pointcut);
         installPointcutCallback(manager, kind, pointcut, new PointcutCallback() {
             public void call(MirrorEventShadow shadow, ExposedState state) {
                 execute(shadow, state);
             }
         });
-        installCflows(manager, false, pointcut);
     }
     
-    private CflowStack getCflowStack(Pointcut pc) {
-        CflowStack stack = world.cflowStacks.get(pc);
-        if (!world.cflowStacks.containsKey(pc)) {
-            stack = new CflowStack();
-            world.cflowStacks.put(pc, stack);
-        }
-        return stack;
-    }
-    
-    private void installCflows(MirrorEventRequestManager manager, final boolean before, final Pointcut pc) {
-        if (pc instanceof CflowPointcut) {
-            final CflowStack stack = getCflowStack(pc);
-            final Pointcut child = ((CflowPointcut)pc).getEntry();
-            AdviceKind kind = before ? AdviceKind.Before : AdviceKind.After;
-            installPointcutCallback(manager, kind, child, new PointcutCallback() {
-                public void call(MirrorEventShadow shadow, ExposedState state) {
-                    ThreadMirror thread = shadow.getThread();
-                    if (before) {
-                        stack.pushState(thread, state);
-                    } else {
-                        stack.popState(thread);
-                    }
-                }
-            });
-            
-        } else if (pc instanceof AndPointcut) {
-            AndPointcut andPC = (AndPointcut)pc;
-            installCflows(manager, before, andPC.getLeft());
-            installCflows(manager, before, andPC.getRight());
-        } else if (pc instanceof OrPointcut) {
-            OrPointcut orPC = (OrPointcut)pc;
-            installCflows(manager, before, orPC.getLeft());
-            installCflows(manager, before, orPC.getRight());
-        } else if (pc instanceof NotPointcut) {
-            installCflows(manager, before, ((NotPointcut)pc).getNegatedPointcut());
-        }
-    }
-
     // Collect DNF assuming the argument is already a DNF pointcut
     private List<Pointcut> disjuncts(Pointcut pc) {
         if (pc instanceof OrPointcut) {
@@ -178,8 +117,8 @@ public class AdviceMirror extends Advice {
         }
     }
 
-    private MirrorEventRequest extractRequest(MirrorEventRequestManager manager, AdviceKind adviceKind, Pointcut disjunct) {
-        return PointcutMirrorRequestExtractor.extractRequest(world.vm, adviceKind, disjunct);
+    private List<MirrorEventRequest> extractRequests(MirrorEventRequestManager manager, AdviceKind adviceKind, Pointcut disjunct) {
+        return PointcutMirrorRequestExtractor.extractRequests(world.vm, adviceKind, disjunct);
     }
 
     public void execute(MirrorEventShadow shadow, ExposedState state) {
@@ -227,13 +166,15 @@ public class AdviceMirror extends Advice {
     @Override
     public boolean implementOn(Shadow shadow) {
         ExposedState state = new ExposedState(signature);
-        Test test = getPointcut().findResidue(shadow, state);
         MirrorEventShadow eventShadow = (MirrorEventShadow)shadow;
+        if (eventShadow.getEnclosingType().getName().equals("tracing.Square")) {
+            int bp = 5;
+            bp--;
+        }
+        Test test = getPointcut().findResidue(shadow, state);
         if (eventShadow.evaluateTest(test)) {
             if (getSignature() instanceof MethodMirrorMember) {
                 execute(eventShadow, state);
-            } else if (getKind().isCflow()) {
-                
             }
             return true;
         } else {

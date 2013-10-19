@@ -110,11 +110,6 @@ public abstract class MirrorEventShadow extends Shadow {
     }
 
     @Override
-    public UnresolvedType getEnclosingType() {
-        return null;
-    }
-
-    @Override
     public Var getArgVar(int i) {
         return null;
     }

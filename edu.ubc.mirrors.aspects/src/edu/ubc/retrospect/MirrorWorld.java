@@ -8,13 +8,18 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.runtime.reflect.Factory;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AjcMemberMaker;
+import org.aspectj.weaver.BindingScope;
+import org.aspectj.weaver.ISourceContext;
 import org.aspectj.weaver.IWeavingSupport;
+import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ReferenceType;
 import org.aspectj.weaver.ReferenceTypeDelegate;
 import org.aspectj.weaver.ResolvedType;
+import org.aspectj.weaver.SourceContextImpl;
 import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.World;
 import org.aspectj.weaver.patterns.ExposedState;
+import org.aspectj.weaver.patterns.FormalBinding;
 import org.aspectj.weaver.patterns.PatternParser;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.objectweb.asm.Type;
@@ -80,9 +85,9 @@ public class MirrorWorld extends World {
             try {
                 klass = Reflection.classMirrorForName(vm, thread, ty.getName(), false, loader);
             } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
+                return null;
             } catch (MirrorInvocationTargetException e) {
-                throw new RuntimeException(e);
+                return null;
             }
             result = new MirrorReferenceTypeDelegate(ty, klass);
             delegates.put(ty, result);
@@ -225,8 +230,6 @@ public class MirrorWorld extends World {
         }
     }
     
-    final Map<Pointcut, CflowStack> cflowStacks = new HashMap<Pointcut, CflowStack>();
-    
     public ClassMirror getAnnotClassMirror(AdviceKind kind) {
         UnresolvedType signature = kind.equals(AdviceKind.After) ? AjcMemberMaker.AFTER_ANNOTATION : AjcMemberMaker.BEFORE_ANNOTATION;
         try {
@@ -248,7 +251,20 @@ public class MirrorWorld extends World {
     }
     
     public Pointcut parsePointcut(String expr) {
-        return new PatternParser(expr).parsePointcut();
+        Pointcut pc = new PatternParser(expr).parsePointcut();
+        pc.setLocation(SourceContextImpl.UNKNOWN_SOURCE_CONTEXT, 0, 0);
+        return pc;
+    }
+    
+    public Pointcut resolvePointcut(Member signature, Pointcut pointcut) {
+        String[] parameterNames = signature.getParameterNames(this);
+        FormalBinding[] formals = new FormalBinding[parameterNames.length];
+        for (int i = 0; i < formals.length; i++) {
+            UnresolvedType paramType = signature.getParameterTypes()[i];
+            formals[i] = new FormalBinding(paramType, parameterNames[i], i);
+        }
+        BindingScope scope = new BindingScope((ResolvedType)signature.getDeclaringType(), pointcut.getSourceContext(), formals);
+        return pointcut.resolve(scope);
     }
     
     public ClassMirror mirrorForType(ResolvedType type) {

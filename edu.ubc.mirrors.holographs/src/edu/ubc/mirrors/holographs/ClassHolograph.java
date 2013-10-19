@@ -386,7 +386,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
 
     /*
      * Checks that the class defined by the bytecode mirror matches the definition
-     * of the class from the heap dump. This will catch a lot of version mismatches.
+     * of the class from the wrapped class. This will catch a lot of version mismatches.
      * At the same time, make sure the fields are ordered according to the bytecode.
      */ 
     private void validateBytecodeClass() {
@@ -707,12 +707,14 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     @Override
     public List<FieldMirror> getDeclaredFields() {
         if (wrapped instanceof DefinedClassMirror) {
-            return super.getDeclaredFields();
+            if (declaredFields == null) {
+                declaredFields = new ArrayList<FieldMirror>(super.getDeclaredFields());
+            }
         } else {
             // Ensure the correctly ordered list is initialized.
             getBytecodeMirror();
-            return declaredFields;
         }
+        return declaredFields;
     }
     
     @Override
@@ -860,7 +862,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     @Override
     public FieldMirror createField(int modifiers, ClassMirror type, String name) {
         // Resolve the list first
-        getBytecodeMirror();
+        getDeclaredFields();
         
         FieldMirror field = new FieldMapFieldMirror(this, modifiers, name, type);
         

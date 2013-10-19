@@ -15,7 +15,6 @@ public class MirrorTypeMunger extends ConcreteTypeMunger {
     }
 
     public void munge(MirrorWeaver weaver) {
-        throw new UnsupportedOperationException();
     }
     
     @Override

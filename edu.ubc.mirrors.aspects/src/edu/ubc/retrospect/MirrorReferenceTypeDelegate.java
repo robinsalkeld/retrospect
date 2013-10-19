@@ -10,6 +10,7 @@ import org.aspectj.weaver.AbstractReferenceTypeDelegate;
 import org.aspectj.weaver.AnnotationAJ;
 import org.aspectj.weaver.AnnotationTargetKind;
 import org.aspectj.weaver.ConcreteTypeMunger;
+import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ReferenceType;
 import org.aspectj.weaver.ResolvedMember;
 import org.aspectj.weaver.ResolvedPointcutDefinition;
@@ -70,19 +71,20 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
             String parameterNamesString = (String)annot.getValue("argNames");
             String[] parameterNames = parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(",");
             
-            String pointcut = (String)annot.getValue("value");
-            Pointcut pc = getWorld().parsePointcut(pointcut);
-            
-            UnresolvedType[] parameterTypes = new UnresolvedType[m.getParameterTypes().size()];
+            UnresolvedType[] parameterTypes = new UnresolvedType[m.getParameterTypeNames().size()];
             for (int i = 0; i < parameterTypes.length; i++) {
-                parameterTypes[i] = forClassMirror(m.getParameterTypes().get(i));
+                parameterTypes[i] = UnresolvedType.forName(m.getParameterTypeNames().get(i));
             }
             
             String name = getPointcutName(m);
             
+            String pointcut = (String)annot.getValue("value");
+            Pointcut pc = getWorld().parsePointcut(pointcut);
+            
             ResolvedPointcutDefinition def = new ResolvedPointcutDefinition(getResolvedTypeX(), m.getModifiers(), name,
                     parameterTypes, pc);
             def.setParameterNames(parameterNames);
+            
             return def;
         } else {
             return MethodMirrorMember.make(getWorld(), m);
@@ -113,6 +115,11 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
             declaredFields = fields.toArray(new ResolvedMember[fields.size()]);
             
             membersResolved = true;
+            
+            for (Member m : declaredPointcuts) {
+                ResolvedPointcutDefinition rpc = (ResolvedPointcutDefinition)m;
+                rpc.setPointcut(getWorld().resolvePointcut(rpc, rpc.getPointcut()));
+            }
         }
     }
     
@@ -202,8 +209,8 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
     @Override
     public ResolvedMember[] getDeclaredFields() {
-        // TODO Auto-generated method stub
-        return null;
+        resolveMembers();
+        return declaredFields;
     }
 
     @Override

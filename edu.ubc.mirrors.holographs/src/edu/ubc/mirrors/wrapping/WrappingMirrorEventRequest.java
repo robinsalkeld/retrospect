@@ -73,4 +73,9 @@ public class WrappingMirrorEventRequest implements MirrorEventRequest {
     public void addClassFilter(String classNamePattern) {
 	wrapped.addClassFilter(classNamePattern);
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + wrapped;
+    }
 }

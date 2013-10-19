@@ -8,7 +8,6 @@ import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
-import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class ConstructorMirrorEntryShadow extends MirrorEventShadow {

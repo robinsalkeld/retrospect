@@ -38,18 +38,17 @@ public class MirrorWeavingSupport implements IWeavingSupport {
 
     @Override
     public ConcreteTypeMunger makePerClauseAspect(ResolvedType aspect, Kind kind) {
-        return new TemporaryTypeMunger(null, aspect);
+        return new MirrorTypeMunger(null, aspect);
     }
 
     @Override
     public ConcreteTypeMunger concreteTypeMunger(ResolvedTypeMunger munger, ResolvedType aspectType) {
-        // TODO Auto-generated method stub
-        return null;
+        return new MirrorTypeMunger(munger, aspectType);
     }
 
     @Override
     public ConcreteTypeMunger createAccessForInlineMunger(ResolvedType inAspect) {
-        return new TemporaryTypeMunger(null, inAspect);
+        return new MirrorTypeMunger(null, inAspect);
     }
 
     @Override

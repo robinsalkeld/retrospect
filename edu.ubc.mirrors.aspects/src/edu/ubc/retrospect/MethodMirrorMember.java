@@ -32,12 +32,13 @@ public class MethodMirrorMember extends ResolvedMemberImpl {
         for (AdviceKind kind : MirrorWorld.SUPPORTED_ADVICE_KINDS) {
             AnnotationMirror annot = Reflection.getAnnotation(method.getAnnotations(), world.getAnnotClassMirror(kind));
             if (annot != null) {
-                String pointcut = (String)annot.getValue("value");
-                Pointcut pc = world.parsePointcut(pointcut);
-                
                 // Slightly odd side-effect here, but it's convenient.
                 String parameterNamesString = (String)annot.getValue("argNames");
                 this.setParameterNames(parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(","));
+                
+                String pointcut = (String)annot.getValue("value");
+                Pointcut pc = world.parsePointcut(pointcut);
+                pc = world.resolvePointcut(this, pc);
                 
                 return new AdviceMirror(world, world.resolve(declaringType), kind, this, pc);
             }

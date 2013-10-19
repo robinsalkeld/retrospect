@@ -21,6 +21,7 @@
  ******************************************************************************/
 package edu.ubc.retrospect;
 
+import org.aspectj.weaver.ConcreteTypeMunger;
 import org.aspectj.weaver.CrosscuttingMembersSet;
 import org.aspectj.weaver.ReferenceType;
 import org.aspectj.weaver.ShadowMunger;
@@ -54,6 +55,11 @@ public class MirrorWeaver {
 
             ReferenceType aspectType = (ReferenceType)world.resolve(aspect);
             xcutSet.addOrReplaceAspect(aspectType);
+            
+            for (ConcreteTypeMunger munger : xcutSet.getTypeMungers()) {
+                MirrorTypeMunger mirrorMunger = (MirrorTypeMunger)munger;
+                mirrorMunger.munge(this);
+            }
             
             for (ShadowMunger munger : xcutSet.getShadowMungers()) {
                 AdviceMirror advice = (AdviceMirror)munger;
