@@ -1,5 +1,7 @@
 package edu.ubc.retrospect;
 
+import java.util.Collections;
+
 import org.aspectj.bridge.ISourceLocation;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.weaver.Member;
@@ -13,6 +15,7 @@ import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
 import edu.ubc.mirrors.ConstructorMirrorExitEvent;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
@@ -50,7 +53,19 @@ public abstract class MirrorEventShadow extends Shadow {
         return getEvaluator().evaluateTest(test);
     }
     
+    public Object evaluateCall(InstanceMirror obj, Member method, Expr[] args) {
+        return getEvaluator().evaluateCall(obj, method, args);
+    }
+    
+    
     public abstract boolean isEntry();
+    
+    @Override
+    protected void prepareForMungers() {
+        if (isEntry()) {
+            Collections.reverse(mungers);
+        }
+    }
     
     @Override
     public ISourceLocation getSourceLocation() {
@@ -167,5 +182,10 @@ public abstract class MirrorEventShadow extends Shadow {
     @Override
     public Var getThisAspectInstanceVar(ResolvedType aspectType) {
         return null;
+    }
+    
+    @Override
+    public String toString() {
+        return (isEntry() ? "entering " : "exiting ") + super.toString();
     }
 }

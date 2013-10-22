@@ -10,16 +10,19 @@ import java.util.Set;
 import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AjAttribute;
-import org.aspectj.weaver.BindingScope;
 import org.aspectj.weaver.Member;
+import org.aspectj.weaver.MemberImpl;
+import org.aspectj.weaver.NameMangler;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.ShadowMunger;
 import org.aspectj.weaver.UnresolvedType;
+import org.aspectj.weaver.World;
+import org.aspectj.weaver.ast.Expr;
+import org.aspectj.weaver.ast.FieldGet;
 import org.aspectj.weaver.ast.Test;
 import org.aspectj.weaver.patterns.AndPointcut;
 import org.aspectj.weaver.patterns.ExposedState;
-import org.aspectj.weaver.patterns.FormalBinding;
 import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.aspectj.weaver.patterns.PointcutRewriter;
@@ -33,6 +36,11 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.retrospect.MirrorWorld.PointcutCallback;
 
 public class AdviceMirror extends Advice {
+    private static final Member cflowCounterIncMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
+            UnresolvedType.VOID, "inc", UnresolvedType.NONE);
+    private static final Member cflowCounterDecMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
+            UnresolvedType.VOID, "dec", UnresolvedType.NONE);
+
     private final MirrorWorld world;
     
     public AdviceMirror(MirrorWorld world, AjAttribute.AdviceAttribute attribute, ResolvedType concreteAspect, Member signature, Pointcut pointcut) {
@@ -67,12 +75,14 @@ public class AdviceMirror extends Advice {
         world.vm.dispatch().addSetCallback(new Runnable() {
             @Override
             public void run() {
-                // Note the return below - each pointcut should only apply at most once to
+                // Note the break below - each pointcut should only apply at most once to
                 // each joinpoint, even if there are multiple events at that joinpoint
                 // that match.
                 for (MirrorEvent event : joinpointEvents) {
                     MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
-                    implementOn(shadow);
+                    if (implementOn(shadow)) {
+                        break;
+                    }
                 }
                 joinpointEvents.clear();
             }
@@ -149,8 +159,64 @@ public class AdviceMirror extends Advice {
 
     @Override
     public int compareTo(Object other) {
-        // TODO Auto-generated method stub
-        return 0;
+        // This is all copied directly from BcelAdvice - it seems to apply
+        // perfectly well generically.
+        if (!(other instanceof AdviceMirror)) {
+            return 0;
+        }
+        AdviceMirror o = (AdviceMirror) other;
+
+        // System.err.println("compareTo: " + this + ", " + o);
+        if (kind.getPrecedence() != o.kind.getPrecedence()) {
+            if (kind.getPrecedence() > o.kind.getPrecedence()) {
+                return +1;
+            } else {
+                return -1;
+            }
+        }
+
+        if (kind.isCflow()) {
+            // System.err.println("sort: " + this + " innerCflowEntries " + innerCflowEntries);
+            // System.err.println("      " + o + " innerCflowEntries " + o.innerCflowEntries);
+            boolean isBelow = (kind == AdviceKind.CflowBelowEntry);
+
+            if (this.innerCflowEntries.contains(o)) {
+                return isBelow ? +1 : -1;
+            } else if (o.innerCflowEntries.contains(this)) {
+                return isBelow ? -1 : +1;
+            } else {
+                return 0;
+            }
+        }
+
+        if (kind.isPerEntry() || kind == AdviceKind.Softener) {
+            return 0;
+        }
+
+        // System.out.println("compare: " + this + " with " + other);
+        World world = concreteAspect.getWorld();
+
+        int ret = concreteAspect.getWorld().compareByPrecedence(concreteAspect, o.concreteAspect);
+        if (ret != 0) {
+            return ret;
+        }
+
+        ResolvedType declaringAspect = getDeclaringAspect().resolve(world);
+        ResolvedType o_declaringAspect = o.getDeclaringAspect().resolve(world);
+
+        if (declaringAspect == o_declaringAspect) {
+            if (kind.isAfter() || o.kind.isAfter()) {
+                return this.getStart() < o.getStart() ? -1 : +1;
+            } else {
+                return this.getStart() < o.getStart() ? +1 : -1;
+            }
+        } else if (declaringAspect.isAssignableFrom(o_declaringAspect)) {
+            return -1;
+        } else if (o_declaringAspect.isAssignableFrom(declaringAspect)) {
+            return +1;
+        } else {
+            return 0;
+        }
     }
 
     @Override
@@ -167,14 +233,19 @@ public class AdviceMirror extends Advice {
     public boolean implementOn(Shadow shadow) {
         ExposedState state = new ExposedState(signature);
         MirrorEventShadow eventShadow = (MirrorEventShadow)shadow;
-        if (eventShadow.getEnclosingType().getName().equals("tracing.Square")) {
-            int bp = 5;
-            bp--;
-        }
         Test test = getPointcut().findResidue(shadow, state);
         if (eventShadow.evaluateTest(test)) {
             if (getSignature() instanceof MethodMirrorMember) {
                 execute(eventShadow, state);
+            } else if (kind.isCflow()) {
+                if (state.size() == 0) {
+                    Expr fieldGet = new FieldGet(getSignature(), concreteAspect);
+                    InstanceMirror counter = (InstanceMirror)eventShadow.evaluateExpr(fieldGet);
+                    Member method = eventShadow.isEntry() ? cflowCounterIncMethod : cflowCounterDecMethod;
+                    eventShadow.evaluateCall(counter, method, Expr.NONE);
+                } else {
+                    throw new IllegalStateException();
+                }
             }
             return true;
         } else {

@@ -8,6 +8,7 @@ import org.aspectj.weaver.ast.And;
 import org.aspectj.weaver.ast.Call;
 import org.aspectj.weaver.ast.CallExpr;
 import org.aspectj.weaver.ast.Expr;
+import org.aspectj.weaver.ast.FieldGet;
 import org.aspectj.weaver.ast.FieldGetCall;
 import org.aspectj.weaver.ast.HasAnnotation;
 import org.aspectj.weaver.ast.ITestVisitor;
@@ -86,21 +87,9 @@ public class MirrorEvaluator implements ITestVisitor {
 
     @Override
     public void visit(FieldGetCall fieldGetCall) {
-        Member field = fieldGetCall.getField();
-        
-        // If this isn't wrapping a mirror member, look it up so it is.
-        if (field instanceof ResolvedMemberImpl) {
-            field = ((ReferenceType)field.getDeclaringType()).lookupField(field);
-        }
-        
-        FieldMirror fieldMirror = ((FieldMirrorMember)field).getField();
-        try {
-            InstanceMirror obj = (InstanceMirror)fieldMirror.getDeclaringClass().getStaticFieldValues().get(fieldMirror);
-            Object result = evaluateCall(obj, fieldGetCall.getMethod(), fieldGetCall.getArgs());
-            success = ((Boolean)result).booleanValue();
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        InstanceMirror obj = (InstanceMirror)evaluateField(fieldGetCall.getField());
+        Object result = evaluateCall(obj, fieldGetCall.getMethod(), fieldGetCall.getArgs());
+        success = ((Boolean)result).booleanValue();
     }
 
     @Override
@@ -120,12 +109,28 @@ public class MirrorEvaluator implements ITestVisitor {
             CallExpr call = (CallExpr)expr;
             // Assuming static method
             return evaluateCall(null, call.getMethod(), call.getArgs());
+        } else if (expr instanceof FieldGet) {
+            return evaluateField(((FieldGet)expr).getField());
         } else {
             throw new IllegalArgumentException("Unsupported expression type: " + expr);
         }
     }
     
-    private Object evaluateCall(InstanceMirror obj, Member member, Expr[] args) {
+    public Object evaluateField(Member field) {
+        // If this isn't wrapping a mirror member, look it up so it is.
+        if (field instanceof ResolvedMemberImpl) {
+            field = ((ReferenceType)field.getDeclaringType()).lookupField(field);
+        }
+        
+        FieldMirror fieldMirror = ((FieldMirrorMember)field).getField();
+        try {
+            return fieldMirror.getDeclaringClass().getStaticFieldValues().get(fieldMirror);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public Object evaluateCall(InstanceMirror obj, Member member, Expr[] args) {
         // If this isn't wrapping a mirror member, look it up so it is.
         if (!(member instanceof MethodMirrorMember)) {
             ReferenceType declaringType = (ReferenceType)world.resolve(member.getDeclaringType());
