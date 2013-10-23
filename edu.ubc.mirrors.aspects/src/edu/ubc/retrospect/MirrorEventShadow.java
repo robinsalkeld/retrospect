@@ -33,6 +33,24 @@ public abstract class MirrorEventShadow extends Shadow {
         this.event = event;
     }
 
+    /**
+     * This equality is defined in terms of shadows, not instantaneous events.
+     * That is, two events that arise from the same place in the code, but perhaps at
+     * different times with different dynamic properties, should still compare equal.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+        return equals((MirrorEventShadow)obj);
+    }
+    
+    protected abstract boolean equals(MirrorEventShadow other);
+    
+    @Override
+    public abstract int hashCode();
+    
     @Override
     public World getIWorld() {
         return world;

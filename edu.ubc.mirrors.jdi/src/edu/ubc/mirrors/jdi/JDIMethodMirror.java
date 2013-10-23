@@ -52,6 +52,8 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
 	return method.name();
     }
     
+    
+    
     public Object invoke(ThreadMirror thread, ObjectMirror obj, Object... args)
 	    throws IllegalArgumentException, IllegalAccessException,
 	    MirrorInvocationTargetException {

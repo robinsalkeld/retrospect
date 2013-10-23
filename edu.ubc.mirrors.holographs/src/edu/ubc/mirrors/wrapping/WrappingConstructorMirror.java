@@ -21,7 +21,6 @@
  ******************************************************************************/
 package edu.ubc.mirrors.wrapping;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -38,6 +37,20 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     public WrappingConstructorMirror(WrappingVirtualMachine vm, ConstructorMirror wrapped) {
         this.vm = vm;
         this.wrapped = wrapped;
+    }
+    
+    @Override
+    public final boolean equals(Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+        
+        return ((WrappingConstructorMirror)obj).wrapped.equals(wrapped);
+    }
+    
+    @Override
+    public final int hashCode() {
+        return 47 * wrapped.hashCode();
     }
     
     @Override

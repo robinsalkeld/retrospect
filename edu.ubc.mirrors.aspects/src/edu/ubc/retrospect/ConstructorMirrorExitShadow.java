@@ -20,6 +20,17 @@ public class ConstructorMirrorExitShadow extends MirrorEventShadow {
     }
 
     @Override
+    protected boolean equals(MirrorEventShadow other) {
+        ConstructorMirrorExitShadow shadow = (ConstructorMirrorExitShadow)other;
+        return event.constructor().equals(shadow.event.constructor());
+    }
+    
+    @Override
+    public int hashCode() {
+        return event.constructor().hashCode();
+    }
+    
+    @Override
     public boolean isEntry() {
         return false;
     }

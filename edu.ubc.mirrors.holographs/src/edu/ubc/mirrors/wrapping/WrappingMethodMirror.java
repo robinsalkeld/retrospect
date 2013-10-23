@@ -42,6 +42,20 @@ public class WrappingMethodMirror implements MethodMirror {
     }
     
     @Override
+    public final boolean equals(Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+        
+        return ((WrappingMethodMirror)obj).wrapped.equals(wrapped);
+    }
+    
+    @Override
+    public final int hashCode() {
+        return 47 * wrapped.hashCode();
+    }
+    
+    @Override
     public Object invoke(ThreadMirror thread, ObjectMirror obj, Object... args)
             throws IllegalArgumentException, IllegalAccessException,
             MirrorInvocationTargetException {

@@ -43,6 +43,20 @@ public class ConstructorHolograph implements ConstructorMirror {
         this.wrapped = wrapped;
     }
 
+    @Override
+    public final boolean equals(Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+        
+        return ((ConstructorHolograph)obj).wrapped.equals(wrapped);
+    }
+    
+    @Override
+    public final int hashCode() {
+        return 47 * wrapped.hashCode();
+    }
+    
     private ConstructorMirror getBytecodeConstructor() {
 	if (bytecodeConstructor == null) {
 	    try {

@@ -21,6 +21,9 @@
  ******************************************************************************/
 package edu.ubc.retrospect;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.aspectj.weaver.ConcreteTypeMunger;
 import org.aspectj.weaver.CrosscuttingMembersSet;
 import org.aspectj.weaver.ReferenceType;
@@ -28,6 +31,9 @@ import org.aspectj.weaver.ShadowMunger;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.EventDispatch;
+import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -61,10 +67,37 @@ public class MirrorWeaver {
                 mirrorMunger.munge(this);
             }
             
+            final Set<MirrorEvent> joinpointEvents = new HashSet<MirrorEvent>();
             for (ShadowMunger munger : xcutSet.getShadowMungers()) {
                 AdviceMirror advice = (AdviceMirror)munger;
-                advice.install();
+                for (MirrorEventRequest request : advice.extractRequests()) {
+                    world.vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
+                        @Override
+                        public void handle(MirrorEvent event) {
+                            joinpointEvents.add(event);
+                        }
+                    });
+                    request.enable();
+                }
             }
+            
+            world.vm.dispatch().addSetCallback(new Runnable() {
+                public void run() {
+                    HashSet<MirrorEventShadow> shadows = new HashSet<MirrorEventShadow>();
+                    for (MirrorEvent event : joinpointEvents) {
+                        shadows.add(MirrorEventShadow.make(world, event));
+                    }
+                    for (MirrorEventShadow shadow : shadows) {
+                        for (ShadowMunger munger : xcutSet.getShadowMungers()) {
+                            if (munger.match(shadow, world)) {
+                                shadow.addMunger(munger);
+                            }
+                        }
+                        shadow.implement();
+                    }
+                    joinpointEvents.clear();
+                }
+            });
             
             ThreadHolograph.lowerMetalevel();
         } finally {

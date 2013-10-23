@@ -2,10 +2,8 @@ package edu.ubc.retrospect;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
@@ -21,19 +19,14 @@ import org.aspectj.weaver.World;
 import org.aspectj.weaver.ast.Expr;
 import org.aspectj.weaver.ast.FieldGet;
 import org.aspectj.weaver.ast.Test;
-import org.aspectj.weaver.patterns.AndPointcut;
 import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.aspectj.weaver.patterns.PointcutRewriter;
 
-import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
-import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.retrospect.MirrorWorld.PointcutCallback;
 
 public class AdviceMirror extends Advice {
     private static final Member cflowCounterIncMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
@@ -53,51 +46,6 @@ public class AdviceMirror extends Advice {
         this(world, new AjAttribute.AdviceAttribute(kind, pointcut, 0, pointcut.getStart(), pointcut.getEnd(), pointcut.getSourceContext()), concreteAspect, signature, pointcut);
     }
 
-    private void installPointcutCallback(MirrorEventRequestManager manager, final AdviceKind kind, final Pointcut pc, final PointcutCallback callback) {
-        Pointcut dnf = new PointcutRewriter().rewrite(pc);
-        List<Pointcut> actualDNF = disjuncts(dnf);
-        final Set<MirrorEvent> joinpointEvents = new HashSet<MirrorEvent>();
-        
-        for (Pointcut disjunct : actualDNF) {
-            List<MirrorEventRequest> requests = extractRequests(manager, kind, disjunct);
-            
-            for (MirrorEventRequest request : requests) {
-                world.vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
-                    @Override
-                    public void handle(MirrorEvent event) {
-                        joinpointEvents.add(event);
-                    }
-                });
-                request.enable();
-            }
-        }
-    
-        world.vm.dispatch().addSetCallback(new Runnable() {
-            @Override
-            public void run() {
-                // Note the break below - each pointcut should only apply at most once to
-                // each joinpoint, even if there are multiple events at that joinpoint
-                // that match.
-                for (MirrorEvent event : joinpointEvents) {
-                    MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
-                    if (implementOn(shadow)) {
-                        break;
-                    }
-                }
-                joinpointEvents.clear();
-            }
-        });
-    }
-    
-    public void install() {
-        MirrorEventRequestManager manager = world.vm.eventRequestManager();
-        installPointcutCallback(manager, kind, pointcut, new PointcutCallback() {
-            public void call(MirrorEventShadow shadow, ExposedState state) {
-                execute(shadow, state);
-            }
-        });
-    }
-    
     // Collect DNF assuming the argument is already a DNF pointcut
     private List<Pointcut> disjuncts(Pointcut pc) {
         if (pc instanceof OrPointcut) {
@@ -113,22 +61,14 @@ public class AdviceMirror extends Advice {
         }
     }
 
-    private List<Pointcut> conjuncts(Pointcut pc) {
-        if (pc instanceof AndPointcut) {
-            AndPointcut or = (AndPointcut)pc;
-            List<Pointcut> result = new ArrayList<Pointcut>();
-            result.addAll(conjuncts(or.getLeft()));
-            result.addAll(conjuncts(or.getRight()));
-            return result;
-        } else {
-            List<Pointcut> result = new ArrayList<Pointcut>(1);
-            result.add(pc);
-            return result;
+    List<MirrorEventRequest> extractRequests() {
+        List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();
+        Pointcut dnf = new PointcutRewriter().rewrite(pointcut);
+        List<Pointcut> actualDNF = disjuncts(dnf);
+        for (Pointcut disjunct : actualDNF) {
+            requests.addAll(PointcutMirrorRequestExtractor.extractRequests(world.vm, kind, disjunct));
         }
-    }
-
-    private List<MirrorEventRequest> extractRequests(MirrorEventRequestManager manager, AdviceKind adviceKind, Pointcut disjunct) {
-        return PointcutMirrorRequestExtractor.extractRequests(world.vm, adviceKind, disjunct);
+        return requests;
     }
 
     public void execute(MirrorEventShadow shadow, ExposedState state) {
@@ -268,5 +208,23 @@ public class AdviceMirror extends Advice {
     @Override
     public boolean mustCheckExceptions() {
         return false;
+    }
+    
+    @Override
+    public boolean match(Shadow shadow, World world) {
+        if (!super.match(shadow, world)) {
+            return false;
+        }
+        
+        if (kind.isCflow()) {
+            return true;
+        }
+        
+        MirrorEventShadow eventShadow = (MirrorEventShadow)shadow;
+        if (eventShadow.isEntry()) {
+            return !kind.isAfter();
+        } else {
+            return kind.isAfter();
+        }
     }
 }

@@ -32,6 +32,7 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.wrapping.WrappingMethodMirror;
 
 public class MethodHolograph implements MethodMirror {
 
@@ -46,6 +47,20 @@ public class MethodHolograph implements MethodMirror {
         this.wrapped = wrapped;
     }
 
+    @Override
+    public final boolean equals(Object obj) {
+        if (obj == null || !getClass().equals(obj.getClass())) {
+            return false;
+        }
+        
+        return ((MethodHolograph)obj).wrapped.equals(wrapped);
+    }
+    
+    @Override
+    public final int hashCode() {
+        return 47 * wrapped.hashCode();
+    }
+    
     private MethodMirror getBytecodeMethod() {
 	if (bytecodeMethod == null) {
 	    try {

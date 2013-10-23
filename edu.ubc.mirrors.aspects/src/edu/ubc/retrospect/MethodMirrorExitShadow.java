@@ -20,6 +20,17 @@ public class MethodMirrorExitShadow extends MirrorEventShadow {
     }
 
     @Override
+    protected boolean equals(MirrorEventShadow other) {
+        MethodMirrorExitShadow shadow = (MethodMirrorExitShadow)other;
+        return event.method().equals(shadow.event.method());
+    }
+    
+    @Override
+    public int hashCode() {
+        return event.method().hashCode();
+    }
+    
+    @Override
     public boolean isEntry() {
         return false;
     }
