@@ -3,5 +3,6 @@ Bundle-ManifestVersion: 2
 Bundle-Name: edu.ubc.mirrors.tod
 Bundle-SymbolicName: edu.ubc.mirrors.tod;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Require-Bundle: tod.plugin;bundle-version="0.9.7"
-Import-Package: edu.ubc.mirrors
+Require-Bundle: tod.plugin
+Import-Package: edu.ubc.mirrors,
+ org.eclipse.equinox.app;version="1.1.0"

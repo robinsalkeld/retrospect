@@ -3,6 +3,7 @@ package edu.ubc.retrospect;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.regex.Pattern;
 
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.runtime.reflect.Factory;
@@ -251,9 +252,11 @@ public class MirrorWorld extends World {
     }
     
     public Pointcut parsePointcut(String expr) {
-        Pointcut pc = new PatternParser(expr).parsePointcut();
-        pc.setLocation(SourceContextImpl.UNKNOWN_SOURCE_CONTEXT, 0, 0);
-        return pc;
+        // Crappy workaround to the AspectJ compiler transforming "lock()" to "lock(* *)",
+        // which the weaver parser then can't parse!
+        expr = expr.replaceAll(Pattern.quote("lock(* *)"), "lock()");
+        
+        return new PatternParser(expr, SourceContextImpl.UNKNOWN_SOURCE_CONTEXT).parsePointcut();
     }
     
     public Pointcut resolvePointcut(Member signature, Pointcut pointcut) {

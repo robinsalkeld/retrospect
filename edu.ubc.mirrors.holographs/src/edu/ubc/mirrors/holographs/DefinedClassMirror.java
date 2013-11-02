@@ -28,11 +28,7 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.ClassMirrorPrepareEvent;
-import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.EventDispatch.EventCallback;
-import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;

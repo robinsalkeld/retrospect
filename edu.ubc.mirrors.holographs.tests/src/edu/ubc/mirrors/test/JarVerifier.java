@@ -63,15 +63,7 @@ public class JarVerifier implements IApplication {
                 Collections.<String, String>emptyMap(), 
                 new ConsoleProgressListener(System.out));
         
-        // Create an instance of the mirrors API backed by the snapshot
-        HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
-        
-        // Create a holograph VM
-        Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
-        
-        VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm, 
-                HeapDumpVirtualMachineMirror.defaultHolographicVMClassCacheDir(snapshot),
-                mappedFiles);
+        VirtualMachineHolograph holographVM = HeapDumpVirtualMachineMirror.holographicVMWithIniFile(snapshot);
         
         new JarVerifier().verifyJars(holographVM);
     }

@@ -86,4 +86,16 @@
          </run>
       </application>
    </extension>
+   <extension
+         id="edu.ubc.mirrors.holographs.tests.DebuggingTest"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="edu.ubc.mirrors.test.DebuggingTest">
+         </run>
+      </application>
+   </extension>
 </plugin>

@@ -34,6 +34,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.DoubleArrayMirror;
+import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.FrameMirror;
@@ -53,9 +54,11 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
 
     protected final VirtualMachineMirror wrappedVM;
+    private final EventDispatch dispatch;
     
     public WrappingVirtualMachine(VirtualMachineMirror wrappedVM) {
         this.wrappedVM = wrappedVM;
+        this.dispatch = new EventDispatch(this);
     }
     
     public VirtualMachineMirror getWrappedVM() {
@@ -307,5 +310,10 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     @Override
     public InstanceMirror getInternedString(String s) {
         return (InstanceMirror)getWrappedMirror(wrappedVM.getInternedString(s));
+    }
+    
+    @Override
+    public EventDispatch dispatch() {
+        return dispatch;
     }
 }

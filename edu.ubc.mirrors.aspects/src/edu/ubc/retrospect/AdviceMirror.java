@@ -24,7 +24,9 @@ import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.aspectj.weaver.patterns.PointcutRewriter;
 
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 
@@ -61,14 +63,9 @@ public class AdviceMirror extends Advice {
         }
     }
 
-    List<MirrorEventRequest> extractRequests() {
-        List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();
+    void installCallback(Callback<MirrorEvent> callback) {
         Pointcut dnf = new PointcutRewriter().rewrite(pointcut);
-        List<Pointcut> actualDNF = disjuncts(dnf);
-        for (Pointcut disjunct : actualDNF) {
-            requests.addAll(PointcutMirrorRequestExtractor.extractRequests(world.vm, kind, disjunct));
-        }
-        return requests;
+        PointcutMirrorRequestExtractor.installCallback(world, kind, dnf, callback);
     }
 
     public void execute(MirrorEventShadow shadow, ExposedState state) {

@@ -36,6 +36,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
@@ -123,9 +124,8 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public FieldMirrorSetRequest createFieldMirrorSetRequest(ClassMirror klass, String fieldName) {
-	// TODO-RS: Doh again on fixing the field API
-	Field f = ((JDIClassMirror)klass).refType.fieldByName(fieldName);
+    public FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror fieldMirror) {
+	Field f = ((JDIFieldMirror)fieldMirror).field;
 	return new JDIFieldMirrorSetRequest(vm, wrapped.createModificationWatchpointRequest(f));
     }
 

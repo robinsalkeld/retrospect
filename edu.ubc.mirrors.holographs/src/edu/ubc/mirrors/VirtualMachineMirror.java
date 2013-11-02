@@ -25,6 +25,8 @@ import java.util.List;
 
 public interface VirtualMachineMirror {
 
+    public EventDispatch dispatch();
+    
     public ClassMirror findBootstrapClassMirror(String name);
     
     public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len);

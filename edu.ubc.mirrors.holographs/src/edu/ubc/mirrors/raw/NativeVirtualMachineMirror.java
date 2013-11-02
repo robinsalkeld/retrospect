@@ -29,6 +29,7 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
@@ -165,6 +166,11 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public InstanceMirror getInternedString(String s) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public EventDispatch dispatch() {
         throw new UnsupportedOperationException();
     }
 }

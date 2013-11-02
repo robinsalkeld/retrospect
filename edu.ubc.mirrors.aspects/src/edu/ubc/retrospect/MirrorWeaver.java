@@ -29,9 +29,9 @@ import org.aspectj.weaver.CrosscuttingMembersSet;
 import org.aspectj.weaver.ReferenceType;
 import org.aspectj.weaver.ShadowMunger;
 
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -70,15 +70,11 @@ public class MirrorWeaver {
             final Set<MirrorEvent> joinpointEvents = new HashSet<MirrorEvent>();
             for (ShadowMunger munger : xcutSet.getShadowMungers()) {
                 AdviceMirror advice = (AdviceMirror)munger;
-                for (MirrorEventRequest request : advice.extractRequests()) {
-                    world.vm.dispatch().addCallback(request, new EventDispatch.EventCallback() {
-                        @Override
-                        public void handle(MirrorEvent event) {
-                            joinpointEvents.add(event);
-                        }
-                    });
-                    request.enable();
-                }
+                advice.installCallback(new Callback<MirrorEvent>() {
+                    public void handle(MirrorEvent event) {
+                        joinpointEvents.add(event);
+                    }
+                });
             }
             
             world.vm.dispatch().addSetCallback(new Runnable() {

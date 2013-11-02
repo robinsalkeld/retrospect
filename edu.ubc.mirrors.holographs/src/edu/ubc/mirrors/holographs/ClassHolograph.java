@@ -43,6 +43,7 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ClassMirrorPrepareEvent;
@@ -57,7 +58,6 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.EventDispatch.EventCallback;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
 import edu.ubc.mirrors.fieldmap.FieldMapFieldMirror;
@@ -69,7 +69,6 @@ import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
-import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
 
 public class ClassHolograph extends WrappingClassMirror implements MirrorInvocationHandler {
 
@@ -842,7 +841,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         if (vm.canBeModified()) {
             ClassMirrorPrepareRequest request = vm.eventRequestManager().createClassMirrorPrepareRequest();
             request.addClassFilter(getClassName());
-            vm.dispatch().addCallback(request, new EventCallback() {
+            vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
                 @Override
                 public void handle(MirrorEvent event) {
                     ClassMirrorPrepareEvent prepareEvent = (ClassMirrorPrepareEvent)event;

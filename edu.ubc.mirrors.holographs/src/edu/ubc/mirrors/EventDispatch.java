@@ -27,11 +27,6 @@ import java.util.concurrent.Semaphore;
 
 public class EventDispatch {
 
-    public static interface EventCallback {
-	
-	public void handle(MirrorEvent event);
-    }
-    
     private static class CallbackThread extends Thread {
 	
 	private MirrorEvent event;
@@ -67,10 +62,10 @@ public class EventDispatch {
     }
     
     @SuppressWarnings("unchecked")
-    public void addCallback(MirrorEventRequest request, EventCallback callback) {
-	List<EventCallback> callbacks = (List<EventCallback>)request.getProperty(CALLBACKS_KEY);
+    public void addCallback(MirrorEventRequest request, Callback<MirrorEvent> callback) {
+	List<Callback<MirrorEvent>> callbacks = (List<Callback<MirrorEvent>>)request.getProperty(CALLBACKS_KEY);
 	if (callbacks == null) {
-	    callbacks = new ArrayList<EventCallback>();
+	    callbacks = new ArrayList<Callback<MirrorEvent>>();
 	    request.putProperty(CALLBACKS_KEY, callbacks);
 	}
 	callbacks.add(callback);
@@ -80,13 +75,14 @@ public class EventDispatch {
 	eventSetCallbacks.add(callback);
     }
     
+    @SuppressWarnings("unchecked")
     public static void handleEvent(MirrorEvent event) {
 	MirrorEventRequest request = event.request();
 	if (request != null) {
 	    List<?> callbacks = (List<?>)request.getProperty(CALLBACKS_KEY);
 	    if (callbacks != null) {
 		for (Object callback : callbacks) {
-		    ((EventCallback)callback).handle(event);
+		    ((Callback<MirrorEvent>)callback).handle(event);
 		}
 	    }
 	}
@@ -110,4 +106,16 @@ public class EventDispatch {
 	}
     }
     
+    public void forAllClasses(final Callback<ClassMirror> callback) {
+        for (ClassMirror klass : vm.findAllClasses()) {
+            callback.handle(klass);
+        }
+        ClassMirrorPrepareRequest request = vm.eventRequestManager().createClassMirrorPrepareRequest();
+        addCallback(request, new Callback<MirrorEvent>() {
+            public void handle(MirrorEvent t) {
+                ClassMirrorPrepareEvent event = (ClassMirrorPrepareEvent)t;
+                callback.handle(event.classMirror());
+            }
+        });
+    }
 }

@@ -55,6 +55,7 @@ import com.sun.jdi.VirtualMachine;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
@@ -67,13 +68,15 @@ import edu.ubc.mirrors.raw.ArrayClassMirror;
 public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 
     protected final VirtualMachine jdiVM;
-
+    private final EventDispatch dispatch;
+    
     private final Map<Mirror, ObjectMirror> mirrors = new HashMap<Mirror, ObjectMirror>();
     
     private final Map<String, ClassMirror> bootstrapClasses = new HashMap<String, ClassMirror>();
     
     public JDIVirtualMachineMirror(VirtualMachine jdiVM) {
         this.jdiVM = jdiVM;
+        this.dispatch = new EventDispatch(this);
     }
     
     @Override
@@ -370,5 +373,10 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public InstanceMirror getInternedString(String s) {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public EventDispatch dispatch() {
+        return dispatch;
     }
 }

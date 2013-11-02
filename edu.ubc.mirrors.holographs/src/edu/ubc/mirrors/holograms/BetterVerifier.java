@@ -129,6 +129,7 @@ public class BetterVerifier extends SimpleVerifier {
         return Reflection.isAssignableFrom(tNode, uNode);
     }
     
+    // Overridden just to provide a good breakpoint
     protected boolean isSubTypeOf(final BasicValue value, final BasicValue expected) {
         boolean result = super.isSubTypeOf(value, expected);
         if (!result && (value.getType().getSort() == Type.OBJECT && expected.getType().getSort() == Type.OBJECT ||

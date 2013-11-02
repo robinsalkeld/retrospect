@@ -6,7 +6,7 @@
       <query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.LoadAndRunAnalysisCodeQuery">
       </query>
-      <query
+      <!--query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.CollectionValuesQuery">
       </query>
       <query
@@ -14,15 +14,15 @@
       </query>
       <query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.SystemPropertiesQuery">
-      </query>
+      </query-->
       <query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery">
       </query>
-      <query
+      <!--query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.SaveObjectListQuery">
       </query>
       <query
             impl="edu.ubc.mirrors.eclipse.mat.plugins.LoadObjectListQuery">
-      </query>
+      </query-->
    </extension>
 </plugin>

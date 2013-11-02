@@ -58,6 +58,7 @@ import org.objectweb.asm.Type;
 import sun.misc.FileURLMapper;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -65,7 +66,6 @@ import edu.ubc.mirrors.ClassMirrorPrepareEvent;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.DoubleArrayMirror;
-import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
@@ -85,7 +85,6 @@ import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holograms.HologramVirtualMachine;
 import edu.ubc.mirrors.holograms.Stopwatch;
@@ -102,9 +101,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     private final File bytecodeCacheDir;
     
     private final HologramVirtualMachine hologramVM;
-    
-    // TODO-RS: Expose this more generally?
-    private final EventDispatch dispatch;
     
     private final HologramClassLoader hologramBootstrapLoader;
     
@@ -157,7 +153,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         this.hologramVM = new HologramVirtualMachine(this);
         this.hologramBootstrapLoader = new HologramClassLoader(this, null);
         this.mappedFiles = mappedFiles;
-        this.dispatch = new EventDispatch(this);
         
         List<URL> bootstrapPath = extractBootstrapPath(wrappedVM);
         List<URL> filteredURLs = new ArrayList<URL>();
@@ -224,10 +219,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-    
-    public EventDispatch dispatch() {
-	return dispatch;
     }
     
     private List<URL> extractBootstrapPath(VirtualMachineMirror wrappedVM) {
@@ -302,7 +293,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                         MirrorEventRequestManager erm = eventRequestManager();
                         ClassMirrorPrepareRequest request = erm.createClassMirrorPrepareRequest();
                         request.addClassFilter(ZipFile.class.getName());
-                        dispatch.addCallback(request, ZIP_FILE_CREATED_CALLBACK);
+                        dispatch().addCallback(request, ZIP_FILE_CREATED_CALLBACK);
                         request.enable();
                     }
                     return null;
@@ -313,7 +304,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
     }
     
-    private final EventDispatch.EventCallback ZIP_FILE_CREATED_CALLBACK = new EventDispatch.EventCallback() {
+    private final Callback<MirrorEvent> ZIP_FILE_CREATED_CALLBACK = new Callback<MirrorEvent>() {
 	public void handle(MirrorEvent event) {
 	    if (event instanceof FieldMirrorSetEvent) {
     	    	FieldMirrorSetEvent fieldSetEvent = (FieldMirrorSetEvent)event;
@@ -329,8 +320,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     	    	}
 	    } else if (event instanceof ClassMirrorPrepareEvent) {
 		ClassMirror zipFileClass = ((ClassMirrorPrepareEvent)event).classMirror();
-		FieldMirrorSetRequest request = eventRequestManager().createFieldMirrorSetRequest(zipFileClass, "name");
-	        dispatch.addCallback(request, this);
+		FieldMirror nameField = zipFileClass.getDeclaredField("name");
+		FieldMirrorSetRequest request = eventRequestManager().createFieldMirrorSetRequest(nameField);
+	        dispatch().addCallback(request, this);
 	        request.enable();
 	    }
 	}

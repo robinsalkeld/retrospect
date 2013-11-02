@@ -41,7 +41,7 @@ public interface MirrorEventRequestManager {
     
     List<ConstructorMirrorExitRequest> constructorMirrorExitRequests();
     
-    FieldMirrorSetRequest createFieldMirrorSetRequest(ClassMirror klass, String fieldName);
+    FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror field);
     
     List<FieldMirrorSetRequest> fieldMirrorSetRequests();
     

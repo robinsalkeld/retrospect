@@ -37,13 +37,13 @@ import edu.ubc.mirrors.test.PrintOSGiBundles;
 
 public class OopslaPaperExamples {
 
-public IObject mapLookupMeta(IObject map, String key) {
+public IObject getProperty(IObject props, String key) {
         
-    IObjectArray entries = (IObjectArray)map.getField("entries");
-    for (int i = 0; i < entries.length(); i++) {
-        IObject entry = entries.getElement(i);  
-        if (entry.getField("key").equals(key)) {
-            entry.getField("value");
+    IObjectArray headers = (IObjectArray)map.getField("headers");
+    IObjectArray values = (IObjectArray)map.getField("values");
+    for (int i = 0; i < headers.length(); i++) {
+        if (headers.getElement(i).equals(key)) {
+            return values.getElement(i);
         }
     }
     return null;
