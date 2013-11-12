@@ -77,4 +77,8 @@ public class WrappingFieldMirror implements FieldMirror {
     public String toString() {
         return getClass().getSimpleName() + " on " + wrapped;
     }
+    
+    public FieldMirror getWrapped() {
+        return wrapped;
+    }
 }

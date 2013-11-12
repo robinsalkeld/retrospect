@@ -37,6 +37,7 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
@@ -121,6 +122,21 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 	    }
 	}
 	return result;
+    }
+
+    @Override
+    public FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror fieldMirror) {
+        Field f = ((JDIFieldMirror)fieldMirror).field;
+        return new JDIFieldMirrorGetRequest(vm, wrapped.createAccessWatchpointRequest(f));
+    }
+
+    @Override
+    public List<FieldMirrorGetRequest> fieldMirrorGetRequests() {
+        List<FieldMirrorGetRequest> result = new ArrayList<FieldMirrorGetRequest>();
+        for (ModificationWatchpointRequest r : wrapped.modificationWatchpointRequests()) {
+            result.add((FieldMirrorGetRequest)r.getProperty(JDIEventRequest.MIRROR_WRAPPER));
+        }
+        return result;
     }
 
     @Override

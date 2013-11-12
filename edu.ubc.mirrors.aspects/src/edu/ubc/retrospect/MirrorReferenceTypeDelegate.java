@@ -293,20 +293,4 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
     private ResolvedType forClassMirror(ClassMirror klass) {
         return getWorld().resolve(klass);
     }
-    
-    InstanceMirror getInstance() {
-        if (instance == null) {
-            try {
-                ConstructorMirror constructor = klass.getConstructor();
-                instance = constructor.newInstance(getWorld().thread);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (MirrorInvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return instance;    
-    }
 }

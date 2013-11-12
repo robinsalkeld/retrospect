@@ -443,7 +443,18 @@ public class HologramClassLoader extends ClassLoader {
         if (isArrayClass) {
             HologramClassGenerator.generateArray(visitor, this, hologramClassMirror);
         } else {
+            visitor = new FrameRemover(visitor);
             visitor = new HologramClassGenerator(original, visitor);
+            if (vm.getBytecodeCacheDir() != null) {
+                File txtFile = createClassFile(cacheIndex, internalName + ".afterrename.txt");
+                PrintWriter textFileWriter;
+                try {
+                    textFileWriter = new PrintWriter(txtFile);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                visitor = new TraceClassVisitor(visitor, textFileWriter);
+            }
             visitor = new RemappingClassAdapter(visitor, HologramClassGenerator.REMAPPER);
             if (vm.getBytecodeCacheDir() != null) {
                 File txtFile = createClassFile(cacheIndex, internalName + ".afterframes.txt");
@@ -453,13 +464,14 @@ public class HologramClassLoader extends ClassLoader {
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
                 }
-                ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
-                ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), traceVisitor, true, false);
-                byte[] bytecode = hologramClassMirror.getOriginal().getBytecode();
-                if (bytecode == null) {
-                    hologramClassMirror.getOriginal().getBytecode();
-                }
-                new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
+                visitor = new TraceClassVisitor(visitor, textFileWriter);
+//                ClassVisitor traceVisitor = new TraceClassVisitor(null, textFileWriter);
+//                ClassVisitor frameGenerator = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), traceVisitor, true, false);
+//                byte[] bytecode = hologramClassMirror.getOriginal().getBytecode();
+//                if (bytecode == null) {
+//                    hologramClassMirror.getOriginal().getBytecode();
+//                }
+//                new ClassReader(bytecode).accept(frameGenerator, ClassReader.EXPAND_FRAMES);
             }
             visitor = new FrameAnalyzerAdaptor(original.getVM(), original.getLoader(), visitor, true, false);
             if (vm.getBytecodeCacheDir() != null) {

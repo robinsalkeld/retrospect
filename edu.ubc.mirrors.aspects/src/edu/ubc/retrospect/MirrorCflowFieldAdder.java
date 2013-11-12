@@ -22,7 +22,12 @@ public class MirrorCflowFieldAdder extends MirrorTypeMunger {
     public void munge(MirrorWeaver weaver) {
         ClassMirror klass = weaver.getWorld().mirrorForType(aspectType);
         ClassMirror fieldType = weaver.getWorld().mirrorForType(weaver.getWorld().resolve(cflowField.getType()));
-        FieldMirror field = klass.createField(cflowField.getModifiers(), fieldType, cflowField.getName());
+        // TODO-RS: Need to check for the field already existing because of compile-time weaving.
+        // Ideally the source aspect should probably just be compiled and not woven against itself.
+        FieldMirror field = klass.getDeclaredField(cflowField.getName());
+        if (field == null) {
+            field = klass.createField(cflowField.getModifiers(), fieldType, cflowField.getName());
+        }
         
         try {
             InstanceMirror value = fieldType.getConstructor().newInstance(weaver.getWorld().thread);

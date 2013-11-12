@@ -13,8 +13,11 @@ import org.aspectj.weaver.ast.Expr;
 import org.aspectj.weaver.ast.Test;
 import org.aspectj.weaver.ast.Var;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
 import edu.ubc.mirrors.ConstructorMirrorExitEvent;
+import edu.ubc.mirrors.FieldMirrorGetEvent;
+import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
@@ -75,6 +78,12 @@ public abstract class MirrorEventShadow extends Shadow {
         return getEvaluator().evaluateCall(obj, method, args);
     }
     
+    @Override
+    public ResolvedType getEnclosingType() {
+        return world.resolve(getDeclaringClass());
+    }
+    
+    protected abstract ClassMirror getDeclaringClass();
     
     public abstract boolean isEntry();
     
@@ -93,7 +102,7 @@ public abstract class MirrorEventShadow extends Shadow {
 
     public abstract ThreadMirror getThread();
     
-    protected Object getThis() {
+    protected InstanceMirror getThis() {
         return getThread().getStackTrace().get(0).thisObject();
     }
     
@@ -126,6 +135,14 @@ public abstract class MirrorEventShadow extends Shadow {
             MethodMirrorExitEvent mmee = (MethodMirrorExitEvent)event;
             Member signature = MethodMirrorMember.make(world, mmee.method());
             return new MethodMirrorExitShadow(world, mmee, signature, null);
+        } else if (event instanceof FieldMirrorGetEvent) {
+            FieldMirrorGetEvent fmge = (FieldMirrorGetEvent)event;
+            Member signature = FieldMirrorMember.make(world, fmge.field());
+            return new FieldMirrorGetShadow(world, fmge, signature, null);
+        } else if (event instanceof FieldMirrorSetEvent) {
+            FieldMirrorSetEvent fmge = (FieldMirrorSetEvent)event;
+            Member signature = FieldMirrorMember.make(world, fmge.field());
+            return new FieldMirrorSetShadow(world, fmge, signature, null);
         } else {
             throw new IllegalArgumentException();
         }
@@ -154,7 +171,8 @@ public abstract class MirrorEventShadow extends Shadow {
 
     @Override
     public Var getThisJoinPointStaticPartVar() {
-        return null;
+        ResolvedType joinPointStaticPartType = world.resolve(UnresolvedType.forName(JoinPoint.StaticPart.class.getName()));
+        return new MirrorEventVar(joinPointStaticPartType, world.makeStaticJoinPoint(getThread(), event));
     }
 
     @Override

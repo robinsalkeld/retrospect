@@ -19,43 +19,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-package edu.ubc.mirrors.jdi;
+package edu.ubc.mirrors.wrapping;
 
-import com.sun.jdi.event.ModificationWatchpointEvent;
+import edu.ubc.mirrors.FieldMirrorGetRequest;
+import edu.ubc.mirrors.FieldMirrorSetRequest;
 
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.FieldMirrorSetEvent;
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.ThreadMirror;
+public class WrappingFieldMirrorGetRequest extends WrappingMirrorEventRequest implements FieldMirrorGetRequest {
 
-public class JDIFieldMirrorSetEvent extends JDIMirrorEvent implements FieldMirrorSetEvent {
-
-    private final ModificationWatchpointEvent wrapped;
+    private final FieldMirrorGetRequest wrapped;
     
-    public JDIFieldMirrorSetEvent(JDIVirtualMachineMirror vm, ModificationWatchpointEvent wrapped) {
+    public WrappingFieldMirrorGetRequest(WrappingVirtualMachine vm, FieldMirrorGetRequest wrapped) {
 	super(vm, wrapped);
 	this.wrapped = wrapped;
     }
 
-    @Override
-    public ThreadMirror thread() {
-        return (ThreadMirror)vm.makeMirror(wrapped.thread());
-    }
-    
-    @Override
-    public InstanceMirror instance() {
-	return (InstanceMirror)vm.makeMirror(wrapped.object());
-    }
-
-    @Override
-    public FieldMirror field() {
-	return new JDIFieldMirror(vm, wrapped.field());
-    }
-
-    @Override
-    public Object newValue() {
-	return vm.wrapValue(wrapped.valueToBe());
-    }
 
 }

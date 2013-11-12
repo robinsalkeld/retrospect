@@ -28,6 +28,7 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
@@ -88,6 +89,18 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public List<ConstructorMirrorExitRequest> constructorMirrorExitRequests() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror field) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<FieldMirrorGetRequest> fieldMirrorGetRequests() {
         // TODO Auto-generated method stub
         return null;
     }

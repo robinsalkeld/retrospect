@@ -24,7 +24,7 @@ public class FieldMirrorMember extends ResolvedMemberImpl {
     
     public static FieldMirrorMember make(MirrorWorld world, FieldMirror field) {
         UnresolvedType declaringType = world.resolve(field.getDeclaringClass());
-        UnresolvedType returnType = world.resolve(field.getType());
+        UnresolvedType returnType = UnresolvedType.forName(field.getTypeName());
         
         return new FieldMirrorMember(field, declaringType, field.getModifiers(), returnType, field.getName());
     }

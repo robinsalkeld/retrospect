@@ -308,10 +308,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	public void handle(MirrorEvent event) {
 	    if (event instanceof FieldMirrorSetEvent) {
     	    	FieldMirrorSetEvent fieldSetEvent = (FieldMirrorSetEvent)event;
-    	    	if (fieldSetEvent.classMirror().getClassName().equals(ZipFile.class.getName()) && fieldSetEvent.fieldName().equals("name")) {
+    	    	if (fieldSetEvent.field().getDeclaringClass().getClassName().equals(ZipFile.class.getName()) && fieldSetEvent.field().getName().equals("name")) {
     	    	    InstanceMirror zipFileMirror = fieldSetEvent.instance();
     	    	    try {
-			long address = zipFileMirror.getLong(fieldSetEvent.classMirror().getDeclaredField("jzfile"));
+			long address = zipFileMirror.getLong(fieldSetEvent.field().getDeclaringClass().getDeclaredField("jzfile"));
 			String path = Reflection.getRealStringForMirror((InstanceMirror)fieldSetEvent.newValue());
 			zipPathsByAddress.put(address, new File(path));
 		    } catch (IllegalAccessException e) {
@@ -667,7 +667,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             return result;
         }
         
-        ClassMirror primitiveClass = new PrimitiveClassMirror(this, name, null);
+        ClassMirror primitiveClass = new PrimitiveClassMirror(wrappedVM, name, null);
         ClassHolograph newClassHolograph = (ClassHolograph)getWrappedClassMirror(primitiveClass);
         dynamicallyDefinedClasses.put(name, newClassHolograph);
 

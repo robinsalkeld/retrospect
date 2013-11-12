@@ -40,6 +40,10 @@ public interface MirrorEventRequestManager {
     ConstructorMirrorExitRequest createConstructorMirrorExitRequest();
     
     List<ConstructorMirrorExitRequest> constructorMirrorExitRequests();
+
+    FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror field);
+
+    List<FieldMirrorGetRequest> fieldMirrorGetRequests();
     
     FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror field);
     
@@ -54,5 +58,6 @@ public interface MirrorEventRequestManager {
     ThreadMirrorStartRequest createThreadMirrorStartRequest();
     
     void deleteMirrorEventRequest(MirrorEventRequest request);
+
 
 }

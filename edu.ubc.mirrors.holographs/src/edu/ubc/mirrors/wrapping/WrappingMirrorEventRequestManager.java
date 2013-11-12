@@ -28,6 +28,7 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
@@ -87,14 +88,25 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
 
     @Override
-    public FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror field) {
+    public FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror field) {
 	FieldMirror unwrappedField = vm.unwrapFieldMirror(field);
-	return new WrappingFieldMirrorSetRequest(vm, wrapped.createFieldMirrorSetRequest(unwrappedField));
+	return new WrappingFieldMirrorGetRequest(vm, wrapped.createFieldMirrorGetRequest(unwrappedField));
+    }
+
+    @Override
+    public List<FieldMirrorGetRequest> fieldMirrorGetRequests() {
+	throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror field) {
+        FieldMirror unwrappedField = vm.unwrapFieldMirror(field);
+        return new WrappingFieldMirrorSetRequest(vm, wrapped.createFieldMirrorSetRequest(unwrappedField));
     }
 
     @Override
     public List<FieldMirrorSetRequest> fieldMirrorSetRequests() {
-	throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override

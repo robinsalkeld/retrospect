@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
@@ -75,10 +76,13 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
 	    } else {
 		return null;
 	    }
+	} else if (e instanceof AccessWatchpointEvent) {
+	    AccessWatchpointEvent awe = (AccessWatchpointEvent)e;
+	    return new JDIFieldMirrorGetEvent(vm, awe);
 	} else if (e instanceof ModificationWatchpointEvent) {
-	    ModificationWatchpointEvent mwe = (ModificationWatchpointEvent)e;
-	    return new JDIFieldMirrorSetEvent(vm, mwe);
-	} else if (e instanceof ClassPrepareEvent) {
+            ModificationWatchpointEvent mwe = (ModificationWatchpointEvent)e;
+            return new JDIFieldMirrorSetEvent(vm, mwe);
+        } else if (e instanceof ClassPrepareEvent) {
 	    ClassPrepareEvent cpe = (ClassPrepareEvent)e;
 	    return new JDIClassMirrorPrepareEvent(vm, cpe);
 	} else {

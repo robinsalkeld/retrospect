@@ -235,11 +235,12 @@ public class HologramMethodGenerator extends InstructionAdapter {
         boolean isStatic = (opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC);
 
         Type fieldType = Type.getType(desc);
+        int setValueLocal = -1;
         
         if (isStatic) {
             // For a static field the instance is null
-            int setValueLocal = lvs.newLocal(fieldType);
             if (isSet) {
+                setValueLocal = lvs.newLocal(fieldType);
                 store(setValueLocal, fieldType);
             }
             aconst(null);
@@ -252,8 +253,8 @@ public class HologramMethodGenerator extends InstructionAdapter {
             Object stackType = stackType(isSet ? 1 : 0);
             if (stackType == Opcodes.UNINITIALIZED_THIS) {
                 // Pop the original argument
-                int setValueLocal = lvs.newLocal(fieldType);
                 if (isSet) {
+                    setValueLocal = lvs.newLocal(fieldType);
                     store(setValueLocal, fieldType);
                 }
 

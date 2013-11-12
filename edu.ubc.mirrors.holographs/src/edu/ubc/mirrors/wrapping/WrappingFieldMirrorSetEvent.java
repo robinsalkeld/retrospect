@@ -21,9 +21,10 @@
  ******************************************************************************/
 package edu.ubc.mirrors.wrapping;
 
-import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingFieldMirrorSetEvent extends WrappingMirrorEvent implements FieldMirrorSetEvent {
 
@@ -35,18 +36,18 @@ public class WrappingFieldMirrorSetEvent extends WrappingMirrorEvent implements 
     }
 
     @Override
+    public ThreadMirror thread() {
+        return (ThreadMirror)vm.getWrappedMirror(wrapped.thread());
+    }
+    
+    @Override
     public InstanceMirror instance() {
 	return (InstanceMirror)vm.getWrappedMirror(wrapped.instance());
     }
 
     @Override
-    public ClassMirror classMirror() {
-	return (ClassMirror)vm.getWrappedMirror(wrapped.classMirror());
-    }
-
-    @Override
-    public String fieldName() {
-	return wrapped.fieldName();
+    public FieldMirror field() {
+	return vm.wrapFieldMirror(wrapped.field());
     }
 
     @Override

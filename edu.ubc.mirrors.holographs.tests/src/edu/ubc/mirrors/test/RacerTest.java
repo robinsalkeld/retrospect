@@ -22,36 +22,24 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
-import com.sun.jdi.event.MonitorContendedEnterEvent;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.MonitorContendedEnterRequest;
-import com.sun.jdi.request.MonitorContendedEnteredRequest;
-import com.sun.jdi.request.MonitorWaitRequest;
-import com.sun.jdi.request.MonitorWaitedRequest;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.EventDispatch;
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.retrospect.MirrorWeaver;
@@ -62,7 +50,7 @@ public class RacerTest {
         
         VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
         	"Task", 
-        	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Racer Test/bin\"",
+        	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Racer Test/bin\" -DRACER_LOGGING=false",
         	true);
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
@@ -95,21 +83,23 @@ public class RacerTest {
                 Collections.singletonMap("/", "/"));
         final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));
         
-        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath, aspectRuntimeJar});
-        Reflection.withThread(thread, new Callable<Void>() {
-            public Void call() throws Exception {
+        ReferenceType taskRT = cpe.referenceType();
+        ClassMirror taskClass = jdiVMM.makeClassMirror(taskRT);
+        ClassMirror taskClassHolograph = vm.getWrappedClassMirror(taskClass);
+        
+        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, taskClassHolograph.getLoader(), new URL[] {urlPath, aspectRuntimeJar});
+//        Reflection.withThread(thread, new Callable<Void>() {
+//            public Void call() throws Exception {
                 MirrorWeaver weaver = new MirrorWeaver(vm, loader, thread);
         	ClassMirror locking = Reflection.classMirrorForName(vm, thread, "ca.mcgill.sable.racer.Locking", true, loader);
-        	weaver.weave(locking);
-                
-                ClassMirror racer = Reflection.classMirrorForName(vm, thread, "ca.mcgill.sable.racer.Racer", true, loader);
-                weaver.weave(racer);
+        	ClassMirror racer = Reflection.classMirrorForName(vm, thread, "ca.mcgill.sable.racer.Racer", true, loader);
+                weaver.weave(locking, racer);
                 
                 vm.dispatch().start();
-                
-                return null;
-            }
-        });
+//                
+//                return null;
+//            }
+//        });
     }
     
     

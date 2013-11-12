@@ -23,9 +23,9 @@ package edu.ubc.mirrors;
 
 public interface FieldMirrorSetEvent extends MirrorEvent {
 
+    public ThreadMirror thread();
     public InstanceMirror instance();
-    public ClassMirror classMirror();
-    public String fieldName();
+    public FieldMirror field();
     public Object newValue();
     
 }

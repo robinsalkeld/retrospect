@@ -10,12 +10,13 @@ import org.aspectj.runtime.reflect.Factory;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AjcMemberMaker;
 import org.aspectj.weaver.BindingScope;
-import org.aspectj.weaver.ISourceContext;
 import org.aspectj.weaver.IWeavingSupport;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ReferenceType;
 import org.aspectj.weaver.ReferenceTypeDelegate;
 import org.aspectj.weaver.ResolvedType;
+import org.aspectj.weaver.Shadow;
+import org.aspectj.weaver.ShadowMunger;
 import org.aspectj.weaver.SourceContextImpl;
 import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.World;
@@ -30,6 +31,9 @@ import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
 import edu.ubc.mirrors.ConstructorMirrorExitEvent;
+import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FieldMirrorGetEvent;
+import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
@@ -110,7 +114,7 @@ public class MirrorWorld extends World {
         return true;
     }
     
-    private InstanceMirror getAJFactory(ClassMirror classMirror) {
+    private InstanceMirror getAJFactory(ThreadMirror thread, ClassMirror classMirror) {
         InstanceMirror factory = ajFactories.get(classMirror);
         if (factory == null) {
             try {
@@ -125,8 +129,19 @@ public class MirrorWorld extends World {
         return factory;
     }
     
-    private InstanceMirror makeConstructorSignature(ConstructorMirror constructor) {
-        InstanceMirror factory = getAJFactory(constructor.getDeclaringClass());
+    private InstanceMirror makeFieldSignature(ThreadMirror thread, FieldMirror field) {
+        InstanceMirror factory = getAJFactory(thread, field.getDeclaringClass());
+        
+        return (InstanceMirror)new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((Factory)null).makeFieldSig(0, null, null, null);
+            }
+        }.invoke(factory, thread, field.getModifiers(), Reflection.makeString(vm, field.getName()), 
+                field.getDeclaringClass(), field.getType());
+    }
+    
+    private InstanceMirror makeConstructorSignature(ThreadMirror thread, ConstructorMirror constructor) {
+        InstanceMirror factory = getAJFactory(thread, constructor.getDeclaringClass());
         
         ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
@@ -138,17 +153,17 @@ public class MirrorWorld extends World {
         for (int i = 0; i < numParams; i++) {
             parameterNames.set(i, Reflection.makeString(vm, "arg" + i));
         }
-        ObjectArrayMirror exceptionTypes = Reflection.toArray(classClass, constructor.getParameterTypes());
+        ObjectArrayMirror exceptionTypes = Reflection.toArray(classClass, constructor.getExceptionTypes());
         return (InstanceMirror)new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((Factory)null).makeConstructorSig(0, null, null, null, null);
             }
-        }.invoke(factory, constructor.getModifiers(), constructor.getDeclaringClass(), 
+        }.invoke(factory, thread, constructor.getModifiers(), constructor.getDeclaringClass(), 
                 parameterTypes, parameterNames, exceptionTypes);
     }
     
-    private InstanceMirror makeMethodSignature(MethodMirror method) {
-        InstanceMirror factory = getAJFactory(method.getDeclaringClass());
+    private InstanceMirror makeMethodSignature(ThreadMirror thread, MethodMirror method) {
+        InstanceMirror factory = getAJFactory(thread, method.getDeclaringClass());
         
         ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
         ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
@@ -165,40 +180,54 @@ public class MirrorWorld extends World {
             protected void methodCall() throws Throwable {
                 ((Factory)null).makeMethodSig(0, null, null, null, null, null, null);
             }
-        }.invoke(factory, method.getModifiers(), Reflection.makeString(vm, method.getName()), method.getDeclaringClass(), 
+        }.invoke(factory, thread, method.getModifiers(), Reflection.makeString(vm, method.getName()), method.getDeclaringClass(), 
                 parameterTypes, parameterNames, exceptionTypes, method.getReturnType());
     }
     
-    public InstanceMirror makeStaticJoinPoint(String kind, ConstructorMirror constructor) {
-        InstanceMirror factory = getAJFactory(constructor.getDeclaringClass());
-        InstanceMirror signature = makeConstructorSignature(constructor);
+    public InstanceMirror makeStaticJoinPoint(ThreadMirror thread, String kind, FieldMirror field) {
+        InstanceMirror factory = getAJFactory(thread, field.getDeclaringClass());
+        InstanceMirror signature = makeFieldSignature(thread, field);
         return (InstanceMirror)new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((Factory)null).makeSJP(null, null, null);
             }
-        }.invoke(factory, vm.getInternedString(kind), signature, null);
+        }.invoke(factory, thread, vm.getInternedString(kind), signature, null);
     }
     
-    public InstanceMirror makeStaticJoinPoint(String kind, MethodMirror method) {
-        InstanceMirror factory = getAJFactory(method.getDeclaringClass());
-        InstanceMirror signature = makeMethodSignature(method);
+    public InstanceMirror makeStaticJoinPoint(ThreadMirror thread, String kind, ConstructorMirror constructor) {
+        InstanceMirror factory = getAJFactory(thread, constructor.getDeclaringClass());
+        InstanceMirror signature = makeConstructorSignature(thread, constructor);
         return (InstanceMirror)new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((Factory)null).makeSJP(null, null, null);
             }
-        }.invoke(factory, vm.getInternedString(kind), signature, null);
+        }.invoke(factory, thread, vm.getInternedString(kind), signature, null);
+    }
+    
+    public InstanceMirror makeStaticJoinPoint(ThreadMirror thread, String kind, MethodMirror method) {
+        InstanceMirror factory = getAJFactory(thread, method.getDeclaringClass());
+        InstanceMirror signature = makeMethodSignature(thread, method);
+        return (InstanceMirror)new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((Factory)null).makeSJP(null, null, null);
+            }
+        }.invoke(factory, thread, vm.getInternedString(kind), signature, null);
     }
     
 
-    public InstanceMirror makeStaticJoinPoint(MirrorEvent event) {
+    public InstanceMirror makeStaticJoinPoint(ThreadMirror thread, MirrorEvent event) {
         if (event instanceof ConstructorMirrorEntryEvent) {
-            return makeStaticJoinPoint(org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((ConstructorMirrorEntryEvent)event).constructor());
+            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((ConstructorMirrorEntryEvent)event).constructor());
         } else if (event instanceof ConstructorMirrorExitEvent) {
-            return makeStaticJoinPoint(org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((ConstructorMirrorExitEvent)event).constructor());
+            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((ConstructorMirrorExitEvent)event).constructor());
         } else if (event instanceof MethodMirrorEntryEvent) {
-            return makeStaticJoinPoint(org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((MethodMirrorEntryEvent)event).method());
+            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((MethodMirrorEntryEvent)event).method());
         } else if (event instanceof MethodMirrorExitEvent) {
-            return makeStaticJoinPoint(org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((MethodMirrorExitEvent)event).method());
+            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((MethodMirrorExitEvent)event).method());
+        } else if (event instanceof FieldMirrorGetEvent) {
+            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.FIELD_GET, ((FieldMirrorGetEvent)event).field());
+        } else if (event instanceof FieldMirrorSetEvent) {
+            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.FIELD_SET, ((FieldMirrorSetEvent)event).field());
         } else {
             throw new IllegalArgumentException("Unsupported event type: " + event);
         }
@@ -274,5 +303,8 @@ public class MirrorWorld extends World {
         return ((MirrorReferenceTypeDelegate)((ReferenceType)type).getDelegate()).klass;
     }
     
-    
+    @Override
+    public void reportMatch(ShadowMunger munger, Shadow shadow) {
+//        System.out.println("Match: " + munger + " on " + shadow);
+    }
 }

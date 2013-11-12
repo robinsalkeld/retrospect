@@ -63,7 +63,7 @@ public class AdviceMirror extends Advice {
         }
     }
 
-    void installCallback(Callback<MirrorEvent> callback) {
+    void installCallback(Callback<MirrorEventShadow> callback) {
         Pointcut dnf = new PointcutRewriter().rewrite(pointcut);
         PointcutMirrorRequestExtractor.installCallback(world, kind, dnf, callback);
     }
@@ -78,7 +78,7 @@ public class AdviceMirror extends Advice {
         
         // TODO-RS: Actually check that we're passing in the right kind of join point,
         // if it's a parameter at all.
-        args[args.length - 1] = shadow.evaluateExpr(shadow.getThisJoinPointStaticPartVar());;
+        args[args.length - 1] = shadow.evaluateExpr(shadow.getThisJoinPointStaticPartVar());
 
         try {
             MethodMirrorMember member = (MethodMirrorMember)signature;

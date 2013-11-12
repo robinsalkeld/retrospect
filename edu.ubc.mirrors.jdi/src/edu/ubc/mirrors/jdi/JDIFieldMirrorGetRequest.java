@@ -21,41 +21,22 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
-import com.sun.jdi.event.ModificationWatchpointEvent;
+import com.sun.jdi.request.AccessWatchpointRequest;
 
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.FieldMirrorSetEvent;
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.FieldMirrorGetRequest;
 
-public class JDIFieldMirrorSetEvent extends JDIMirrorEvent implements FieldMirrorSetEvent {
+public class JDIFieldMirrorGetRequest extends JDIEventRequest implements FieldMirrorGetRequest {
 
-    private final ModificationWatchpointEvent wrapped;
+    protected final AccessWatchpointRequest wrapped;
     
-    public JDIFieldMirrorSetEvent(JDIVirtualMachineMirror vm, ModificationWatchpointEvent wrapped) {
+    public JDIFieldMirrorGetRequest(JDIVirtualMachineMirror vm, AccessWatchpointRequest wrapped) {
 	super(vm, wrapped);
 	this.wrapped = wrapped;
     }
 
     @Override
-    public ThreadMirror thread() {
-        return (ThreadMirror)vm.makeMirror(wrapped.thread());
-    }
-    
-    @Override
-    public InstanceMirror instance() {
-	return (InstanceMirror)vm.makeMirror(wrapped.object());
-    }
-
-    @Override
-    public FieldMirror field() {
-	return new JDIFieldMirror(vm, wrapped.field());
-    }
-
-    @Override
-    public Object newValue() {
-	return vm.wrapValue(wrapped.valueToBe());
+    public void addClassFilter(String classNamePattern) {
+	wrapped.addClassFilter(classNamePattern);
     }
 
 }

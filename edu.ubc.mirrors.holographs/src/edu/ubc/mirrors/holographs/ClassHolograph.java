@@ -863,10 +863,17 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         // Resolve the list first
         getDeclaredFields();
         
-        FieldMirror field = new FieldMapFieldMirror(this, modifiers, name, type);
+        if (getDeclaredField(name) != null) {
+            throw new IllegalArgumentException("Attempt to add a duplicate field: " + this + " " + name);
+        }
         
-        declaredFields.add(field);
+        ClassMirror unwrappedType = (ClassMirror)getVM().unwrapMirror(type);
         
-        return field;
+        FieldMirror field = new FieldMapFieldMirror(wrapped, modifiers, name, unwrappedType);
+        FieldMirror wrappedField = getVM().getFieldMirror(field);
+        
+        declaredFields.add(wrappedField);
+        
+        return wrappedField;
     }
 }

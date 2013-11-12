@@ -56,7 +56,7 @@ public class JDIUtils {
         ((StringArgument)connectorArgs.get("options")).setValue(vmArgs);
         ((BooleanArgument)connectorArgs.get("suspend")).setValue(suspend);
         try {
-            return c.launch(connectorArgs);
+            return fixTimeout(c.launch(connectorArgs));
         } catch (IllegalConnectorArgumentsException e) {
             throw new RuntimeException(e);
         }
@@ -75,6 +75,11 @@ public class JDIUtils {
         
         Map<String, Argument> connectorArgs = c.defaultArguments();
         ((IntegerArgument)connectorArgs.get("port")).setValue(port);
-        return c.attach(connectorArgs);
+        return fixTimeout(c.attach(connectorArgs));
+    }
+    
+    private static VirtualMachine fixTimeout(VirtualMachine vm) {
+        ((org.eclipse.jdi.VirtualMachine)vm).setRequestTimeout(60000);
+        return vm;
     }
 }

@@ -13,14 +13,18 @@ import org.aspectj.weaver.patterns.KindedPointcut;
 import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.PatternNode;
 import org.aspectj.weaver.patterns.Pointcut;
+import org.aspectj.weaver.patterns.SignaturePattern;
 import org.aspectj.weaver.patterns.TypePattern;
 import org.aspectj.weaver.patterns.WithinPointcut;
 
 import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.jdi.JDIFieldMirror;
+import edu.ubc.mirrors.wrapping.WrappingFieldMirror;
 
 /**
  * A visitor that installs the most specific possible event requests
@@ -28,19 +32,28 @@ import edu.ubc.mirrors.MirrorEventRequestManager;
  * That is, it will install requests such that a given callback will be
  * invoked for a superset of the MirrorEvents that match a given pointcut.
  * 
- * @author robinsalkeld
+ * @author Robin Salkeld
  *
  */
 public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
 
-    private KindedPointcut kind;
-    final List<PatternNode> filters = new ArrayList<PatternNode>();
-    
+    int kinds = Shadow.ALL_SHADOW_KINDS_BITS;
+    final List<PatternNode> thisFilters = new ArrayList<PatternNode>();
+    final List<PatternNode> targetFilters = new ArrayList<PatternNode>();
+     
     private final AdviceKind adviceKind;
     private final MirrorWorld world;
-    private final Callback<MirrorEvent> callback;
+    private final Callback<MirrorEventShadow> callback;
     
-    public PointcutMirrorRequestExtractor(MirrorWorld world, AdviceKind adviceKind, Callback<MirrorEvent> callback) {
+    private final Callback<MirrorEvent> EVENT_CALLBACK = new Callback<MirrorEvent>() {
+        @Override
+        public void handle(MirrorEvent event) {
+            MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
+            callback.handle(shadow);
+        }
+    };
+    
+    public PointcutMirrorRequestExtractor(MirrorWorld world, AdviceKind adviceKind, Callback<MirrorEventShadow> callback) {
         this.adviceKind = adviceKind;
         this.world = world;
         this.callback = callback;
@@ -48,17 +61,20 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
 
     @Override
     public Object visit(WithinPointcut node, Object belowAnd) {
-        filters.add(node.getTypePattern());
+        kinds &= node.couldMatchKinds();
+        thisFilters.add(node.getTypePattern());
         installIfNotBelowAnd(belowAnd);
         return null;
     }
     
     @Override
     public Object visit(KindedPointcut node, Object parent) {
-        if (kind != null) {
-            throw new IllegalArgumentException("More than one kinded pointcut found in clause: " + kind + ", " + node);
+        kinds &= node.couldMatchKinds();
+        if (node.getKind().bit == Shadow.FieldSetBit) {
+            targetFilters.add(node.getSignature());
+        } else {
+            thisFilters.add(node.getSignature());
         }
-        kind = node;
         installIfNotBelowAnd(parent);
         return null;
     }
@@ -67,8 +83,8 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     public Object visit(OrPointcut node, Object parent) {
         node.getLeft().accept(this, node);
         
-        kind = null;
-        filters.clear();
+        kinds = Shadow.ALL_SHADOW_KINDS_BITS;
+        thisFilters.clear();
         
         node.getRight().accept(this, node);
 
@@ -85,67 +101,83 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     
     public void installIfNotBelowAnd(Object parent) {
         if (!(parent instanceof AndPointcut)) {
-            if (kind == null) {
-                throw new IllegalArgumentException("No kinded pointcut found in: " + parent);
-            }
-            
             final MirrorEventRequestManager manager = world.vm.eventRequestManager();
-            List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();
             
-            switch (kind.getKind().bit) {
-            case (Shadow.MethodExecutionBit):
-                if (!adviceKind.isAfter() || adviceKind.isCflow()) {
-                    requests.add(manager.createMethodMirrorEntryRequest());
-                }
-                if (adviceKind.isAfter() || adviceKind.isCflow()) {
-                    requests.add(manager.createMethodMirrorExitRequest());
-                }
-                break;
-            case (Shadow.ConstructorExecutionBit):
-                if (!adviceKind.isAfter() || adviceKind.isCflow()) {
-                    requests.add(manager.createConstructorMirrorEntryRequest());
-                }
-                if (adviceKind.isAfter() || adviceKind.isCflow()) {
-                    requests.add(manager.createConstructorMirrorExitRequest());
-                }
-                break;
-            case (Shadow.FieldSetBit):
-                // TODO-RS: Optimize for the exact field match case
-                // Copy the state to make sure the class prepare callback
-                // reads the right state
-                final KindedPointcut callbackKind = kind;
-                final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(filters);
-                world.vm.dispatch().forAllClasses(new Callback<ClassMirror>() {
-                    public void handle(ClassMirror klass) {
-                        ReferenceType type = (ReferenceType)world.resolve(klass);
-                        for (ResolvedMember field : type.getDeclaredFields()) {
-                            if (callbackKind.getSignature().matches(field, world, false)) {
-                                FieldMirrorMember member = (FieldMirrorMember)field;
-                                MirrorEventRequest request = manager.createFieldMirrorSetRequest(member.getField());
-                                addFiltersAndInstall(request, callbackKind, callbackFilters);
+            for (final Shadow.Kind kind : Shadow.toSet(kinds)) {
+                switch (kind.bit) {
+                case (Shadow.MethodExecutionBit):
+                    if (!adviceKind.isAfter() || adviceKind.isCflow()) {
+                        addFiltersAndInstall(manager.createMethodMirrorEntryRequest(), thisFilters);
+                    }
+                    if (adviceKind.isAfter() || adviceKind.isCflow()) {
+                        addFiltersAndInstall(manager.createMethodMirrorExitRequest(), thisFilters);
+                    }
+                    break;
+                case (Shadow.ConstructorExecutionBit):
+                    if (!adviceKind.isAfter() || adviceKind.isCflow()) {
+                        addFiltersAndInstall(manager.createConstructorMirrorEntryRequest(), thisFilters);
+                    }
+                    if (adviceKind.isAfter() || adviceKind.isCflow()) {
+                        addFiltersAndInstall(manager.createConstructorMirrorExitRequest(), thisFilters);
+                    }
+                    break;
+                case (Shadow.FieldSetBit):
+                case (Shadow.FieldGetBit):
+                        // TODO-RS: Optimize for the exact field match case
+                    // Copy the state to make sure the class prepare callback
+                    // reads the right state.
+                    final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
+                    world.vm.dispatch().forAllClasses(new Callback<ClassMirror>() {
+                        public void handle(ClassMirror klass) {
+                            ReferenceType type = (ReferenceType)world.resolve(klass);
+                            for (ResolvedMember field : type.getDeclaredFields()) {
+                                boolean matches = true;
+                                for (PatternNode targetPattern : targetFilters) {
+                                    if (targetPattern instanceof SignaturePattern) {
+                                        if (!(((SignaturePattern)targetPattern).matches(field, world, false))) {
+                                            matches = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (matches) {
+                                    FieldMirrorMember member = (FieldMirrorMember)field;
+                                    MirrorEventRequest request;
+                                    FieldMirror fieldMirror = member.getField();
+                                    // TODO-RS: Cheating to account for lack of requests/events on holographic execution
+                                    if (fieldMirror instanceof WrappingFieldMirror && ((WrappingFieldMirror)fieldMirror).getWrapped() instanceof JDIFieldMirror) {
+                                        if (kind.bit == Shadow.FieldSetBit) {
+                                            request = manager.createFieldMirrorSetRequest(fieldMirror);
+                                        } else {
+                                            request = manager.createFieldMirrorGetRequest(fieldMirror);
+                                        }
+                                        addFiltersAndInstall(request, callbackFilters);
+                                    }
+                                }
                             }
-                        }
-                    };
-                });
-                return;
-            default: 
-                throw new UnsupportedOperationException("Unsupported pointcut kind: " + kind.getKind());
-            }
-            
-            // TODO-RS: Use forAllClasses as above to handle classes that are
-            // defined later.
-            for (MirrorEventRequest request : requests) {
-                addFiltersAndInstall(request, kind, filters);
+                        };
+                    });
+                    return;
+                case Shadow.ConstructorCallBit:
+                case Shadow.MethodCallBit:
+                case Shadow.AdviceExecutionBit:
+                case Shadow.InitializationBit:
+                case Shadow.PreInitializationBit:
+                case Shadow.ExceptionHandlerBit:
+                case Shadow.SynchronizationLockBit:
+                case Shadow.SynchronizationUnlockBit:
+                    // TODO-RS
+                    return;
+                }
             }
         }
     }
     
-    private void addFiltersAndInstall(MirrorEventRequest request, KindedPointcut kind, List<PatternNode> filters) {
-        addPatternFilter(request, kind.getSignature());
+    private void addFiltersAndInstall(MirrorEventRequest request, List<PatternNode> filters) {
         for (PatternNode pattern : filters) {
             addPatternFilter(request, pattern);
         }
-        world.vm.dispatch().addCallback(request, callback);
+        world.vm.dispatch().addCallback(request, EVENT_CALLBACK);
         request.enable();
     }
     
@@ -158,7 +190,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         // Ignore any other patterns
     }
     
-    public static void installCallback(MirrorWorld world, AdviceKind adviceKind, Pointcut pc, Callback<MirrorEvent> callback) {
+    public static void installCallback(MirrorWorld world, AdviceKind adviceKind, Pointcut pc, Callback<MirrorEventShadow> callback) {
         PointcutMirrorRequestExtractor extractor = new PointcutMirrorRequestExtractor(world, adviceKind, callback);
         pc.accept(extractor, null);
     }

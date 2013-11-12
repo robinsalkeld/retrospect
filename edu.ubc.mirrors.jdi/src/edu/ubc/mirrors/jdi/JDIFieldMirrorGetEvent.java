@@ -21,19 +21,18 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
-import com.sun.jdi.event.ModificationWatchpointEvent;
+import com.sun.jdi.event.AccessWatchpointEvent;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.FieldMirrorSetEvent;
+import edu.ubc.mirrors.FieldMirrorGetEvent;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class JDIFieldMirrorSetEvent extends JDIMirrorEvent implements FieldMirrorSetEvent {
+public class JDIFieldMirrorGetEvent extends JDIMirrorEvent implements FieldMirrorGetEvent {
 
-    private final ModificationWatchpointEvent wrapped;
+    private final AccessWatchpointEvent wrapped;
     
-    public JDIFieldMirrorSetEvent(JDIVirtualMachineMirror vm, ModificationWatchpointEvent wrapped) {
+    public JDIFieldMirrorGetEvent(JDIVirtualMachineMirror vm, AccessWatchpointEvent wrapped) {
 	super(vm, wrapped);
 	this.wrapped = wrapped;
     }
@@ -51,11 +50,6 @@ public class JDIFieldMirrorSetEvent extends JDIMirrorEvent implements FieldMirro
     @Override
     public FieldMirror field() {
 	return new JDIFieldMirror(vm, wrapped.field());
-    }
-
-    @Override
-    public Object newValue() {
-	return vm.wrapValue(wrapped.valueToBe());
     }
 
 }

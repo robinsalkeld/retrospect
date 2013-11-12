@@ -838,6 +838,7 @@ public class Reflection {
         case Type.LONG: return Long.class;
         case Type.FLOAT: return Float.class;
         case Type.DOUBLE: return Double.class;
+        case Type.VOID: return Void.class;
         default: return null;
         }
     }

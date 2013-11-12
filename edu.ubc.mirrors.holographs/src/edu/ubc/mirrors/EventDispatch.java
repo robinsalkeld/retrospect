@@ -117,5 +117,6 @@ public class EventDispatch {
                 callback.handle(event.classMirror());
             }
         });
+        request.enable();
     }
 }

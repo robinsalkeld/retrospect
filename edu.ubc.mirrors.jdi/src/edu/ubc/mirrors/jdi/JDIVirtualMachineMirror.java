@@ -36,6 +36,7 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.DoubleValue;
+import com.sun.jdi.Field;
 import com.sun.jdi.FloatValue;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.IntegerValue;
@@ -60,6 +61,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -227,29 +229,44 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 	    return result;
 	}
 	
+	Class<?> boxingType = Reflection.getBoxingType(Reflection.typeForClassName(name));
+	List<ReferenceType> classes = jdiVM.classesByName(boxingType.getName());
+	if (classes.isEmpty()) {
+	    return null;
+	}
+	
+	ReferenceType boxingRT = classes.get(0);
+	Field typeField = boxingRT.fieldByName("TYPE");
+	ClassObjectReference cor = (ClassObjectReference)boxingRT.getValue(typeField);
+	result = makeClassMirror(cor);
+	primitiveClasses.put(name, result);
+	
+	return result;
+	
 	// Unfortunately we need to run code to get at these.
 	// The method should be completely side-effect free though.
-	ReferenceType classType = jdiVM.classesByName(Class.class.getName()).get(0);
-	Method method = classType.methodsByName("getPrimitiveClass").get(0);
-	ThreadHolograph currentThread = ThreadHolograph.currentThreadMirror();
-	ThreadReference threadRef = ((JDIThreadMirror)currentThread.getWrapped()).thread;
-	ClassObjectReference cor;
-	try {
-	    cor = (ClassObjectReference)classType.classObject().invokeMethod(threadRef, method, Collections.singletonList(jdiVM.mirrorOf(name)), ObjectReference.INVOKE_SINGLE_THREADED);
-	} catch (InvalidTypeException e) {
-	    throw new InternalError(e.getMessage());
-	} catch (ClassNotLoadedException e) {
-	    // Should never happen - Class must be loaded by the time we get a VMStartEvent
-	    throw new RuntimeException(e);
-	} catch (IncompatibleThreadStateException e) {
-	    // Should never happen
-	    throw new RuntimeException(e);
-	} catch (InvocationException e) {
-	    throw new RuntimeException(e);
-	}
-	result = new JDIClassMirror(this, cor);
-	primitiveClasses.put(name, result);
-	return result;
+	// TODO-RS: This requires a thread, and it needs to be the "right" one or else we'll deadlock.
+//	ReferenceType classType = jdiVM.classesByName(Class.class.getName()).get(0);
+//	Method method = classType.methodsByName("getPrimitiveClass").get(0);
+//	ThreadHolograph currentThread = ThreadHolograph.currentThreadMirror();
+//	ThreadReference threadRef = ((JDIThreadMirror)currentThread.getWrapped()).thread;
+//	ClassObjectReference cor;
+//	try {
+//	    cor = (ClassObjectReference)classType.classObject().invokeMethod(threadRef, method, Collections.singletonList(jdiVM.mirrorOf(name)), ObjectReference.INVOKE_SINGLE_THREADED);
+//	} catch (InvalidTypeException e) {
+//	    throw new InternalError(e.getMessage());
+//	} catch (ClassNotLoadedException e) {
+//	    // Should never happen - Class must be loaded by the time we get a VMStartEvent
+//	    throw new RuntimeException(e);
+//	} catch (IncompatibleThreadStateException e) {
+//	    // Should never happen
+//	    throw new RuntimeException(e);
+//	} catch (InvocationException e) {
+//	    throw new RuntimeException(e);
+//	}
+//	result = new JDIClassMirror(this, cor);
+//	primitiveClasses.put(name, result);
+//	return result;
     }
 
     @Override
@@ -348,14 +365,19 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     int identityHashCode(ObjectReference object) {
+        // TODO-RS: temp hack
+        if (true) {
+            return object.hashCode();
+        }
+        
         // Unfortunately we need to run code to get at these.
         // The method should be completely side-effect free though.
-        ReferenceType objectType = jdiVM.classesByName(Object.class.getName()).get(0);
-        Method method = objectType.methodsByName("hashCode").get(0);
+        ClassType systemType = (ClassType)jdiVM.classesByName(System.class.getName()).get(0);
+        Method method = systemType.methodsByName("identityHashCode").get(0);
         ThreadHolograph currentThread = ThreadHolograph.currentThreadMirror();
         ThreadReference threadRef = ((JDIThreadMirror)currentThread.getWrapped()).thread;
         try {
-            Value result = object.invokeMethod(threadRef, method, Collections.<Value>emptyList(), ObjectReference.INVOKE_SINGLE_THREADED);
+            Value result = systemType.invokeMethod(threadRef, method, Collections.singletonList(object), ObjectReference.INVOKE_SINGLE_THREADED);
             return ((IntegerValue)result).intValue();
         } catch (InvalidTypeException e) {
             throw new InternalError(e.getMessage());
