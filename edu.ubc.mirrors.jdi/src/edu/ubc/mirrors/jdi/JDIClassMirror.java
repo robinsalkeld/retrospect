@@ -22,6 +22,7 @@
 package edu.ubc.mirrors.jdi;
 
 import java.io.File;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -216,6 +217,20 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
     
     @Override
+    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
+        List<MethodMirror> result = new ArrayList<MethodMirror>();
+        for (Method method : refType.methods()) {
+            if (method.name().startsWith("<")) {
+                continue;
+            }
+            if (!publicOnly || Modifier.isPublic(method.modifiers())) {
+                result.add(new JDIMethodMirror(vm, method));
+            }
+        }
+        return result;
+    }
+    
+    @Override
     public MethodMirror getMethod(String name, String... paramTypes) throws SecurityException, NoSuchMethodException {
         List<String> requestedTypes = Arrays.asList(paramTypes);
 	for (Method method : refType.methodsByName(name)) {
@@ -243,11 +258,6 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
         }
 	
 	throw new NoSuchMethodException(name);
-    }
-    
-    @Override
-    public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
-        throw new UnsupportedOperationException();
     }
     
     @Override

@@ -29,6 +29,7 @@ import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
@@ -93,7 +94,11 @@ public class MethodHolograph implements MethodMirror {
     
     @Override
     public List<AnnotationMirror> getAnnotations() {
-        return wrapped.getAnnotations();
+        if (klass.hasBytecode()) {
+            return wrapped.getAnnotations();
+        } else {
+            return getBytecodeMethod().getAnnotations();
+        }
     }
     
     @Override
@@ -214,6 +219,11 @@ public class MethodHolograph implements MethodMirror {
     @Override
     public String getSignature() {
         return wrapped.getSignature();
+    }
+    
+    @Override
+    public MirrorLocation locationForBytecodeOffset(int offset) {
+        return wrapped.locationForBytecodeOffset(offset);
     }
     
     @Override

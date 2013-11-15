@@ -28,13 +28,11 @@ import org.eclipse.equinox.app.IApplicationContext;
 
 import com.sun.jdi.VirtualMachine;
 
-import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
-
 public class SnapshotAndPrepare implements IApplication {
     public void main(String[] args) throws Exception {
         int port = Integer.valueOf(args[0]);
         
-        final VirtualMachine jdiVM = JDIUtils.connectOnPort(port);
+        final VirtualMachine jdiVM = JDIUtils.connectOnPort(port, false);
         System.out.println("Connected.");
         
         File snapshotPath = LiveVersusDeadToStringEvaluation.pauseAndDump(jdiVM);

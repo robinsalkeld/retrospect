@@ -23,7 +23,6 @@ package edu.ubc.mirrors.wrapping;
 
 import java.util.List;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
@@ -34,6 +33,8 @@ import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorLocation;
+import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
 import edu.ubc.mirrors.ThreadMirrorStartRequest;
 
@@ -47,6 +48,17 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
 	this.wrapped = wrapped;
     }
 
+    @Override
+    public MirrorLocationRequest createLocationRequest(MirrorLocation location) {
+        MirrorLocation wrappedLoc = ((WrappingMirrorLocation)location).getWrapped();
+        return new WrappingMirrorLocationRequest(vm, wrapped.createLocationRequest(wrappedLoc));
+    }
+    
+    @Override
+    public List<MirrorLocationRequest> locationRequests() {
+        throw new UnsupportedOperationException();
+    }
+    
     @Override
     public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
 	return new WrappingMethodMirrorEntryRequest(vm, wrapped.createMethodMirrorEntryRequest());

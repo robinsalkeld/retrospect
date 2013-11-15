@@ -28,6 +28,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.wrapping.WrappingFrameMirror;
@@ -214,6 +215,12 @@ public class FrameHolograph extends WrappingFrameMirror {
         public byte[] getRawAnnotationDefault() {
             resolve();
             return wrapped.getRawAnnotationDefault();
+        }
+        
+        @Override
+        public MirrorLocation locationForBytecodeOffset(int offset) {
+            resolve();
+            return wrapped.locationForBytecodeOffset(offset);
         }
 
         private void resolve() {

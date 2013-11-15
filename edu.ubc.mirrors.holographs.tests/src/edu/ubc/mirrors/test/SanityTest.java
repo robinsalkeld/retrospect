@@ -109,7 +109,7 @@ public class SanityTest extends TestCase {
         final VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
                 "edu.ubc.mirrors.test.JREOnly", 
                 "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.holographs.tests/bin\"",
-                false);
+                false, false);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {

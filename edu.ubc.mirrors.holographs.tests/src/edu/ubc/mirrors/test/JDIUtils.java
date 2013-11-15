@@ -22,6 +22,8 @@
 package edu.ubc.mirrors.test;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +42,7 @@ import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
 
 public class JDIUtils {
-    public static VirtualMachine commandLineLaunch(String mainAndArgs, String vmArgs, boolean suspend) throws VMStartException, IOException {
+    public static VirtualMachine commandLineLaunch(String mainAndArgs, String vmArgs, boolean suspend, boolean echoStreams) throws VMStartException, IOException {
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List<Connector> connectors = vmm.allConnectors();
         LaunchingConnector c = null;
@@ -56,13 +58,13 @@ public class JDIUtils {
         ((StringArgument)connectorArgs.get("options")).setValue(vmArgs);
         ((BooleanArgument)connectorArgs.get("suspend")).setValue(suspend);
         try {
-            return fixTimeout(c.launch(connectorArgs));
+            return fixTimeoutAndHandleStreams(c.launch(connectorArgs), echoStreams);
         } catch (IllegalConnectorArgumentsException e) {
             throw new RuntimeException(e);
         }
     }
     
-    public static VirtualMachine connectOnPort(int port) throws IOException, IllegalConnectorArgumentsException {
+    public static VirtualMachine connectOnPort(int port, boolean echoStreams) throws IOException, IllegalConnectorArgumentsException {
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List<Connector> connectors = vmm.allConnectors();
         AttachingConnector c = null;
@@ -75,11 +77,41 @@ public class JDIUtils {
         
         Map<String, Argument> connectorArgs = c.defaultArguments();
         ((IntegerArgument)connectorArgs.get("port")).setValue(port);
-        return fixTimeout(c.attach(connectorArgs));
+        return fixTimeoutAndHandleStreams(c.attach(connectorArgs), echoStreams);
     }
     
-    private static VirtualMachine fixTimeout(VirtualMachine vm) {
+    private static VirtualMachine fixTimeoutAndHandleStreams(VirtualMachine vm, boolean echoStreams) {
         ((org.eclipse.jdi.VirtualMachine)vm).setRequestTimeout(60000);
+        if (echoStreams) {
+            Process process = vm.process();
+            new StreamSiphon(process.getInputStream(), System.out).start();
+            new StreamSiphon(process.getErrorStream(), System.err).start();
+        }
         return vm;
+    }
+    
+    private static class StreamSiphon extends Thread {
+        
+        public StreamSiphon(InputStream in, OutputStream out) {
+            this.in = in;
+            this.out = out;
+        }
+
+        private final InputStream in;
+        private final OutputStream out;
+        
+        @Override
+        public void run() {
+            byte[] buffer = new byte[10];
+            int read;
+            try {
+                while ((read = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, read);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
     }
 }

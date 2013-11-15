@@ -5,6 +5,7 @@ import java.util.Collections;
 import org.aspectj.bridge.ISourceLocation;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.weaver.Member;
+import org.aspectj.weaver.MemberImpl;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.UnresolvedType;
@@ -22,6 +23,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorLocationEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
 public abstract class MirrorEventShadow extends Shadow {
@@ -29,6 +31,9 @@ public abstract class MirrorEventShadow extends Shadow {
     protected final MirrorWorld world;
     protected final MirrorEvent event;
     private MirrorEvaluator evaluator;
+    
+    public static final Object SHADOW_KIND_PROPERTY_KEY = new Object();
+    public static final Object IS_ENTRY_PROPERTY_KEY = new Object();
     
     protected MirrorEventShadow(MirrorWorld world, MirrorEvent event, Shadow.Kind kind, Member signature, Shadow enclosingShadow) {
         super(kind, signature, enclosingShadow);
@@ -119,6 +124,9 @@ public abstract class MirrorEventShadow extends Shadow {
     }
     
     public static MirrorEventShadow make(MirrorWorld world, MirrorEvent event) {
+        Shadow.Kind shadowKind = (Shadow.Kind)event.request().getProperty(SHADOW_KIND_PROPERTY_KEY); 
+        Boolean isEntry = (Boolean)event.request().getProperty(IS_ENTRY_PROPERTY_KEY); 
+        
         if (event instanceof ConstructorMirrorEntryEvent) {
             ConstructorMirrorEntryEvent cmee = (ConstructorMirrorEntryEvent)event;
             Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
@@ -128,6 +136,44 @@ public abstract class MirrorEventShadow extends Shadow {
             Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
             return new ConstructorMirrorExitShadow(world, cmee, signature, null);
         } else if (event instanceof MethodMirrorEntryEvent) {
+            MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
+            if (shadowKind == Shadow.SynchronizationLock) {
+                return new SynchronizedMethodMirrorEntryShadow(world, mmee, MemberImpl.monitorEnter(), null);
+            } else {
+                Member signature = MethodMirrorMember.make(world, mmee.method());
+                return new MethodMirrorEntryShadow(world, mmee, signature, null);
+            }
+        } else if (event instanceof MethodMirrorExitEvent) {
+            MethodMirrorExitEvent mmee = (MethodMirrorExitEvent)event;
+            if (shadowKind == Shadow.SynchronizationUnlock) {
+                return new SynchronizedMethodMirrorExitShadow(world, mmee, MemberImpl.monitorExit(), null);
+            } else {
+                Member signature = MethodMirrorMember.make(world, mmee.method());
+                return new MethodMirrorExitShadow(world, mmee, signature, null);
+            }
+        } else if (event instanceof FieldMirrorGetEvent) {
+            FieldMirrorGetEvent fmge = (FieldMirrorGetEvent)event;
+            Member signature = FieldMirrorMember.make(world, fmge.field());
+            return new FieldMirrorGetShadow(world, fmge, signature, null);
+        } else if (event instanceof FieldMirrorSetEvent) {
+            FieldMirrorSetEvent fmge = (FieldMirrorSetEvent)event;
+            Member signature = FieldMirrorMember.make(world, fmge.field());
+            return new FieldMirrorSetShadow(world, fmge, signature, null);
+        } else if (shadowKind != null && event instanceof MirrorLocationEvent) {
+            MirrorLocationEvent mle = (MirrorLocationEvent)event;
+            if (shadowKind == Shadow.SynchronizationLock) {
+                return new MirrorMonitorEnterShadow(world, mle, isEntry, MemberImpl.monitorEnter(), null);
+            } else {
+                return new MirrorMonitorExitShadow(world, mle, isEntry, MemberImpl.monitorExit(), null);
+            }
+            
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    public static MirrorEventShadow makeForSynchronization(MirrorWorld world, MirrorEvent event) {
+        if (event instanceof MethodMirrorEntryEvent) {
             MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
             Member signature = MethodMirrorMember.make(world, mmee.method());
             return new MethodMirrorEntryShadow(world, mmee, signature, null);
@@ -148,7 +194,6 @@ public abstract class MirrorEventShadow extends Shadow {
         }
     }
     
-
     @Override
     public Var getThisVar() {
         return null;

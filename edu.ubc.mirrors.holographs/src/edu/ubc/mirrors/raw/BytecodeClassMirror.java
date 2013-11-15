@@ -66,6 +66,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
@@ -354,6 +355,11 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         @Override
         public String getSignature() {
             return method.desc;
+        }
+        
+        @Override
+        public MirrorLocation locationForBytecodeOffset(int offset) {
+            throw new UnsupportedOperationException();
         }
         
         @Override
@@ -1204,7 +1210,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     public MethodMirror getEnclosingMethodMirror() {
         if (enclosingMethod == null && enclosingMethodName != null) {
             try {
-                enclosingMethod = Reflection.getDeclaredMethod(ThreadHolograph.currentThreadMirror(), getEnclosingClassMirror(), enclosingMethodName, Type.getType(enclosingMethodDesc));
+                enclosingMethod = Reflection.getDeclaredMethod(getEnclosingClassMirror(), enclosingMethodName, Type.getType(enclosingMethodDesc));
             } catch (NoSuchMethodException e) {
                 throw new NoSuchMethodError(e.getMessage());
             }

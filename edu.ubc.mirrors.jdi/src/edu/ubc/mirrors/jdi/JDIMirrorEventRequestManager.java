@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sun.jdi.Field;
+import com.sun.jdi.Location;
+import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
@@ -32,7 +34,6 @@ import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
@@ -43,6 +44,8 @@ import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorLocation;
+import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
 import edu.ubc.mirrors.ThreadMirrorStartRequest;
 
@@ -56,6 +59,24 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 	this.wrapped = wrapped;
     }
 
+    @Override
+    public MirrorLocationRequest createLocationRequest(MirrorLocation location) {
+        Location jdiLoc = ((JDIMirrorLocation)location).getWrapped();
+        return new JDIMirrorLocationRequest(vm, wrapped.createBreakpointRequest(jdiLoc));
+    }
+    
+    @Override
+    public List<MirrorLocationRequest> locationRequests() {
+        List<MirrorLocationRequest> result = new ArrayList<MirrorLocationRequest>();
+        for (BreakpointRequest r : wrapped.breakpointRequests()) {
+            Object wrapper = r.getProperty(JDIEventRequest.MIRROR_WRAPPER);
+            if (wrapper instanceof MirrorLocationRequest) {
+                result.add((MirrorLocationRequest)wrapper);
+            }
+        }
+        return result;
+    }
+    
     @Override
     public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
 	return new JDIMethodMirrorEntryRequest(vm, wrapped.createMethodEntryRequest());

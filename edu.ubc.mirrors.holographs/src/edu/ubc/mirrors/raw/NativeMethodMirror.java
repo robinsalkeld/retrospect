@@ -31,6 +31,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -176,6 +177,11 @@ public class NativeMethodMirror implements MethodMirror {
     @Override
     public String getSignature() {
         // TODO For now
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public MirrorLocation locationForBytecodeOffset(int offset) {
         throw new UnsupportedOperationException();
     }
     

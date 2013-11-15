@@ -51,7 +51,7 @@ public class RacerTest {
         VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
         	"Task", 
         	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Racer Test/bin\" -DRACER_LOGGING=false",
-        	true);
+        	true, true);
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
         r.setSuspendPolicy(EventRequest.SUSPEND_ALL);
@@ -78,7 +78,7 @@ public class RacerTest {
         URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
         
         // TODO-RS: Cheating for now...
-        File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid2675.0001.subeclipseonjava7_hologram_classes");
+        File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/RacerTest/hologram_classes");
 	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM, cachePath,
                 Collections.singletonMap("/", "/"));
         final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));

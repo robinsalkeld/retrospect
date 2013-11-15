@@ -23,7 +23,6 @@ package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.List;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
@@ -34,6 +33,8 @@ import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorLocation;
+import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
 import edu.ubc.mirrors.ThreadMirrorStartRequest;
 
@@ -45,6 +46,18 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
         this.vm = vm;
     }
 
+    @Override
+    public MirrorLocationRequest createLocationRequest(MirrorLocation location) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    @Override
+    public List<MirrorLocationRequest> locationRequests() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
     @Override
     public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
         // TODO Auto-generated method stub

@@ -62,7 +62,7 @@ public class LiveVersusDeadToStringEvaluation implements IApplication {
     public static void main(String[] args) throws Exception {
         int port = Integer.valueOf(args[0]);
         
-        final VirtualMachine jdiVM = JDIUtils.connectOnPort(port);
+        final VirtualMachine jdiVM = JDIUtils.connectOnPort(port, false);
         System.out.println("Connected.");
         run(jdiVM);
     }  

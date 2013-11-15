@@ -27,6 +27,7 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.Method;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.MirrorLocation;
 
 public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
 
@@ -102,4 +103,7 @@ public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
 	throw new UnsupportedOperationException();
     }
 
+    public MirrorLocation locationForBytecodeOffset(int offset) {
+        return vm.makeMirrorLocation(method.locationOfCodeIndex(offset));
+    }
 }

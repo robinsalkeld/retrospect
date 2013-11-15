@@ -467,7 +467,7 @@ public class Reflection {
     public static Object invokeStaticMethodHandle(ThreadMirror thread, ClassMirror targetClass, MethodHandle m, Object ... args) throws IllegalAccessException, MirrorInvocationTargetException {
         MethodMirror method;
         try {
-            method = getDeclaredMethod(thread, targetClass, m.getMethod().name, Type.getType(m.getMethod().desc));
+            method = getDeclaredMethod(targetClass, m.getMethod().name, Type.getType(m.getMethod().desc));
         } catch (SecurityException e) {
             throw new RuntimeException(e);
         } catch (NoSuchMethodException e) {
@@ -783,10 +783,9 @@ public class Reflection {
         return Type.getMethodType(Type.VOID_TYPE, argTypes);
     }
     
-    public static MethodMirror getDeclaredMethod(ThreadMirror thread, ClassMirror klass, String methodName, Type methodType) throws SecurityException, NoSuchMethodException {
+    public static MethodMirror getDeclaredMethod(ClassMirror klass, String methodName, Type methodType) throws SecurityException, NoSuchMethodException {
         Type[] argumentTypes = methodType.getArgumentTypes();
         String[] paramClassNames = new String[argumentTypes.length];
-        ClassMirrorLoader loader = klass.getLoader();
         for (int i = 0; i < argumentTypes.length; i++) {
             paramClassNames[i] = argumentTypes[i].getClassName();
         }

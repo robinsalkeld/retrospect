@@ -1,8 +1,6 @@
 package edu.ubc.retrospect;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.aspectj.weaver.Advice;
@@ -20,14 +18,9 @@ import org.aspectj.weaver.ast.Expr;
 import org.aspectj.weaver.ast.FieldGet;
 import org.aspectj.weaver.ast.Test;
 import org.aspectj.weaver.patterns.ExposedState;
-import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.Pointcut;
-import org.aspectj.weaver.patterns.PointcutRewriter;
 
-import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MirrorEvent;
-import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 
 public class AdviceMirror extends Advice {
@@ -46,26 +39,6 @@ public class AdviceMirror extends Advice {
 
     public AdviceMirror(MirrorWorld world, ResolvedType concreteAspect, AdviceKind kind, Member signature, Pointcut pointcut) {
         this(world, new AjAttribute.AdviceAttribute(kind, pointcut, 0, pointcut.getStart(), pointcut.getEnd(), pointcut.getSourceContext()), concreteAspect, signature, pointcut);
-    }
-
-    // Collect DNF assuming the argument is already a DNF pointcut
-    private List<Pointcut> disjuncts(Pointcut pc) {
-        if (pc instanceof OrPointcut) {
-            OrPointcut or = (OrPointcut)pc;
-            List<Pointcut> result = new ArrayList<Pointcut>();
-            result.addAll(disjuncts(or.getLeft()));
-            result.addAll(disjuncts(or.getRight()));
-            return result;
-        } else {
-            List<Pointcut> result = new ArrayList<Pointcut>(1);
-            result.add(pc);
-            return result;
-        }
-    }
-
-    void installCallback(Callback<MirrorEventShadow> callback) {
-        Pointcut dnf = new PointcutRewriter().rewrite(pointcut);
-        PointcutMirrorRequestExtractor.installCallback(world, kind, dnf, callback);
     }
 
     public void execute(MirrorEventShadow shadow, ExposedState state) {

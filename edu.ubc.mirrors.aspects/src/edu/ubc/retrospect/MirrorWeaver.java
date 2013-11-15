@@ -22,7 +22,6 @@
 package edu.ubc.retrospect;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.aspectj.weaver.ConcreteTypeMunger;
@@ -71,18 +70,15 @@ public class MirrorWeaver {
             final Set<MirrorEventShadow> joinpointShadows = new HashSet<MirrorEventShadow>();
             for (ShadowMunger munger : xcutSet.getShadowMungers()) {
                 AdviceMirror advice = (AdviceMirror)munger;
-                advice.installCallback(new Callback<MirrorEventShadow>() {
+                System.out.println("Installing event requests for advice: " + advice);
+                PointcutMirrorRequestExtractor.installCallback(world, advice, new Callback<MirrorEventShadow>() {
                     public void handle(MirrorEventShadow shadow) {
-//                        if (shadow.getDeclaringClass().getClassName().equals("Task")) {
-//                            System.out.println(shadow);
-//                        }
                         if (shadow.getDeclaringClass().getLoader() != null) {
                             joinpointShadows.add(shadow);
-//                        } else {
-//                            System.out.println("Skipping: " + shadow);
                         }
                     }
                 });
+                System.out.println("Done.");
             }
             
             world.vm.dispatch().addSetCallback(new Runnable() {

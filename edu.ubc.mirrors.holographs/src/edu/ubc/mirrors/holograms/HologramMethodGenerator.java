@@ -606,13 +606,15 @@ public class HologramMethodGenerator extends InstructionAdapter {
         MethodHandle.OBJECT_HOLOGRAM_INVOKE_METHOD_HANDLER.invoke(this);
         
         Type returnType = methodType.getReturnType();
-        Class<?> boxingType = Reflection.getBoxingType(returnType);
-        if (boxingType != null) {
-            checkcast(Type.getType(boxingType));
-            invokevirtual(Type.getInternalName(boxingType), returnType.getClassName() + "Value", Type.getMethodType(returnType).getDescriptor());
-        } else if (returnType.getSort() != Type.VOID) {
-            MethodHandle.OBJECT_HOLOGRAM_MAKE.invoke(this);
-            checkcast(returnType);
+        if (returnType.getSort() != Type.VOID) {
+            Class<?> boxingType = Reflection.getBoxingType(returnType);
+            if (boxingType != null) {
+                checkcast(Type.getType(boxingType));
+                invokevirtual(Type.getInternalName(boxingType), returnType.getClassName() + "Value", Type.getMethodType(returnType).getDescriptor());
+            } else {
+                MethodHandle.OBJECT_HOLOGRAM_MAKE.invoke(this);
+                checkcast(returnType);
+            }
         }
         areturn(returnType);
         visitMaxs(Math.max(2, var + 1), Math.max(2, var + 1));

@@ -25,6 +25,10 @@ import java.util.List;
 
 public interface MirrorEventRequestManager {
 
+    MirrorLocationRequest createLocationRequest(MirrorLocation location);
+    
+    List<MirrorLocationRequest> locationRequests();
+    
     MethodMirrorEntryRequest createMethodMirrorEntryRequest();
     
     List<MethodMirrorEntryRequest> methodMirrorEntryRequests();

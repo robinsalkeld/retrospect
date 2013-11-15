@@ -448,7 +448,7 @@ public class HologramClassGenerator extends ClassVisitor {
             if ((Opcodes.ACC_ABSTRACT & access) == 0) {
                 MethodMirror method;
                 try {
-                    method = Reflection.getDeclaredMethod(ThreadHolograph.currentThreadMirror(), classMirror, name, getOriginalType(Type.getMethodType(desc)));
+                    method = Reflection.getDeclaredMethod(classMirror, name, getOriginalType(Type.getMethodType(desc)));
                 } catch (NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }

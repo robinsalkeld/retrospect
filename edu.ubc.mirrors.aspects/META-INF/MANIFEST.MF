@@ -8,6 +8,7 @@ Export-Package: edu.ubc.retrospect
 Import-Package: edu.ubc.mirrors,
  edu.ubc.mirrors.holographs,
  edu.ubc.mirrors.jdi,
+ edu.ubc.mirrors.raw,
  edu.ubc.mirrors.wrapping,
  org.aspectj.bridge;version="1.6.4",
  org.aspectj.lang;version="1.6.4",
@@ -19,5 +20,6 @@ Import-Package: edu.ubc.mirrors,
  org.aspectj.weaver.internal.tools;version="1.6.4",
  org.aspectj.weaver.patterns;version="1.6.4",
  org.aspectj.weaver.tools;version="1.6.4",
- org.objectweb.asm;version="4.0.0"
+ org.objectweb.asm;version="4.0.0",
+ org.objectweb.asm.tree;version="4.0.0"
 Bundle-ClassPath: .

@@ -246,17 +246,17 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     }
         
     public MethodMirror getDeclaredMethod(String name, String... paramTypeNames) throws SecurityException, NoSuchMethodException {
-        if (hasBytecode()) {
+        try {
             return super.getMethod(name, paramTypeNames);
-        } else {
+        } catch (UnsupportedOperationException e) {
             return new MethodHolograph(this, getBytecodeMirror().getDeclaredMethod(name, paramTypeNames));
         }
     }
     
     public MethodMirror getMethod(String name, String... paramTypeNames) throws SecurityException, NoSuchMethodException {
-        if (hasBytecode()) {
+        try {
             return super.getMethod(name, paramTypeNames);
-        } else {
+        } catch (UnsupportedOperationException e) {
             return new MethodHolograph(this, getBytecodeMirror().getMethod(name, paramTypeNames));
         }
     }
@@ -470,9 +470,9 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     
     @Override
     public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
-        if (hasBytecode()) {
+        try {
             return super.getDeclaredMethods(publicOnly);
-        } else {
+        } catch (UnsupportedOperationException e) {
             List<MethodMirror> bytecodeMethods = getBytecodeMirror().getDeclaredMethods(publicOnly);
             List<MethodMirror> result = new ArrayList<MethodMirror>(bytecodeMethods.size());
             for (MethodMirror bytecodeMethod : bytecodeMethods) {

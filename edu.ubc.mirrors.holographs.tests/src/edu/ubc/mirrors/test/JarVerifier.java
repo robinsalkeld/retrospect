@@ -131,7 +131,7 @@ public class JarVerifier implements IApplication {
             ClassMirror klass = vm.findAllClasses(fullName, false).get(0);
             
             for (MethodNode method : entry.getValue()) {
-                MethodMirror methodMirror = Reflection.getDeclaredMethod(thread, klass, method.name, Type.getType(method.desc));
+                MethodMirror methodMirror = Reflection.getDeclaredMethod(klass, method.name, Type.getType(method.desc));
                 
                 MirrorInvocationHandler handler = provider.getInvocationHandler(methodMirror);
                 if (handler != null) {

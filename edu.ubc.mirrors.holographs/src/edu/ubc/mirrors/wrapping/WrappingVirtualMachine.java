@@ -44,6 +44,7 @@ import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ShortArrayMirror;
@@ -315,5 +316,9 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     @Override
     public EventDispatch dispatch() {
         return dispatch;
+    }
+
+    public MirrorLocation wrapLocation(MirrorLocation location) {
+        return new WrappingMirrorLocation(this, location);
     }
 }

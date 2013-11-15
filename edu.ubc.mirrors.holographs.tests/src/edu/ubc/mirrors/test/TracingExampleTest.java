@@ -52,7 +52,7 @@ public class TracingExampleTest {
         VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
         	"tracing.ExampleMain", 
         	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"",
-        	true);
+        	true, true);
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
         r.setSuspendPolicy(EventRequest.SUSPEND_ALL);

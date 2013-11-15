@@ -303,7 +303,7 @@ public class ObjectHologram implements Hologram {
         Type methodType = Type.getMethodType(methodDesc);
         ClassHolograph classHolograph = (ClassHolograph)klass;
         // TODO-RS: Caching! This is quite slow.
-        MethodMirror method = Reflection.getDeclaredMethod(ThreadHolograph.currentThreadMirror(), klass, methodName, methodType);
+        MethodMirror method = Reflection.getDeclaredMethod(klass, methodName, methodType);
         
         try {
             return classHolograph.invoke(object, method, args);

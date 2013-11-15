@@ -43,6 +43,7 @@ import com.sun.jdi.IntegerValue;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
+import com.sun.jdi.Location;
 import com.sun.jdi.LongValue;
 import com.sun.jdi.Method;
 import com.sun.jdi.Mirror;
@@ -60,6 +61,7 @@ import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
@@ -400,5 +402,9 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public EventDispatch dispatch() {
         return dispatch;
+    }
+    
+    public MirrorLocation makeMirrorLocation(Location location) {
+        return new JDIMirrorLocation(this, location);
     }
 }

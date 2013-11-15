@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import com.sun.jdi.event.AccessWatchpointEvent;
+import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
@@ -85,7 +86,10 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
         } else if (e instanceof ClassPrepareEvent) {
 	    ClassPrepareEvent cpe = (ClassPrepareEvent)e;
 	    return new JDIClassMirrorPrepareEvent(vm, cpe);
-	} else {
+	} else if (e instanceof BreakpointEvent) {
+	    BreakpointEvent be = (BreakpointEvent)e;
+            return new JDIMirrorLocationEvent(vm, be);
+        } else {
 	    return null;
 	}
     }

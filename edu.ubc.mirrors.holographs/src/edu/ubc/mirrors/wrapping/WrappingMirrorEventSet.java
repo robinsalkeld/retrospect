@@ -35,6 +35,7 @@ import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventSet;
+import edu.ubc.mirrors.MirrorLocationEvent;
 
 public class WrappingMirrorEventSet implements MirrorEventSet {
 
@@ -70,7 +71,9 @@ public class WrappingMirrorEventSet implements MirrorEventSet {
             return new WrappingFieldMirrorSetEvent(vm, (FieldMirrorSetEvent)e);
         } else if (e instanceof ClassMirrorPrepareEvent) {
 	    return new WrappingClassMirrorPrepareEvent(vm, (ClassMirrorPrepareEvent)e);
-	} else {
+        } else if (e instanceof MirrorLocationEvent) {
+            return new WrappingMirrorLocationEvent(vm, (MirrorLocationEvent)e);
+        } else {
 	    throw new IllegalArgumentException("Unrecognized event type: " + e);
 	}
     }

@@ -6,27 +6,27 @@ import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class ConstructorMirrorEntryShadow extends MirrorEventShadow {
+public class SynchronizedMethodMirrorEntryShadow extends MirrorEventShadow {
 
-    private final ConstructorMirrorEntryEvent event;
+    private final MethodMirrorEntryEvent event;
     
-    protected ConstructorMirrorEntryShadow(MirrorWorld world, ConstructorMirrorEntryEvent event, Member signature, Shadow enclosingShadow) {
-        super(world, event, Shadow.ConstructorExecution, signature, enclosingShadow);
+    protected SynchronizedMethodMirrorEntryShadow(MirrorWorld world, MethodMirrorEntryEvent event, Member signature, Shadow enclosingShadow) {
+        super(world, event, Shadow.SynchronizationLock, signature, enclosingShadow);
         this.event = event;
     }
 
     @Override
     protected boolean equals(MirrorEventShadow other) {
-        ConstructorMirrorEntryShadow shadow = (ConstructorMirrorEntryShadow)other;
-        return event.constructor().equals(shadow.event.constructor());
+        SynchronizedMethodMirrorEntryShadow shadow = (SynchronizedMethodMirrorEntryShadow)other;
+        return event.method().equals(shadow.event.method());
     }
     
     @Override
     public int hashCode() {
-        return event.constructor().hashCode();
+        return event.method().hashCode();
     }
     
     @Override
@@ -41,7 +41,7 @@ public class ConstructorMirrorEntryShadow extends MirrorEventShadow {
     
     @Override
     public Var getThisVar() {
-        return new MirrorEventVar(world.resolve(event.constructor().getDeclaringClass()), getThis());
+        return new MirrorEventVar(world.resolve(getDeclaringClass()), getThis());
     }
 
     @Override
@@ -51,21 +51,24 @@ public class ConstructorMirrorEntryShadow extends MirrorEventShadow {
 
     @Override
     public int getArgCount() {
-        return event.constructor().getParameterTypes().size();
+        return 1;
     }
     
     @Override
     public Var getArgVar(int i) {
-        return new MirrorEventVar(getArgType(i), getArgument(i));
+        return new MirrorEventVar(getArgType(i), getThis());
     }
     
     @Override
     public ResolvedType getArgType(int arg) {
-        return world.resolve(event.constructor().getParameterTypes().get(arg));
+        if (arg != 0) {
+            throw new IllegalArgumentException();
+        }
+        return world.resolve(getDeclaringClass());
     }
     
     @Override
     protected ClassMirror getDeclaringClass() {
-        return event.constructor().getDeclaringClass();
+        return event.method().getDeclaringClass();
     }
 }

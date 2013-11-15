@@ -28,6 +28,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -157,7 +158,16 @@ public class WrappingMethodMirror implements MethodMirror {
     }
     
     @Override
+    public MirrorLocation locationForBytecodeOffset(int offset) {
+        return vm.wrapLocation(wrapped.locationForBytecodeOffset(offset));
+    }
+    
+    @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + wrapped;
+    }
+
+    public MethodMirror getWrapped() {
+        return wrapped;
     }
 }

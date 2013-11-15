@@ -49,4 +49,6 @@ public interface MethodMirror {
     public byte[] getRawAnnotations();
     public byte[] getRawParameterAnnotations();
     public byte[] getRawAnnotationDefault();
+    
+    public MirrorLocation locationForBytecodeOffset(int offset);
 }
