@@ -8,6 +8,7 @@ import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirrorSetEvent;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class FieldMirrorSetShadow extends MirrorEventShadow {
@@ -54,4 +55,8 @@ public class FieldMirrorSetShadow extends MirrorEventShadow {
         return new MirrorEventVar(world.resolve(event.field().getType()), event.instance());
     }
 
+    @Override
+    protected InstanceMirror getThisJoinPointStaticPart() {
+        return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.FIELD_SET, event.field());
+    }
 }

@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -146,12 +147,12 @@ public class NativeConstructorMirror extends NativeInstanceMirror implements Con
     }
     
     @Override
-    public byte[] getRawAnnotations() {
-        return (byte[])readField("annotations");
+    public List<AnnotationMirror> getAnnotations() {
+        throw new UnsupportedOperationException();
     }
     
     @Override
-    public byte[] getRawParameterAnnotations() {
-        return (byte[])readField("parameterAnnotations");
+    public List<List<AnnotationMirror>> getParameterAnnotations() {
+        throw new UnsupportedOperationException();
     }
 }

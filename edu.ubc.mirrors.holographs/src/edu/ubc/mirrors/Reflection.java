@@ -48,7 +48,6 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -73,15 +72,23 @@ public class Reflection {
      */
     
     public static <T> T withThread(ThreadMirror t, Callable<T> c) {
-        ThreadHolograph threadHolograph = (ThreadHolograph)t;
-        threadHolograph.enterHologramExecution();
-        try {
-            return c.call();
-        } catch (Throwable e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            threadHolograph.exitHologramExecution();
+        if (t instanceof ThreadHolograph) {
+            ThreadHolograph threadHolograph = (ThreadHolograph)t;
+            threadHolograph.enterHologramExecution();
+            try {
+                return c.call();
+            } catch (Throwable e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            } finally {
+                threadHolograph.exitHologramExecution();
+            }
+        } else {
+            try {
+                return c.call();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
     
@@ -122,7 +129,7 @@ public class Reflection {
                 MethodMirror defineClassMethod = HolographInternalUtils.getMethod(classLoaderClass, "defineClass", String.class.getName(), "byte[]", "int", "int");
                 defineClassMethod.setAccessible(true);
                 
-                InstanceMirror nameMirror = makeString(vm, name);
+                InstanceMirror nameMirror = vm.makeString(name);
                 ObjectMirror bytecodeInVM = copyArray(vm, new NativeByteArrayMirror(newClassBytecode));
                 
                 return (ClassMirror)HolographInternalUtils.mirrorInvoke(thread, defineClassMethod, newLoader, nameMirror, bytecodeInVM, 0, newClassBytecode.length);
@@ -132,15 +139,15 @@ public class Reflection {
     }
     
     public static ClassMirrorLoader newURLClassLoader(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader parent, URL[] urls) {
-        ThreadHolograph threadHolograph = (ThreadHolograph)thread;
-        threadHolograph.enterHologramExecution();
-        try {
+//        ThreadHolograph threadHolograph = (ThreadHolograph)thread;
+//        threadHolograph.enterHologramExecution();
+//        try {
             ClassMirror urlClass = vm.findBootstrapClassMirror(URL.class.getName());
             ConstructorMirror urlConstructor = HolographInternalUtils.getConstructor(urlClass, String.class.getName());
             
             ObjectArrayMirror urlsMirror = (ObjectArrayMirror)urlClass.newArray(urls.length);
             for (int i = 0; i < urls.length; i++) {
-                InstanceMirror url = (InstanceMirror)HolographInternalUtils.newInstance(urlConstructor, thread, makeString(vm, urls[i].toString()));
+                InstanceMirror url = (InstanceMirror)HolographInternalUtils.newInstance(urlConstructor, thread, vm.makeString(urls[i].toString()));
                 urlsMirror.set(i, url);
             }
             
@@ -148,29 +155,9 @@ public class Reflection {
             ConstructorMirror constructor = HolographInternalUtils.getConstructor(urlClassLoaderClass, urlsMirror.getClassMirror().getClassName(), ClassLoader.class.getName());
             
             return (ClassMirrorLoader)HolographInternalUtils.newInstance(constructor, thread, urlsMirror, parent);
-        } finally {
-            threadHolograph.exitHologramExecution();
-        }
-    }
-    
-    public static InstanceMirror makeString(VirtualMachineMirror vm, String s) {
-        if (s == null) {
-            return null;
-        }
-        
-        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
-        InstanceMirror result = stringClass.newRawInstance();
-        ClassMirror charArrayClass = vm.getArrayClass(1, vm.getPrimitiveClass("char"));
-        
-        CharArrayMirror value = new DirectArrayMirror(charArrayClass, s.length());
-        arraycopy(new NativeCharArrayMirror(s.toCharArray()), 0, value, 0, s.length());
-        try {
-            result.set(stringClass.getDeclaredField("value"), value);
-            result.setInt(stringClass.getDeclaredField("count"), s.length());
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return result;
+//        } finally {
+//            threadHolograph.exitHologramExecution();
+//        }
     }
     
     public static String getRealStringForMirror(InstanceMirror mirror) {
@@ -213,7 +200,7 @@ public class Reflection {
         return target;
     }
     
-    public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader originalLoader, String name) throws ClassNotFoundException, MirrorInvocationTargetException {
+    public static ClassMirror loadClassMirror(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader originalLoader, boolean resolve, String name) throws ClassNotFoundException, MirrorInvocationTargetException {
         // String must be special-cased, because we can't call loadClass(String) to load String itself! We just make the
         // assumption that the VM defines the class, which is legitimate since the VM must also create string constants at the bytecode level.
         ClassMirror result;
@@ -223,15 +210,15 @@ public class Reflection {
             final ClassMirror classLoaderClass = vm.findBootstrapClassMirror(ClassLoader.class.getName());
             MethodMirror method = Reflection.withoutThread(thread, new Callable<MethodMirror>() {
                 public MethodMirror call() throws Exception {
-                    return HolographInternalUtils.getMethod(classLoaderClass, "loadClass", String.class.getName());
+                    return HolographInternalUtils.getMethod(classLoaderClass, "loadClass", String.class.getName(), "boolean");
                 }
             });
-                    
+            method.setAccessible(true);
             
             ThreadHolograph.raiseMetalevel();
             try {
                 result = (ClassMirror) method.invoke(thread,
-                        (InstanceMirror) originalLoader, makeString(vm, name));
+                        (InstanceMirror) originalLoader, vm.makeString(name), resolve);
             } catch (IllegalAccessException e) {
                 // Can't happen - can't reduce visibility of ClassLoader.loadClass()
                 throw new RuntimeException(e);
@@ -241,6 +228,21 @@ public class Reflection {
         if (result == null) {
             throw new ClassNotFoundException(name);
         }
+        
+        if (resolve) {
+            final ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
+            MethodMirror method = Reflection.withoutThread(thread, new Callable<MethodMirror>() {
+                public MethodMirror call() throws Exception {
+                    return HolographInternalUtils.getMethod(classClass, "getMethods");
+                }
+            });
+            try {
+                method.invoke(thread, result);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
         return result;
     }
     
@@ -268,7 +270,7 @@ public class Reflection {
         } else if (type.equals(Type.VOID_TYPE)) {
             return vm.getPrimitiveClass("void");
         } else {
-            return Reflection.loadClassMirror(vm, thread, loader, type.getClassName());
+            return Reflection.loadClassMirror(vm, thread, loader, resolve, type.getClassName());
         }
     }
     
@@ -605,6 +607,41 @@ public class Reflection {
         } catch (NoSuchMethodException e) {
             throw new NoSuchMethodError(e.getMessage());
         }
+    }
+    
+    public static InstanceMirror methodInstanceForMethodMirror(ThreadMirror thread, MethodMirror m) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, MirrorInvocationTargetException, ArrayIndexOutOfBoundsException, ClassNotFoundException {
+        VirtualMachineMirror vm = m.getDeclaringClass().getVM();
+        ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
+        MethodMirror getDeclaredMethodMethod = classClass.getDeclaredMethod("getDeclaredMethod", String.class.getName(), "java.lang.Class[]");
+        
+        int numParams = m.getParameterTypeNames().size();
+        ObjectArrayMirror paramTypeArray = (ObjectArrayMirror)classClass.newArray(numParams);
+        for (int i = 0; i < numParams; i++) {
+            paramTypeArray.set(i, Reflection.classMirrorForName(vm, thread, m.getParameterTypeNames().get(i), true, m.getDeclaringClass().getLoader()));
+        }
+        
+        Object[] args = new Object[2];
+        args[0] = vm.makeString(m.getName());
+        args[1] = paramTypeArray;
+        
+        return (InstanceMirror)getDeclaredMethodMethod.invoke(thread, m.getDeclaringClass(), args);
+    }
+    
+    public static InstanceMirror constructorInstanceForConstructorMirror(ThreadMirror thread, ConstructorMirror c) throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, MirrorInvocationTargetException, ArrayIndexOutOfBoundsException, ClassNotFoundException {
+        VirtualMachineMirror vm = c.getDeclaringClass().getVM();
+        ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
+        MethodMirror getDeclaredMethodMethod = classClass.getDeclaredMethod("getDeclaredMethod", String.class.getName(), "java.lang.Class[]");
+        
+        int numParams = c.getParameterTypeNames().size();
+        ObjectArrayMirror paramTypeArray = (ObjectArrayMirror)classClass.newArray(numParams);
+        for (int i = 0; i < numParams; i++) {
+            paramTypeArray.set(i, Reflection.classMirrorForName(vm, thread, c.getParameterTypeNames().get(i), true, c.getDeclaringClass().getLoader()));
+        }
+        
+        Object[] args = new Object[1];
+        args[1] = paramTypeArray;
+        
+        return (InstanceMirror)getDeclaredMethodMethod.invoke(thread, c.getDeclaringClass(), args);
     }
     
     public static InstanceMirror newByteArrayPrintStream(VirtualMachineMirror vm) throws InstantiationException, IllegalAccessException, IllegalArgumentException, MirrorInvocationTargetException, SecurityException, NoSuchMethodException {

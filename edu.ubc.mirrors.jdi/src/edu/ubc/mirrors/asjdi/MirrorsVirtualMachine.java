@@ -381,7 +381,7 @@ public class MirrorsVirtualMachine implements VirtualMachine {
 
     @Override
     public StringReference mirrorOf(String value) {
-        return new MirrorsStringReference(this, Reflection.makeString(vm, value));
+        return new MirrorsStringReference(this, vm.makeString(value));
     }
 
     @Override

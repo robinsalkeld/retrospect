@@ -21,11 +21,23 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassType;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ThreadReference;
+import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIConstructorMirror extends JDIMethodOrConstructorMirror implements ConstructorMirror {
@@ -38,10 +50,43 @@ public class JDIConstructorMirror extends JDIMethodOrConstructorMirror implement
     }
     
     @Override
+    protected ObjectReference getReflectiveInstance(ThreadMirror thread) {
+        try {
+            return ((JDIObjectMirror)Reflection.constructorInstanceForConstructorMirror(thread, this)).getObjectReference();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
     public InstanceMirror newInstance(ThreadMirror thread, Object... args)
             throws IllegalAccessException, IllegalArgumentException, MirrorInvocationTargetException {
 	
-	// TODO-RS: Implementable but not needed.
-	throw new UnsupportedOperationException();
+	ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
+	
+	List<Value> values = new ArrayList<Value>(args.length);
+	for (int i = 0; i < args.length; i++) {
+	    values.add(vm.toValue(args[i]));
+	}
+	
+	ClassType klass = (ClassType)method.declaringType();
+	
+	try {
+            return (InstanceMirror) vm.makeMirror(klass.newInstance(threadRef, method, values, ClassType.INVOKE_SINGLE_THREADED));
+        } catch (InvalidTypeException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotLoadedException e) {
+            throw new RuntimeException(e);
+        } catch (IncompatibleThreadStateException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

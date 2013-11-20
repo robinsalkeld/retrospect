@@ -25,10 +25,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIThreadMirror extends JDIInstanceMirror implements ThreadMirror {
@@ -51,6 +53,19 @@ public class JDIThreadMirror extends JDIInstanceMirror implements ThreadMirror {
         List<FrameMirror> result = new ArrayList<FrameMirror>(stack.size());
         for (StackFrame frame : stack) {
             result.add(new JDIFrameMirror(vm, frame));
+        }
+        return result;
+    }
+    
+    @Override
+    public List<InstanceMirror> getOwnedMonitors() {
+        List<InstanceMirror> result = new ArrayList<InstanceMirror>();
+        try {
+            for (ObjectReference monitor : thread.ownedMonitors()) {
+                result.add((InstanceMirror)vm.makeMirror(monitor));
+            }
+        } catch (IncompatibleThreadStateException e) {
+            throw new RuntimeException(e);
         }
         return result;
     }

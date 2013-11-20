@@ -23,11 +23,16 @@ package edu.ubc.mirrors.jdi;
 
 import java.util.List;
 
+import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.Method;
+import com.sun.jdi.ObjectReference;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MirrorLocation;
+import edu.ubc.mirrors.ThreadMirror;
 
 public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
 
@@ -91,17 +96,25 @@ public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
 	// Ignore - I wonder if this shouldn't even be part of the mirrors API...
     }
 
-    public byte[] getRawAnnotations() {
-	throw new UnsupportedOperationException();
+    public List<AnnotationMirror> getAnnotations() {
+        ThreadMirror thread = (ThreadMirror)vm.makeMirror(vm.invokeThread);
+        ObjectReference methodInstance = getReflectiveInstance(thread);
+        ClassType methodClass = (ClassType)methodInstance.referenceType();
+        Method getAnnotationsMethod = methodClass.methodsByName("getDeclaredAnnotations", "()[Ljava/lang/annotation/Annotation;").get(0);
+        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(methodInstance, vm.invokeThread, getAnnotationsMethod);
+        return vm.wrapAnnotationArray(annotsArray);
     }
-
-    public byte[] getRawParameterAnnotations() {
-	throw new UnsupportedOperationException();
+    
+    public List<List<AnnotationMirror>> getParameterAnnotations() {
+        ThreadMirror thread = (ThreadMirror)vm.makeMirror(vm.invokeThread);
+        ObjectReference methodInstance = getReflectiveInstance(thread);
+        ClassType methodClass = (ClassType)methodInstance.referenceType();
+        Method getAnnotationsMethod = methodClass.methodsByName("getParameterAnnotations", "()[[Ljava/lang/annotation/Annotation;").get(0);
+        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(methodInstance, vm.invokeThread, getAnnotationsMethod);
+        return vm.wrapAnnotationArrayOfArrays(annotsArray);
     }
-
-    public byte[] getRawAnnotationDefault() {
-	throw new UnsupportedOperationException();
-    }
+    
+    protected abstract ObjectReference getReflectiveInstance(ThreadMirror thread);
 
     public MirrorLocation locationForBytecodeOffset(int offset) {
         return vm.makeMirrorLocation(method.locationOfCodeIndex(offset));

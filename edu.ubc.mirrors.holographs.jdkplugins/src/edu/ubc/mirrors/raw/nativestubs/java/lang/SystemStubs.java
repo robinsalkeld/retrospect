@@ -83,6 +83,6 @@ public class SystemStubs extends NativeStubs {
         // TODO-RS: Switch based on supported platforms.
         String libname = Reflection.getRealStringForMirror(libnameMirror);
         String mappedLibname = libname + ".so";
-        return Reflection.makeString(getVM(), mappedLibname);
+        return getVM().makeString(mappedLibname);
     }
 }

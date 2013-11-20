@@ -76,7 +76,7 @@ public class ConstantPoolReader extends BlankInstanceMirror implements InstanceM
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
         }
-        return Reflection.makeString(klass.getVM(), s);
+        return klass.getVM().makeString(s);
     }
     
     @Override

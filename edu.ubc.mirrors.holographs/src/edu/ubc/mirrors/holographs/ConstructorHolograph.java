@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -129,13 +130,13 @@ public class ConstructorHolograph implements ConstructorMirror {
     }
 
     @Override
-    public byte[] getRawAnnotations() {
-        return wrapped.getRawAnnotations();
+    public List<AnnotationMirror> getAnnotations() {
+        return wrapped.getAnnotations();
     }
 
     @Override
-    public byte[] getRawParameterAnnotations() {
-        return wrapped.getRawParameterAnnotations();
+    public List<List<AnnotationMirror>> getParameterAnnotations() {
+        return wrapped.getParameterAnnotations();
     }
 
     @Override

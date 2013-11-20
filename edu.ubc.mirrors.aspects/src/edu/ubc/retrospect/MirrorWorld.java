@@ -2,7 +2,6 @@ package edu.ubc.retrospect;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 import java.util.regex.Pattern;
 
 import org.aspectj.lang.annotation.Aspect;
@@ -29,22 +28,15 @@ import org.objectweb.asm.Type;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
-import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
-import edu.ubc.mirrors.ConstructorMirrorExitEvent;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.FieldMirrorGetEvent;
-import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MethodMirrorEntryEvent;
-import edu.ubc.mirrors.MethodMirrorExitEvent;
-import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.VirtualMachineMirror;
 
 /**
  * Where good is evil, and evil good. Or something like that.
@@ -55,7 +47,7 @@ public class MirrorWorld extends World {
 
     public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After };
     
-    final VirtualMachineHolograph vm;
+    final VirtualMachineMirror vm;
     private final ClassMirrorLoader loader;
     final ThreadMirror thread;
     private final Map<ClassMirror, InstanceMirror> ajFactories = new HashMap<ClassMirror, InstanceMirror>();
@@ -68,11 +60,11 @@ public class MirrorWorld extends World {
     
     private final MirrorWeavingSupport weavingSupport = new MirrorWeavingSupport(this);
     
-    public MirrorWorld(VirtualMachineHolograph vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+    public MirrorWorld(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
         this.loader = loader;
         this.thread = thread;
-        ClassMirror factoryClass = Reflection.classMirrorForType(vm, thread, Type.getType(Factory.class), false, loader);
+        ClassMirror factoryClass = Reflection.classMirrorForType(vm, thread, Type.getType(Factory.class), true, loader);
         this.factoryConstructor = factoryClass.getConstructor(String.class.getName(), Class.class.getName());
         this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
         this.pointcutAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(org.aspectj.lang.annotation.Pointcut.class), false, loader);
@@ -129,6 +121,16 @@ public class MirrorWorld extends World {
         return factory;
     }
     
+    private InstanceMirror makeLockSignature(ThreadMirror thread, ClassMirror monitorClass) {
+        InstanceMirror factory = getAJFactory(thread, monitorClass);
+        
+        return (InstanceMirror)new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((Factory)null).makeLockSig((Class<?>)null);
+            }
+        }.invoke(factory, thread, monitorClass);
+    }
+    
     private InstanceMirror makeFieldSignature(ThreadMirror thread, FieldMirror field) {
         InstanceMirror factory = getAJFactory(thread, field.getDeclaringClass());
         
@@ -136,7 +138,7 @@ public class MirrorWorld extends World {
             protected void methodCall() throws Throwable {
                 ((Factory)null).makeFieldSig(0, null, null, null);
             }
-        }.invoke(factory, thread, field.getModifiers(), Reflection.makeString(vm, field.getName()), 
+        }.invoke(factory, thread, field.getModifiers(), vm.makeString(field.getName()), 
                 field.getDeclaringClass(), field.getType());
     }
     
@@ -151,7 +153,7 @@ public class MirrorWorld extends World {
         int numParams = parameterTypes.length();
         ObjectArrayMirror parameterNames = (ObjectArrayMirror)stringClass.newArray(numParams);
         for (int i = 0; i < numParams; i++) {
-            parameterNames.set(i, Reflection.makeString(vm, "arg" + i));
+            parameterNames.set(i, vm.makeString("arg" + i));
         }
         ObjectArrayMirror exceptionTypes = Reflection.toArray(classClass, constructor.getExceptionTypes());
         return (InstanceMirror)new MethodHandle() {
@@ -173,14 +175,14 @@ public class MirrorWorld extends World {
         int numParams = parameterTypes.length();
         ObjectArrayMirror parameterNames = (ObjectArrayMirror)stringClass.newArray(numParams);
         for (int i = 0; i < numParams; i++) {
-            parameterNames.set(i, Reflection.makeString(vm, "arg" + i));
+            parameterNames.set(i, vm.makeString("arg" + i));
         }
         ObjectArrayMirror exceptionTypes = Reflection.toArray(classClass, method.getParameterTypes());
         return (InstanceMirror)new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((Factory)null).makeMethodSig(0, null, null, null, null, null, null);
             }
-        }.invoke(factory, thread, method.getModifiers(), Reflection.makeString(vm, method.getName()), method.getDeclaringClass(), 
+        }.invoke(factory, thread, method.getModifiers(), vm.makeString(method.getName()), method.getDeclaringClass(), 
                 parameterTypes, parameterNames, exceptionTypes, method.getReturnType());
     }
     
@@ -214,50 +216,14 @@ public class MirrorWorld extends World {
         }.invoke(factory, thread, vm.getInternedString(kind), signature, null);
     }
     
-
-    public InstanceMirror makeStaticJoinPoint(ThreadMirror thread, MirrorEvent event) {
-        if (event instanceof ConstructorMirrorEntryEvent) {
-            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((ConstructorMirrorEntryEvent)event).constructor());
-        } else if (event instanceof ConstructorMirrorExitEvent) {
-            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((ConstructorMirrorExitEvent)event).constructor());
-        } else if (event instanceof MethodMirrorEntryEvent) {
-            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((MethodMirrorEntryEvent)event).method());
-        } else if (event instanceof MethodMirrorExitEvent) {
-            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.METHOD_EXECUTION, ((MethodMirrorExitEvent)event).method());
-        } else if (event instanceof FieldMirrorGetEvent) {
-            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.FIELD_GET, ((FieldMirrorGetEvent)event).field());
-        } else if (event instanceof FieldMirrorSetEvent) {
-            return makeStaticJoinPoint(thread, org.aspectj.lang.JoinPoint.FIELD_SET, ((FieldMirrorSetEvent)event).field());
-        } else {
-            throw new IllegalArgumentException("Unsupported event type: " + event);
-        }
-    }
-    
-    public static class CflowStack {
-        
-        private Map<ThreadMirror, Stack<ExposedState>> stateStacks = new HashMap<ThreadMirror, Stack<ExposedState>>();
-        
-        private Stack<ExposedState> stackForThread(ThreadMirror thread) {
-            Stack<ExposedState> stack = stateStacks.get(thread);
-            if (stack == null) {
-                stack = new Stack<ExposedState>();
-                stateStacks.put(thread, stack);
+    public InstanceMirror makeSynchronizationStaticJoinPoint(ThreadMirror thread, String kind, InstanceMirror monitor) {
+        InstanceMirror factory = getAJFactory(thread, monitor.getClassMirror());
+        InstanceMirror signature = makeLockSignature(thread, monitor.getClassMirror());
+        return (InstanceMirror)new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((Factory)null).makeSJP(null, null, null);
             }
-            return stack;
-        }
-        
-        public void pushState(ThreadMirror thread, ExposedState state) {
-            stackForThread(thread).push(state);
-        }
-        
-        public void popState(ThreadMirror thread) {
-            stackForThread(thread).pop();
-        }
-        
-        public ExposedState getBinding(ThreadMirror thread) {
-            Stack<ExposedState> stack = stackForThread(thread);
-            return stack.empty() ? null : stack.peek();
-        }
+        }.invoke(factory, thread, vm.getInternedString(kind), signature, null);
     }
     
     public ClassMirror getAnnotClassMirror(AdviceKind kind) {

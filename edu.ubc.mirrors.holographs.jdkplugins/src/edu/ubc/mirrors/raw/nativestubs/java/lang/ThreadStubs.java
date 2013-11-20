@@ -64,9 +64,9 @@ public class ThreadStubs extends NativeStubs {
             FrameMirror frame = trace.get(i);
             InstanceMirror element = stackTraceElementClass.newRawInstance();
             try {
-                element.set(stackTraceElementClass.getDeclaredField("declaringClass"), Reflection.makeString(vm, frame.declaringClass().getClassName()));
-                element.set(stackTraceElementClass.getDeclaredField("methodName"), Reflection.makeString(vm, frame.method().getName()));
-                element.set(stackTraceElementClass.getDeclaredField("fileName"), Reflection.makeString(vm, frame.fileName()));
+                element.set(stackTraceElementClass.getDeclaredField("declaringClass"), vm.makeString(frame.declaringClass().getClassName()));
+                element.set(stackTraceElementClass.getDeclaredField("methodName"), vm.makeString(frame.method().getName()));
+                element.set(stackTraceElementClass.getDeclaredField("fileName"), vm.makeString(frame.fileName()));
                 element.setInt(stackTraceElementClass.getDeclaredField("lineNumber"), frame.lineNumber());
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);

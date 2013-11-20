@@ -49,7 +49,7 @@ public class ZipEntryStubs extends ZipFileStubs {
         byte[] commentBytes = (byte[])getHostNativeMethod(ZipFile.class, "getEntryBytes", Long.TYPE, Integer.TYPE).invoke(null, jzentry, 2);
         if (commentBytes != null) {
             String commentString = new String(commentBytes, 0, commentBytes.length, "UTF-8");
-            InstanceMirror commentStringMirror = Reflection.makeString(getVM(), commentString);
+            InstanceMirror commentStringMirror = getVM().makeString(commentString);
             zipEntry.set(klass.getDeclaredField("comment"), commentStringMirror);
         }
     }

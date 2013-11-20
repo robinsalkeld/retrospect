@@ -112,18 +112,13 @@ public class WrappingMethodMirror implements MethodMirror {
     }
     
     @Override
-    public byte[] getRawAnnotations() {
-        return wrapped.getRawAnnotations();
+    public List<List<AnnotationMirror>> getParameterAnnotations() {
+        return vm.wrapAnnotationsList(wrapped.getParameterAnnotations());
     }
 
     @Override
-    public byte[] getRawParameterAnnotations() {
-        return wrapped.getRawParameterAnnotations();
-    }
-
-    @Override
-    public byte[] getRawAnnotationDefault() {
-        return wrapped.getRawAnnotationDefault();
+    public Object getDefaultValue() {
+        return vm.wrapValue(wrapped.getDefaultValue());
     }
 
     @Override

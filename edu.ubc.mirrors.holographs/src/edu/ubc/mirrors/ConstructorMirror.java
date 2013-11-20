@@ -38,9 +38,8 @@ public interface ConstructorMirror {
     
     public String getSignature();
     
-    public byte[] getRawAnnotations();
-    
-    public byte[] getRawParameterAnnotations();
+    public List<AnnotationMirror> getAnnotations();
+    public List<List<AnnotationMirror>> getParameterAnnotations();
     
     public InstanceMirror newInstance(ThreadMirror thread, Object ... args)
             throws IllegalAccessException, IllegalArgumentException, MirrorInvocationTargetException;

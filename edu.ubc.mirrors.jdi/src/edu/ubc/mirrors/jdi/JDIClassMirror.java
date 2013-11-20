@@ -28,12 +28,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InterfaceType;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
@@ -92,8 +96,12 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<AnnotationMirror> getAnnotations() {
-        throw new UnsupportedOperationException();
+        ClassType classClass = (ClassType)vm.jdiVM.classesByName(Class.class.getName()).get(0);
+        Method getAnnotationsMethod = classClass.methodsByName("getAnnotations", "()[Ljava/lang/annotation/Annotation;").get(0);
+        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(refType.classObject(), vm.invokeThread, getAnnotationsMethod);
+        return (List<AnnotationMirror>)vm.wrapAnnotationValue(annotsArray);
     }
     
     @Override
@@ -308,7 +316,8 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public ArrayMirror newArray(int size) {
-        throw new UnsupportedOperationException();
+        ArrayType targetType = (ArrayType)vm.jdiVM.classesByName(getClassName() + "[]").get(0);
+        return (ArrayMirror)vm.makeMirror(targetType.newInstance(size));
     }
 
     @Override
@@ -345,12 +354,14 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     
     @Override
     public ClassMirror getEnclosingClassMirror() {
-        throw new UnsupportedOperationException();
+        //TODO-RS
+        return null;
     }
     
     @Override
     public MethodMirror getEnclosingMethodMirror() {
-        throw new UnsupportedOperationException();
+        //TODO-RS
+        return null;
     }
     
     @Override

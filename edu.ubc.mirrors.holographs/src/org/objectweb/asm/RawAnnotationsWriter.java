@@ -68,23 +68,23 @@ public class RawAnnotationsWriter extends ClassVisitor {
         return writer.rawAnnotations();
     }
     
-    private static void visitAnnotationMirror(AnnotationVisitor visitor, AnnotationMirror mirror) {
+    public static void visitAnnotationMirror(AnnotationVisitor visitor, AnnotationMirror mirror) {
         for (String key : mirror.getKeys()) {
             Object value = mirror.getValue(key);
             visitAnnotationMirrorValue(visitor, key, value);
         }
     }
     
-    private static void visitAnnotationMirrorValue(AnnotationVisitor visitor, String key, Object value) {
+    public static void visitAnnotationMirrorValue(AnnotationVisitor visitor, String key, Object value) {
         if (value instanceof AnnotationMirror) {
             AnnotationMirror subAnnot = (AnnotationMirror)value;
             String desc = descForClassMirror(subAnnot.getClassMirror());
             AnnotationVisitor subVisitor = visitor.visitAnnotation(key, desc);
             visitAnnotationMirror(subVisitor, subAnnot);
-        } else if (value instanceof EnumMirror) {
-            EnumMirror e = (EnumMirror)value;
-            String desc = Reflection.typeForClassMirror(e.getClassMirror()).getDescriptor();
-            visitor.visitEnum(key, desc, e.getName());
+        } else if (value instanceof ClassMirror) {
+            ClassMirror klass = (ClassMirror)value;
+            Type type = Reflection.typeForClassMirror(klass);
+            visitor.visit(key, type);
         } else if (value instanceof EnumMirror) {
             EnumMirror e = (EnumMirror)value;
             String desc = Reflection.typeForClassMirror(e.getClassMirror()).getDescriptor();
@@ -98,7 +98,13 @@ public class RawAnnotationsWriter extends ClassVisitor {
         }
     }
 
-    private static String descForClassMirror(ClassMirror klass) {
+    public static String descForClassMirror(ClassMirror klass) {
         return Reflection.typeForClassMirror(klass).getDescriptor();
+    }
+    
+    @Override
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        MethodWriter methodWriter = (MethodWriter)writer.visitMethod(access, name, desc, signature, exceptions);
+        return new RawMethodAnnotationsWriter(Type.getArgumentTypes(desc).length, writer, methodWriter);
     }
 }

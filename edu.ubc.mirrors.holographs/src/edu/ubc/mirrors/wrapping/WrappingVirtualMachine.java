@@ -304,8 +304,21 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return result;
     }
     
+    public List<List<AnnotationMirror>> wrapAnnotationsList(List<List<AnnotationMirror>> annotationsList) {
+        List<List<AnnotationMirror>> result = new ArrayList<List<AnnotationMirror>>();
+        for (List<AnnotationMirror> list : annotationsList) {
+            result.add(wrapAnnotations(list));
+        }
+        return result;
+    }
+    
     public AnnotationMirror wrapAnnotation(AnnotationMirror a) {
         return new WrappingAnnotationMirror(this, a);
+    }
+    
+    @Override
+    public InstanceMirror makeString(String s) {
+        return (InstanceMirror)getWrappedMirror(wrappedVM.makeString(s));
     }
     
     @Override

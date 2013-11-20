@@ -165,6 +165,11 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
     };
     
     @Override
+    public InstanceMirror makeString(String s) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public InstanceMirror getInternedString(String s) {
         throw new UnsupportedOperationException();
     }

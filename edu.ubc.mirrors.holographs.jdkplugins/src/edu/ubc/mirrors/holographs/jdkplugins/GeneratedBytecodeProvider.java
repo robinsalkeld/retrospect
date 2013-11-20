@@ -113,7 +113,7 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
             
             ByteArrayMirror bytesArray;
             bytesArray = (ByteArrayMirror)generateMethod.invoke(ThreadHolograph.currentThreadMirror(), null,
-                    Reflection.makeString(vm, classMirror.getClassName()), interfacesArrayMirror);
+                    vm.makeString(classMirror.getClassName()), interfacesArrayMirror);
             byte[] result = new byte[bytesArray.length()];
             ByteArrayMirror nativeBytes = new NativeByteArrayMirror(result);
             Reflection.arraycopy(bytesArray, 0, nativeBytes, 0, result.length);
@@ -233,7 +233,7 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
                         InstanceMirror generator = generatorClass.getConstructor().newInstance(ThreadHolograph.currentThreadMirror());
                         InstanceMirror duplicateAccessor = (InstanceMirror)generateMethod.invoke(ThreadHolograph.currentThreadMirror(), generator, 
                                 methodMirror.getDeclaringClass(),
-                                Reflection.makeString(vm, methodMirror.getName()),
+                                vm.makeString(methodMirror.getName()),
                                 Reflection.toArray(classClass, methodMirror.getParameterTypes()),
                                 methodMirror.getReturnType(),
                                 Reflection.toArray(classClass, methodMirror.getExceptionTypes()),

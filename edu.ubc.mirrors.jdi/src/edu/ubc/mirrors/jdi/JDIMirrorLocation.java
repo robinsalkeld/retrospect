@@ -37,4 +37,9 @@ public final class JDIMirrorLocation implements MirrorLocation {
     public ClassMirror declaringClass() {
         return vm.makeClassMirror(jdiLoc.declaringType());
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + jdiLoc;
+    }
 }

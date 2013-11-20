@@ -34,15 +34,15 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
 public class MirrorWeaver {
     
     private final MirrorWorld world;
     private final CrosscuttingMembersSet xcutSet;
     
-    public MirrorWeaver(VirtualMachineHolograph vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+    public MirrorWeaver(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.world = new MirrorWorld(vm, loader, thread);
         this.xcutSet = new CrosscuttingMembersSet(world);
     }
@@ -52,53 +52,47 @@ public class MirrorWeaver {
     }
     
     public void weave(ClassMirror... aspects) throws ClassNotFoundException, NoSuchMethodException, InterruptedException, MirrorInvocationTargetException {
-        ThreadHolograph threadHolograph = (ThreadHolograph)world.thread;
-        threadHolograph.enterHologramExecution();
-        try {
-            ThreadHolograph.raiseMetalevel();
+        ThreadHolograph.raiseMetalevel();
 
-            for (ClassMirror aspect : aspects) {
-                ReferenceType aspectType = (ReferenceType)world.resolve(aspect);
-                xcutSet.addOrReplaceAspect(aspectType);
-            }
-            
-            for (ConcreteTypeMunger munger : xcutSet.getTypeMungers()) {
-                MirrorTypeMunger mirrorMunger = (MirrorTypeMunger)munger;
-                mirrorMunger.munge(this);
-            }
-            
-            final Set<MirrorEventShadow> joinpointShadows = new HashSet<MirrorEventShadow>();
-            for (ShadowMunger munger : xcutSet.getShadowMungers()) {
-                AdviceMirror advice = (AdviceMirror)munger;
-                System.out.println("Installing event requests for advice: " + advice);
-                PointcutMirrorRequestExtractor.installCallback(world, advice, new Callback<MirrorEventShadow>() {
-                    public void handle(MirrorEventShadow shadow) {
-                        if (shadow.getDeclaringClass().getLoader() != null) {
-                            joinpointShadows.add(shadow);
-                        }
+        for (ClassMirror aspect : aspects) {
+            ReferenceType aspectType = (ReferenceType)world.resolve(aspect);
+            xcutSet.addOrReplaceAspect(aspectType);
+        }
+        
+        for (ConcreteTypeMunger munger : xcutSet.getTypeMungers()) {
+            MirrorTypeMunger mirrorMunger = (MirrorTypeMunger)munger;
+            mirrorMunger.munge(this);
+        }
+        
+        final Set<MirrorEventShadow> joinpointShadows = new HashSet<MirrorEventShadow>();
+        for (ShadowMunger munger : xcutSet.getShadowMungers()) {
+            AdviceMirror advice = (AdviceMirror)munger;
+            System.out.println("Installing event requests for advice: " + advice);
+            PointcutMirrorRequestExtractor.installCallback(world, advice, new Callback<MirrorEventShadow>() {
+                public void handle(MirrorEventShadow shadow) {
+                    if (shadow.getDeclaringClass().getLoader() != null) {
+                        joinpointShadows.add(shadow);
                     }
-                });
-                System.out.println("Done.");
-            }
-            
-            world.vm.dispatch().addSetCallback(new Runnable() {
-                public void run() {
-                    for (MirrorEventShadow shadow : joinpointShadows) {
-                        for (ShadowMunger munger : xcutSet.getShadowMungers()) {
-                            if (munger.match(shadow, world)) {
-                                shadow.addMunger(munger);
-                            }
-                        }
-                        shadow.implement();
-                    }
-                    joinpointShadows.clear();
                 }
             });
-            
-            ThreadHolograph.lowerMetalevel();
-        } finally {
-            threadHolograph.exitHologramExecution();
+            System.out.println("Done.");
         }
+        
+        world.vm.dispatch().addSetCallback(new Runnable() {
+            public void run() {
+                for (MirrorEventShadow shadow : joinpointShadows) {
+                    for (ShadowMunger munger : xcutSet.getShadowMungers()) {
+                        if (munger.match(shadow, world)) {
+                            shadow.addMunger(munger);
+                        }
+                    }
+                    shadow.implement();
+                }
+                joinpointShadows.clear();
+            }
+        });
+        
+        ThreadHolograph.lowerMetalevel();
     }
 }
 

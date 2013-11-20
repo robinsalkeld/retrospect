@@ -24,9 +24,11 @@ package edu.ubc.mirrors.jdi;
 import com.sun.jdi.BooleanValue;
 import com.sun.jdi.ByteValue;
 import com.sun.jdi.CharValue;
+import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.DoubleValue;
 import com.sun.jdi.FloatValue;
 import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LongValue;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ShortValue;
@@ -36,7 +38,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ObjectMirror;
 
-public class JDIInstanceMirror extends JDIObjectMirror implements InstanceMirror {
+public class JDIInstanceMirror extends AbstractJDIObjectMirror implements InstanceMirror {
     
     public JDIInstanceMirror(JDIVirtualMachineMirror vm, ObjectReference t) {
         super(vm, t);
@@ -100,58 +102,59 @@ public class JDIInstanceMirror extends JDIObjectMirror implements InstanceMirror
         return value == null ? 0 : ((DoubleValue)value).doubleValue();
     }
 
+    protected void setValue(FieldMirror field, Value value) {
+        try {
+            mirror.setValue(((JDIFieldMirror)field).field, value);
+        } catch (InvalidTypeException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotLoadedException e) {
+            throw new UnsupportedOperationException();
+        }
+    }
+    
     @Override
     public void set(FieldMirror field, ObjectMirror o) throws IllegalAccessException {
-        // Could implement this but holograms don't need it.
-        throw new UnsupportedOperationException();
+        setValue(field, vm.unwrapMirror(o));
     }
 
     @Override
     public void setBoolean(FieldMirror field, boolean b) throws IllegalAccessException {
-        // Could implement this but holograms don't need it.
-        throw new UnsupportedOperationException();
+        setValue(field, vm.jdiVM.mirrorOf(b));
     }
 
     @Override
     public void setByte(FieldMirror field, byte b) throws IllegalAccessException {
-        // Could implement this but holograms don't need it.
-        throw new UnsupportedOperationException();
+        setValue(field, vm.jdiVM.mirrorOf(b));
     }
 
     @Override
     public void setChar(FieldMirror field, char c) throws IllegalAccessException {
-        // Could implement this but holograms don't need it.
-        throw new UnsupportedOperationException();
+        setValue(field, vm.jdiVM.mirrorOf(c));
     }
 
     @Override
     public void setShort(FieldMirror field, short s) throws IllegalAccessException {
-        // Could implement this but holograms don't need it.
-        throw new UnsupportedOperationException();
+        setValue(field, vm.jdiVM.mirrorOf(s));
     }
 
     @Override
     public void setInt(FieldMirror field, int i) throws IllegalAccessException {
-        // Could implement this but holograms don't need it.
-        throw new UnsupportedOperationException();
+        setValue(field, vm.jdiVM.mirrorOf(i));
     }
 
     @Override
     public void setLong(FieldMirror field, long l) throws IllegalAccessException {
-        // Could implement this but holograms don't need it.
-        throw new UnsupportedOperationException();
+        setValue(field, vm.jdiVM.mirrorOf(l));
     }
 
     @Override
     public void setFloat(FieldMirror field, float f) throws IllegalAccessException {
-        // Could implement this but holograms don't need it.
-        throw new UnsupportedOperationException();
+        setValue(field, vm.jdiVM.mirrorOf(f));
     }
 
     @Override
     public void setDouble(FieldMirror field, double d) throws IllegalAccessException {
-        // Could implement this but holograms don't need it.
-        throw new UnsupportedOperationException();
+        setValue(field, vm.jdiVM.mirrorOf(d));
     }
 
 }

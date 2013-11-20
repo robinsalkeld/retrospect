@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingThreadMirror extends WrappingInstanceMirror implements ThreadMirror {
@@ -47,6 +48,15 @@ public class WrappingThreadMirror extends WrappingInstanceMirror implements Thre
     @Override
     public List<FrameMirror> getStackTrace() {
 	return getWrappedStackTrace(vm, wrappedThread);
+    }
+    
+    @Override
+    public List<InstanceMirror> getOwnedMonitors() {
+        List<InstanceMirror> result = new ArrayList<InstanceMirror>();
+        for (InstanceMirror monitor : wrappedThread.getOwnedMonitors()) {
+            result.add((InstanceMirror)vm.getWrappedMirror(monitor));
+        }
+        return result;
     }
     
     @Override

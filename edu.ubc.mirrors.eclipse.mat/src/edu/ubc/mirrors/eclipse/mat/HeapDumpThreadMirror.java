@@ -30,6 +30,7 @@ import org.eclipse.mat.snapshot.model.IStackFrame;
 import org.eclipse.mat.snapshot.model.IThreadStack;
 
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements ThreadMirror {
@@ -62,6 +63,11 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
         return result;
     }
 
+    @Override
+    public List<InstanceMirror> getOwnedMonitors() {
+        throw new UnsupportedOperationException();
+    }
+    
     @Override
     public void interrupt() {
         throw new UnsupportedOperationException(); 

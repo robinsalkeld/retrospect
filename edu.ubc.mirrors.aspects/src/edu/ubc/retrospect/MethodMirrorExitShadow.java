@@ -8,6 +8,7 @@ import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -69,5 +70,10 @@ public class MethodMirrorExitShadow extends MirrorEventShadow {
     @Override
     protected ClassMirror getDeclaringClass() {
         return event.method().getDeclaringClass();
+    }
+    
+    @Override
+    protected InstanceMirror getThisJoinPointStaticPart() {
+        return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.METHOD_EXECUTION, event.method());
     }
 }

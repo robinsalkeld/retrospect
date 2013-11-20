@@ -121,7 +121,7 @@ public class MethodHolograph implements MethodMirror {
                 Object result = hologramClassMethod.invoke(hologramObj, hologramArgs);
                 // Account for the fact that toString() has to return a real String here
                 if (result instanceof String) {
-                    return Reflection.makeString(klass.getVM(), (String)result);
+                    return klass.getVM().makeString((String)result);
                 } else {
                     return ClassHolograph.unwrapHologram(result);
                 }
@@ -169,18 +169,13 @@ public class MethodHolograph implements MethodMirror {
     }
 
     @Override
-    public byte[] getRawAnnotations() {
-        return wrapped.getRawAnnotations();
+    public List<List<AnnotationMirror>> getParameterAnnotations() {
+        return wrapped.getParameterAnnotations();
     }
-
+    
     @Override
-    public byte[] getRawParameterAnnotations() {
-        return wrapped.getRawParameterAnnotations();
-    }
-
-    @Override
-    public byte[] getRawAnnotationDefault() {
-        return wrapped.getRawAnnotationDefault();
+    public Object getDefaultValue() {
+        return wrapped.getDefaultValue();
     }
     
     @Override

@@ -1,11 +1,13 @@
 package edu.ubc.retrospect;
 
 import org.aspectj.weaver.Member;
+import org.aspectj.weaver.MemberImpl;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -13,8 +15,8 @@ public class SynchronizedMethodMirrorEntryShadow extends MirrorEventShadow {
 
     private final MethodMirrorEntryEvent event;
     
-    protected SynchronizedMethodMirrorEntryShadow(MirrorWorld world, MethodMirrorEntryEvent event, Member signature, Shadow enclosingShadow) {
-        super(world, event, Shadow.SynchronizationLock, signature, enclosingShadow);
+    protected SynchronizedMethodMirrorEntryShadow(MirrorWorld world, MethodMirrorEntryEvent event, Shadow enclosingShadow) {
+        super(world, event, Shadow.SynchronizationLock, MemberImpl.monitorEnter(), enclosingShadow);
         this.event = event;
     }
 
@@ -70,5 +72,10 @@ public class SynchronizedMethodMirrorEntryShadow extends MirrorEventShadow {
     @Override
     protected ClassMirror getDeclaringClass() {
         return event.method().getDeclaringClass();
+    }
+    
+    @Override
+    protected InstanceMirror getThisJoinPointStaticPart() {
+        return world.makeSynchronizationStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.SYNCHRONIZATION_LOCK, getThis());
     }
 }

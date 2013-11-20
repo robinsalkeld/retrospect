@@ -60,7 +60,7 @@ public class JarFileStubs extends NativeStubs {
         
         ObjectArrayMirror resultMirror = (ObjectArrayMirror)vm.findBootstrapClassMirror(String.class.getName()).newArray(result.length);
         for (int i = 0; i < result.length; i++) {
-            resultMirror.set(i, Reflection.makeString(vm, result[i]));
+            resultMirror.set(i, vm.makeString(result[i]));
         }
         
         return resultMirror;

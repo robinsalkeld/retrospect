@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.aspectj.weaver.AbstractReferenceTypeDelegate;
 import org.aspectj.weaver.AnnotationAJ;
@@ -25,12 +26,10 @@ import org.aspectj.weaver.patterns.Pointcut;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 
 public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
@@ -40,8 +39,6 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
     private ResolvedMember[] declaredMethods;
     private ResolvedMember[] declaredPointcuts;
     private ResolvedMember[] declaredFields;
-    
-    private InstanceMirror instance;
     
     public MirrorReferenceTypeDelegate(ReferenceType resolvedTypeX, ClassMirror klass) {
         super(resolvedTypeX, true);
@@ -268,7 +265,11 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
     @Override
     public ResolvedType getSuperclass() {
-        ClassMirror superClassMirror = klass.getSuperClassMirror();
+        ClassMirror superClassMirror = Reflection.withThread(getWorld().thread, new Callable<ClassMirror>() {
+            public ClassMirror call() throws Exception {
+                return klass.getSuperClassMirror();
+            }
+        });
         return superClassMirror != null ? forClassMirror(superClassMirror) : null;
     }
 

@@ -43,7 +43,7 @@ public class PackageStubs extends NativeStubs {
         String realName = Reflection.getRealStringForMirror(name);
         URL url = vm.getBootstrapBytecodeLoader().getResource(realName.replace('.', '/') + ".package_info.java");
         if (url != null && url.getProtocol().equals("file")) {
-            return Reflection.makeString(vm, url.getPath());
+            return vm.makeString(url.getPath());
         } else {
             return null;
         }

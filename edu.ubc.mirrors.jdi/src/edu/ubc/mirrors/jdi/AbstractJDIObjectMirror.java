@@ -19,34 +19,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-package edu.ubc.mirrors;
+package edu.ubc.mirrors.jdi;
 
-import java.util.List;
+import com.sun.jdi.ObjectReference;
 
-public interface MethodMirror {
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ObjectMirror;
+
+public abstract class AbstractJDIObjectMirror extends JDIMirror implements JDIObjectMirror {
+
+    protected final ObjectReference mirror;
+
+    public AbstractJDIObjectMirror(JDIVirtualMachineMirror vm, ObjectReference t) {
+	super(vm, t);
+        this.mirror = t;
+    }
+
+    @Override
+    public ClassMirror getClassMirror() {
+        return vm.makeClassMirror(mirror.referenceType().classObject());
+    }
+ 
+    @Override
+    public int identityHashCode() {
+        return vm.identityHashCode(mirror);
+    }
     
-    public List<AnnotationMirror> getAnnotations();
-    public List<List<AnnotationMirror>> getParameterAnnotations();
-    public Object getDefaultValue();
-    
-    public ClassMirror getDeclaringClass();
-    
-    public int getSlot();
-    
-    public int getModifiers();
-    
-    public String getName();
-    public List<String> getParameterTypeNames();
-    public List<ClassMirror> getParameterTypes();
-    public List<String> getExceptionTypeNames();
-    public List<ClassMirror> getExceptionTypes();
-    public String getReturnTypeName();
-    public ClassMirror getReturnType();
-    public String getSignature();
-    
-    public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalArgumentException, IllegalAccessException, MirrorInvocationTargetException;
-    
-    public void setAccessible(boolean flag);
-    
-    public MirrorLocation locationForBytecodeOffset(int offset);
+    @Override
+    public ObjectReference getObjectReference() {
+        return mirror;
+    }
 }

@@ -1,23 +1,28 @@
 package edu.ubc.retrospect;
 
 import org.aspectj.weaver.Member;
+import org.aspectj.weaver.MemberImpl;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
+import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorLocationEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class MirrorMonitorExitShadow extends MirrorEventShadow {
 
     private final MirrorLocationEvent event;
+    private final InstanceMirror monitor;
     private final boolean isEntry;
     
-    protected MirrorMonitorExitShadow(MirrorWorld world, MirrorLocationEvent event, boolean isEntry, Member signature, Shadow enclosingShadow) {
-        super(world, event, Shadow.SynchronizationUnlock, signature, enclosingShadow);
+    protected MirrorMonitorExitShadow(MirrorWorld world, MirrorLocationEvent event, InstanceMirror monitor, boolean isEntry, Shadow enclosingShadow) {
+        super(world, event, Shadow.SynchronizationUnlock, MemberImpl.monitorExit(), enclosingShadow);
         this.event = event;
         this.isEntry = isEntry;
+        this.monitor = monitor;
     }
 
     @Override
@@ -58,8 +63,7 @@ public class MirrorMonitorExitShadow extends MirrorEventShadow {
     
     @Override
     public Var getArgVar(int i) {
-        // TODO-RS: Figure out how to get argument off the stack.
-        return new MirrorEventVar(getArgType(i), null);
+        return new MirrorEventVar(getArgType(i), monitor);
     }
     
     @Override
@@ -67,11 +71,16 @@ public class MirrorMonitorExitShadow extends MirrorEventShadow {
         if (arg != 0) {
             throw new IllegalArgumentException();
         }
-        return world.resolve(getDeclaringClass());
+        return world.resolve(UnresolvedType.OBJECT);
     }
     
     @Override
     protected ClassMirror getDeclaringClass() {
         return event.location().declaringClass();
+    }
+    
+    @Override
+    protected InstanceMirror getThisJoinPointStaticPart() {
+        return world.makeSynchronizationStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.SYNCHRONIZATION_UNLOCK, monitor);
     }
 }

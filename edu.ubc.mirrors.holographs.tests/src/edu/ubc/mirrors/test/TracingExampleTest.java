@@ -41,6 +41,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.retrospect.MirrorWeaver;
@@ -70,7 +71,9 @@ public class TracingExampleTest {
 //        mwr.addClassFilter("tracing.Square");
 //        mwr.enable();
         
-        final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
+        final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM, threadRef);
+        ThreadMirror thread = (ThreadMirror)jdiVMM.makeMirror(threadRef);
+        
 //        new EventDispatch(jdiVMM).start();
 //        if (true) return;
         
@@ -78,37 +81,36 @@ public class TracingExampleTest {
         URL urlPath = binDir.toURI().toURL();
         URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
         
+        
         // TODO-RS: Cheating for now...
         File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid2675.0001.subeclipseonjava7_hologram_classes");
-	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM, cachePath,
-                Collections.singletonMap("/", "/"));
-        final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));
-        
+        VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, cachePath, Collections.singletonMap("/", "/"));
+	thread = (ThreadMirror)vmh.getWrappedMirror(thread);
+	
+	final VirtualMachineMirror vm = vmh;
+        final ThreadMirror finalThread = thread;
+	
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath, aspectRuntimeJar});
+	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version3.Trace", true, loader);
+	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
+	
+	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+        InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("err"));
+	MethodMirror method = traceClass.getDeclaredMethod("initStream", PrintStream.class.getName());
+        method.invoke(thread, null, stream);
+	
         Reflection.withThread(thread, new Callable<Void>() {
+            @Override
             public Void call() throws Exception {
-                // TODO-RS: Necessary to avoid some weird deadlock I haven't figured out yet.
-                jdiVMM.getPrimitiveClass("short");
-                jdiVMM.getPrimitiveClass("float");
-                jdiVMM.getPrimitiveClass("double");
-                jdiVMM.getPrimitiveClass("void");
-                
-        	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version3.Trace", true, loader);
-        	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
-        	
-        	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
-                InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("err"));
-        	MethodMirror method = traceClass.getDeclaredMethod("initStream", PrintStream.class.getName());
-                method.invoke(thread, null, stream);
-        	
-        	ClassMirror aspect = Reflection.classMirrorForName(vm, thread, "tracing.version3.TraceMyClasses", true, loader);
-        	MirrorWeaver weaver = new MirrorWeaver(vm, loader, thread);
+                ClassMirror aspect = Reflection.classMirrorForName(vm, finalThread, "tracing.version3.TraceMyClasses", true, loader);
+                MirrorWeaver weaver = new MirrorWeaver(vm, loader, finalThread);
                 weaver.weave(aspect);
-                vm.dispatch().start();
                 
+                vm.dispatch().start();
                 return null;
             }
         });
+	
     }
     
     

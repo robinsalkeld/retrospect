@@ -1,11 +1,13 @@
 package edu.ubc.retrospect;
 
-import org.aspectj.weaver.Member;
+import org.aspectj.weaver.MemberImpl;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
+import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -13,8 +15,8 @@ public class SynchronizedMethodMirrorExitShadow extends MirrorEventShadow {
 
     private final MethodMirrorExitEvent event;
     
-    protected SynchronizedMethodMirrorExitShadow(MirrorWorld world, MethodMirrorExitEvent event, Member signature, Shadow enclosingShadow) {
-        super(world, event, Shadow.SynchronizationUnlock, signature, enclosingShadow);
+    protected SynchronizedMethodMirrorExitShadow(MirrorWorld world, MethodMirrorExitEvent event, Shadow enclosingShadow) {
+        super(world, event, Shadow.SynchronizationUnlock, MemberImpl.monitorExit(), enclosingShadow);
         this.event = event;
     }
 
@@ -64,11 +66,16 @@ public class SynchronizedMethodMirrorExitShadow extends MirrorEventShadow {
         if (arg != 0) {
             throw new IllegalArgumentException();
         }
-        return world.resolve(getDeclaringClass());
+        return world.resolve(UnresolvedType.OBJECT);
     }
     
     @Override
     protected ClassMirror getDeclaringClass() {
         return event.method().getDeclaringClass();
+    }
+    
+    @Override
+    protected InstanceMirror getThisJoinPointStaticPart() {
+        return world.makeSynchronizationStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.SYNCHRONIZATION_UNLOCK, getThis());
     }
 }

@@ -52,7 +52,7 @@ public class FileSystemStubs extends NativeStubs {
     public InstanceMirror canonicalize0(InstanceMirror fs, InstanceMirror f) throws IOException {
         String path = Reflection.getRealStringForMirror(f);
         String result = new File(path).getCanonicalPath();
-        return Reflection.makeString(klass.getVM(), result);
+        return klass.getVM().makeString(result);
     }
     
     @StubMethod

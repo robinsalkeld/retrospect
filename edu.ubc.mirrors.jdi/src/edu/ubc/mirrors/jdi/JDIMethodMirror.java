@@ -24,7 +24,9 @@ package edu.ubc.mirrors.jdi;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ClassType;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
@@ -33,10 +35,11 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 
-import edu.ubc.mirrors.AnnotationMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements MethodMirror {
@@ -48,6 +51,31 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
 	}
     }
 
+    @Override
+    protected ObjectReference getReflectiveInstance(ThreadMirror thread) {
+        try {
+            return ((JDIObjectMirror)Reflection.methodInstanceForMethodMirror(thread, this)).getObjectReference();
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
+    public Object getDefaultValue() {
+        ThreadMirror thread = (ThreadMirror)vm.makeMirror(vm.invokeThread);
+        ObjectReference methodInstance = getReflectiveInstance(thread);
+        ClassType methodClass = (ClassType)methodInstance.referenceType();
+        Method getDefaultValueMethod = methodClass.methodsByName("getDefaultValue", "()Ljava/lang/Object;").get(0);
+        Value defaultValue = JDIVirtualMachineMirror.safeInvoke(methodInstance, vm.invokeThread, getDefaultValueMethod);
+        return vm.wrapAnnotationValue(defaultValue);
+    }
+    
     public String getName() {
 	return method.name();
     }
@@ -56,16 +84,22 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
 	    throws IllegalArgumentException, IllegalAccessException,
 	    MirrorInvocationTargetException {
 
-        ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
-        ObjectReference objRef = ((JDIObjectMirror)obj).mirror;
-        
-        List<Value> argValues = new ArrayList<Value>(args.length);
-        for (Object arg : args) {
-            argValues.add(vm.toValue(arg));
-        }
-        
         try {
-            Value result = objRef.invokeMethod(threadRef, method, argValues, ObjectReference.INVOKE_SINGLE_THREADED);
+            ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
+            List<Value> argValues = new ArrayList<Value>(args.length);
+            for (Object arg : args) {
+                argValues.add(vm.toValue(arg));
+            }
+            
+            Value result;
+            if (method.isStatic()) {
+                ClassType klass = (ClassType)method.declaringType();
+                result = klass.invokeMethod(threadRef, method,  argValues, 0);
+            } else {
+                ObjectReference objRef = ((JDIObjectMirror)obj).getObjectReference();
+                result = objRef.invokeMethod(threadRef, method, argValues, 0);
+            }
+            
             return vm.wrapValue(result);
         } catch (InvalidTypeException e) {
             throw new RuntimeException(e);
@@ -74,14 +108,11 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException(e);
         } catch (InvocationException e) {
-            // TODO-RS: Use MirrorInvocationTargetException?
-            throw new RuntimeException(e);
+            InstanceMirror eMirror = (InstanceMirror)vm.makeMirror(e.exception());
+            throw new MirrorInvocationTargetException(eMirror);
         }
     }
     
-    @Override
-    public List<AnnotationMirror> getAnnotations() {
-        throw new UnsupportedOperationException();
-    }
+
     
 }

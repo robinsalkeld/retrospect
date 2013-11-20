@@ -24,11 +24,22 @@ package edu.ubc.mirrors.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdi.Bootstrap;
 
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.InvocationException;
+import com.sun.jdi.Method;
+import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ThreadReference;
+import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.connect.AttachingConnector;
@@ -81,7 +92,7 @@ public class JDIUtils {
     }
     
     private static VirtualMachine fixTimeoutAndHandleStreams(VirtualMachine vm, boolean echoStreams) {
-        ((org.eclipse.jdi.VirtualMachine)vm).setRequestTimeout(60000);
+//        ((org.eclipse.jdi.VirtualMachine)vm).setRequestTimeout(60000);
         if (echoStreams) {
             Process process = vm.process();
             new StreamSiphon(process.getInputStream(), System.out).start();

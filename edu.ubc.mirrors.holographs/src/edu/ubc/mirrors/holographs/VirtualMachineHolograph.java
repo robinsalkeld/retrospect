@@ -85,12 +85,14 @@ import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holograms.HologramVirtualMachine;
 import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
+import edu.ubc.mirrors.raw.NativeCharArrayMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.PrimitiveClassMirror;
 import edu.ubc.mirrors.raw.SandboxedClassLoader;
@@ -508,7 +510,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         ThreadHolograph.raiseMetalevel();
         
         String resourceName = className.replace('.', '/') + ".class";
-        InstanceMirror resourceNameMirror = Reflection.makeString(this, resourceName);
+        InstanceMirror resourceNameMirror = makeString(resourceName);
         // This isn't a "legit" execution, so cheat and choose a thread if we're not already in holograph execution.
         ThreadMirror thread = ThreadHolograph.currentThreadMirror.get();
         if (thread == null) {
@@ -757,8 +759,33 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         classHolograph.resolveInitialized();
     }
     
+    @Override
+    public InstanceMirror makeString(String s) {
+        try {
+            return super.makeString(s);
+        } catch (UnsupportedOperationException e) {
+            if (s == null) {
+                return null;
+            }
+            
+            ClassMirror stringClass = findBootstrapClassMirror(String.class.getName());
+            InstanceMirror result = stringClass.newRawInstance();
+            ClassMirror charArrayClass = getArrayClass(1, getPrimitiveClass("char"));
+            
+            CharArrayMirror value = new DirectArrayMirror(charArrayClass, s.length());
+            Reflection.arraycopy(new NativeCharArrayMirror(s.toCharArray()), 0, value, 0, s.length());
+            try {
+                result.set(stringClass.getDeclaredField("value"), value);
+                result.setInt(stringClass.getDeclaredField("count"), s.length());
+            } catch (IllegalAccessException e2) {
+                throw new RuntimeException(e2);
+            }
+            return result;
+        }
+    }
+    
     public InstanceMirror getInternedString(String s) {
-        return internString(Reflection.makeString(this, s));
+        return internString(this.makeString(s));
     }
     
     public InstanceMirror internString(InstanceMirror s) {

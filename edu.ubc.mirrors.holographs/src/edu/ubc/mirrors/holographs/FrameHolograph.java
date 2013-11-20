@@ -192,31 +192,19 @@ public class FrameHolograph extends WrappingFrameMirror {
 
         /**
          * @return
-         * @see edu.ubc.mirrors.MethodMirror#getRawAnnotations()
-         */
-        public byte[] getRawAnnotations() {
-            resolve();
-            return wrapped.getRawAnnotations();
-        }
-
-        /**
-         * @return
          * @see edu.ubc.mirrors.MethodMirror#getRawParameterAnnotations()
          */
-        public byte[] getRawParameterAnnotations() {
+        public List<List<AnnotationMirror>> getParameterAnnotations() {
             resolve();
-            return wrapped.getRawParameterAnnotations();
-        }
-
-        /**
-         * @return
-         * @see edu.ubc.mirrors.MethodMirror#getRawAnnotationDefault()
-         */
-        public byte[] getRawAnnotationDefault() {
-            resolve();
-            return wrapped.getRawAnnotationDefault();
+            return wrapped.getParameterAnnotations();
         }
         
+        @Override
+        public Object getDefaultValue() {
+            resolve();
+            return wrapped.getDefaultValue();
+        }
+
         @Override
         public MirrorLocation locationForBytecodeOffset(int offset) {
             resolve();

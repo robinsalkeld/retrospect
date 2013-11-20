@@ -24,7 +24,7 @@ package edu.ubc.mirrors.raw;
 import java.util.List;
 
 import edu.ubc.mirrors.FrameMirror;
-import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class NativeThreadMirror extends NativeInstanceMirror implements ThreadMirror {
@@ -42,6 +42,11 @@ public class NativeThreadMirror extends NativeInstanceMirror implements ThreadMi
 	return null;
     }
 
+    @Override
+    public List<InstanceMirror> getOwnedMonitors() {
+        throw new UnsupportedOperationException();
+    }
+    
     @Override
     public void interrupt() {
         thread.interrupt();

@@ -127,19 +127,13 @@ public class NativeMethodMirror implements MethodMirror {
     }
 
     @Override
-    public byte[] getRawAnnotations() {
+    public List<List<AnnotationMirror>> getParameterAnnotations() {
         // TODO For now
         throw new UnsupportedOperationException();
     }
-
+    
     @Override
-    public byte[] getRawParameterAnnotations() {
-        // TODO For now
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public byte[] getRawAnnotationDefault() {
+    public Object getDefaultValue() {
         // TODO For now
         throw new UnsupportedOperationException();
     }

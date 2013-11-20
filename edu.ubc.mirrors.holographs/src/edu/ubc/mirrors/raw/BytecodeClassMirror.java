@@ -39,7 +39,6 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.RawMethodAnnotationsWriter;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -149,7 +148,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
             }
             
             // Value must be string
-            return Reflection.makeString(getVM(), (String)value);
+            return getVM().makeString((String)value);
         }
 
         @Override
@@ -178,46 +177,72 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
     }
     
+    private Object convertAnnotationValue(Object value) {
+        if (value instanceof Type) {
+            return loadClassMirrorInternal((Type)value);
+        } else if (value instanceof String[]) {
+            String[] array = (String[])value;
+            return new AnnotationMirror.EnumMirror(loadClassMirrorInternal(Type.getType(array[0])), array[1]);
+        } else if (value instanceof AnnotationNode) {
+            return new BytecodeAnnotationMirror((AnnotationNode)value);
+        } else if (value instanceof List) {
+            List<?> list = (List<?>)value;
+            List<Object> result = new ArrayList<Object>();
+            for (Object o : list) {
+                result.add(convertAnnotationValue(o));
+            }
+            return result;
+        } else if (value instanceof Object[]) {
+            return convertAnnotationValue(Arrays.asList((Object[])value));
+        } else {
+            return value;
+        }
+    }
+    
+    public List<AnnotationMirror> wrap(List<AnnotationNode> nodes) {
+        List<AnnotationMirror> annotations = new ArrayList<AnnotationMirror>();
+        for (AnnotationNode node : nodes) {
+            annotations.add(new BytecodeAnnotationMirror(node));
+        }
+        return annotations;
+    }
+    
+    public List<List<AnnotationMirror>> wrapList(List<List<AnnotationNode>> lists) {
+        List<List<AnnotationMirror>> annotations = new ArrayList<List<AnnotationMirror>>();
+        for (List<AnnotationNode> nodes : lists) {
+            annotations.add(wrap(nodes));
+        }
+        return annotations;
+    }
+    
     private class BytecodeAnnotationMirror implements AnnotationMirror {
 
-        private final ClassMirror klass;
+        private final String desc;
+        private ClassMirror klass;
         private final Map<String, Object> values = new HashMap<String, Object>();
         
         public BytecodeAnnotationMirror(AnnotationNode node) {
-            this.klass = loadClassMirrorInternal(Type.getType(node.desc));
+            this.desc = node.desc;
+            
             if (node.values != null) {
                 for (int i = 0; i < node.values.size(); i += 2) {
                     String name = (String) node.values.get(i);
                     Object value = node.values.get(i + 1);
-                    values.put(name, convertValue(value));
+                    values.put(name, convertAnnotationValue(value));
                 }
             }
+//            resolve();
         }
 
-        private Object convertValue(Object value) {
-            if (value instanceof Type) {
-                return loadClassMirrorInternal((Type)value);
-            } else if (value instanceof String[]) {
-                String[] array = (String[])value;
-                return new AnnotationMirror.EnumMirror(loadClassMirrorInternal(Type.getType(array[0])), array[1]);
-            } else if (value instanceof AnnotationNode) {
-                return new BytecodeAnnotationMirror((AnnotationNode)value);
-            } else if (value instanceof List) {
-                List<?> list = (List<?>)value;
-                List<Object> result = new ArrayList<Object>();
-                for (Object o : list) {
-                    result.add(convertValue(o));
-                }
-                return result;
-            } else if (value instanceof Object[]) {
-                return convertValue(Arrays.asList((Object[])value));
-            } else {
-                return value;
+        private void resolve() {
+            if (klass == null) {
+                klass = loadClassMirrorInternal(Type.getType(desc));
             }
         }
         
         @Override
         public ClassMirror getClassMirror() {
+            resolve();
             return klass;
         }
         
@@ -228,7 +253,16 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
 
         @Override
         public Object getValue(String name) {
-            return values.get(name);
+            if (values.containsKey(name)) {
+                return values.get(name);
+            } else {
+                try {
+                    resolve();
+                    return klass.getDeclaredMethod(name).getDefaultValue();
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
     
@@ -237,15 +271,16 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         private final MethodNode method;
         private final int slot;
         private final List<AnnotationMirror> annotations;
-        private final byte[] rawParameterAnnotations;
-        private final byte[] rawAnnotationDefault;
+        private final List<List<AnnotationMirror>> parameterAnnotations;
+        private final Object annotationDefault;
         
-        public BytecodeMethodMirror(MethodNode method, int slot, List<AnnotationMirror> annotations, RawMethodAnnotationsWriter annotationsWriter) {
+        public BytecodeMethodMirror(MethodNode method, int slot, List<AnnotationMirror> annotations, 
+                List<List<AnnotationMirror>> parameterAnnotations, Object annotationDefault) {
             this.method = method;
             this.slot = slot;
             this.annotations = annotations;
-            this.rawParameterAnnotations = annotationsWriter.rawParameterAnnotations();
-            this.rawAnnotationDefault = annotationsWriter.rawAnnotationDefault();
+            this.parameterAnnotations = parameterAnnotations;
+            this.annotationDefault = annotationDefault;
         }
         
         @Override
@@ -305,18 +340,13 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
         
         @Override
-        public byte[] getRawAnnotations() {
-            return rawAnnotations;
+        public List<List<AnnotationMirror>> getParameterAnnotations() {
+            return parameterAnnotations;
         }
         
         @Override
-        public byte[] getRawParameterAnnotations() {
-            return rawParameterAnnotations;
-        }
-        
-        @Override
-        public byte[] getRawAnnotationDefault() {
-            return rawAnnotationDefault;
+        public Object getDefaultValue() {
+            return annotationDefault;
         }
 
         @Override
@@ -384,7 +414,6 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     private List<BytecodeFieldMirror> fields = new ArrayList<BytecodeFieldMirror>();
     private final List<BytecodeMethodMirror> methods = new ArrayList<BytecodeMethodMirror>();
     private final List<BytecodeAnnotationMirror> annotations = new ArrayList<BytecodeAnnotationMirror>();
-    private byte[] rawAnnotations;
     
     private StaticsInfo staticInitInfo;
     
@@ -516,40 +545,50 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         private final MethodNode method;
         private final int slot;
         private final List<AnnotationNode> annotationNodes;
-        private final RawMethodAnnotationsWriter annotationsWriter;
+        private final List<List<AnnotationNode>> parameterAnnotationNodes;
+        private AnnotationNode defaultAnnotationNode;
         
         public BytecodeMethodVisitor(MethodNode method, int slot, ClassVisitor classWriter, MethodVisitor methodWriter) {
             super(Opcodes.ASM4);
             this.method = method;
             this.slot = slot;
             this.annotationNodes = new ArrayList<AnnotationNode>();
-            this.annotationsWriter = new RawMethodAnnotationsWriter(Type.getArgumentTypes(method.desc).length, classWriter, methodWriter);
+            this.parameterAnnotationNodes = new ArrayList<List<AnnotationNode>>();
+            this.defaultAnnotationNode = new AnnotationNode(Opcodes.ASM4, null);
+            
+            int numParams = Type.getArgumentTypes(method.desc).length;
+            for (int i = 0; i < numParams; i++) {
+                parameterAnnotationNodes.add(new ArrayList<AnnotationNode>());
+            }
         }
         
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-            AnnotationNode node = new AnnotationNode(desc);
+            AnnotationNode node = new AnnotationNode(Opcodes.ASM4, desc);
             annotationNodes.add(node);
             return node;
         }
         
         @Override
         public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
-            return annotationsWriter.visitParameterAnnotation(parameter, desc, visible);
+            AnnotationNode node = new AnnotationNode(Opcodes.ASM4, desc);
+            parameterAnnotationNodes.get(parameter).add(node);
+            return node;
         }
         
         @Override
         public AnnotationVisitor visitAnnotationDefault() {
-            return annotationsWriter.visitAnnotationDefault();
+            return defaultAnnotationNode;
         }
         
         @Override
         public void visitEnd() {
-            List<AnnotationMirror> annotations = new ArrayList<AnnotationMirror>();
-            for (AnnotationNode node : annotationNodes) {
-                annotations.add(new BytecodeAnnotationMirror(node));
+            Object defaultAnnotationValue = null;
+            if (defaultAnnotationNode.values != null && !defaultAnnotationNode.values.isEmpty()) {
+                defaultAnnotationValue = convertAnnotationValue(defaultAnnotationNode.values.get(0));
             }
-            methods.add(new BytecodeMethodMirror(method, slot, annotations, annotationsWriter));
+            methods.add(new BytecodeMethodMirror(method, slot, 
+                    wrap(annotationNodes), wrapList(parameterAnnotationNodes), defaultAnnotationValue));
         }
     }
     

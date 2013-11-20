@@ -172,7 +172,7 @@ public class ObjectHologram implements Hologram {
             return null;
         }
         
-        InstanceMirror sMirror = Reflection.makeString(callingClass.getVM(), s);
+        InstanceMirror sMirror = callingClass.getVM().makeString(s);
         return ObjectHologram.make(sMirror);
     }
     
@@ -224,11 +224,11 @@ public class ObjectHologram implements Hologram {
         ObjectArrayMirror correctedTrace = (ObjectArrayMirror)stackTraceElementClass.newArray(nativeTrace.length);
         for (int i = 0; i < nativeTrace.length; i++) {
             StackTraceElement e = nativeTrace[i];
-            InstanceMirror className = Reflection.makeString(vm, getOriginalBinaryClassName(e.getClassName()));
-            InstanceMirror methodName = Reflection.makeString(vm, e.getMethodName());
-            InstanceMirror fieldName = Reflection.makeString(vm, e.getFileName());
+            InstanceMirror className = vm.makeString(getOriginalBinaryClassName(e.getClassName()));
+            InstanceMirror methodName = vm.makeString(e.getMethodName());
+            InstanceMirror fileName = vm.makeString(e.getFileName());
             int lineNumber = e.getLineNumber();
-            InstanceMirror mapped = HolographInternalUtils.newInstance(constructor, ThreadHolograph.currentThreadMirror(), className, methodName, fieldName, lineNumber);
+            InstanceMirror mapped = HolographInternalUtils.newInstance(constructor, ThreadHolograph.currentThreadMirror(), className, methodName, fileName, lineNumber);
             correctedTrace.set(i, mapped);
         }
         InstanceMirror mirror = (InstanceMirror)throwable.getMirror();
@@ -295,7 +295,7 @@ public class ObjectHologram implements Hologram {
     public static Throwable throwableAsHologram(VirtualMachineMirror vm, Throwable t) {
         ClassMirror klass = vm.findBootstrapClassMirror(t.getClass().getName());
         InstanceMirror throwableMirror = klass.newRawInstance();
-        HolographInternalUtils.setField(throwableMirror, "detailMessage", Reflection.makeString(vm, t.getMessage()));
+        HolographInternalUtils.setField(throwableMirror, "detailMessage", vm.makeString(t.getMessage()));
         return (Throwable)ObjectHologram.make(throwableMirror);
     }
     

@@ -27,5 +27,7 @@ public interface ThreadMirror extends InstanceMirror {
 
     List<FrameMirror> getStackTrace();
 
+    List<InstanceMirror> getOwnedMonitors();
+    
     void interrupt();
 }

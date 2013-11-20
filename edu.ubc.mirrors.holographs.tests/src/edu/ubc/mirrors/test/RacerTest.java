@@ -24,8 +24,7 @@ package edu.ubc.mirrors.test;
 import java.io.File;
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.concurrent.Callable;
 
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
@@ -40,6 +39,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.retrospect.MirrorWeaver;
@@ -69,37 +69,42 @@ public class RacerTest {
 //        mwr.addClassFilter("tracing.Square");
 //        mwr.enable();
         
-        final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
+        final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM, threadRef);
+        ThreadMirror thread = (ThreadMirror)jdiVMM.makeMirror(threadRef);
 //        new EventDispatch(jdiVMM).start();
 //        if (true) return;
         
         File binDir = new File("/Users/robinsalkeld/Documents/UBC/Code/RacerAJ/bin");
         URL urlPath = binDir.toURI().toURL();
         URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
+        ReferenceType taskRT = cpe.referenceType();
+        ClassMirror taskClass = jdiVMM.makeClassMirror(taskRT);
         
         // TODO-RS: Cheating for now...
         File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/RacerTest/hologram_classes");
-	final VirtualMachineHolograph vm = new VirtualMachineHolograph(jdiVMM, cachePath,
+	final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, cachePath,
                 Collections.singletonMap("/", "/"));
-        final ThreadMirror thread = (ThreadMirror)vm.getWrappedMirror(jdiVMM.makeMirror(threadRef));
+        thread = (ThreadMirror)vmh.getWrappedMirror(thread);
+        taskClass = vmh.getWrappedClassMirror(taskClass);
         
-        ReferenceType taskRT = cpe.referenceType();
-        ClassMirror taskClass = jdiVMM.makeClassMirror(taskRT);
-        ClassMirror taskClassHolograph = vm.getWrappedClassMirror(taskClass);
+        final VirtualMachineMirror vm = vmh;
+        final ThreadMirror finalThread = thread;
         
-        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, taskClassHolograph.getLoader(), new URL[] {urlPath, aspectRuntimeJar});
-//        Reflection.withThread(thread, new Callable<Void>() {
-//            public Void call() throws Exception {
-                MirrorWeaver weaver = new MirrorWeaver(vm, loader, thread);
-        	ClassMirror locking = Reflection.classMirrorForName(vm, thread, "ca.mcgill.sable.racer.Locking", true, loader);
-        	ClassMirror racer = Reflection.classMirrorForName(vm, thread, "ca.mcgill.sable.racer.Racer", true, loader);
+        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, taskClass.getLoader(), new URL[] {urlPath, aspectRuntimeJar});
+        
+        Reflection.withThread(thread, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                MirrorWeaver weaver = new MirrorWeaver(vm, loader, finalThread);
+            	ClassMirror locking = Reflection.classMirrorForName(vm, finalThread, "ca.mcgill.sable.racer.Locking", true, loader);
+            	ClassMirror racer = Reflection.classMirrorForName(vm, finalThread, "ca.mcgill.sable.racer.Racer", true, loader);
                 weaver.weave(locking, racer);
                 
-                vm.dispatch().start();
-//                
-//                return null;
-//            }
-//        });
+                return null;
+            }
+        });
+        
+        vm.dispatch().start();
     }
     
     

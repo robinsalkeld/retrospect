@@ -52,7 +52,7 @@ import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIClassMirror;
-import edu.ubc.mirrors.jdi.JDIObjectMirror;
+import edu.ubc.mirrors.jdi.AbstractJDIObjectMirror;
 import edu.ubc.mirrors.wrapping.WrappingMirror;
 
 public class ToStringer implements IApplication {
@@ -166,7 +166,7 @@ public class ToStringer implements IApplication {
         try {
             for (ObjectMirror object : objects) {
                 try {
-                    if (object instanceof JDIObjectMirror && ((JDIObjectMirror)object).getObjectReference().isCollected()) {
+                    if (object instanceof AbstractJDIObjectMirror && ((AbstractJDIObjectMirror)object).getObjectReference().isCollected()) {
                         collected++;
                         continue;
                     }

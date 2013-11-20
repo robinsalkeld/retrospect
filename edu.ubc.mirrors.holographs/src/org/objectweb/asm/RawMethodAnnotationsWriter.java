@@ -22,6 +22,9 @@
 package org.objectweb.asm;
 
 import java.util.Arrays;
+import java.util.List;
+
+import edu.ubc.mirrors.AnnotationMirror;
 
 public class RawMethodAnnotationsWriter extends MethodVisitor {
 
@@ -83,6 +86,24 @@ public class RawMethodAnnotationsWriter extends MethodVisitor {
             return null;
         } else {
             return Arrays.copyOf(annd.data, annd.length);
+        }
+    }
+    
+    public void visitAnnotationMirrors(List<AnnotationMirror> annotations) {
+        for (AnnotationMirror a : annotations) {
+            AnnotationVisitor subVisitor = writer.visitAnnotation(RawAnnotationsWriter.descForClassMirror(a.getClassMirror()), true);
+            RawAnnotationsWriter.visitAnnotationMirror(subVisitor, a);
+        }
+    }
+    
+    public void visitParameterAnnotationMirrors(List<List<AnnotationMirror>> annotations) {
+        int parameter = 0;
+        for (List<AnnotationMirror> list : annotations) {
+            for (AnnotationMirror a : list) {
+                AnnotationVisitor subVisitor = writer.visitParameterAnnotation(parameter, RawAnnotationsWriter.descForClassMirror(a.getClassMirror()), true);
+                RawAnnotationsWriter.visitAnnotationMirror(subVisitor, a);
+            }
+            parameter++;
         }
     }
 }

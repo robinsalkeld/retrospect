@@ -25,6 +25,7 @@ import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class FieldMapThreadMirror extends FieldMapMirror implements ThreadMirror {
@@ -36,6 +37,11 @@ public class FieldMapThreadMirror extends FieldMapMirror implements ThreadMirror
     @Override
     public List<FrameMirror> getStackTrace() {
         return null;
+    }
+    
+    @Override
+    public List<InstanceMirror> getOwnedMonitors() {
+        throw new UnsupportedOperationException();
     }
     
     @Override

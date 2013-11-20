@@ -138,7 +138,7 @@ public abstract class MirrorEventShadow extends Shadow {
         } else if (event instanceof MethodMirrorEntryEvent) {
             MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
             if (shadowKind == Shadow.SynchronizationLock) {
-                return new SynchronizedMethodMirrorEntryShadow(world, mmee, MemberImpl.monitorEnter(), null);
+                return new SynchronizedMethodMirrorEntryShadow(world, mmee, null);
             } else {
                 Member signature = MethodMirrorMember.make(world, mmee.method());
                 return new MethodMirrorEntryShadow(world, mmee, signature, null);
@@ -146,7 +146,7 @@ public abstract class MirrorEventShadow extends Shadow {
         } else if (event instanceof MethodMirrorExitEvent) {
             MethodMirrorExitEvent mmee = (MethodMirrorExitEvent)event;
             if (shadowKind == Shadow.SynchronizationUnlock) {
-                return new SynchronizedMethodMirrorExitShadow(world, mmee, MemberImpl.monitorExit(), null);
+                return new SynchronizedMethodMirrorExitShadow(world, mmee, null);
             } else {
                 Member signature = MethodMirrorMember.make(world, mmee.method());
                 return new MethodMirrorExitShadow(world, mmee, signature, null);
@@ -159,14 +159,6 @@ public abstract class MirrorEventShadow extends Shadow {
             FieldMirrorSetEvent fmge = (FieldMirrorSetEvent)event;
             Member signature = FieldMirrorMember.make(world, fmge.field());
             return new FieldMirrorSetShadow(world, fmge, signature, null);
-        } else if (shadowKind != null && event instanceof MirrorLocationEvent) {
-            MirrorLocationEvent mle = (MirrorLocationEvent)event;
-            if (shadowKind == Shadow.SynchronizationLock) {
-                return new MirrorMonitorEnterShadow(world, mle, isEntry, MemberImpl.monitorEnter(), null);
-            } else {
-                return new MirrorMonitorExitShadow(world, mle, isEntry, MemberImpl.monitorExit(), null);
-            }
-            
         } else {
             throw new IllegalArgumentException();
         }
@@ -217,8 +209,10 @@ public abstract class MirrorEventShadow extends Shadow {
     @Override
     public Var getThisJoinPointStaticPartVar() {
         ResolvedType joinPointStaticPartType = world.resolve(UnresolvedType.forName(JoinPoint.StaticPart.class.getName()));
-        return new MirrorEventVar(joinPointStaticPartType, world.makeStaticJoinPoint(getThread(), event));
+        return new MirrorEventVar(joinPointStaticPartType, getThisJoinPointStaticPart());
     }
+
+    protected abstract InstanceMirror getThisJoinPointStaticPart();
 
     @Override
     public Var getThisEnclosingJoinPointStaticPartVar() {

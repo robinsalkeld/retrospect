@@ -96,9 +96,9 @@ public class ThrowableStubs extends NativeStubs {
         ConstructorMirror constructor = HolographInternalUtils.getConstructor(stackTraceElementClass, stringClassName, stringClassName, stringClassName, "int");
         
 	StackTraceElement nativeFrame = getNativeStack(throwable)[index];
-        InstanceMirror className = Reflection.makeString(vm, getOriginalBinaryClassName(nativeFrame.getClassName()));
-        InstanceMirror methodName = Reflection.makeString(vm, nativeFrame.getMethodName());
-        InstanceMirror fieldName = Reflection.makeString(vm, nativeFrame.getFileName());
+        InstanceMirror className = vm.makeString(getOriginalBinaryClassName(nativeFrame.getClassName()));
+        InstanceMirror methodName = vm.makeString(nativeFrame.getMethodName());
+        InstanceMirror fieldName = vm.makeString(nativeFrame.getFileName());
         int lineNumber = nativeFrame.getLineNumber();
         return HolographInternalUtils.newInstance(constructor, ThreadHolograph.currentThreadMirror(), className, methodName, fieldName, lineNumber);
     }

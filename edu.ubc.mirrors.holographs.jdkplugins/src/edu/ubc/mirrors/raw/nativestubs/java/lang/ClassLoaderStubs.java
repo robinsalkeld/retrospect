@@ -79,4 +79,9 @@ public class ClassLoaderStubs extends NativeStubs {
     public ClassMirror getCaller(int depth) {
         return ReflectionStubs.getCallerClassMirror(depth);
     }
+    
+    @StubMethod
+    public void resolveClass0(ClassMirrorLoader classLoader, ClassMirror klass) {
+        ((ClassHolograph)klass).ensureInitialized();
+    }
 }

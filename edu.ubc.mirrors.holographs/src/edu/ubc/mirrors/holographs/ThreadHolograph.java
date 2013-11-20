@@ -26,6 +26,7 @@ import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
@@ -134,6 +135,15 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         return result;
     }
 
+    @Override
+    public List<InstanceMirror> getOwnedMonitors() {
+        List<InstanceMirror> result = new ArrayList<InstanceMirror>();
+        for (InstanceMirror monitor : wrappedThread.getOwnedMonitors()) {
+            result.add((InstanceMirror)vm.getWrappedMirror(monitor));
+        }
+        return result;
+    }
+    
     @Override
     public void interrupt() {
         if (runningThread == null) {
