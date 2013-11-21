@@ -28,16 +28,19 @@ import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.AnnotationMirror.EnumMirror;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class RawAnnotationsWriter extends ClassVisitor {
 
     private final ClassWriter writer;
     private AnnotationWriter anns;
+    private ThreadMirror thread;
     
-    public RawAnnotationsWriter(ClassWriter writer) {
+    public RawAnnotationsWriter(ThreadMirror thread, ClassWriter writer) {
         super(Opcodes.ASM4);
         // The writer is provided so the constant pool will be pre-populated
         this.writer = writer; 
+        this.thread = thread;
     }
 
     @Override
@@ -59,28 +62,28 @@ public class RawAnnotationsWriter extends ClassVisitor {
         return Arrays.copyOf(out.data, out.length);
     }
     
-    public static byte[] getRawBytes(List<AnnotationMirror> annotations) {
-        RawAnnotationsWriter writer = new RawAnnotationsWriter(new ClassWriter(Opcodes.ASM4));
+    public static byte[] getRawBytes(List<AnnotationMirror> annotations, ThreadMirror thread) {
+        RawAnnotationsWriter writer = new RawAnnotationsWriter(thread, new ClassWriter(Opcodes.ASM4));
         for (AnnotationMirror a : annotations) {
             AnnotationVisitor subVisitor = writer.visitAnnotation(descForClassMirror(a.getClassMirror()), true);
-            visitAnnotationMirror(subVisitor, a);
+            visitAnnotationMirror(subVisitor, thread, a);
         }
         return writer.rawAnnotations();
     }
     
-    public static void visitAnnotationMirror(AnnotationVisitor visitor, AnnotationMirror mirror) {
+    public static void visitAnnotationMirror(AnnotationVisitor visitor, ThreadMirror thread, AnnotationMirror mirror) {
         for (String key : mirror.getKeys()) {
-            Object value = mirror.getValue(key);
-            visitAnnotationMirrorValue(visitor, key, value);
+            Object value = mirror.getValue(thread, key);
+            visitAnnotationMirrorValue(visitor, thread, key, value);
         }
     }
     
-    public static void visitAnnotationMirrorValue(AnnotationVisitor visitor, String key, Object value) {
+    public static void visitAnnotationMirrorValue(AnnotationVisitor visitor, ThreadMirror thread, String key, Object value) {
         if (value instanceof AnnotationMirror) {
             AnnotationMirror subAnnot = (AnnotationMirror)value;
             String desc = descForClassMirror(subAnnot.getClassMirror());
             AnnotationVisitor subVisitor = visitor.visitAnnotation(key, desc);
-            visitAnnotationMirror(subVisitor, subAnnot);
+            visitAnnotationMirror(subVisitor, thread, subAnnot);
         } else if (value instanceof ClassMirror) {
             ClassMirror klass = (ClassMirror)value;
             Type type = Reflection.typeForClassMirror(klass);
@@ -91,7 +94,7 @@ public class RawAnnotationsWriter extends ClassVisitor {
             visitor.visitEnum(key, desc, e.getName());
         } else if (value instanceof List) {
             for (Object element : (List<?>)value) {
-                visitAnnotationMirrorValue(visitor, key, element);
+                visitAnnotationMirrorValue(visitor, thread, key, element);
             }
         } else {
             visitor.visit(key, value);
@@ -105,6 +108,6 @@ public class RawAnnotationsWriter extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodWriter methodWriter = (MethodWriter)writer.visitMethod(access, name, desc, signature, exceptions);
-        return new RawMethodAnnotationsWriter(Type.getArgumentTypes(desc).length, writer, methodWriter);
+        return new RawMethodAnnotationsWriter(thread, Type.getArgumentTypes(desc).length, writer, methodWriter);
     }
 }

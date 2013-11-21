@@ -85,7 +85,7 @@ public interface ClassMirror extends InstanceMirror {
     public ClassMirror getEnclosingClassMirror();
     public MethodMirror getEnclosingMethodMirror();
     
-    public List<AnnotationMirror> getAnnotations();
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread);
     
     // Mutation support
     

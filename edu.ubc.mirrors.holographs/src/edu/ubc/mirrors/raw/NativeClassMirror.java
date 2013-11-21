@@ -47,6 +47,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class NativeClassMirror extends NativeInstanceMirror implements ClassMirror {
@@ -385,7 +386,7 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     }
     
     @Override
-    public List<AnnotationMirror> getAnnotations() {
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         throw new UnsupportedOperationException();
     }
     

@@ -35,6 +35,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class WrappingClassMirror extends WrappingInstanceMirror implements ClassMirror {
@@ -231,9 +232,9 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
     
     @Override
-    public List<AnnotationMirror> getAnnotations() {
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
-        for (AnnotationMirror a : wrapped.getAnnotations()) {
+        for (AnnotationMirror a : wrapped.getAnnotations((ThreadMirror)vm.unwrapInstanceMirror(thread))) {
             result.add(vm.wrapAnnotation(a));
         }
         return result;

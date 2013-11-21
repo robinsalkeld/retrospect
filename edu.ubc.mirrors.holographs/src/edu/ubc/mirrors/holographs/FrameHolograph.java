@@ -78,9 +78,9 @@ public class FrameHolograph extends WrappingFrameMirror {
         }
 
         @Override
-        public List<AnnotationMirror> getAnnotations() {
+        public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
             resolve();
-            return wrapped.getAnnotations();
+            return wrapped.getAnnotations(thread);
         }
         
         /**
@@ -194,15 +194,15 @@ public class FrameHolograph extends WrappingFrameMirror {
          * @return
          * @see edu.ubc.mirrors.MethodMirror#getRawParameterAnnotations()
          */
-        public List<List<AnnotationMirror>> getParameterAnnotations() {
+        public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
             resolve();
-            return wrapped.getParameterAnnotations();
+            return wrapped.getParameterAnnotations(thread);
         }
         
         @Override
-        public Object getDefaultValue() {
+        public Object getDefaultValue(ThreadMirror thread) {
             resolve();
-            return wrapped.getDefaultValue();
+            return wrapped.getDefaultValue(thread);
         }
 
         @Override

@@ -23,7 +23,7 @@ public interface AnnotationMirror {
      * @param name
      * @return
      */
-    public Object getValue(String name);
+    public Object getValue(ThreadMirror thread, String name);
     
     public static class EnumMirror {
         

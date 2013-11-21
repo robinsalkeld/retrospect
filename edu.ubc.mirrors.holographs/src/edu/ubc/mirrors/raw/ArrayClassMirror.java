@@ -41,6 +41,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
 public class ArrayClassMirror extends BlankClassMirror {
@@ -258,7 +259,7 @@ public class ArrayClassMirror extends BlankClassMirror {
     }
     
     @Override
-    public List<AnnotationMirror> getAnnotations() {
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         return Collections.emptyList();
     }
 }

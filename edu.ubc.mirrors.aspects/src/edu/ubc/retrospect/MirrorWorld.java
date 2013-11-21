@@ -243,7 +243,7 @@ public class MirrorWorld extends World {
     
     
     public boolean isAspect(ClassMirror klass) {
-        return Reflection.getAnnotation(klass.getAnnotations(), aspectAnnotClass) != null;
+        return Reflection.getAnnotation(klass.getAnnotations(thread), aspectAnnotClass) != null;
     }
     
     public Pointcut parsePointcut(String expr) {

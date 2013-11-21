@@ -1,5 +1,7 @@
 package edu.ubc.retrospect;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.aspectj.apache.bcel.classfile.ClassFormatException;
+import org.aspectj.apache.bcel.classfile.ClassParser;
+import org.aspectj.apache.bcel.classfile.JavaClass;
+import org.aspectj.apache.bcel.classfile.Method;
+import org.aspectj.apache.bcel.generic.InstructionHandle;
+import org.aspectj.apache.bcel.generic.InstructionList;
 import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.ReferenceType;
@@ -23,7 +31,6 @@ import org.aspectj.weaver.patterns.PointcutRewriter;
 import org.aspectj.weaver.patterns.SignaturePattern;
 import org.aspectj.weaver.patterns.TypePattern;
 import org.aspectj.weaver.patterns.WithinPointcut;
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -271,6 +278,23 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                 
                 // 2. Search through the bytecode for MONITORENTER/EXIT instructions,
                 //    and create breakpoints for each.
+                try {
+                    JavaClass bcelClass = new ClassParser(new ByteArrayInputStream(klass.getBytecode()), "").parse();
+                    for (Method method : bcelClass.getMethods()) {
+                        InstructionList insnList = new InstructionList(method.getCode().getCode());
+                        for (InstructionHandle handle : insnList.getInstructionHandles()) {
+                            short opcode = handle.getInstruction().getOpcode();
+                            if ((kind == Shadow.SynchronizationLock && opcode == Opcodes.MONITORENTER)
+                                || (kind == Shadow.SynchronizationUnlock && opcode == Opcodes.MONITOREXIT)) {
+                                int offset = handle.getPosition();
+                                MethodMirror methodMirror = Reflection.getDeclaredMethod(klass, method.getName(), Type.getMethodType(method.getDeclaredSignature()));
+                                installMonitorRequests(kind, methodMirror, offset);
+                            }
+                        }
+                    }
+                } catch (ClassFormatException | IOException | SecurityException | NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
 //                ClassReader reader = new ClassReader(klass.getBytecode());
 //                reader.accept(new SynchronizationClassVisitor(klass, kind), 0);
             };
@@ -282,6 +306,54 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
             addPatternFilter(request, pattern);
         }
         world.vm.dispatch().addCallback(request, EVENT_CALLBACK);
+        request.enable();
+    }
+    
+    private final Map<ThreadMirror, Set<InstanceMirror>> ownedMonitors = 
+            new HashMap<ThreadMirror, Set<InstanceMirror>>();
+    
+    private void installMonitorRequests(final Shadow.Kind kind, MethodMirror methodMirror, int offset) {
+        MirrorLocation location = methodMirror.locationForBytecodeOffset(offset);
+        MirrorLocationRequest request = manager.createLocationRequest(location);
+        world.vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
+            public void handle(MirrorEvent event) {
+                MirrorLocationEvent locationEvent = (MirrorLocationEvent)event;
+                ThreadMirror thread = locationEvent.thread();
+                ownedMonitors.put(thread, new HashSet<InstanceMirror>(thread.getOwnedMonitors()));
+            } 
+        });
+        request.enable();
+        
+        location = methodMirror.locationForBytecodeOffset(offset + 1);
+        request = manager.createLocationRequest(location);
+        world.vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
+            public void handle(MirrorEvent event) {
+                MirrorLocationEvent locationEvent = (MirrorLocationEvent)event;
+                ThreadMirror thread = locationEvent.thread();
+                Set<InstanceMirror> monitorsBefore = ownedMonitors.get(thread);
+                Set<InstanceMirror> monitorsAfter = new HashSet<InstanceMirror>(thread.getOwnedMonitors());
+                Set<InstanceMirror> difference;
+                if (kind == Shadow.SynchronizationLock) {
+                    difference = monitorsAfter;
+                    difference.removeAll(monitorsBefore);
+                    
+                } else {
+                    difference = monitorsBefore;
+                    difference.removeAll(monitorsAfter);
+                }
+                if (difference.size() != 1) {
+                    throw new IllegalStateException();
+                }
+                InstanceMirror monitor = difference.iterator().next();
+                MirrorEventShadow shadow;
+                if (kind == Shadow.SynchronizationLock) {
+                    shadow = new MirrorMonitorEnterShadow(world, locationEvent, monitor, !advice.getKind().isAfter(), null);
+                } else {
+                    shadow = new MirrorMonitorExitShadow(world, locationEvent, monitor, !advice.getKind().isAfter(), null);
+                }
+                callback.handle(shadow);
+            }
+        });
         request.enable();
     }
     
@@ -330,8 +402,6 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
 
         private final MethodMirror methodMirror;
         private final Shadow.Kind kind;
-        private final Map<ThreadMirror, Set<InstanceMirror>> ownedMonitors = 
-                new HashMap<ThreadMirror, Set<InstanceMirror>>();
         
         private int instructionsToSkip = 0;
         
@@ -361,7 +431,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         
         @Override
         public void visitInsn(int opcode) {
-            if ((false && kind == Shadow.SynchronizationLock && opcode == Opcodes.MONITORENTER)
+            if ((kind == Shadow.SynchronizationLock && opcode == Opcodes.MONITORENTER)
                     || (kind == Shadow.SynchronizationUnlock && opcode == Opcodes.MONITOREXIT)) {
                 
                 Textifier t = new Textifier();
@@ -374,48 +444,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                 }
                 
                 int offset = instructions.size() - instructionsToSkip;
-                MirrorLocation location = methodMirror.locationForBytecodeOffset(offset);
-                MirrorLocationRequest request = manager.createLocationRequest(location);
-                world.vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
-                    public void handle(MirrorEvent event) {
-                        MirrorLocationEvent locationEvent = (MirrorLocationEvent)event;
-                        ThreadMirror thread = locationEvent.thread();
-                        ownedMonitors.put(thread, new HashSet<InstanceMirror>(thread.getOwnedMonitors()));
-                    } 
-                });
-                request.enable();
-                
-                location = methodMirror.locationForBytecodeOffset(offset + 1);
-                request = manager.createLocationRequest(location);
-                world.vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
-                    public void handle(MirrorEvent event) {
-                        MirrorLocationEvent locationEvent = (MirrorLocationEvent)event;
-                        ThreadMirror thread = locationEvent.thread();
-                        Set<InstanceMirror> monitorsBefore = ownedMonitors.get(thread);
-                        Set<InstanceMirror> monitorsAfter = new HashSet<InstanceMirror>(thread.getOwnedMonitors());
-                        Set<InstanceMirror> difference;
-                        if (kind == Shadow.SynchronizationLock) {
-                            difference = monitorsAfter;
-                            difference.removeAll(monitorsBefore);
-                            
-                        } else {
-                            difference = monitorsBefore;
-                            difference.removeAll(monitorsAfter);
-                        }
-                        if (difference.size() != 1) {
-                            throw new IllegalStateException();
-                        }
-                        InstanceMirror monitor = difference.iterator().next();
-                        MirrorEventShadow shadow;
-                        if (kind == Shadow.SynchronizationLock) {
-                            shadow = new MirrorMonitorEnterShadow(world, locationEvent, monitor, !advice.getKind().isAfter(), null);
-                        } else {
-                            shadow = new MirrorMonitorExitShadow(world, locationEvent, monitor, !advice.getKind().isAfter(), null);
-                        }
-                        callback.handle(shadow);
-                    }
-                });
-                request.enable();
+                installMonitorRequests(kind, methodMirror, offset);
             }
             
             super.visitInsn(opcode);

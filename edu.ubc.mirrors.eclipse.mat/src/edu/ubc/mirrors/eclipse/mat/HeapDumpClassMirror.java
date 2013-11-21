@@ -47,6 +47,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
 
 public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMirror, HeapDumpObjectMirror {
@@ -358,7 +359,7 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     }
     
     @Override
-    public List<AnnotationMirror> getAnnotations() {
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         throw new UnsupportedOperationException();
     }
     

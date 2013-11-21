@@ -252,13 +252,13 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
 
         @Override
-        public Object getValue(String name) {
+        public Object getValue(ThreadMirror thread, String name) {
             if (values.containsKey(name)) {
                 return values.get(name);
             } else {
                 try {
                     resolve();
-                    return klass.getDeclaredMethod(name).getDefaultValue();
+                    return klass.getDeclaredMethod(name).getDefaultValue(thread);
                 } catch (NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }
@@ -284,7 +284,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
         
         @Override
-        public List<AnnotationMirror> getAnnotations() {
+        public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
             return annotations;
         }
         
@@ -340,12 +340,12 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
         
         @Override
-        public List<List<AnnotationMirror>> getParameterAnnotations() {
+        public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
             return parameterAnnotations;
         }
         
         @Override
-        public Object getDefaultValue() {
+        public Object getDefaultValue(ThreadMirror thread) {
             return annotationDefault;
         }
 
@@ -1258,7 +1258,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     }
     
     @Override
-    public List<AnnotationMirror> getAnnotations() {
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         resolve();
         return new ArrayList<AnnotationMirror>(annotations);
     }

@@ -25,9 +25,9 @@ import java.util.List;
 
 public interface MethodMirror {
     
-    public List<AnnotationMirror> getAnnotations();
-    public List<List<AnnotationMirror>> getParameterAnnotations();
-    public Object getDefaultValue();
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread);
+    public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread);
+    public Object getDefaultValue(ThreadMirror thread);
     
     public ClassMirror getDeclaringClass();
     

@@ -30,13 +30,13 @@ public class MethodMirrorMember extends ResolvedMemberImpl {
     @Override
     public ShadowMunger getAssociatedShadowMunger() {
         for (AdviceKind kind : MirrorWorld.SUPPORTED_ADVICE_KINDS) {
-            AnnotationMirror annot = Reflection.getAnnotation(method.getAnnotations(), world.getAnnotClassMirror(kind));
+            AnnotationMirror annot = Reflection.getAnnotation(method.getAnnotations(world.thread), world.getAnnotClassMirror(kind));
             if (annot != null) {
                 // Slightly odd side-effect here, but it's convenient.
-                String parameterNamesString = (String)annot.getValue("argNames");
+                String parameterNamesString = (String)annot.getValue(world.thread, "argNames");
                 this.setParameterNames(parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(","));
                 
-                String pointcut = (String)annot.getValue("value");
+                String pointcut = (String)annot.getValue(world.thread, "value");
                 Pointcut pc = world.parsePointcut(pointcut);
                 pc = world.resolvePointcut(this, pc);
                 

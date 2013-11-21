@@ -103,8 +103,9 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     }
     
     @Override
-    public List<AnnotationMirror> getAnnotations() {
-        return vm.wrapAnnotations(wrapped.getAnnotations());
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
+        ThreadMirror unwrappedThread = (ThreadMirror)vm.unwrapInstanceMirror(thread);
+        return vm.wrapAnnotations(wrapped.getAnnotations(unwrappedThread));
     }
     
     @Override
@@ -113,8 +114,9 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     }
     
     @Override
-    public List<List<AnnotationMirror>> getParameterAnnotations() {
-        return vm.wrapAnnotationsList(wrapped.getParameterAnnotations());
+    public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
+        ThreadMirror unwrappedThread = (ThreadMirror)vm.unwrapInstanceMirror(thread);
+        return vm.wrapAnnotationsList(wrapped.getParameterAnnotations(unwrappedThread));
     }
     
     public String getSignature() {

@@ -9,24 +9,26 @@ import com.sun.jdi.InterfaceType;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIAnnotationMirror extends JDIMirror implements AnnotationMirror {
 
     private final ObjectReference mirror;
     private final InterfaceType annotType;
     
-    public JDIAnnotationMirror(JDIVirtualMachineMirror vm, ObjectReference mirror) {
+    public JDIAnnotationMirror(JDIVirtualMachineMirror vm, ThreadReference thread, ObjectReference mirror) {
         super(vm, mirror);
         this.mirror = mirror;
         
         ReferenceType annotationRT = vm.jdiVM.classesByName(Annotation.class.getName()).get(0);
         Method annotationTypeMethod = annotationRT.methodsByName("annotationType").get(0);
         
-        ClassObjectReference annotTypeRef = (ClassObjectReference)JDIVirtualMachineMirror.safeInvoke(mirror, vm.invokeThread, annotationTypeMethod);
+        ClassObjectReference annotTypeRef = (ClassObjectReference)JDIVirtualMachineMirror.safeInvoke(mirror, thread, annotationTypeMethod);
         annotType = (InterfaceType)annotTypeRef.reflectedType();
     }
 
@@ -45,8 +47,9 @@ public class JDIAnnotationMirror extends JDIMirror implements AnnotationMirror {
     }
 
     @Override
-    public Object getValue(String name) {
+    public Object getValue(ThreadMirror thread, String name) {
         Method interfaceMethod = annotType.methodsByName(name).get(0);
-        return vm.wrapAnnotationValue(JDIVirtualMachineMirror.safeInvoke(mirror, vm.invokeThread, interfaceMethod));
+        ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
+        return vm.wrapAnnotationValue(threadRef, JDIVirtualMachineMirror.safeInvoke(mirror, threadRef, interfaceMethod));
     }
 }

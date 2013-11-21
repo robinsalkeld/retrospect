@@ -38,8 +38,8 @@ public interface ConstructorMirror {
     
     public String getSignature();
     
-    public List<AnnotationMirror> getAnnotations();
-    public List<List<AnnotationMirror>> getParameterAnnotations();
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread);
+    public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread);
     
     public InstanceMirror newInstance(ThreadMirror thread, Object ... args)
             throws IllegalAccessException, IllegalArgumentException, MirrorInvocationTargetException;

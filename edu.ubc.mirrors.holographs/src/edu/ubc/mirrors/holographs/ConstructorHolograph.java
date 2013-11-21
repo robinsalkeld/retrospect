@@ -130,13 +130,13 @@ public class ConstructorHolograph implements ConstructorMirror {
     }
 
     @Override
-    public List<AnnotationMirror> getAnnotations() {
-        return wrapped.getAnnotations();
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
+        return wrapped.getAnnotations(thread);
     }
 
     @Override
-    public List<List<AnnotationMirror>> getParameterAnnotations() {
-        return wrapped.getParameterAnnotations();
+    public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
+        return wrapped.getParameterAnnotations(thread);
     }
 
     @Override

@@ -147,12 +147,12 @@ public class NativeConstructorMirror extends NativeInstanceMirror implements Con
     }
     
     @Override
-    public List<AnnotationMirror> getAnnotations() {
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         throw new UnsupportedOperationException();
     }
     
     @Override
-    public List<List<AnnotationMirror>> getParameterAnnotations() {
+    public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
         throw new UnsupportedOperationException();
     }
 }

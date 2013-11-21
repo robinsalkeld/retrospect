@@ -57,13 +57,9 @@ import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VoidValue;
-import com.sun.jdi.event.EventSet;
-import com.sun.jdi.event.ThreadStartEvent;
-import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.MethodEntryRequest;
-import com.sun.jdi.request.ThreadStartRequest;
 
 import edu.ubc.mirrors.AnnotationMirror;
+import edu.ubc.mirrors.AnnotationMirror.EnumMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.EventDispatch;
@@ -75,7 +71,6 @@ import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.AnnotationMirror.EnumMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 
@@ -84,16 +79,13 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     protected final VirtualMachine jdiVM;
     private final EventDispatch dispatch;
     
-    final ThreadReference invokeThread;
-    
     private final Map<Mirror, ObjectMirror> mirrors = new HashMap<Mirror, ObjectMirror>();
     
     private final Map<String, ClassMirror> bootstrapClasses = new HashMap<String, ClassMirror>();
     
-    public JDIVirtualMachineMirror(VirtualMachine jdiVM, final ThreadReference pausedThread) {
+    public JDIVirtualMachineMirror(VirtualMachine jdiVM) {
         this.jdiVM = jdiVM;
         this.dispatch = new EventDispatch(this);
-        this.invokeThread = pausedThread;
         
 //        ClassType threadType = (ClassType)jdiVM.classesByName(Thread.class.getName()).get(0);
 //        Method constructor = threadType.methodsByName("<init>", "(Ljava/lang/String;)V").get(0);
@@ -500,31 +492,31 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         }
     }
 
-    public List<AnnotationMirror> wrapAnnotationArray(ArrayReference array) {
+    public List<AnnotationMirror> wrapAnnotationArray(ThreadReference thread, ArrayReference array) {
         List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
         int size = array.length();
         for (int i = 0; i < size; i++) {
-            result.add(new JDIAnnotationMirror(this, (ObjectReference)array.getValue(i)));
+            result.add(new JDIAnnotationMirror(this, thread, (ObjectReference)array.getValue(i)));
         }
         return result;
     }
     
-    public List<List<AnnotationMirror>> wrapAnnotationArrayOfArrays(ArrayReference array) {
+    public List<List<AnnotationMirror>> wrapAnnotationArrayOfArrays(ThreadReference thread, ArrayReference array) {
         List<List<AnnotationMirror>> result = new ArrayList<List<AnnotationMirror>>();
         int size = array.length();
         for (int i = 0; i < size; i++) {
-            result.add(wrapAnnotationArray((ArrayReference)array.getValue(i)));
+            result.add(wrapAnnotationArray(thread, (ArrayReference)array.getValue(i)));
         }
         return result;
     }
     
-    public Object wrapAnnotationValue(Value value) {
+    public Object wrapAnnotationValue(ThreadReference thread, Value value) {
         if (value instanceof ArrayReference) {
             ArrayReference array = (ArrayReference)value;
             List<Object> result = new ArrayList<Object>();
             int size = array.length();
             for (int i = 0; i < size; i++) {
-                result.add(wrapAnnotationValue(array.getValue(i)));
+                result.add(wrapAnnotationValue(thread, array.getValue(i)));
             }
             return result;
         } else if (value instanceof StringReference) {
@@ -535,10 +527,10 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
             ClassType klass = (ClassType)object.referenceType();
             if (klass.isEnum()) {
                 Method nameMethod = jdiVM.classesByName(Enum.class.getName()).get(0).methodsByName("name").get(0);
-                StringReference name = (StringReference)JDIVirtualMachineMirror.safeInvoke(object, invokeThread, nameMethod);
+                StringReference name = (StringReference)JDIVirtualMachineMirror.safeInvoke(object, thread, nameMethod);
                 return new EnumMirror(makeClassMirror(klass), name.value());
             } else {
-                return new JDIAnnotationMirror(this, object);
+                return new JDIAnnotationMirror(this, thread, object);
             }
         } else { // Primitive value
             return wrapValue(value);

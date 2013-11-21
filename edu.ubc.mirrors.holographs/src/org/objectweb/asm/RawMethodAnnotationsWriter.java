@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.ubc.mirrors.AnnotationMirror;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class RawMethodAnnotationsWriter extends MethodVisitor {
 
@@ -33,12 +34,14 @@ public class RawMethodAnnotationsWriter extends MethodVisitor {
     private AnnotationWriter anns;
     private AnnotationWriter[] panns;
     private ByteVector annd;
+    private ThreadMirror thread;
     
-    public RawMethodAnnotationsWriter(int parameters, ClassVisitor classWriter, MethodVisitor writer) {
+    public RawMethodAnnotationsWriter(ThreadMirror thread, int parameters, ClassVisitor classWriter, MethodVisitor writer) {
         super(Opcodes.ASM4);
         this.cw = (ClassWriter)classWriter;
         this.writer = (MethodWriter)writer; 
         this.panns = new AnnotationWriter[parameters];
+        this.thread = thread;
     }
 
     @Override
@@ -92,7 +95,7 @@ public class RawMethodAnnotationsWriter extends MethodVisitor {
     public void visitAnnotationMirrors(List<AnnotationMirror> annotations) {
         for (AnnotationMirror a : annotations) {
             AnnotationVisitor subVisitor = writer.visitAnnotation(RawAnnotationsWriter.descForClassMirror(a.getClassMirror()), true);
-            RawAnnotationsWriter.visitAnnotationMirror(subVisitor, a);
+            RawAnnotationsWriter.visitAnnotationMirror(subVisitor, thread, a);
         }
     }
     
@@ -101,7 +104,7 @@ public class RawMethodAnnotationsWriter extends MethodVisitor {
         for (List<AnnotationMirror> list : annotations) {
             for (AnnotationMirror a : list) {
                 AnnotationVisitor subVisitor = writer.visitParameterAnnotation(parameter, RawAnnotationsWriter.descForClassMirror(a.getClassMirror()), true);
-                RawAnnotationsWriter.visitAnnotationMirror(subVisitor, a);
+                RawAnnotationsWriter.visitAnnotationMirror(subVisitor, thread, a);
             }
             parameter++;
         }

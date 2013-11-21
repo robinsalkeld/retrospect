@@ -43,6 +43,7 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
@@ -113,8 +114,9 @@ public class ClassStubs extends NativeStubs {
         ClassMirror classClass = getVM().findBootstrapClassMirror(Class.class.getName());
         ClassMirror constructorClass = getVM().findBootstrapClassMirror(Constructor.class.getName());
         ObjectArrayMirror result = (ObjectArrayMirror)constructorClass.newArray(constructors.size());
+        ThreadMirror thread = ThreadHolograph.currentThreadMirror();
         int i = 0;
-        RawAnnotationsWriter classWriter = new RawAnnotationsWriter(new ClassWriter(0));
+        RawAnnotationsWriter classWriter = new RawAnnotationsWriter(thread, new ClassWriter(0));
         for (ConstructorMirror c : constructors) {
             InstanceMirror inst = constructorClass.newRawInstance();
             
@@ -126,11 +128,11 @@ public class ClassStubs extends NativeStubs {
 
             RawMethodAnnotationsWriter methodWriter = (RawMethodAnnotationsWriter)classWriter.visitMethod(c.getModifiers(), "<init>", 
                     Reflection.getMethodType(c).getDescriptor(), c.getSignature(), null);
-            methodWriter.visitAnnotationMirrors(c.getAnnotations());
+            methodWriter.visitAnnotationMirrors(c.getAnnotations(thread));
             byte[] annotationsBytes = methodWriter.rawAnnotations();
             HolographInternalUtils.setField(inst, "annotations", Reflection.copyArray(getVM(), (ArrayMirror)NativeInstanceMirror.makeMirror(annotationsBytes)));
             
-            methodWriter.visitParameterAnnotationMirrors(c.getParameterAnnotations());
+            methodWriter.visitParameterAnnotationMirrors(c.getParameterAnnotations(thread));
             byte[] parameterAnnotationsBytes = methodWriter.rawParameterAnnotations();
             HolographInternalUtils.setField(inst, "parameterAnnotations", Reflection.copyArray(getVM(), (ArrayMirror)NativeInstanceMirror.makeMirror(parameterAnnotationsBytes)));
             
@@ -147,8 +149,9 @@ public class ClassStubs extends NativeStubs {
         ClassMirror classClass = getVM().findBootstrapClassMirror(Class.class.getName());
         ClassMirror methodClass = getVM().findBootstrapClassMirror(Method.class.getName());
         ObjectArrayMirror result = (ObjectArrayMirror)methodClass.newArray(methods.size());
+        ThreadMirror thread = ThreadHolograph.currentThreadMirror();
         int i = 0;
-        RawAnnotationsWriter classWriter = new RawAnnotationsWriter(new ClassWriter(0));
+        RawAnnotationsWriter classWriter = new RawAnnotationsWriter(thread, new ClassWriter(0));
         for (MethodMirror m : methods) {
             InstanceMirror inst = methodClass.newRawInstance();
             
@@ -162,11 +165,11 @@ public class ClassStubs extends NativeStubs {
             
             RawMethodAnnotationsWriter methodWriter = (RawMethodAnnotationsWriter)classWriter.visitMethod(m.getModifiers(), m.getName(), 
                     Reflection.getMethodType(m).getDescriptor(), m.getSignature(), null);
-            methodWriter.visitAnnotationMirrors(m.getAnnotations());
+            methodWriter.visitAnnotationMirrors(m.getAnnotations(thread));
             byte[] annotationsBytes = methodWriter.rawAnnotations();
             HolographInternalUtils.setField(inst, "annotations", Reflection.copyArray(getVM(), (ArrayMirror)NativeInstanceMirror.makeMirror(annotationsBytes)));
             
-            methodWriter.visitParameterAnnotationMirrors(m.getParameterAnnotations());
+            methodWriter.visitParameterAnnotationMirrors(m.getParameterAnnotations(thread));
             byte[] parameterAnnotationsBytes = methodWriter.rawParameterAnnotations();
             HolographInternalUtils.setField(inst, "parameterAnnotations", Reflection.copyArray(getVM(), (ArrayMirror)NativeInstanceMirror.makeMirror(parameterAnnotationsBytes)));
             
@@ -242,7 +245,8 @@ public class ClassStubs extends NativeStubs {
     
     @StubMethod
     public ByteArrayMirror getRawAnnotations(ClassMirror classMirror) {
-        byte[] bytes = RawAnnotationsWriter.getRawBytes(classMirror.getAnnotations());
+        ThreadHolograph thread = ThreadHolograph.currentThreadMirror();
+        byte[] bytes = RawAnnotationsWriter.getRawBytes(classMirror.getAnnotations(thread), thread);
         return (ByteArrayMirror)Reflection.copyArray(classMirror.getVM(), new NativeByteArrayMirror(bytes));
     }
     

@@ -121,19 +121,19 @@ public class NativeMethodMirror implements MethodMirror {
     }
     
     @Override
-    public List<AnnotationMirror> getAnnotations() {
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         // TODO For now
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public List<List<AnnotationMirror>> getParameterAnnotations() {
+    public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
         // TODO For now
         throw new UnsupportedOperationException();
     }
     
     @Override
-    public Object getDefaultValue() {
+    public Object getDefaultValue(ThreadMirror thread) {
         // TODO For now
         throw new UnsupportedOperationException();
     }

@@ -29,7 +29,6 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.Reflection;
-import edu.ubc.mirrors.holographs.ThreadHolograph;
 
 public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
@@ -63,9 +62,9 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
     }
     
     private Object memberForMethodMirror(MethodMirror m) {
-        AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(), getWorld().getPointcutAnnotClass());
+        AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(getWorld().thread), getWorld().getPointcutAnnotClass());
         if (annot != null && !Modifier.isAbstract(m.getModifiers())) {
-            String parameterNamesString = (String)annot.getValue("argNames");
+            String parameterNamesString = (String)annot.getValue(getWorld().thread, "argNames");
             String[] parameterNames = parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(",");
             
             UnresolvedType[] parameterTypes = new UnresolvedType[m.getParameterTypeNames().size()];
@@ -75,7 +74,7 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
             
             String name = getPointcutName(m);
             
-            String pointcut = (String)annot.getValue("value");
+            String pointcut = (String)annot.getValue(getWorld().thread, "value");
             Pointcut pc = getWorld().parsePointcut(pointcut);
             
             ResolvedPointcutDefinition def = new ResolvedPointcutDefinition(getResolvedTypeX(), m.getModifiers(), name,
@@ -189,7 +188,7 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
     @Override
     public boolean hasAnnotation(UnresolvedType ofType) {
-        return Reflection.getAnnotation(klass.getAnnotations(), getWorld().mirrorForType(getWorld().resolve(ofType))) != null;
+        return Reflection.getAnnotation(klass.getAnnotations(getWorld().thread), getWorld().mirrorForType(getWorld().resolve(ofType))) != null;
     }
 
     @Override

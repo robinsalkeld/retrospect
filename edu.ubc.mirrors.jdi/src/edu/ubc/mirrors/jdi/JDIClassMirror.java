@@ -41,6 +41,7 @@ import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 
 import edu.ubc.mirrors.AnnotationMirror;
@@ -53,6 +54,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
+import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 
@@ -97,11 +99,12 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<AnnotationMirror> getAnnotations() {
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
+        ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
         ClassType classClass = (ClassType)vm.jdiVM.classesByName(Class.class.getName()).get(0);
         Method getAnnotationsMethod = classClass.methodsByName("getAnnotations", "()[Ljava/lang/annotation/Annotation;").get(0);
-        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(refType.classObject(), vm.invokeThread, getAnnotationsMethod);
-        return (List<AnnotationMirror>)vm.wrapAnnotationValue(annotsArray);
+        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(refType.classObject(), threadRef, getAnnotationsMethod);
+        return (List<AnnotationMirror>)vm.wrapAnnotationValue(threadRef, annotsArray);
     }
     
     @Override

@@ -28,6 +28,7 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.ThreadReference;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -96,22 +97,22 @@ public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
 	// Ignore - I wonder if this shouldn't even be part of the mirrors API...
     }
 
-    public List<AnnotationMirror> getAnnotations() {
-        ThreadMirror thread = (ThreadMirror)vm.makeMirror(vm.invokeThread);
+    public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
+        ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
         ObjectReference methodInstance = getReflectiveInstance(thread);
         ClassType methodClass = (ClassType)methodInstance.referenceType();
         Method getAnnotationsMethod = methodClass.methodsByName("getDeclaredAnnotations", "()[Ljava/lang/annotation/Annotation;").get(0);
-        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(methodInstance, vm.invokeThread, getAnnotationsMethod);
-        return vm.wrapAnnotationArray(annotsArray);
+        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(methodInstance, threadRef, getAnnotationsMethod);
+        return vm.wrapAnnotationArray(threadRef, annotsArray);
     }
     
-    public List<List<AnnotationMirror>> getParameterAnnotations() {
-        ThreadMirror thread = (ThreadMirror)vm.makeMirror(vm.invokeThread);
+    public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
+        ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
         ObjectReference methodInstance = getReflectiveInstance(thread);
         ClassType methodClass = (ClassType)methodInstance.referenceType();
         Method getAnnotationsMethod = methodClass.methodsByName("getParameterAnnotations", "()[[Ljava/lang/annotation/Annotation;").get(0);
-        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(methodInstance, vm.invokeThread, getAnnotationsMethod);
-        return vm.wrapAnnotationArrayOfArrays(annotsArray);
+        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(methodInstance, threadRef, getAnnotationsMethod);
+        return vm.wrapAnnotationArrayOfArrays(threadRef, annotsArray);
     }
     
     protected abstract ObjectReference getReflectiveInstance(ThreadMirror thread);

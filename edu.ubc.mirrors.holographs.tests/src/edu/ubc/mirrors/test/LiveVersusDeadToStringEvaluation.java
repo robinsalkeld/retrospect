@@ -88,7 +88,7 @@ public class LiveVersusDeadToStringEvaluation implements IApplication {
         Event event = iterator.next();
         LocatableEvent locateableEvent = (LocatableEvent)event;
         ThreadReference thread = locateableEvent.thread();
-        final JDIVirtualMachineMirror liveVM = new JDIVirtualMachineMirror(jdiVM, thread);
+        final JDIVirtualMachineMirror liveVM = new JDIVirtualMachineMirror(jdiVM);
         
         final ThreadMirror threadMirror = (ThreadMirror)liveVM.makeMirror(thread);
         final VirtualMachineHolograph holograpOnLiveVM = new VirtualMachineHolograph(liveVM, null, Reflection.getStandardMappedFiles());

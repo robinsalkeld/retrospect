@@ -4,6 +4,7 @@ import java.util.List;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingAnnotationMirror implements AnnotationMirror {
 
@@ -40,8 +41,9 @@ public class WrappingAnnotationMirror implements AnnotationMirror {
     }
     
     @Override
-    public Object getValue(String name) {
-        Object value = wrapped.getValue(name);
+    public Object getValue(ThreadMirror thread, String name) {
+        ThreadMirror unwrappedThread = (ThreadMirror)vm.unwrapInstanceMirror(thread);
+        Object value = wrapped.getValue(unwrappedThread, name);
         return vm.wrapValue(value);
     }
 }

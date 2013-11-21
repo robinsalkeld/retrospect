@@ -67,13 +67,13 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
     }
     
     @Override
-    public Object getDefaultValue() {
-        ThreadMirror thread = (ThreadMirror)vm.makeMirror(vm.invokeThread);
+    public Object getDefaultValue(ThreadMirror thread) {
+        ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
         ObjectReference methodInstance = getReflectiveInstance(thread);
         ClassType methodClass = (ClassType)methodInstance.referenceType();
         Method getDefaultValueMethod = methodClass.methodsByName("getDefaultValue", "()Ljava/lang/Object;").get(0);
-        Value defaultValue = JDIVirtualMachineMirror.safeInvoke(methodInstance, vm.invokeThread, getDefaultValueMethod);
-        return vm.wrapAnnotationValue(defaultValue);
+        Value defaultValue = JDIVirtualMachineMirror.safeInvoke(methodInstance, threadRef, getDefaultValueMethod);
+        return vm.wrapAnnotationValue(threadRef, defaultValue);
     }
     
     public String getName() {

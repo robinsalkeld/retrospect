@@ -71,7 +71,7 @@ public class TracingExampleTest {
 //        mwr.addClassFilter("tracing.Square");
 //        mwr.enable();
         
-        final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM, threadRef);
+        final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
         ThreadMirror thread = (ThreadMirror)jdiVMM.makeMirror(threadRef);
         
 //        new EventDispatch(jdiVMM).start();
