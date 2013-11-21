@@ -80,7 +80,7 @@ public class MirrorWorld extends World {
         if (result == null) {
             ClassMirror klass;
             try {
-                klass = Reflection.classMirrorForName(vm, thread, ty.getName(), false, loader);
+                klass = Reflection.classMirrorForName(vm, thread, ty.getName(), true, loader);
             } catch (ClassNotFoundException e) {
                 return null;
             } catch (MirrorInvocationTargetException e) {

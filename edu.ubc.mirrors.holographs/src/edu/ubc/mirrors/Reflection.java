@@ -229,7 +229,7 @@ public class Reflection {
             throw new ClassNotFoundException(name);
         }
         
-        if (resolve) {
+        if (false && resolve) {
             final ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
             MethodMirror method = Reflection.withoutThread(thread, new Callable<MethodMirror>() {
                 public MethodMirror call() throws Exception {

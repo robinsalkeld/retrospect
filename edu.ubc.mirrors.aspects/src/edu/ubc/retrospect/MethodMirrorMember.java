@@ -1,6 +1,9 @@
 package edu.ubc.retrospect;
 
+import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
+import org.aspectj.weaver.AjAttribute;
+import org.aspectj.weaver.AjcMemberMaker;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedMemberImpl;
 import org.aspectj.weaver.ShadowMunger;
@@ -40,11 +43,28 @@ public class MethodMirrorMember extends ResolvedMemberImpl {
                 Pointcut pc = world.parsePointcut(pointcut);
                 pc = world.resolvePointcut(this, pc);
                 
-                return new AdviceMirror(world, world.resolve(declaringType), kind, this, pc);
+                return new AdviceMirror(world, world.resolve(declaringType), kind, this, extractExtraArgument(), pc);
             }
         }
         
         return super.getAssociatedShadowMunger();
+    }
+    
+    private int extractExtraArgument() {
+        int extraArgument = 0;
+        for (String parameterTypeName : method.getParameterTypeNames()) {
+            String signature = "L" + parameterTypeName.replace('.', '/') + ";";
+            if (AjcMemberMaker.TYPEX_JOINPOINT.getSignature().equals(signature)) {
+                    extraArgument |= Advice.ThisJoinPoint;
+            } else if (AjcMemberMaker.TYPEX_PROCEEDINGJOINPOINT.getSignature().equals(signature)) {
+                    extraArgument |= Advice.ThisJoinPoint;
+            } else if (AjcMemberMaker.TYPEX_STATICJOINPOINT.getSignature().equals(signature)) {
+                    extraArgument |= Advice.ThisJoinPointStaticPart;
+            } else if (AjcMemberMaker.TYPEX_ENCLOSINGSTATICJOINPOINT.getSignature().equals(signature)) {
+                    extraArgument |= Advice.ThisEnclosingJoinPointStaticPart;
+            }
+        }
+        return extraArgument;
     }
     
     public static MethodMirrorMember make(MirrorWorld world, MethodMirror method) {

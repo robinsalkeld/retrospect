@@ -71,6 +71,7 @@ public class RacerTest {
         
         final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
         ThreadMirror thread = (ThreadMirror)jdiVMM.makeMirror(threadRef);
+        VirtualMachineMirror vm = jdiVMM; 
 //        new EventDispatch(jdiVMM).start();
 //        if (true) return;
         
@@ -80,24 +81,29 @@ public class RacerTest {
         ReferenceType taskRT = cpe.referenceType();
         ClassMirror taskClass = jdiVMM.makeClassMirror(taskRT);
         
+        System.out.println("Booting up holographic VM...");
         // TODO-RS: Cheating for now...
         File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/RacerTest/hologram_classes");
 	final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, cachePath,
                 Collections.singletonMap("/", "/"));
+        vm = vmh;
         thread = (ThreadMirror)vmh.getWrappedMirror(thread);
         taskClass = vmh.getWrappedClassMirror(taskClass);
         
-        final VirtualMachineMirror vm = vmh;
+        final VirtualMachineMirror finalVM = vm;
         final ThreadMirror finalThread = thread;
         
+        System.out.println("Creating class loader for aspects...");
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, taskClass.getLoader(), new URL[] {urlPath, aspectRuntimeJar});
         
         Reflection.withThread(thread, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                MirrorWeaver weaver = new MirrorWeaver(vm, loader, finalThread);
-            	ClassMirror locking = Reflection.classMirrorForName(vm, finalThread, "ca.mcgill.sable.racer.Locking", true, loader);
-            	ClassMirror racer = Reflection.classMirrorForName(vm, finalThread, "ca.mcgill.sable.racer.Racer", true, loader);
+                System.out.println("Loading aspects...");
+                MirrorWeaver weaver = new MirrorWeaver(finalVM, loader, finalThread);
+            	ClassMirror locking = Reflection.classMirrorForName(finalVM, finalThread, "ca.mcgill.sable.racer.Locking", true, loader);
+            	ClassMirror racer = Reflection.classMirrorForName(finalVM, finalThread, "ca.mcgill.sable.racer.Racer", true, loader);
+            	System.out.println("Weaving aspects...");
                 weaver.weave(locking, racer);
                 
                 return null;

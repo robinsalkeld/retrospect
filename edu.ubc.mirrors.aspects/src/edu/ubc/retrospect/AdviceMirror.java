@@ -37,22 +37,23 @@ public class AdviceMirror extends Advice {
         this.concreteAspect = concreteAspect;
     }
 
-    public AdviceMirror(MirrorWorld world, ResolvedType concreteAspect, AdviceKind kind, Member signature, Pointcut pointcut) {
-        this(world, new AjAttribute.AdviceAttribute(kind, pointcut, 0, pointcut.getStart(), pointcut.getEnd(), pointcut.getSourceContext()), concreteAspect, signature, pointcut);
+    public AdviceMirror(MirrorWorld world, ResolvedType concreteAspect, AdviceKind kind, Member signature, int extraArgumentFlags, Pointcut pointcut) {
+        this(world, new AjAttribute.AdviceAttribute(kind, pointcut, extraArgumentFlags, pointcut.getStart(), pointcut.getEnd(), pointcut.getSourceContext()), concreteAspect, signature, pointcut);
     }
 
     public void execute(MirrorEventShadow shadow, ExposedState state) {
         InstanceMirror aspectInstance = (InstanceMirror)shadow.evaluateExpr(state.getAspectInstance());
         Object[] args = new Object[state.size()];
 
-        for (int i = 0; i < args.length - 1; i++) {
+        int baseArgCount = getBaseParameterCount();
+        for (int i = 0; i < baseArgCount; i++) {
             args[i] = shadow.evaluateExpr(state.get(i));
         }
         
-        // TODO-RS: Actually check that we're passing in the right kind of join point,
-        // if it's a parameter at all.
-        args[args.length - 1] = shadow.evaluateExpr(shadow.getThisJoinPointStaticPartVar());
-
+        if ((getExtraParameterFlags() & Advice.ThisJoinPointStaticPart) != 0) {
+            args[args.length - 1] = shadow.evaluateExpr(shadow.getThisJoinPointStaticPartVar());
+        }
+        
         try {
             MethodMirrorMember member = (MethodMirrorMember)signature;
             member.method.invoke(shadow.getThread(), aspectInstance, args);
