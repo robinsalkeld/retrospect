@@ -22,10 +22,7 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.net.URL;
-import java.util.Collections;
-import java.util.concurrent.Callable;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
@@ -37,12 +34,9 @@ import com.sun.jdi.request.EventRequest;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.retrospect.MirrorWeaver;
 
@@ -56,7 +50,7 @@ public class TracingExampleTest {
         	true, true);
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
-        r.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        r.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
         r.addClassFilter("tracing.ExampleMain");
         r.enable();
         jdiVM.resume();
@@ -72,6 +66,7 @@ public class TracingExampleTest {
 //        mwr.enable();
         
         final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
+        VirtualMachineMirror vm = jdiVMM;
         ThreadMirror thread = (ThreadMirror)jdiVMM.makeMirror(threadRef);
         
 //        new EventDispatch(jdiVMM).start();
@@ -83,35 +78,27 @@ public class TracingExampleTest {
         
         
         // TODO-RS: Cheating for now...
-        File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid2675.0001.subeclipseonjava7_hologram_classes");
-        VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, cachePath, Collections.singletonMap("/", "/"));
-	thread = (ThreadMirror)vmh.getWrappedMirror(thread);
+//        File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid2675.0001.subeclipseonjava7_hologram_classes");
+//        VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, cachePath, Collections.singletonMap("/", "/"));
+//	thread = (ThreadMirror)vmh.getWrappedMirror(thread);
+//	vm = vmh;
 	
-	final VirtualMachineMirror vm = vmh;
+	final VirtualMachineMirror finalVM = vm;
         final ThreadMirror finalThread = thread;
 	
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath, aspectRuntimeJar});
-	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version3.Trace", true, loader);
-	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
+	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version3.TraceMyClasses", true, loader);
+//	
+//	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
+//	
+//	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+//        InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("err"));
+//	MethodMirror method = traceClass.getDeclaredMethod("initStream", PrintStream.class.getName());
+//        method.invoke(thread, null, stream);
 	
-	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
-        InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("err"));
-	MethodMirror method = traceClass.getDeclaredMethod("initStream", PrintStream.class.getName());
-        method.invoke(thread, null, stream);
-	
-        Reflection.withThread(thread, new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                ClassMirror aspect = Reflection.classMirrorForName(vm, finalThread, "tracing.version3.TraceMyClasses", true, loader);
-                MirrorWeaver weaver = new MirrorWeaver(vm, loader, finalThread);
-                weaver.weave(aspect);
-                
-                vm.dispatch().start();
-                return null;
-            }
-        });
-	
+        MirrorWeaver weaver = new MirrorWeaver(finalVM, loader, finalThread);
+        weaver.weave();
+        
+        finalVM.dispatch().start();
     }
-    
-    
 }

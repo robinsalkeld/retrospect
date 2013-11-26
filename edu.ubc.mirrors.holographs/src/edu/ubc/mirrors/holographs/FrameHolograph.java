@@ -61,6 +61,12 @@ public class FrameHolograph extends WrappingFrameMirror {
      
         private MethodMirror wrapped;
         
+        
+        @Override
+        public byte[] getBytecode() {
+            resolve();
+            return wrapped.getBytecode();
+        }
         /**
          * @return
          * @see edu.ubc.mirrors.MethodMirror#getDeclaringClass()

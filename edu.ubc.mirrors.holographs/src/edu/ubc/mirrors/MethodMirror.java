@@ -25,6 +25,8 @@ import java.util.List;
 
 public interface MethodMirror {
     
+    public byte[] getBytecode();
+    
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread);
     public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread);
     public Object getDefaultValue(ThreadMirror thread);

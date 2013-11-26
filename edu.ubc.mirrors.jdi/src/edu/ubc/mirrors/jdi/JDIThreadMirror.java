@@ -58,6 +58,15 @@ public class JDIThreadMirror extends JDIInstanceMirror implements ThreadMirror {
     }
     
     @Override
+    public InstanceMirror getContendedMonitor() {
+        try {
+            return (InstanceMirror)vm.makeMirror(thread.currentContendedMonitor());
+        } catch (IncompatibleThreadStateException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
     public List<InstanceMirror> getOwnedMonitors() {
         List<InstanceMirror> result = new ArrayList<InstanceMirror>();
         try {

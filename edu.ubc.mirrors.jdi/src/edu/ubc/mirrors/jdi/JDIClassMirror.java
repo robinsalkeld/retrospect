@@ -73,6 +73,19 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
         }
 
         @Override
+        protected void setValue(FieldMirror field, Value value) {
+            Field jdiField = ((JDIFieldMirror)field).field;
+            assert jdiField.isStatic();
+            try {
+                ((ClassType)jdiField.declaringType()).setValue(jdiField, value);
+            } catch (InvalidTypeException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotLoadedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        @Override
         public ClassMirror getClassMirror() {
             return vm.findBootstrapClassMirror(Object.class.getName());
         }

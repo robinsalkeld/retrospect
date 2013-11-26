@@ -22,32 +22,42 @@
 package edu.ubc.mirrors;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 public class EventDispatch {
 
-    private static class CallbackThread extends Thread {
+    private class CallbackThread extends Thread {
 	
 	private MirrorEvent event;
-	private boolean stop = false;
-	private Semaphore semaphore = new Semaphore(0);
+//	private boolean stop = false;
+//	private Semaphore semaphore = new Semaphore(0);
+	
+	private CallbackThread(MirrorEvent event) {
+	    setEvent(event);
+	}
 	
 	public void setEvent(MirrorEvent event) {
 	    this.event = event;
-	    semaphore.release();
+//	    semaphore.release();
 	}
 	
 	@Override
 	public void run() {
-	    while (!stop) {
-		try {
-		    semaphore.acquire();
-		} catch (InterruptedException e) {
-		    throw new RuntimeException(e);
+//	    while (!stop) {
+//		try {
+//		    semaphore.acquire();
+//		} catch (InterruptedException e) {
+//		    throw new RuntimeException(e);
+//		}
+		if (event != null) {
+		    handleEvent(event);    
+		} else {
+		    handleSetEvent();
 		}
-		handleEvent(event);
-	    }
+//	    }
 	}
     }
     
@@ -88,18 +98,21 @@ public class EventDispatch {
 	}
     }
     
+    public void handleSetEvent() {
+        for (Runnable setCallback : eventSetCallbacks) {
+            setCallback.run();
+        }
+    }
+    
     public void start() throws InterruptedException {
 	vm.resume();
 	MirrorEventQueue q = vm.eventQueue();
 	MirrorEventSet eventSet = q.remove();
 	while (eventSet != null) {
 	    for (MirrorEvent event : eventSet) {
-		// TODO-RS: Temporary - this should be on a separate thread
-		handleEvent(event);
+	        handleEvent(event);
 	    }
-	    for (Runnable setCallback : eventSetCallbacks) {
-		setCallback.run();
-	    }
+	    handleSetEvent();
 	    
 	    eventSet.resume();
 	    eventSet = q.remove();

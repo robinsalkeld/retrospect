@@ -25,6 +25,7 @@ import static edu.ubc.mirrors.holograms.HologramClassGenerator.getHologramBinary
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationHandler;
@@ -52,6 +53,7 @@ import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 import edu.ubc.mirrors.raw.NativeCharArrayMirror;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class Reflection {
 
@@ -886,5 +888,38 @@ public class Reflection {
             }
         }
         return null;
+    }
+    
+    public static byte[] readFromStreamMirror(ThreadMirror thread, InstanceMirror stream) {
+        return NativeClassMirror.readFully(new InputStreamMirror(thread, stream));
+    }
+    
+    public static void printAllThreads(VirtualMachineMirror vm) {
+        for (ThreadMirror thread : vm.getThreads()) {
+            printThreadState(thread);
+        }
+    }
+    
+    public static void printThreadState(ThreadMirror thread) {
+        System.out.println(thread);
+        InstanceMirror contendedMonitor = thread.getContendedMonitor();
+        if (contendedMonitor != null) {
+            System.out.println("\t waiting on " + contendedMonitor);
+        }
+        for (InstanceMirror monitor : thread.getOwnedMonitors()) {
+            System.out.println("\t owns " + monitor);
+        }
+        for (FrameMirror frame : thread.getStackTrace()) {
+            System.out.println("\t at " + frameToString(frame));
+        }
+    }
+    
+    public static String frameToString(FrameMirror frame) {
+        String fileName = frame.fileName();
+        int lineNumber = frame.lineNumber();
+        return frame.declaringClass().getClassName() + "." + frame.methodName() +
+                 (fileName != null && lineNumber >= 0 ?
+                  "(" + fileName + ":" + lineNumber + ")" :
+                  (fileName != null ?  "("+fileName+")" : "(Unknown Source)"));
     }
 }

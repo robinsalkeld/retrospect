@@ -110,16 +110,6 @@ public class SanityTest extends TestCase {
                 "edu.ubc.mirrors.test.JREOnly", 
                 "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.holographs.tests/bin\"",
                 false, false);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                try {
-                    jdiVM.exit(0);
-                } catch (VMDisconnectedException e) {
-                    // Ignore
-                }
-            }
-        });
         
         // Ignore the VMStartEvent
         jdiVM.eventQueue().remove();

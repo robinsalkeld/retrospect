@@ -43,6 +43,11 @@ public class NativeThreadMirror extends NativeInstanceMirror implements ThreadMi
     }
 
     @Override
+    public InstanceMirror getContendedMonitor() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public List<InstanceMirror> getOwnedMonitors() {
         throw new UnsupportedOperationException();
     }

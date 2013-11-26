@@ -136,6 +136,11 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     }
 
     @Override
+    public InstanceMirror getContendedMonitor() {
+        return (InstanceMirror)(vm.getWrappedMirror(wrappedThread.getContendedMonitor()));
+    }
+    
+    @Override
     public List<InstanceMirror> getOwnedMonitors() {
         List<InstanceMirror> result = new ArrayList<InstanceMirror>();
         for (InstanceMirror monitor : wrappedThread.getOwnedMonitors()) {

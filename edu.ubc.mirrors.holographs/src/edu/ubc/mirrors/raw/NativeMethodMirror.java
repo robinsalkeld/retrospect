@@ -44,6 +44,11 @@ public class NativeMethodMirror implements MethodMirror {
     }
     
     @Override
+    public byte[] getBytecode() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public Object invoke(ThreadMirror thread, ObjectMirror obj, Object... args)
             throws IllegalArgumentException, IllegalAccessException,
             MirrorInvocationTargetException {

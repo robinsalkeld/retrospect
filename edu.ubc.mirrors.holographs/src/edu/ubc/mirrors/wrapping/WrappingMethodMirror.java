@@ -57,6 +57,11 @@ public class WrappingMethodMirror implements MethodMirror {
     }
     
     @Override
+    public byte[] getBytecode() {
+        return wrapped.getBytecode();
+    }
+    
+    @Override
     public Object invoke(ThreadMirror thread, ObjectMirror obj, Object... args)
             throws IllegalArgumentException, IllegalAccessException,
             MirrorInvocationTargetException {

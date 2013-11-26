@@ -24,22 +24,12 @@ package edu.ubc.mirrors.test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdi.Bootstrap;
 
-import com.sun.jdi.ClassNotLoadedException;
-import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.InvalidTypeException;
-import com.sun.jdi.InvocationException;
-import com.sun.jdi.Method;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.Value;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.connect.AttachingConnector;
@@ -69,7 +59,18 @@ public class JDIUtils {
         ((StringArgument)connectorArgs.get("options")).setValue(vmArgs);
         ((BooleanArgument)connectorArgs.get("suspend")).setValue(suspend);
         try {
-            return fixTimeoutAndHandleStreams(c.launch(connectorArgs), echoStreams);
+            final VirtualMachine vm = c.launch(connectorArgs);
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        vm.exit(0);
+                    } catch (VMDisconnectedException e) {
+                        // Ignore
+                    }
+                }
+            });
+            return fixTimeoutAndHandleStreams(vm, echoStreams);
         } catch (IllegalConnectorArgumentsException e) {
             throw new RuntimeException(e);
         }
@@ -98,6 +99,7 @@ public class JDIUtils {
             new StreamSiphon(process.getInputStream(), System.out).start();
             new StreamSiphon(process.getErrorStream(), System.err).start();
         }
+        
         return vm;
     }
     

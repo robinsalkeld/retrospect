@@ -1,10 +1,12 @@
 package edu.ubc.retrospect;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.SourceLocation;
 import org.aspectj.runtime.reflect.Factory;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AjcMemberMaker;
@@ -48,15 +50,15 @@ public class MirrorWorld extends World {
     public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After };
     
     final VirtualMachineMirror vm;
-    private final ClassMirrorLoader loader;
+    final ClassMirrorLoader loader;
     final ThreadMirror thread;
     private final Map<ClassMirror, InstanceMirror> ajFactories = new HashMap<ClassMirror, InstanceMirror>();
     private final ConstructorMirror factoryConstructor;
     private final ClassMirror aspectAnnotClass;
     private final ClassMirror pointcutAnnotClass;
 
-    private final Map<ReferenceType, ReferenceTypeDelegate> delegates =
-            new HashMap<ReferenceType, ReferenceTypeDelegate>();
+    private final Map<String, ClassMirror> classMirrors =
+            new HashMap<String, ClassMirror>();
     
     private final MirrorWeavingSupport weavingSupport = new MirrorWeavingSupport(this);
     
@@ -68,6 +70,9 @@ public class MirrorWorld extends World {
         this.factoryConstructor = factoryClass.getConstructor(String.class.getName(), Class.class.getName());
         this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
         this.pointcutAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(org.aspectj.lang.annotation.Pointcut.class), false, loader);
+        
+        // These ones just have to be loaded because they are argument types in some of the factory methods
+        Reflection.classMirrorForType(vm, thread, Type.getType(SourceLocation.class), true, loader);
     }
 
     public ClassMirror getPointcutAnnotClass() {
@@ -76,24 +81,25 @@ public class MirrorWorld extends World {
     
     @Override
     protected ReferenceTypeDelegate resolveDelegate(ReferenceType ty) {
-        ReferenceTypeDelegate result = delegates.get(ty);
-        if (result == null) {
-            ClassMirror klass;
+        String typeName = ty.getName();
+        ClassMirror klass = classMirrors.get(typeName);
+        if (klass == null) {
             try {
-                klass = Reflection.classMirrorForName(vm, thread, ty.getName(), true, loader);
+                klass = Reflection.classMirrorForName(vm, thread, typeName, true, loader);
             } catch (ClassNotFoundException e) {
                 return null;
             } catch (MirrorInvocationTargetException e) {
                 return null;
             }
-            result = new MirrorReferenceTypeDelegate(ty, klass);
-            delegates.put(ty, result);
+            classMirrors.put(typeName, klass);
         }
-        return result;
+        return new MirrorReferenceTypeDelegate(ty, klass);
     }
 
     public ResolvedType resolve(ClassMirror klass) {
-        return resolve(UnresolvedType.forName(klass.getClassName()));
+        String className = klass.getClassName();
+        classMirrors.put(className, klass);
+        return resolve(UnresolvedType.forName(className));
     }
     
     @Override
@@ -155,7 +161,7 @@ public class MirrorWorld extends World {
         for (int i = 0; i < numParams; i++) {
             parameterNames.set(i, vm.makeString("arg" + i));
         }
-        ObjectArrayMirror exceptionTypes = Reflection.toArray(classClass, constructor.getExceptionTypes());
+        ObjectArrayMirror exceptionTypes = Reflection.toArray(classClass); //constructor.getExceptionTypes());
         return (InstanceMirror)new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((Factory)null).makeConstructorSig(0, null, null, null, null);

@@ -459,7 +459,8 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public InstanceMirror getInternedString(String s) {
-        throw new UnsupportedOperationException();
+        // TODO-RS
+        return makeString(s);
     }
     
     @Override

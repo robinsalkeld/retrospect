@@ -64,6 +64,11 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
     }
 
     @Override
+    public InstanceMirror getContendedMonitor() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public List<InstanceMirror> getOwnedMonitors() {
         throw new UnsupportedOperationException();
     }

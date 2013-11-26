@@ -23,7 +23,6 @@ package edu.ubc.mirrors.holographs;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -528,14 +527,14 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
         
 //        System.out.println("Loaded bytecode stream for " + holographClass.getClassName() + ": " + timer.lap());
-        result = readBytecodeFromStream(thread, holographClass, stream);
+        result = readBytecodeFromStream(thread, stream);
         
         ThreadHolograph.lowerMetalevel();
 //        System.out.println("Loaded bytecode for " + holographClass.getClassName() + ": " + timer.stop());
         return result;
     }
     
-    private byte[] readBytecodeFromStream(ThreadMirror thread, ClassMirror holographClass, InstanceMirror stream) {
+    private byte[] readBytecodeFromStream(ThreadMirror thread, InstanceMirror stream) {
         String className = stream.getClassMirror().getClassName();
         try {
             // Optimizations - if we get back a known InputStream subtype, pull directly from the mapped host file/zip/etc,
@@ -543,7 +542,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             if (className.equals(BufferedInputStream.class.getName())) {
                 ClassMirror fisClass = findBootstrapClassMirror(FilterInputStream.class.getName());
                 InstanceMirror in = (InstanceMirror)stream.get(fisClass.getDeclaredField("in"));
-                return readBytecodeFromStream(thread, holographClass, in);
+                return readBytecodeFromStream(thread, in);
             } else if (className.equals(FileInputStream.class.getName())) {
                 InstanceMirror fileDescriptor = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("fd"));
                 int fd = fileDescriptor.getInt(fileDescriptor.getClassMirror().getDeclaredField("fd"));
@@ -551,7 +550,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 return NativeClassMirror.readFully(in);
             } else if (className.equals("org.eclipse.osgi.baseadaptor.bundlefile.ZipBundleEntry$ZipBundleEntryInputStream")) {
                 InstanceMirror wrapped = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("stream"));
-                return readBytecodeFromStream(thread, holographClass, wrapped);
+                return readBytecodeFromStream(thread, wrapped);
 //            } else if (className.equals("java.util.zip.ZipFile$ZipFileInflaterInputStream")) {
 //                InstanceMirror jarFile = (InstanceMirror)stream.get(stream.getClassMirror().getDeclaredField("this$0"));
 //                ClassMirror zipFileClass = findBootstrapClassMirror(ZipFile.class.getName());
@@ -588,22 +587,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 //            HologramClassLoader.printIndent();
 //            System.out.println("Fetching original bytecode for: " + holographClass.getClassName() + " (from instance of " + className + ")");
 //        }
-        MethodHandle readMethod = new MethodHandle() {
-            protected void methodCall() throws Throwable {
-                ((InputStream)null).read(null, 0, 0);
-            }  
-        };
-        byte[] localBuffer = new byte[4096];
-        ByteArrayMirror localBufferMirror = new NativeByteArrayMirror(localBuffer);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteArrayMirror remoteBuffer = (ByteArrayMirror)getPrimitiveClass("byte").newArray(4096);
-        int read;
-        while ((read = (Integer)Reflection.invokeMethodHandle(stream, thread, 
-                readMethod, remoteBuffer, 0, remoteBuffer.length())) != -1) {
-            Reflection.arraycopy(remoteBuffer, 0, localBufferMirror, 0, remoteBuffer.length());
-            baos.write(localBuffer, 0, read);
-        }
-        byte[] result = baos.toByteArray();
+        byte[] result = Reflection.readFromStreamMirror(thread, stream);
 
 //        if (HologramClassLoader.debug) {
 //            HologramClassLoader.printIndent();

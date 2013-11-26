@@ -24,6 +24,8 @@ package edu.ubc.mirrors.jdi;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdi.TimeoutException;
+
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
@@ -49,6 +51,11 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
 	if (method.name().startsWith("<")) {
 	    throw new IllegalArgumentException();
 	}
+    }
+    
+    @Override
+    public byte[] getBytecode() {
+        return method.bytecodes();
     }
 
     @Override
@@ -110,6 +117,9 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
         } catch (InvocationException e) {
             InstanceMirror eMirror = (InstanceMirror)vm.makeMirror(e.exception());
             throw new MirrorInvocationTargetException(eMirror);
+        } catch (TimeoutException e) {
+            Reflection.printAllThreads(vm);
+            throw e;
         }
     }
     

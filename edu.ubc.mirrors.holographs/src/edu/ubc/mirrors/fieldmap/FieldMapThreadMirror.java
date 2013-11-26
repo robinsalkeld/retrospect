@@ -40,6 +40,11 @@ public class FieldMapThreadMirror extends FieldMapMirror implements ThreadMirror
     }
     
     @Override
+    public InstanceMirror getContendedMonitor() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public List<InstanceMirror> getOwnedMonitors() {
         throw new UnsupportedOperationException();
     }

@@ -279,20 +279,42 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                 // 2. Search through the bytecode for MONITORENTER/EXIT instructions,
                 //    and create breakpoints for each.
                 try {
-                    JavaClass bcelClass = new ClassParser(new ByteArrayInputStream(klass.getBytecode()), "").parse();
-                    for (Method method : bcelClass.getMethods()) {
-                        InstructionList insnList = new InstructionList(method.getCode().getCode());
+                    Map<MethodMirror, Method> bcelMethods = null;
+                    for (MethodMirror methodMirror : klass.getDeclaredMethods(false)) {
+                        byte[] bytecode;
+                        try {
+                            bytecode = methodMirror.getBytecode(); 
+                        } catch (UnsupportedOperationException e) {
+                            if (bcelMethods == null) {
+                                bcelMethods = new HashMap<MethodMirror, Method>();
+                                JavaClass bcelClass = new ClassParser(new ByteArrayInputStream(klass.getBytecode()), "").parse();
+                                for (Method method : bcelClass.getMethods()) {
+                                    try {
+                                        String name = method.getName();
+                                        if (!name.startsWith("<")) {
+                                            MethodMirror thisMirror = Reflection.getDeclaredMethod(klass, name, Type.getMethodType(method.getDeclaredSignature()));
+                                            bcelMethods.put(thisMirror, method);
+                                        }
+                                    } catch (NoSuchMethodException e1) {
+                                        throw new RuntimeException(e1);
+                                    }
+                                }
+                            }
+                            bytecode = bcelMethods.get(methodMirror).getCode().getCode();
+                        }
+                        
+                        InstructionList insnList = new InstructionList(bytecode);
                         for (InstructionHandle handle : insnList.getInstructionHandles()) {
                             short opcode = handle.getInstruction().getOpcode();
                             if ((kind == Shadow.SynchronizationLock && opcode == Opcodes.MONITORENTER)
                                 || (kind == Shadow.SynchronizationUnlock && opcode == Opcodes.MONITOREXIT)) {
                                 int offset = handle.getPosition();
-                                MethodMirror methodMirror = Reflection.getDeclaredMethod(klass, method.getName(), Type.getMethodType(method.getDeclaredSignature()));
                                 installMonitorRequests(kind, methodMirror, offset);
                             }
                         }
                     }
-                } catch (ClassFormatException | IOException | SecurityException | NoSuchMethodException e) {
+                    
+                } catch (ClassFormatException | IOException | SecurityException e) {
                     throw new RuntimeException(e);
                 }
 //                ClassReader reader = new ClassReader(klass.getBytecode());

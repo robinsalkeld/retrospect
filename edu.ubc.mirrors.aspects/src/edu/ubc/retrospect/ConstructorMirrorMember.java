@@ -11,8 +11,8 @@ public class ConstructorMirrorMember extends ResolvedMemberImpl {
     private final ConstructorMirror cons;
     
     private ConstructorMirrorMember(ConstructorMirror cons, UnresolvedType declaringType, int modifiers, UnresolvedType returnType, 
-            String name, UnresolvedType[] parameterTypes, UnresolvedType[] checkedExceptions) {
-        super(Member.CONSTRUCTOR, declaringType, modifiers, returnType, name, parameterTypes, checkedExceptions);
+            String name, UnresolvedType[] parameterTypes) {
+        super(Member.CONSTRUCTOR, declaringType, modifiers, returnType, name, parameterTypes);
         this.cons = cons;
     }
 
@@ -29,11 +29,6 @@ public class ConstructorMirrorMember extends ResolvedMemberImpl {
             parameterTypes[i] = UnresolvedType.forName(cons.getParameterTypeNames().get(i));
         }
         
-        UnresolvedType[] exceptionTypes = new UnresolvedType[cons.getExceptionTypeNames().size()];
-        for (int i = 0; i < exceptionTypes.length; i++) {
-            exceptionTypes[i] = UnresolvedType.forName(cons.getExceptionTypeNames().get(i));
-        }
-        
-        return new ConstructorMirrorMember(cons, declaringType, cons.getModifiers(), returnType, "<init>", parameterTypes, exceptionTypes);
+        return new ConstructorMirrorMember(cons, declaringType, cons.getModifiers(), returnType, "<init>", parameterTypes);
     }
 }

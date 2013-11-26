@@ -82,9 +82,9 @@ public class RacerTest {
         ClassMirror taskClass = jdiVMM.makeClassMirror(taskRT);
         
         System.out.println("Booting up holographic VM...");
-        // TODO-RS: Cheating for now...
+//        // TODO-RS: Cheating for now...
         File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/RacerTest/hologram_classes");
-	final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, cachePath,
+        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, cachePath,
                 Collections.singletonMap("/", "/"));
         vm = vmh;
         thread = (ThreadMirror)vmh.getWrappedMirror(thread);
@@ -96,19 +96,8 @@ public class RacerTest {
         System.out.println("Creating class loader for aspects...");
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, taskClass.getLoader(), new URL[] {urlPath, aspectRuntimeJar});
         
-        Reflection.withThread(thread, new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                System.out.println("Loading aspects...");
-                MirrorWeaver weaver = new MirrorWeaver(finalVM, loader, finalThread);
-            	ClassMirror locking = Reflection.classMirrorForName(finalVM, finalThread, "ca.mcgill.sable.racer.Locking", true, loader);
-            	ClassMirror racer = Reflection.classMirrorForName(finalVM, finalThread, "ca.mcgill.sable.racer.Racer", true, loader);
-            	System.out.println("Weaving aspects...");
-                weaver.weave(locking, racer);
-                
-                return null;
-            }
-        });
+        MirrorWeaver weaver = new MirrorWeaver(finalVM, loader, finalThread);
+    	weaver.weave();
         
         vm.dispatch().start();
     }

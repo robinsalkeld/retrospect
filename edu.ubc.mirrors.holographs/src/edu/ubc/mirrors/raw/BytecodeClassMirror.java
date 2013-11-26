@@ -284,6 +284,11 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         }
         
         @Override
+        public byte[] getBytecode() {
+            throw new UnsupportedOperationException();
+        }
+        
+        @Override
         public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
             return annotations;
         }

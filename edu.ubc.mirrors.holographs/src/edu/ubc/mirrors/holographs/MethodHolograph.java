@@ -93,6 +93,15 @@ public class MethodHolograph implements MethodMirror {
     }
     
     @Override
+    public byte[] getBytecode() {
+        if (klass.hasBytecode()) {
+            return wrapped.getBytecode();
+        } else {
+            return getBytecodeMethod().getBytecode();
+        }
+    }
+    
+    @Override
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         if (klass.hasBytecode()) {
             return wrapped.getAnnotations(thread);
