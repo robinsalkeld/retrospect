@@ -22,43 +22,39 @@
 package edu.ubc.mirrors;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 public class EventDispatch {
 
-    private class CallbackThread extends Thread {
-	
-	private MirrorEvent event;
-//	private boolean stop = false;
-//	private Semaphore semaphore = new Semaphore(0);
-	
-	private CallbackThread(MirrorEvent event) {
-	    setEvent(event);
-	}
-	
-	public void setEvent(MirrorEvent event) {
-	    this.event = event;
-//	    semaphore.release();
-	}
-	
-	@Override
-	public void run() {
-//	    while (!stop) {
-//		try {
-//		    semaphore.acquire();
-//		} catch (InterruptedException e) {
-//		    throw new RuntimeException(e);
-//		}
-		if (event != null) {
-		    handleEvent(event);    
-		} else {
-		    handleSetEvent();
-		}
-//	    }
-	}
+    private class SetCallbackThread extends Thread {
+        
+        private MirrorEventSet eventSet;
+//      private boolean stop = false;
+//      private Semaphore semaphore = new Semaphore(0);
+        
+        private SetCallbackThread(MirrorEventSet eventSet) {
+            setEventSet(eventSet);
+        }
+        
+        public void setEventSet(MirrorEventSet eventSet) {
+            this.eventSet = eventSet;
+//          semaphore.release();
+        }
+        
+        @Override
+        public void run() {
+//          while (!stop) {
+//              try {
+//                  semaphore.acquire();
+//              } catch (InterruptedException e) {
+//                  throw new RuntimeException(e);
+//              }
+            for (MirrorEvent event : eventSet) {
+                handleEvent(event);
+            }
+            handleSetEvent(eventSet);
+//          }
+        }
     }
     
     private static final Object CALLBACKS_KEY = new Object();
@@ -98,10 +94,11 @@ public class EventDispatch {
 	}
     }
     
-    public void handleSetEvent() {
+    public void handleSetEvent(MirrorEventSet eventSet) {
         for (Runnable setCallback : eventSetCallbacks) {
             setCallback.run();
         }
+        eventSet.resume();
     }
     
     public void start() throws InterruptedException {
@@ -109,12 +106,8 @@ public class EventDispatch {
 	MirrorEventQueue q = vm.eventQueue();
 	MirrorEventSet eventSet = q.remove();
 	while (eventSet != null) {
-	    for (MirrorEvent event : eventSet) {
-	        handleEvent(event);
-	    }
-	    handleSetEvent();
+	    new SetCallbackThread(eventSet).start();
 	    
-	    eventSet.resume();
 	    eventSet = q.remove();
 	}
     }

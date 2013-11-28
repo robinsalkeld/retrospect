@@ -1,16 +1,23 @@
 package edu.ubc.retrospect;
 
-import java.util.Collections;
+import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
+import org.aspectj.bridge.IMessage;
+import org.aspectj.bridge.IMessageHandler;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.SourceLocation;
 import org.aspectj.runtime.reflect.Factory;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AjcMemberMaker;
 import org.aspectj.weaver.BindingScope;
+import org.aspectj.weaver.ConcreteTypeMunger;
 import org.aspectj.weaver.IWeavingSupport;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ReferenceType;
@@ -21,16 +28,21 @@ import org.aspectj.weaver.ShadowMunger;
 import org.aspectj.weaver.SourceContextImpl;
 import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.World;
+import org.aspectj.weaver.loadtime.DefaultMessageHandler;
+import org.aspectj.weaver.loadtime.definition.Definition;
+import org.aspectj.weaver.loadtime.definition.DocumentParser;
 import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.FormalBinding;
 import org.aspectj.weaver.patterns.PatternParser;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.InputStreamMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
@@ -39,6 +51,7 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 
 /**
  * Where good is evil, and evil good. Or something like that.
@@ -61,6 +74,13 @@ public class MirrorWorld extends World {
             new HashMap<String, ClassMirror>();
     
     private final MirrorWeavingSupport weavingSupport = new MirrorWeavingSupport(this);
+    private Definition definition;
+    private final ThreadLocal<Set<MirrorEventShadow>> joinpointShadowsTL = new ThreadLocal<Set<MirrorEventShadow>>() {
+        @Override
+        protected Set<MirrorEventShadow> initialValue() {
+            return new HashSet<MirrorEventShadow>();
+        }
+    };
     
     public MirrorWorld(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
@@ -71,8 +91,12 @@ public class MirrorWorld extends World {
         this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
         this.pointcutAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(org.aspectj.lang.annotation.Pointcut.class), false, loader);
         
+        IMessageHandler messageHandler = new DefaultMessageHandler();
+        setMessageHandler(messageHandler);
+        
         // These ones just have to be loaded because they are argument types in some of the factory methods
         Reflection.classMirrorForType(vm, thread, Type.getType(SourceLocation.class), true, loader);
+        resolve(UnresolvedType.forName(JoinPoint.StaticPart.class.getName()));
     }
 
     public ClassMirror getPointcutAnnotClass() {
@@ -110,6 +134,16 @@ public class MirrorWorld extends World {
     @Override
     public boolean isLoadtimeWeaving() {
         return true;
+    }
+    
+    @Override
+    public boolean isXmlConfigured() {
+        return true;
+    }
+    
+    @Override
+    public boolean isAspectIncluded(ResolvedType aspectType) {
+        return definition.getAspectClassNames().contains(aspectType.getName());
     }
     
     private InstanceMirror getAJFactory(ThreadMirror thread, ClassMirror classMirror) {
@@ -278,5 +312,85 @@ public class MirrorWorld extends World {
     @Override
     public void reportMatch(ShadowMunger munger, Shadow shadow) {
 //        System.out.println("Match: " + munger + " on " + shadow);
+    }
+    
+    private void parseConfiguration() {
+        String definitionPath = "META-INF/aop-ajc.xml";
+        InstanceMirror definitionStream = (InstanceMirror)Reflection.invokeMethodHandle(loader, thread, new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((ClassLoader)null).getResourceAsStream((String)null);
+            }
+        }, vm.makeString(definitionPath));
+        FakeURLStreamHandler handler = new FakeURLStreamHandler(new InputStreamMirror(thread, definitionStream));
+        try {
+            URL fakeURL = new URL("file", "", 0, definitionPath, handler);
+            definition = DocumentParser.parse(fakeURL);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public void weave() throws ClassNotFoundException, NoSuchMethodException, InterruptedException, MirrorInvocationTargetException {
+        Reflection.withThread(thread, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                ThreadHolograph.raiseMetalevel();
+        
+                showMessage(IMessage.DEBUG, "Loading weaving configuration...", null, null);
+                parseConfiguration();
+                
+                showMessage(IMessage.DEBUG, "Loading aspects...", null, null);
+                for (String aspectClassName : definition.getAspectClassNames()) {
+                    ReferenceType aspectType = (ReferenceType)resolve(aspectClassName);
+                    getCrosscuttingMembersSet().addOrReplaceAspect(aspectType);
+                }
+                
+                showMessage(IMessage.DEBUG, "Weaving aspects...", null, null);
+                for (ConcreteTypeMunger munger : getCrosscuttingMembersSet().getTypeMungers()) {
+                    MirrorTypeMunger mirrorMunger = (MirrorTypeMunger)munger;
+                    mirrorMunger.munge(MirrorWorld.this);
+                }
+                
+                for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
+                    AdviceMirror advice = (AdviceMirror)munger;
+                    showMessage(IMessage.DEBUG, "Installing event requests for advice: " + advice, null, null);
+                    PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice, new Callback<MirrorEventShadow>() {
+                        public void handle(MirrorEventShadow shadow) {
+                            if (shadow.getDeclaringClass().getLoader() == null) {
+                                return;
+                            }
+
+                            // TODO-RS: This is specified in the documentation for loadtime weaving,
+                            // so this check is probably already coded somewhere in the weaving library...
+                            if (shadow.getDeclaringClass().getClassName().startsWith("org.aspectj.")) {
+                                return;
+                            }
+                            
+                            joinpointShadowsTL.get().add(shadow);
+                        }
+                    });
+                    showMessage(IMessage.DEBUG, "Done.", null, null);
+                }
+                
+                vm.dispatch().addSetCallback(new Runnable() {
+                    public void run() {
+                        for (MirrorEventShadow shadow : joinpointShadowsTL.get()) {
+                            showMessage(IMessage.DEBUG, shadow.toString(), null, null);
+                            for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
+                                if (munger.match(shadow, MirrorWorld.this)) {
+                                    shadow.addMunger(munger);
+                                }
+                            }
+                            shadow.implement();
+                        }
+                        joinpointShadowsTL.get().clear();
+                    }
+                });
+                
+                ThreadHolograph.lowerMetalevel();
+                
+                return null;
+            }
+        });
     }
 }

@@ -31,14 +31,8 @@ import org.aspectj.weaver.patterns.PointcutRewriter;
 import org.aspectj.weaver.patterns.SignaturePattern;
 import org.aspectj.weaver.patterns.TypePattern;
 import org.aspectj.weaver.patterns.WithinPointcut;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.util.Textifier;
-import org.objectweb.asm.util.TraceMethodVisitor;
 
 import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
@@ -317,8 +311,6 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                 } catch (ClassFormatException | IOException | SecurityException e) {
                     throw new RuntimeException(e);
                 }
-//                ClassReader reader = new ClassReader(klass.getBytecode());
-//                reader.accept(new SynchronizationClassVisitor(klass, kind), 0);
             };
         });
     }
@@ -392,84 +384,5 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         PointcutMirrorRequestExtractor extractor = new PointcutMirrorRequestExtractor(world, advice, callback);
         Pointcut dnf = new PointcutRewriter().rewrite(advice.getPointcut());
         dnf.accept(extractor, null);
-    }
-    
-    private class SynchronizationClassVisitor extends ClassVisitor {
-
-        private final ClassMirror klass;
-        private final Shadow.Kind kind;
-        
-        public SynchronizationClassVisitor(ClassMirror klass, Shadow.Kind kind) {
-            super(Opcodes.ASM4);
-            this.klass = klass;
-            this.kind = kind;
-        }
-
-        @Override
-        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            if (name.startsWith("<")) {
-                return null;
-            }
-            
-            try {
-                MethodMirror method = Reflection.getDeclaredMethod(klass, name, Type.getType(desc));
-                return new SynchonizationMethodVisitor(access, name, desc, signature, exceptions, method, kind);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-    
-    private class SynchonizationMethodVisitor extends MethodNode {
-
-        private final MethodMirror methodMirror;
-        private final Shadow.Kind kind;
-        
-        private int instructionsToSkip = 0;
-        
-        public SynchonizationMethodVisitor(int access, String name, String desc, String signature, String[] exceptions, MethodMirror methodMirror, Shadow.Kind kind) {
-            super(access, name, desc, signature, exceptions);
-            this.methodMirror = methodMirror;
-            this.kind = kind;
-        }
-
-        @Override
-        public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
-            super.visitFrame(type, nLocal, local, nStack, stack);
-            instructionsToSkip++;
-        }
-        
-        @Override
-        public void visitLabel(Label label) {
-            super.visitLabel(label);
-            instructionsToSkip++;
-        }
-        
-        @Override
-        public void visitLineNumber(int line, Label start) {
-            super.visitLineNumber(line, start);
-            instructionsToSkip++;
-        }
-        
-        @Override
-        public void visitInsn(int opcode) {
-            if ((kind == Shadow.SynchronizationLock && opcode == Opcodes.MONITORENTER)
-                    || (kind == Shadow.SynchronizationUnlock && opcode == Opcodes.MONITOREXIT)) {
-                
-                Textifier t = new Textifier();
-                TraceMethodVisitor mv = new TraceMethodVisitor(t);
-                for (int i = 0; i < instructions.size(); i++) {
-                    instructions.get(i).accept(mv);
-                    
-                    System.out.print(Integer.toString(i + 100000).substring(1));
-                    System.out.print(t.text.get(t.text.size() - 1));
-                }
-                
-                int offset = instructions.size() - instructionsToSkip;
-                installMonitorRequests(kind, methodMirror, offset);
-            }
-            
-            super.visitInsn(opcode);
-        }
     }
 }

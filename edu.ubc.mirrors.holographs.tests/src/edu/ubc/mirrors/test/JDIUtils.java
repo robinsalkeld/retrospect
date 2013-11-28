@@ -93,7 +93,7 @@ public class JDIUtils {
     }
     
     private static VirtualMachine fixTimeoutAndHandleStreams(VirtualMachine vm, boolean echoStreams) {
-//        ((org.eclipse.jdi.VirtualMachine)vm).setRequestTimeout(60000);
+        ((org.eclipse.jdi.VirtualMachine)vm).setRequestTimeout(6000000);
         if (echoStreams) {
             Process process = vm.process();
             new StreamSiphon(process.getInputStream(), System.out).start();

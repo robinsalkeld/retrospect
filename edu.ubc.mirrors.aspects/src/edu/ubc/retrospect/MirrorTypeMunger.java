@@ -14,7 +14,7 @@ public class MirrorTypeMunger extends ConcreteTypeMunger {
         super(munger, aspectType);
     }
 
-    public void munge(MirrorWeaver weaver) {
+    public void munge(MirrorWorld world) {
     }
     
     @Override

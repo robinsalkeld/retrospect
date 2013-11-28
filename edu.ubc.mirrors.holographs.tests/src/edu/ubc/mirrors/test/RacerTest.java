@@ -24,7 +24,6 @@ package edu.ubc.mirrors.test;
 import java.io.File;
 import java.net.URL;
 import java.util.Collections;
-import java.util.concurrent.Callable;
 
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
@@ -42,7 +41,7 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
-import edu.ubc.retrospect.MirrorWeaver;
+import edu.ubc.retrospect.MirrorWorld;
 
 public class RacerTest {
 
@@ -96,8 +95,8 @@ public class RacerTest {
         System.out.println("Creating class loader for aspects...");
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, taskClass.getLoader(), new URL[] {urlPath, aspectRuntimeJar});
         
-        MirrorWeaver weaver = new MirrorWeaver(finalVM, loader, finalThread);
-    	weaver.weave();
+        MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
+        world.weave();
         
         vm.dispatch().start();
     }

@@ -38,7 +38,7 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
-import edu.ubc.retrospect.MirrorWeaver;
+import edu.ubc.retrospect.MirrorWorld;
 
 public class TracingExampleTest {
 
@@ -96,8 +96,8 @@ public class TracingExampleTest {
 //	MethodMirror method = traceClass.getDeclaredMethod("initStream", PrintStream.class.getName());
 //        method.invoke(thread, null, stream);
 	
-        MirrorWeaver weaver = new MirrorWeaver(finalVM, loader, finalThread);
-        weaver.weave();
+	MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
+        world.weave();
         
         finalVM.dispatch().start();
     }

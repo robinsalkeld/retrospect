@@ -3,6 +3,7 @@ package edu.ubc.retrospect;
 import java.util.Collection;
 import java.util.Map;
 
+import org.aspectj.bridge.IMessage;
 import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AjAttribute;
@@ -42,6 +43,7 @@ public class AdviceMirror extends Advice {
     }
 
     public void execute(MirrorEventShadow shadow, ExposedState state) {
+        world.showMessage(IMessage.DEBUG, signature.toString(), null, null);
         InstanceMirror aspectInstance = (InstanceMirror)shadow.evaluateExpr(state.getAspectInstance());
         Object[] args = new Object[state.size()];
 
