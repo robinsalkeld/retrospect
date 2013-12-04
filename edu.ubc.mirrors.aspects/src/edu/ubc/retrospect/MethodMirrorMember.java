@@ -2,7 +2,6 @@ package edu.ubc.retrospect;
 
 import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
-import org.aspectj.weaver.AjAttribute;
 import org.aspectj.weaver.AjcMemberMaker;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedMemberImpl;
@@ -43,7 +42,7 @@ public class MethodMirrorMember extends ResolvedMemberImpl {
                 Pointcut pc = world.parsePointcut(pointcut);
                 pc = world.resolvePointcut(this, pc);
                 
-                return new AdviceMirror(world, world.resolve(declaringType), kind, this, extractExtraArgument(), pc);
+                return new MirrorAdvice(world, world.resolve(declaringType), kind, this, extractExtraArgument(), pc);
             }
         }
         

@@ -43,62 +43,17 @@ import edu.ubc.retrospect.MirrorWorld;
 public class TracingExampleTest {
 
     public static void main(String[] args) throws Exception {
-        
-        VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
-        	"tracing.ExampleMain", 
-        	"-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"",
-        	true, true);
-//        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
-        ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
-        r.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
-        r.addClassFilter("tracing.ExampleMain");
-        r.enable();
-        jdiVM.resume();
-        EventQueue q = jdiVM.eventQueue();
-        // Ignore the VMStartEvent
-        q.remove();
-        EventSet es = q.remove();
-        ClassPrepareEvent cpe = (ClassPrepareEvent)es.eventIterator().next();
-        final ThreadReference threadRef = cpe.thread();
-        
-//        MonitorContendedEnteredRequest mwr = jdiVM.eventRequestManager().createMonitorContendedEnteredRequest();
-//        mwr.addClassFilter("tracing.Square");
-//        mwr.enable();
-        
-        final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);
-        VirtualMachineMirror vm = jdiVMM;
-        ThreadMirror thread = (ThreadMirror)jdiVMM.makeMirror(threadRef);
-        
-//        new EventDispatch(jdiVMM).start();
-//        if (true) return;
-        
-        File binDir = new File("/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
-        URL urlPath = binDir.toURI().toURL();
-        URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
+        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
+                "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"", 
+                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin", 
+                true);
         
         
-        // TODO-RS: Cheating for now...
-//        File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid2675.0001.subeclipseonjava7_hologram_classes");
-//        VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, cachePath, Collections.singletonMap("/", "/"));
-//	thread = (ThreadMirror)vmh.getWrappedMirror(thread);
-//	vm = vmh;
-	
-	final VirtualMachineMirror finalVM = vm;
-        final ThreadMirror finalThread = thread;
-	
-        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {urlPath, aspectRuntimeJar});
-	ClassMirror traceClass = Reflection.classMirrorForName(vm, thread, "tracing.version3.TraceMyClasses", true, loader);
-//	
 //	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
 //	
 //	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
 //        InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("err"));
 //	MethodMirror method = traceClass.getDeclaredMethod("initStream", PrintStream.class.getName());
 //        method.invoke(thread, null, stream);
-	
-	MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
-        world.weave();
-        
-        finalVM.dispatch().start();
     }
 }

@@ -1,6 +1,5 @@
 package edu.ubc.retrospect;
 
-import org.aspectj.weaver.Member;
 import org.aspectj.weaver.MemberImpl;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;

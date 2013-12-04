@@ -8,7 +8,6 @@ import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedMember;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.ResolvedTypeMunger;
-import org.aspectj.weaver.TemporaryTypeMunger;
 import org.aspectj.weaver.ast.Var;
 import org.aspectj.weaver.patterns.PerClause.Kind;
 import org.aspectj.weaver.patterns.Pointcut;
@@ -23,7 +22,7 @@ public class MirrorWeavingSupport implements IWeavingSupport {
 
     @Override
     public Advice createAdviceMunger(AdviceAttribute attribute, Pointcut pointcut, Member signature, ResolvedType concreteAspect) {
-        return new AdviceMirror(world, attribute, concreteAspect, signature, pointcut);
+        return new MirrorAdvice(world, attribute, concreteAspect, signature, pointcut);
     }
 
     @Override

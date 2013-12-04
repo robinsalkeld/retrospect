@@ -1,9 +1,7 @@
 package edu.ubc.retrospect;
 
 import org.aspectj.weaver.Member;
-import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
-import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;

@@ -352,7 +352,7 @@ public class MirrorWorld extends World {
                 }
                 
                 for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
-                    AdviceMirror advice = (AdviceMirror)munger;
+                    MirrorAdvice advice = (MirrorAdvice)munger;
                     showMessage(IMessage.DEBUG, "Installing event requests for advice: " + advice, null, null);
                     PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice, new Callback<MirrorEventShadow>() {
                         public void handle(MirrorEventShadow shadow) {

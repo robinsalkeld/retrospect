@@ -1,12 +1,10 @@
 package edu.ubc.retrospect;
 
 import org.aspectj.weaver.Member;
-import org.aspectj.weaver.MemberKind;
 import org.aspectj.weaver.ResolvedMemberImpl;
 import org.aspectj.weaver.UnresolvedType;
 
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.MethodMirror;
 
 public class FieldMirrorMember extends ResolvedMemberImpl {
 

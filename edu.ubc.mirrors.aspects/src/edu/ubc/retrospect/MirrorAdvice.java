@@ -24,7 +24,7 @@ import org.aspectj.weaver.patterns.Pointcut;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 
-public class AdviceMirror extends Advice {
+public class MirrorAdvice extends Advice {
     private static final Member cflowCounterIncMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
             UnresolvedType.VOID, "inc", UnresolvedType.NONE);
     private static final Member cflowCounterDecMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
@@ -32,13 +32,13 @@ public class AdviceMirror extends Advice {
 
     private final MirrorWorld world;
     
-    public AdviceMirror(MirrorWorld world, AjAttribute.AdviceAttribute attribute, ResolvedType concreteAspect, Member signature, Pointcut pointcut) {
+    public MirrorAdvice(MirrorWorld world, AjAttribute.AdviceAttribute attribute, ResolvedType concreteAspect, Member signature, Pointcut pointcut) {
         super(attribute, pointcut, signature);
         this.world = world;
         this.concreteAspect = concreteAspect;
     }
 
-    public AdviceMirror(MirrorWorld world, ResolvedType concreteAspect, AdviceKind kind, Member signature, int extraArgumentFlags, Pointcut pointcut) {
+    public MirrorAdvice(MirrorWorld world, ResolvedType concreteAspect, AdviceKind kind, Member signature, int extraArgumentFlags, Pointcut pointcut) {
         this(world, new AjAttribute.AdviceAttribute(kind, pointcut, extraArgumentFlags, pointcut.getStart(), pointcut.getEnd(), pointcut.getSourceContext()), concreteAspect, signature, pointcut);
     }
 
@@ -74,10 +74,10 @@ public class AdviceMirror extends Advice {
     public int compareTo(Object other) {
         // This is all copied directly from BcelAdvice - it seems to apply
         // perfectly well generically.
-        if (!(other instanceof AdviceMirror)) {
+        if (!(other instanceof MirrorAdvice)) {
             return 0;
         }
-        AdviceMirror o = (AdviceMirror) other;
+        MirrorAdvice o = (MirrorAdvice) other;
 
         // System.err.println("compareTo: " + this + ", " + o);
         if (kind.getPrecedence() != o.kind.getPrecedence()) {
