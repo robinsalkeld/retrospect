@@ -4,7 +4,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 
-import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.ClassPrepareEvent;
@@ -13,7 +12,6 @@ import com.sun.jdi.event.EventSet;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
@@ -27,7 +25,7 @@ public class JDIMirrorWeavingLauncher {
         VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName, options, true, true);
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
-        r.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        r.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
         r.addClassFilter(mainClassName);
         r.enable();
         jdiVM.resume();
@@ -45,8 +43,6 @@ public class JDIMirrorWeavingLauncher {
         File binDir = new File(aspectPath);
         URL urlPath = binDir.toURI().toURL();
         URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
-        ReferenceType mainRT = cpe.referenceType();
-        ClassMirror mainClass = jdiVMM.makeClassMirror(mainRT);
         
         System.out.println("Booting up holographic VM...");
 //        // TODO-RS: Cheating for now...
@@ -55,13 +51,12 @@ public class JDIMirrorWeavingLauncher {
                 Collections.singletonMap("/", "/"));
         vm = vmh;
         thread = (ThreadMirror)vmh.getWrappedMirror(thread);
-        mainClass = vmh.getWrappedClassMirror(mainClass);
         
         final VirtualMachineMirror finalVM = vm;
         final ThreadMirror finalThread = thread;
         
         System.out.println("Creating class loader for aspects...");
-        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, mainClass.getLoader(), new URL[] {urlPath, aspectRuntimeJar});
+        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, null, new URL[] {urlPath, aspectRuntimeJar});
         
         MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
         world.weave();
