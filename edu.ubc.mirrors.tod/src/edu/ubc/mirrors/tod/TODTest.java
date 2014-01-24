@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-package edu.ubc.mirrors.tod.test;
+package edu.ubc.mirrors.tod;
 
 import java.net.URI;
 
@@ -28,17 +28,19 @@ import org.eclipse.equinox.app.IApplicationContext;
 
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IStructureDatabase;
 import tod.core.session.ISession;
 import tod.core.session.SessionTypeManager;
 
 public class TODTest implements IApplication {
 
     public static void main(String[] args) throws Exception {
-        URI theUri = URI.create("tod-dbgrid-local:/");
+        URI theUri = URI.create("tod-dbgrid-remote:/");
         TODConfig theConfig = new TODConfig();
+        theConfig.set(TODConfig.CLIENT_NAME, "tod-ExampleMain");
         ISession theSession = SessionTypeManager.getInstance().createSession(null, theUri, theConfig);
         ILogBrowser logBrowser = theSession.getLogBrowser();
-        logBrowser.getStructureDatabase();
+        IStructureDatabase db = logBrowser.getStructureDatabase();
     }
 
     public Object start(IApplicationContext context) throws Exception {

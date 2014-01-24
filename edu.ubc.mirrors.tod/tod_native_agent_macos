@@ -1,0 +1,11 @@
+PLATFORM=macos
+
+JAVA15_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_45.jdk/Contents/Home
+JAVA14_HOME=$(JAVA15_HOME)
+
+BOOST_VERSION=
+BOOST_INCLUDES=/Users/robinsalkeld/Documents/UBC/Code/boost_1_55_0
+BOOST_FLAVOR=
+BOOST_LIBS=/Users/robinsalkeld/Documents/UBC/Code/boost_1_55_0/stage/lib
+
+MACOS_ARCH=-arch x86_64

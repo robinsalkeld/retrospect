@@ -2,14 +2,14 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         id="TODTestApp"
+         id="edu.ubc.mirrors.tod.TODTest"
          point="org.eclipse.core.runtime.applications">
       <application
             cardinality="1"
             thread="any"
             visible="true">
          <run
-               class="edu.ubc.mirrors.tod.test.TODTest">
+               class="edu.ubc.mirrors.tod.TODTest">
          </run>
       </application>
    </extension>
