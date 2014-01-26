@@ -21,97 +21,152 @@
  ******************************************************************************/
 package edu.ubc.mirrors.tod;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import tod.core.database.browser.ICompoundInspector.EntryValue;
+import tod.core.database.browser.ILogBrowser;
+import tod.core.database.structure.IClassInfo;
+import tod.core.database.structure.IThreadInfo;
+import tod.core.database.structure.ITypeInfo;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.EventDispatch;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
-import tod.core.database.browser.ILogBrowser;
-import tod.core.database.structure.ITypeInfo;
+public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
-public class TODVirtualMachineMirror {// implements VirtualMachineMirror {
-//
-//    private final ILogBrowser logBrowser;
-//    
-//    public TODVirtualMachineMirror(ILogBrowser logBrowser) {
-//        super();
-//        this.logBrowser = logBrowser;
-//    }
-//
-    public ClassMirror makeMirror(ITypeInfo type) {
+    private final ILogBrowser logBrowser;
+    
+    public TODVirtualMachineMirror(ILogBrowser logBrowser) {
+        super();
+        this.logBrowser = logBrowser;
+    }
+
+    public ClassMirror makeClassMirror(ITypeInfo type) {
         return null;
     }
-//    
-//    @Override
-//    public ClassMirror findBootstrapClassMirror(String name) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b,
-//            int off, int len) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public List<ClassMirror> findAllClasses(String name,
-//            boolean includeSubclasses) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public List<ThreadMirror> getThreads() {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public ClassMirror getPrimitiveClass(String name) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public MirrorEventRequestManager eventRequestManager() {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public MirrorEventQueue eventQueue() {
-//        // TODO Auto-generated method stub
-//        return null;
-//    }
-//
-//    @Override
-//    public void suspend() {
-//        // TODO Auto-generated method stub
-//        
-//    }
-//
-//    @Override
-//    public void resume() {
-//        // TODO Auto-generated method stub
-//        
-//    }
-//
-//    @Override
-//    public boolean canBeModified() {
-//        // TODO Auto-generated method stub
-//        return false;
-//    }
+    
+    public ThreadMirror makeThreadMirror(IThreadInfo threadInfo) {
+        return null;
+    }
+    
+    @Override
+    public ClassMirror findBootstrapClassMirror(String name) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
+    @Override
+    public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<ThreadMirror> getThreads() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ClassMirror getPrimitiveClass(String name) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MirrorEventRequestManager eventRequestManager() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public MirrorEventQueue eventQueue() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void suspend() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void resume() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public boolean canBeModified() {
+        return false;
+    }
+
+    @Override
+    public EventDispatch dispatch() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<ClassMirror> findAllClasses() {
+        // TODO-RS: This should be all classes at a particular timestamp,
+        // not all classes ever!
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (IClassInfo classInfo : logBrowser.getStructureDatabase().getClasses()) {
+            result.add(makeClassMirror(classInfo));
+        }
+        return result;
+    }
+
+    @Override
+    public boolean canGetBytecodes() {
+        return true;
+    }
+
+    @Override
+    public boolean hasClassInitialization() {
+        return false;
+    }
+
+    @Override
+    public InstanceMirror makeString(String s) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public InstanceMirror getInternedString(String s) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Object wrapEntryValues(EntryValue[] values) {
+        if (values.length != 1) {
+            throw new IllegalStateException("Missing/ambiguous values: " + Arrays.toString(values));
+        }
+        return wrapValue(values[0]);
+    }
+    
+    public Object wrapValue(Object value) {
+        return value;
+    }
 }

@@ -150,12 +150,6 @@ public class NativeMethodMirror implements MethodMirror {
     }
 
     @Override
-    public int getSlot() {
-        // TODO For now
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public int getModifiers() {
         // TODO For now
         throw new UnsupportedOperationException();

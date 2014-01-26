@@ -98,11 +98,6 @@ public class WrappingConstructorMirror implements ConstructorMirror {
     }
     
     @Override
-    public int getSlot() {
-        return wrapped.getSlot();
-    }
-    
-    @Override
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         ThreadMirror unwrappedThread = (ThreadMirror)vm.unwrapInstanceMirror(thread);
         return vm.wrapAnnotations(wrapped.getAnnotations(unwrappedThread));

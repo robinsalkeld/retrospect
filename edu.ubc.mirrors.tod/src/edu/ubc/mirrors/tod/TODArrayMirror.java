@@ -22,20 +22,23 @@
 package edu.ubc.mirrors.tod;
 
 import tod.core.database.browser.IObjectInspector;
+import tod.core.database.browser.IObjectInspector.ArraySlotEntryInfo;
 import tod.core.database.browser.IObjectInspector.FieldEntryInfo;
 import tod.core.database.browser.IObjectInspector.IEntryInfo;
 import tod.core.database.structure.IFieldInfo;
+import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.BoxingArrayMirror;
 import edu.ubc.mirrors.BoxingInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.ObjectMirror;
 
-public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMirror {
+public class TODArrayMirror extends BoxingArrayMirror implements ArrayMirror {
 
     private final TODVirtualMachineMirror vm;
     private final IObjectInspector inspector;
     
-    public TODInstanceMirror(TODVirtualMachineMirror vm, IObjectInspector inspector) {
+    public TODArrayMirror(TODVirtualMachineMirror vm, IObjectInspector inspector) {
         this.vm = vm;
         this.inspector = inspector;
     }
@@ -46,29 +49,33 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
     }
 
     @Override
-    public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
-        IFieldInfo fieldInfo = ((TODFieldMirror)field).field;
-        // TODO-RS: Make this faster by caching the IEntryInfo (in the field?)
+    public int length() {
+        return inspector.getEntryCount();
+    }
+    
+    @Override
+    protected Object getBoxedValue(int index) {
+        // TODO-RS: Make this faster by caching the IEntryInfo.
         // Will be tricky since the IEntryInfos seem to be per-instance instead of
         // per-class.
-        for (IEntryInfo entry : inspector.getEntries(0, Integer.MAX_VALUE)) {
-            FieldEntryInfo fieldEntry = (FieldEntryInfo)entry;
-            if (fieldEntry.getField().equals(fieldInfo)) {
-                return vm.wrapEntryValues(inspector.getEntryValue(entry));
-            }
-        }
-        throw new IllegalStateException("Couldn't find field " + fieldInfo + " on object " + inspector);
+        IEntryInfo entry = inspector.getEntries(0, Integer.MAX_VALUE).get(index);
+        ArraySlotEntryInfo arraySlotEntry = (ArraySlotEntryInfo)entry;
+        return vm.wrapEntryValues(inspector.getEntryValue(arraySlotEntry));
     }
-
+    
     @Override
-    public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
+    protected void setBoxedValue(int index, Object o) throws ArrayIndexOutOfBoundsException {
         throw new UnsupportedOperationException();
     }
-
+    
     @Override
     public int identityHashCode() {
         // TODO-RS
         return inspector.hashCode();
     }
-
+    
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        throw new CloneNotSupportedException();
+    }
 }

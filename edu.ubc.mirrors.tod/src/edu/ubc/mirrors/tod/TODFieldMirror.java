@@ -38,7 +38,7 @@ public class TODFieldMirror implements FieldMirror {
 
     @Override
     public ClassMirror getDeclaringClass() {
-        return vm.makeMirror(field.getDeclaringType());
+        return vm.makeClassMirror(field.getDeclaringType());
     }
 
     @Override
@@ -53,7 +53,7 @@ public class TODFieldMirror implements FieldMirror {
     
     @Override
     public ClassMirror getType() {
-        return vm.makeMirror(field.getType());
+        return vm.makeClassMirror(field.getType());
     }
 
     @Override

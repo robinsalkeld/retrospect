@@ -193,11 +193,6 @@ public class MethodHolograph implements MethodMirror {
     }
 
     @Override
-    public int getSlot() {
-        return wrapped.getSlot();
-    }
-
-    @Override
     public int getModifiers() {
         return wrapped.getModifiers();
     }

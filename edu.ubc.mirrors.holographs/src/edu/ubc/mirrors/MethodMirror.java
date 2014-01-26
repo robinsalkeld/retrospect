@@ -33,8 +33,6 @@ public interface MethodMirror {
     
     public ClassMirror getDeclaringClass();
     
-    public int getSlot();
-    
     public int getModifiers();
     
     public String getName();

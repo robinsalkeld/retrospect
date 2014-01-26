@@ -28,7 +28,9 @@ import org.eclipse.equinox.app.IApplicationContext;
 
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IStructureDatabase;
+import tod.core.database.structure.IThreadInfo;
 import tod.core.session.ISession;
 import tod.core.session.SessionTypeManager;
 
@@ -40,7 +42,11 @@ public class TODTest implements IApplication {
         theConfig.set(TODConfig.CLIENT_NAME, "tod-ExampleMain");
         ISession theSession = SessionTypeManager.getInstance().createSession(null, theUri, theConfig);
         ILogBrowser logBrowser = theSession.getLogBrowser();
-        IStructureDatabase db = logBrowser.getStructureDatabase();
+
+        for (IThreadInfo threadInfo : logBrowser.getThreads()) {
+            ILogEvent event = logBrowser.getCFlowRoot(threadInfo);
+            event.getDepth();
+        }
     }
 
     public Object start(IApplicationContext context) throws Exception {

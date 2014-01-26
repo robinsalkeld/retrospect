@@ -27,8 +27,6 @@ public interface ConstructorMirror {
     
     public ClassMirror getDeclaringClass();
     
-    public int getSlot();
-    
     public int getModifiers();
     
     public List<String> getParameterTypeNames();

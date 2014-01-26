@@ -121,7 +121,7 @@ public class ClassStubs extends NativeStubs {
             InstanceMirror inst = constructorClass.newRawInstance();
             
             HolographInternalUtils.setField(inst, "clazz", c.getDeclaringClass());
-            HolographInternalUtils.setField(inst, "slot", c.getSlot());
+            HolographInternalUtils.setField(inst, "slot", i);
             HolographInternalUtils.setField(inst, "modifiers", c.getModifiers());
             HolographInternalUtils.setField(inst, "parameterTypes", Reflection.toArray(classClass, c.getParameterTypes()));
             HolographInternalUtils.setField(inst, "exceptionTypes", Reflection.toArray(classClass, c.getExceptionTypes()));
@@ -157,7 +157,7 @@ public class ClassStubs extends NativeStubs {
             
             HolographInternalUtils.setField(inst, "clazz", m.getDeclaringClass());
             HolographInternalUtils.setField(inst, "name", getVM().getInternedString(m.getName()));
-            HolographInternalUtils.setField(inst, "slot", m.getSlot());
+            HolographInternalUtils.setField(inst, "slot", i);
             HolographInternalUtils.setField(inst, "modifiers", m.getModifiers());
             HolographInternalUtils.setField(inst, "parameterTypes", Reflection.toArray(classClass, m.getParameterTypes()));
             HolographInternalUtils.setField(inst, "returnType", m.getReturnType());

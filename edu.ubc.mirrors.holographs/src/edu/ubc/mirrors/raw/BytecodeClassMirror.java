@@ -269,15 +269,13 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     private class BytecodeMethodMirror implements MethodMirror, ConstructorMirror {
 
         private final MethodNode method;
-        private final int slot;
         private final List<AnnotationMirror> annotations;
         private final List<List<AnnotationMirror>> parameterAnnotations;
         private final Object annotationDefault;
         
-        public BytecodeMethodMirror(MethodNode method, int slot, List<AnnotationMirror> annotations, 
+        public BytecodeMethodMirror(MethodNode method, List<AnnotationMirror> annotations, 
                 List<List<AnnotationMirror>> parameterAnnotations, Object annotationDefault) {
             this.method = method;
-            this.slot = slot;
             this.annotations = annotations;
             this.parameterAnnotations = parameterAnnotations;
             this.annotationDefault = annotationDefault;
@@ -357,11 +355,6 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         @Override
         public ClassMirror getDeclaringClass() {
             return BytecodeClassMirror.this;
-        }
-
-        @Override
-        public int getSlot() {
-            return slot;
         }
 
         @Override
@@ -458,7 +451,6 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
 
         private ClassWriter classWriter;
         private List<AnnotationNode> annotations;
-        private int methodSlot = 0;
         
         public BytecodeClassVisitor(ClassReader reader) {
             super(Opcodes.ASM4);
@@ -533,7 +525,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
                 // Inline subroutines since other pieces of the pipeline can't handle them
                 return new JSRInlinerAdapter(analyzer, access, name, desc, signature, exceptions);
             } else {
-                return new BytecodeMethodVisitor(new MethodNode(access, name, desc, signature, exceptions), methodSlot++, classWriter, classWriter.visitMethod(access, name, desc, signature, exceptions));
+                return new BytecodeMethodVisitor(new MethodNode(access, name, desc, signature, exceptions), classWriter, classWriter.visitMethod(access, name, desc, signature, exceptions));
             }
         }
         
@@ -548,15 +540,13 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     private class BytecodeMethodVisitor extends MethodVisitor {
 
         private final MethodNode method;
-        private final int slot;
         private final List<AnnotationNode> annotationNodes;
         private final List<List<AnnotationNode>> parameterAnnotationNodes;
         private AnnotationNode defaultAnnotationNode;
         
-        public BytecodeMethodVisitor(MethodNode method, int slot, ClassVisitor classWriter, MethodVisitor methodWriter) {
+        public BytecodeMethodVisitor(MethodNode method, ClassVisitor classWriter, MethodVisitor methodWriter) {
             super(Opcodes.ASM4);
             this.method = method;
-            this.slot = slot;
             this.annotationNodes = new ArrayList<AnnotationNode>();
             this.parameterAnnotationNodes = new ArrayList<List<AnnotationNode>>();
             this.defaultAnnotationNode = new AnnotationNode(Opcodes.ASM4, null);
@@ -592,7 +582,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
             if (defaultAnnotationNode.values != null && !defaultAnnotationNode.values.isEmpty()) {
                 defaultAnnotationValue = convertAnnotationValue(defaultAnnotationNode.values.get(0));
             }
-            methods.add(new BytecodeMethodMirror(method, slot, 
+            methods.add(new BytecodeMethodMirror(method, 
                     wrap(annotationNodes), wrapList(parameterAnnotationNodes), defaultAnnotationValue));
         }
     }

@@ -91,15 +91,6 @@ public class FrameHolograph extends WrappingFrameMirror {
         
         /**
          * @return
-         * @see edu.ubc.mirrors.MethodMirror#getSlot()
-         */
-        public int getSlot() {
-            resolve();
-            return wrapped.getSlot();
-        }
-
-        /**
-         * @return
          * @see edu.ubc.mirrors.MethodMirror#getModifiers()
          */
         public int getModifiers() {
