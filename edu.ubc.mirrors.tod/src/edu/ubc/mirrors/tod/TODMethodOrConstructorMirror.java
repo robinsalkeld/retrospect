@@ -18,7 +18,7 @@ import edu.ubc.mirrors.ThreadMirror;
 public class TODMethodOrConstructorMirror implements ConstructorMirror, MethodMirror {
 
     private final TODVirtualMachineMirror vm;
-    private final IBehaviorInfo behaviourInfo;
+    protected final IBehaviorInfo behaviourInfo;
     
     public TODMethodOrConstructorMirror(TODVirtualMachineMirror vm, IBehaviorInfo behaviourInfo) {
         this.vm = vm;

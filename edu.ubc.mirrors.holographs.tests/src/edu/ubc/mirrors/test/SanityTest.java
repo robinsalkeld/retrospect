@@ -42,7 +42,6 @@ import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
 
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -156,4 +155,10 @@ public class SanityTest extends TestCase {
     public void testRacerAspects() throws Exception {
         RacerTest.main(new String[0]);
     }
+    
+    public void testTracingAspectTOD() throws Exception {
+        TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
+                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
+    }
+    
 }

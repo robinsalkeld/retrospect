@@ -1,11 +1,13 @@
 package edu.ubc.mirrors.tod;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+import tod.core.database.event.ILogEvent;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
@@ -15,23 +17,33 @@ import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEvent;
-import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
-import edu.ubc.mirrors.MirrorEventSet;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
 import edu.ubc.mirrors.ThreadMirrorStartRequest;
 
-public class TODMirrorEventRequestManager implements MirrorEventRequestManager, MirrorEventQueue {
+public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
 
     private final TODVirtualMachineMirror vm;
+    
+    /*
+     * Only those requests that have more events.
+     * Invariant: request.hasNext() for every request in this queue.
+     */
     private final PriorityQueue<TODMirrorEventRequest> liveRequests = new PriorityQueue<TODMirrorEventRequest>();
-    private final Set<TODMirrorEventRequest> deadRequests = new HashSet<TODMirrorEventRequest>();
+    
+    /*
+     * All requests.
+     */
+    private final Set<TODMirrorEventRequest> requests = new HashSet<TODMirrorEventRequest>();
+    private ILogEvent currentLogEvent = null;
     
     public TODMirrorEventRequestManager(TODVirtualMachineMirror vm) {
         this.vm = vm;
+        
+        currentLogEvent = vm.getLogBrowser().createBrowser().next();
     }
     
     @Override
@@ -46,14 +58,12 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager, 
 
     @Override
     public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        return new TODMethodMirrorEntryRequest(vm);
     }
 
     @Override
     public List<MethodMirrorEntryRequest> methodMirrorEntryRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        return allRequestsOfType(MethodMirrorEntryRequest.class);
     }
 
     @Override
@@ -114,14 +124,12 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager, 
 
     @Override
     public ClassMirrorPrepareRequest createClassMirrorPrepareRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<ClassMirrorPrepareRequest> classMirrorPrepareRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -134,10 +142,31 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager, 
         throw new UnsupportedOperationException();
     }
 
+    private <T> List<T> allRequestsOfType(Class<T> klass) {
+        List<T> result = new ArrayList<T>();
+        for (TODMirrorEventRequest request : requests) {
+            if (klass.isInstance(request)) {
+                result.add(klass.cast(request));
+            }
+        }
+        return result;
+    }
+    
     @Override
     public void deleteMirrorEventRequest(MirrorEventRequest request) {
         liveRequests.remove(request);
-        deadRequests.remove(request);
+        requests.remove(request);
+    }
+    
+    void setRequestEnabled(TODMirrorEventRequest request, boolean enabled) {
+        if (enabled) {
+            request.setTimestamp(currentLogEvent.getTimestamp());
+            if (request.hasNext()) {
+                liveRequests.add(request);
+            }
+        } else {
+            liveRequests.remove(request);
+        }
     }
 
     public boolean hasNext() {
@@ -149,35 +178,42 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager, 
             throw new NoSuchElementException();
         }
         
+        currentLogEvent = nextLogEvent();
+        
         TODMirrorEventRequest request = liveRequests.remove();
+        
         MirrorEvent result = request.next();
         if (request.hasNext()) {
             liveRequests.add(request);
-        } else {
-            deadRequests.add(request);
         }
         return result;
     }
     
-    public long nextTimestamp() {
+    public ILogEvent currentLogEvent() {
+        return currentLogEvent;
+    }
+    
+    public long currentTimestamp() {
+        return currentLogEvent.getTimestamp();
+    }
+    
+    public ILogEvent nextLogEvent() {
         TODMirrorEventRequest nextRequest = liveRequests.peek();
-        return nextRequest != null ? nextRequest.getNextTimestamp() : Long.MAX_VALUE;
+        return nextRequest != null ? nextRequest.getNextEvent() : null;
     }
     
-    @Override
-    public MirrorEventSet remove() throws InterruptedException {
+    public void resume() {
         if (!hasNext()) {
-            return null;
+            return;
         }
         
-        MirrorEventSet result = new TODMirrorEventSet();
-        long timestamp = nextTimestamp();
-        result.add(next());
+        TODMirrorEventSet set = new TODMirrorEventSet(vm);
+        set.add(next());
         
-        while (hasNext() && timestamp == nextTimestamp()) {
-            result.add(next());
+        while (hasNext() && currentLogEvent.getTimestamp() == nextLogEvent().getTimestamp()) {
+            set.add(next());
         }
         
-        return result;
+        vm.queue.addEventSet(set);
     }
 }

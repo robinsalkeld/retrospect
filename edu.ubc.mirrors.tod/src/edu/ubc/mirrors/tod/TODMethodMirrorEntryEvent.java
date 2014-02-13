@@ -3,8 +3,6 @@ package edu.ubc.mirrors.tod;
 import tod.core.database.event.IBehaviorCallEvent;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
-import edu.ubc.mirrors.MirrorEvent;
-import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class TODMethodMirrorEntryEvent extends TODMirrorEvent implements MethodMirrorEntryEvent {
@@ -23,6 +21,6 @@ public class TODMethodMirrorEntryEvent extends TODMirrorEvent implements MethodM
 
     @Override
     public MethodMirror method() {
-        return new TODMethodOrConstructorMirror(vm, logEvent.getExecutedBehavior());
+        return vm.makeMethodMirror(logEvent.getExecutedBehavior());
     }
 }

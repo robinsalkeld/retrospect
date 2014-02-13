@@ -32,7 +32,7 @@ import edu.ubc.mirrors.ObjectMirror;
 
 public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMirror {
 
-    private final TODVirtualMachineMirror vm;
+    protected final TODVirtualMachineMirror vm;
     private final IObjectInspector inspector;
     
     public TODInstanceMirror(TODVirtualMachineMirror vm, IObjectInspector inspector) {
@@ -47,6 +47,9 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
 
     @Override
     public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
+        // TODO-RS: Only do this when the VM actually changes events!
+        inspector.setReferenceEvent(vm.requestManager.currentLogEvent());
+        
         IFieldInfo fieldInfo = ((TODFieldMirror)field).field;
         // TODO-RS: Make this faster by caching the IEntryInfo (in the field?)
         // Will be tricky since the IEntryInfos seem to be per-instance instead of
@@ -54,7 +57,7 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
         for (IEntryInfo entry : inspector.getEntries(0, Integer.MAX_VALUE)) {
             FieldEntryInfo fieldEntry = (FieldEntryInfo)entry;
             if (fieldEntry.getField().equals(fieldInfo)) {
-                return vm.wrapEntryValues(inspector.getEntryValue(entry));
+                return vm.wrapEntryValues(null, inspector.getEntryValue(entry));
             }
         }
         throw new IllegalStateException("Couldn't find field " + fieldInfo + " on object " + inspector);
@@ -67,8 +70,7 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
 
     @Override
     public int identityHashCode() {
-        // TODO-RS
-        return inspector.hashCode();
+        throw new UnsupportedOperationException();
     }
 
 }

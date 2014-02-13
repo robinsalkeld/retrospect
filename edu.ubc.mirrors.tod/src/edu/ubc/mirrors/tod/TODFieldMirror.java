@@ -61,4 +61,8 @@ public class TODFieldMirror implements FieldMirror {
         throw new UnsupportedOperationException();
     }
     
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + field;
+    }
 }

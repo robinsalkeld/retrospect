@@ -55,12 +55,15 @@ public class TODArrayMirror extends BoxingArrayMirror implements ArrayMirror {
     
     @Override
     protected Object getBoxedValue(int index) {
+        // TODO-RS: Only do this when the VM actually changes events!
+        inspector.setReferenceEvent(vm.requestManager.currentLogEvent());
+        
         // TODO-RS: Make this faster by caching the IEntryInfo.
         // Will be tricky since the IEntryInfos seem to be per-instance instead of
         // per-class.
         IEntryInfo entry = inspector.getEntries(0, Integer.MAX_VALUE).get(index);
         ArraySlotEntryInfo arraySlotEntry = (ArraySlotEntryInfo)entry;
-        return vm.wrapEntryValues(inspector.getEntryValue(arraySlotEntry));
+        return vm.wrapEntryValues(null, inspector.getEntryValue(arraySlotEntry));
     }
     
     @Override

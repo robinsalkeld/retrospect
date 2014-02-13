@@ -21,45 +21,186 @@
  ******************************************************************************/
 package edu.ubc.mirrors.tod;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import tod.core.config.TODConfig;
 import tod.core.database.browser.ICompoundInspector.EntryValue;
+import tod.core.database.browser.IEventBrowser;
+import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
+import tod.core.database.browser.IObjectInspector;
+import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IThreadInfo;
 import tod.core.database.structure.ITypeInfo;
+import tod.core.database.structure.ObjectId;
+import tod.core.session.ISession;
+import tod.core.session.SessionTypeManager;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.EventDispatch;
+import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.raw.ArrayClassMirror;
 
 public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
     private final ILogBrowser logBrowser;
+    final TODMirrorEventRequestManager requestManager;
+    final TODMirrorEventQueue queue = new TODMirrorEventQueue(this);
+    private final EventDispatch dispatch = new EventDispatch(this);
+    
+    // Some special case thread awkwardness handling
+    private final ClassMirror threadClass;
+    final Map<String, IThreadInfo> threadInfosByName = new HashMap<String, IThreadInfo>();
+    
+    private final Map<Object, ObjectMirror> mirrors = new HashMap<Object, ObjectMirror>();
     
     public TODVirtualMachineMirror(ILogBrowser logBrowser) {
         super();
         this.logBrowser = logBrowser;
+        this.requestManager = new TODMirrorEventRequestManager(this);
+        
+        for (IThreadInfo threadInfo : logBrowser.getThreads()) {
+            threadInfosByName.put(threadInfo.getName(), threadInfo);
+        }
+        
+        threadClass = findBootstrapClassMirror(Thread.class.getName());
+        for (FieldMirror f : threadClass.getDeclaredFields()) {
+            System.out.println(f);
+        }
+       
+        // Precalculate the thread mirrors so we can store them by IThreadInfo
+        for (ObjectMirror thread : threadClass.getInstances()) {
+            IThreadInfo threadInfo = ((TODThreadMirror)thread).threadInfo;
+            mirrors.put(threadInfo, thread);
+        }
     }
+    
+    public Iterable<ILogEvent> asIterable(final IEventBrowser browser) {
+        return new Iterable<ILogEvent>() {
+            @Override
+            public Iterator<ILogEvent> iterator() {
+                return new Iterator<ILogEvent>() {
+                    @Override
+                    public boolean hasNext() {
+                        return browser.hasNext();
+                    }
 
+                    @Override
+                    public ILogEvent next() {
+                        return browser.next();
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                    
+                };
+            }
+        };
+    }
+    
+    public Iterable<ILogEvent> allEvents(IEventFilter filter) {
+        final IEventBrowser browser = logBrowser.createBrowser(filter);
+        return asIterable(browser);
+    }
+    
+    public Iterable<ILogEvent> allEvents() {
+        final IEventBrowser browser = logBrowser.createBrowser();
+        return asIterable(browser);
+    }
+    
+    public static TODVirtualMachineMirror connect(String clientName) {
+        URI theUri = URI.create("tod-dbgrid-remote:/");
+        TODConfig theConfig = new TODConfig();
+        theConfig.set(TODConfig.CLIENT_NAME, clientName);
+        ISession theSession = SessionTypeManager.getInstance().createSession(null, theUri, theConfig);
+        ILogBrowser logBrowser = theSession.getLogBrowser();
+
+        return new TODVirtualMachineMirror(logBrowser);
+    }
+    
+    public ILogBrowser getLogBrowser() {
+        return logBrowser;
+    }
+    
+    public long currentTimestamp() {
+        return requestManager.currentTimestamp();
+    }
+    
+    public ObjectMirror makeMirror(Object todObject) {
+        if (todObject == null) {
+            return null;
+        }
+        
+        ObjectMirror result = mirrors.get(todObject);
+        if (result != null) {
+            return result;
+        }
+               
+        if (todObject instanceof ITypeInfo) {
+            result = new TODClassMirror(this, (ITypeInfo)todObject);
+        } else if (todObject instanceof ObjectId) {
+            IObjectInspector inspector = logBrowser.createObjectInspector((ObjectId)todObject);
+            result = makeMirror(inspector);
+        } else if (todObject instanceof IObjectInspector) {
+            IObjectInspector inspector = (IObjectInspector)todObject;
+            ClassMirror type = makeClassMirror(inspector.getType());
+            if (Reflection.isAssignableFrom(threadClass, type)) {
+                result = new TODThreadMirror(this, inspector);
+            } else {
+                result = new TODInstanceMirror(this, inspector);
+            }
+        } else if (todObject instanceof IThreadInfo) {
+            result = new TODThreadMirror(this, (IThreadInfo)todObject);
+//            // Shouldn't happen
+//            throw new InternalError();
+        } else {
+            throw new IllegalArgumentException("Unrecognized object type: " + todObject.getClass());
+        }
+        
+        mirrors.put(todObject, result);
+        return result;
+    }
+    
     public ClassMirror makeClassMirror(ITypeInfo type) {
-        return null;
+        return (ClassMirror)makeMirror(type);
+    }
+    
+    public List<ClassMirror> makeClassMirrorList(IClassInfo[] classInfos) {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (IClassInfo classInfo : classInfos) {
+            result.add(makeClassMirror(classInfo));
+        }
+        return result;
     }
     
     public ThreadMirror makeThreadMirror(IThreadInfo threadInfo) {
-        return null;
+        return (ThreadMirror)makeMirror(threadInfo);
     }
     
     @Override
     public ClassMirror findBootstrapClassMirror(String name) {
-        // TODO Auto-generated method stub
-        return null;
+        // TODO-RS: See TODClassMirror#getLoader()
+        return makeClassMirror(logBrowser.getStructureDatabase().getClass(name, false));
     }
 
     @Override
@@ -69,50 +210,59 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
-        // TODO Auto-generated method stub
-        return null;
+        if (includeSubclasses) {
+            throw new UnsupportedOperationException();
+        }
+        
+        return makeClassMirrorList(logBrowser.getStructureDatabase().getClasses(name));
     }
 
     @Override
     public List<ThreadMirror> getThreads() {
-        // TODO Auto-generated method stub
-        return null;
+        List<ThreadMirror> result = new ArrayList<ThreadMirror>();
+        for (IThreadInfo threadInfo : logBrowser.getThreads()) {
+            result.add(makeThreadMirror(threadInfo));
+        }
+        return result;
     }
 
     @Override
     public ClassMirror getPrimitiveClass(String name) {
-        // TODO Auto-generated method stub
-        return null;
+        return makeClassMirror(logBrowser.getStructureDatabase().getClass(name, false));
     }
 
     @Override
     public ClassMirror getArrayClass(int dimensions, ClassMirror elementClass) {
-        // TODO Auto-generated method stub
-        return null;
+        String name = elementClass.getClassName();
+        for (int d = 0; d < dimensions; d++) {
+            name += "[]";
+        }
+        ClassMirror result = findBootstrapClassMirror(name);
+        if (result != null) {
+            return result;
+        }
+        
+        return new ArrayClassMirror(dimensions, elementClass);
     }
 
     @Override
     public MirrorEventRequestManager eventRequestManager() {
-        // TODO Auto-generated method stub
-        return null;
+        return requestManager;
     }
 
     @Override
     public MirrorEventQueue eventQueue() {
-        // TODO Auto-generated method stub
-        return null;
+        return queue;
     }
 
     @Override
     public void suspend() {
-        // TODO Auto-generated method stub
-        
+        // No-op: the trace is always "suspended"
     }
 
     @Override
     public void resume() {
-        // TODO Auto-generated method stub
-        
+        requestManager.resume();
     }
 
     @Override
@@ -122,8 +272,7 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public EventDispatch dispatch() {
-        // TODO Auto-generated method stub
-        return null;
+        return dispatch;
     }
 
     @Override
@@ -149,24 +298,38 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public InstanceMirror makeString(String s) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public InstanceMirror getInternedString(String s) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
-    public Object wrapEntryValues(EntryValue[] values) {
+    public Object wrapEntryValues(ClassMirror type, EntryValue[] values) {
         if (values.length != 1) {
             throw new IllegalStateException("Missing/ambiguous values: " + Arrays.toString(values));
         }
-        return wrapValue(values[0]);
+        return wrapValue(type, values[0].getValue());
     }
     
-    public Object wrapValue(Object value) {
-        return value;
+    public Object wrapValue(ClassMirror type, Object value) {
+//        if (typeName.equals("long")) {
+//            return ((Number)value).longValue();
+//        } else {
+            return value;
+//        }
+    }
+
+    public FrameMirror makeFrameMirror(ILogEvent event) {
+        if (event instanceof IBehaviorCallEvent) {
+            return new TODBehaviorCallFrameMirror(this, (IBehaviorCallEvent)event);
+        } else {
+            throw new IllegalArgumentException("Unsupported event type: " + event.getClass());
+        }
+    }
+
+    public MethodMirror makeMethodMirror(IBehaviorInfo callingBehavior) {
+        return new TODMethodOrConstructorMirror(this, callingBehavior);
     }
 }

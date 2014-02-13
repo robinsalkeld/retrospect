@@ -13,16 +13,18 @@ import tod.core.database.structure.BehaviorKind;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 
-public class TODMirrorEventRequest implements MirrorEventRequest, Iterator<MirrorEvent>, Comparable<TODMirrorEventRequest> {
+public abstract class TODMirrorEventRequest implements MirrorEventRequest, Iterator<TODMirrorEvent>, Comparable<TODMirrorEventRequest> {
 
-    private final TODVirtualMachineMirror vm;
+    protected final TODVirtualMachineMirror vm;
+    private final TODMirrorEventRequestManager requestManager;
     private boolean enabled = false;
     private Map<Object, Object> properties = new HashMap<Object, Object>();
-    private IEventBrowser eventBrowser;
+    protected IEventBrowser eventBrowser;
     private ILogEvent nextEvent;
     
     public TODMirrorEventRequest(TODVirtualMachineMirror vm) {
         this.vm = vm;
+        this.requestManager = (TODMirrorEventRequestManager)vm.eventRequestManager();
     }
     
     @Override
@@ -43,6 +45,12 @@ public class TODMirrorEventRequest implements MirrorEventRequest, Iterator<Mirro
     @Override
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+        if (enabled) {
+            eventBrowser = createEventBrowser();
+        } else {
+            eventBrowser = null;
+        }
+        requestManager.setRequestEnabled(this, enabled);
     }
 
     @Override
@@ -56,42 +64,57 @@ public class TODMirrorEventRequest implements MirrorEventRequest, Iterator<Mirro
     }
 
     @Override
-    public void addClassFilter(String classNamePattern) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
     public int compareTo(TODMirrorEventRequest o) {
         return Long.compare(getNextTimestamp(), o.getNextTimestamp());
     }
+    
+    protected abstract IEventBrowser createEventBrowser();
 
     public boolean hasNext() {
+        checkEnabled();
         if (nextEvent == null && eventBrowser.hasNext()) {
             nextEvent = eventBrowser.next();
         }
         return nextEvent != null;
     }
     
-    public long getNextTimestamp() {
+    private void checkEnabled() {
+        if (!enabled) {
+            throw new IllegalStateException();
+        }
+    }
+    
+    void setTimestamp(long t) {
+        checkEnabled();
+        eventBrowser.setNextTimestamp(t);
+    }
+    
+    public ILogEvent getNextEvent() {
+        checkEnabled();
         if (nextEvent == null && eventBrowser.hasNext()) {
             nextEvent = eventBrowser.next();
         }
         
+        return nextEvent;
+    }
+    
+    public long getNextTimestamp() {
+        getNextEvent();
         return nextEvent != null ? nextEvent.getTimestamp() : Long.MAX_VALUE;
     }
     
-    public MirrorEvent next() {
+    public TODMirrorEvent next() {
+        checkEnabled();
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         
-        MirrorEvent result = wrapEvent(nextEvent);
+        TODMirrorEvent result = wrapEvent(nextEvent);
         nextEvent = null;
         return result;
     }
     
-    public MirrorEvent wrapEvent(ILogEvent event) {
+    public TODMirrorEvent wrapEvent(ILogEvent event) {
         if (event instanceof IBehaviorCallEvent) {
             IBehaviorCallEvent bce = (IBehaviorCallEvent)event;
             BehaviorKind kind = bce.getExecutedBehavior().getBehaviourKind();
