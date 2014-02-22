@@ -12,7 +12,6 @@ import tod.core.database.structure.IThreadInfo;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -21,7 +20,7 @@ public class TODThreadMirror extends TODInstanceMirror implements ThreadMirror {
     final IThreadInfo threadInfo;
 
     public TODThreadMirror(TODVirtualMachineMirror vm, IThreadInfo threadInfo) {
-        super(vm, null);
+        super(vm, vm.getLogBrowser().createObjectInspector(threadInfo.getObjectId()));
         
         this.threadInfo = threadInfo;
     }
