@@ -357,10 +357,10 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
         return getClass().getSimpleName() + ": " + klass;
     }
 
-    private final InstanceMirror staticFieldValues = new NativeStaticFieldValuesMirror();
+    private final StaticFieldValuesMirror staticFieldValues = new NativeStaticFieldValuesMirror();
     
     @Override
-    public InstanceMirror getStaticFieldValues() {
+    public StaticFieldValuesMirror getStaticFieldValues() {
         return staticFieldValues;
     }
     

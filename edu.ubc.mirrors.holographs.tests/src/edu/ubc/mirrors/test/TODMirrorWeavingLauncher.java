@@ -17,9 +17,10 @@ public class TODMirrorWeavingLauncher {
         final TODVirtualMachineMirror todVMM = TODVirtualMachineMirror.connect(clientName);
         ThreadMirror thread = null;
         for (ThreadMirror t : todVMM.getThreads()) {
-            if (Reflection.getThreadName(t).equals("main")) {
+//            if (Reflection.getThreadName(t).equals("main")) {
                 thread = t;
-            }
+                break;
+//            }
         }
         VirtualMachineMirror vm = todVMM; 
         

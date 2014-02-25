@@ -47,6 +47,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
 
@@ -315,10 +316,10 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
         return getClass().getSimpleName() + ": " + klass;
     }
     
-    private final InstanceMirror staticFieldValues;
+    private final StaticFieldValuesMirror staticFieldValues;
     
     @Override
-    public InstanceMirror getStaticFieldValues() {
+    public StaticFieldValuesMirror getStaticFieldValues() {
         return staticFieldValues;
     }
 

@@ -112,10 +112,10 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         throw new UnsupportedOperationException();
     }
     
-    private final InstanceMirror staticFieldValues = new BytecodeInstanceMirror();
+    private final StaticFieldValuesMirror staticFieldValues = new BytecodeInstanceMirror();
     
     @Override
-    public InstanceMirror getStaticFieldValues() {
+    public StaticFieldValuesMirror getStaticFieldValues() {
         return staticFieldValues;
     }
     

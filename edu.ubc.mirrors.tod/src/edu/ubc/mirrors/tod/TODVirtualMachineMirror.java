@@ -24,10 +24,13 @@ package edu.ubc.mirrors.tod;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.objectweb.asm.Type;
 
 import tod.core.config.TODConfig;
 import tod.core.database.browser.ICompoundInspector.EntryValue;
@@ -46,6 +49,7 @@ import tod.core.session.ISession;
 import tod.core.session.SessionTypeManager;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FrameMirror;
@@ -68,7 +72,7 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     
     // Some special case thread awkwardness handling
     private final ClassMirror threadClass;
-    final Map<String, IThreadInfo> threadInfosByName = new HashMap<String, IThreadInfo>();
+    final Map<ObjectId, IThreadInfo> threadInfosByObjectId = new HashMap<ObjectId, IThreadInfo>();
     
     private final Map<Object, ObjectMirror> mirrors = new HashMap<Object, ObjectMirror>();
     
@@ -78,7 +82,7 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         this.requestManager = new TODMirrorEventRequestManager(this);
         
         for (IThreadInfo threadInfo : logBrowser.getThreads()) {
-            threadInfosByName.put(threadInfo.getName(), threadInfo);
+            threadInfosByObjectId.put(threadInfo.getObjectId(), threadInfo);
         }
         
         threadClass = findBootstrapClassMirror(Thread.class.getName());
@@ -210,11 +214,21 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses) {
-        if (includeSubclasses) {
-            throw new UnsupportedOperationException();
+        // TODO-RS: IClassInfos have a start time, so we should be filtering out those
+        // classes that haven't been defined yet.
+        // See also TODClassMirrorPrepareRequest.
+        // TODO-RS: calling getClasses(name) would be better but that's not actually implemented :)
+        IClassInfo match = logBrowser.getStructureDatabase().getClass(name, false);
+        if (match == null) {
+            return Collections.emptyList();
         }
+        ClassMirror klass = makeClassMirror(match);
         
-        return makeClassMirrorList(logBrowser.getStructureDatabase().getClasses(name));
+        if (includeSubclasses) {
+            return Reflection.collectAllSubclasses(klass);
+        } else {
+            return Collections.singletonList(klass);
+        }
     }
 
     @Override
@@ -228,7 +242,8 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public ClassMirror getPrimitiveClass(String name) {
-        return makeClassMirror(logBrowser.getStructureDatabase().getClass(name, false));
+        Type primitiveType = Reflection.typeForClassName(name);
+        return makeClassMirror(logBrowser.getStructureDatabase().getClass(primitiveType.getDescriptor(), false));
     }
 
     @Override
@@ -314,11 +329,11 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     public Object wrapValue(ClassMirror type, Object value) {
-//        if (typeName.equals("long")) {
-//            return ((Number)value).longValue();
-//        } else {
+        if (type.getClassName().equals("long")) {
+            return ((Number)value).longValue();
+        } else {
             return value;
-//        }
+        }
     }
 
     public FrameMirror makeFrameMirror(ILogEvent event) {
@@ -329,7 +344,11 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         }
     }
 
-    public MethodMirror makeMethodMirror(IBehaviorInfo callingBehavior) {
-        return new TODMethodOrConstructorMirror(this, callingBehavior);
+    public MethodMirror makeMethodMirror(IBehaviorInfo behavior) {
+        return new TODMethodOrConstructorMirror(this, behavior);
+    }
+    
+    public ConstructorMirror makeConstructorMirror(IBehaviorInfo behavior) {
+        return new TODMethodOrConstructorMirror(this, behavior);
     }
 }

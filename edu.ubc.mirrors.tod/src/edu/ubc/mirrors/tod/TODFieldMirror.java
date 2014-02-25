@@ -24,6 +24,7 @@ package edu.ubc.mirrors.tod;
 import tod.core.database.structure.IFieldInfo;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.Reflection;
 
 public class TODFieldMirror implements FieldMirror {
 
@@ -33,7 +34,7 @@ public class TODFieldMirror implements FieldMirror {
     public TODFieldMirror(TODVirtualMachineMirror vm, IFieldInfo field) {
         super();
         this.vm = vm;
-        this.field = field;
+        this.field = Reflection.checkNull(field);
     }
 
     @Override

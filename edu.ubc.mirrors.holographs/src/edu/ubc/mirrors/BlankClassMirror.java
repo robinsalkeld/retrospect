@@ -24,7 +24,7 @@ package edu.ubc.mirrors;
 public abstract class BlankClassMirror extends BlankInstanceMirror implements ClassMirror {
 
     @Override
-    public InstanceMirror getStaticFieldValues() {
+    public StaticFieldValuesMirror getStaticFieldValues() {
         return new BlankStaticFieldValuesMirror();
     }
     

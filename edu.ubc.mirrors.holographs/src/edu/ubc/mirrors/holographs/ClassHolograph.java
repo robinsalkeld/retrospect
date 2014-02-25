@@ -805,7 +805,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     }
     
     @Override
-    public InstanceMirror getStaticFieldValues() {
+    public StaticFieldValuesMirror getStaticFieldValues() {
         return staticFieldValues;
     }
     

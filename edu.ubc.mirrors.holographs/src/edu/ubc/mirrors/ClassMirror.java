@@ -77,7 +77,7 @@ public interface ClassMirror extends InstanceMirror {
     public boolean initialized();
     
     // This fake "object" must return the vm's Object type from getClassMirror()
-    public InstanceMirror getStaticFieldValues();
+    public StaticFieldValuesMirror getStaticFieldValues();
     
     // For VM implementations that can cache this information effectively.
     public void bytecodeLocated(File originalBytecodeLocation);

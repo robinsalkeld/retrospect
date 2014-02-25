@@ -28,13 +28,7 @@ public class TODThreadMirror extends TODInstanceMirror implements ThreadMirror {
     public TODThreadMirror(TODVirtualMachineMirror vm, IObjectInspector inspector) {
         super(vm, inspector);
         
-        ClassMirror threadClass = vm.findBootstrapClassMirror(Thread.class.getName());
-        try {
-            String name = Reflection.getRealStringForMirror((InstanceMirror)get(threadClass.getDeclaredField("name")));
-            this.threadInfo = vm.threadInfosByName.get(name);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        this.threadInfo = vm.threadInfosByObjectId.get(inspector.getObject());
     }
 
     @Override

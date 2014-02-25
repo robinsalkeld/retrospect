@@ -922,4 +922,15 @@ public class Reflection {
                   "(" + fileName + ":" + lineNumber + ")" :
                   (fileName != null ?  "("+fileName+")" : "(Unknown Source)"));
     }
+    
+    public static List<ClassMirror> collectAllSubclasses(ClassMirror klass) {
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        result.add(klass);
+        for (ClassMirror subclass : klass.getSubclassMirrors()) {
+            result.addAll(collectAllSubclasses(subclass));
+        }
+        return result;
+    }
+    
+    
 }

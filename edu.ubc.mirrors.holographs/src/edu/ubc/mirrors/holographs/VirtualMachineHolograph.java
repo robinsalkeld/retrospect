@@ -155,15 +155,19 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         this.hologramBootstrapLoader = new HologramClassLoader(this, null);
         this.mappedFiles = mappedFiles;
         
-        List<URL> bootstrapPath = extractBootstrapPath(wrappedVM);
-        List<URL> filteredURLs = new ArrayList<URL>();
-        for (URL url : bootstrapPath) {
-            // Ignore invalid paths as the VM would
-            if (new FileURLMapper(url).exists()) {
-        	filteredURLs.add(url);
+        if (!wrappedVM.canGetBytecodes()) {
+            List<URL> bootstrapPath = extractBootstrapPath(wrappedVM);
+            List<URL> filteredURLs = new ArrayList<URL>();
+            for (URL url : bootstrapPath) {
+                // Ignore invalid paths as the VM would
+                if (new FileURLMapper(url).exists()) {
+            	filteredURLs.add(url);
+                }
             }
+            this.bootstrapBytecodeLoader = new SandboxedClassLoader(filteredURLs.toArray(new URL[filteredURLs.size()]));
+        } else {
+            this.bootstrapBytecodeLoader = null;
         }
-        this.bootstrapBytecodeLoader = new SandboxedClassLoader(filteredURLs.toArray(new URL[filteredURLs.size()]));
         
         // Start a thread dedicated to debugging, so the debugger has something to
         // execute mirror interface methods on without messing up the rest of the VM.

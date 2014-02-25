@@ -57,7 +57,7 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
         for (IEntryInfo entry : inspector.getEntries(0, Integer.MAX_VALUE)) {
             FieldEntryInfo fieldEntry = (FieldEntryInfo)entry;
             if (fieldEntry.getField().equals(fieldInfo)) {
-                return vm.wrapEntryValues(null, inspector.getEntryValue(entry));
+                return vm.wrapEntryValues(field.getType(), inspector.getEntryValue(entry));
             }
         }
         throw new IllegalStateException("Couldn't find field " + fieldInfo + " on object " + inspector);

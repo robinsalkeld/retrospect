@@ -56,9 +56,12 @@ public class MutableFieldMirror extends WrappingFieldMirror {
     
     @Override
     public int getModifiers() {
-        if (klass.hasBytecode()) {
+        // TODO-RS: For the benefit of TODVirtualMachineMirror
+//        if (klass.hasBytecode()) {
+        try {
             return super.getModifiers();
-        } else {
+        } catch (UnsupportedOperationException e) {
+//        } else {
             return getBytecodeField().getModifiers();
         }
     }

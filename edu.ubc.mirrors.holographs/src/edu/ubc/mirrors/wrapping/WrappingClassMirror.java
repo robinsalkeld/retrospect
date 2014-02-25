@@ -35,6 +35,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
@@ -202,8 +203,8 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
     }
 
     @Override
-    public InstanceMirror getStaticFieldValues() {
-        return (InstanceMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
+    public StaticFieldValuesMirror getStaticFieldValues() {
+        return (StaticFieldValuesMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
     }
     
     @Override

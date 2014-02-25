@@ -347,7 +347,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     }
 
     @Override
-    public InstanceMirror getStaticFieldValues() {
+    public StaticFieldValuesMirror getStaticFieldValues() {
         return new JDIStaticFieldValuesMirror(vm, mirror);
     }
 

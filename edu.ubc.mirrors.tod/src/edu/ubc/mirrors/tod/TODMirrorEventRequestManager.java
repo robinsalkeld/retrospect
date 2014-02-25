@@ -58,7 +58,9 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
-        return new TODMethodMirrorEntryRequest(vm);
+        TODMethodMirrorEntryRequest result = new TODMethodMirrorEntryRequest(vm);
+        requests.add(result);
+        return result;
     }
 
     @Override
@@ -124,12 +126,14 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public ClassMirrorPrepareRequest createClassMirrorPrepareRequest() {
-        throw new UnsupportedOperationException();
+        TODClassMirrorPrepareRequest result = new TODClassMirrorPrepareRequest(vm);
+        requests.add(result);
+        return result;
     }
 
     @Override
     public List<ClassMirrorPrepareRequest> classMirrorPrepareRequests() {
-        throw new UnsupportedOperationException();
+        return allRequestsOfType(ClassMirrorPrepareRequest.class);
     }
 
     @Override

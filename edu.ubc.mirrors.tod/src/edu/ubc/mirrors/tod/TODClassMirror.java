@@ -23,6 +23,7 @@ package edu.ubc.mirrors.tod;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -31,7 +32,9 @@ import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.ICreationEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.event.ITargetEvent;
+import tod.core.database.structure.BehaviorKind;
 import tod.core.database.structure.IArrayTypeInfo;
+import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
 import tod.core.database.structure.IFieldInfo;
 import tod.core.database.structure.IPrimitiveTypeInfo;
@@ -47,6 +50,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 
@@ -61,9 +65,22 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof TODClassMirror)) {
+            return false;
+        }
+        
+        return classInfo.equals(((TODClassMirror)obj).classInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        return 19 * classInfo.hashCode();
+    }
+    
+    @Override
     public ClassMirror getClassMirror() {
-        // TODO Auto-generated method stub
-        return null;
+        return vm.findBootstrapClassMirror(Class.class.getName());
     }
 
     @Override
@@ -91,7 +108,10 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     @Override
     public byte[] getBytecode() {
         if (classInfo instanceof IClassInfo) {
-            return ((IClassInfo)classInfo).getBytecode(); 
+            // Note that TOD seems to pull standard library bytecode from the client
+            // JVM instead of the trace, so be careful that the TODVirtualMachineMirror
+            // runs on the right JVM or this doesn't work!
+            return ((IClassInfo)classInfo).getOriginalBytecode(); 
         } else {
             return null;
         }
@@ -119,7 +139,12 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     @Override
     public ClassMirror getSuperClassMirror() {
         if (classInfo instanceof IClassInfo) {
-            return vm.makeClassMirror(((IClassInfo)classInfo).getSupertype());
+            ITypeInfo supertype = ((IClassInfo)classInfo).getSupertype();
+            if (supertype == null && !classInfo.getName().equals(Object.class.getName())) {
+                return vm.findBootstrapClassMirror(Object.class.getName());
+            } else {
+                return vm.makeClassMirror(supertype);
+            }
         } else if (classInfo instanceof IPrimitiveTypeInfo) {
             return null;
         } else /* array */ {
@@ -148,7 +173,8 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     @Override
     public FieldMirror getDeclaredField(String name) {
         if (classInfo instanceof IClassInfo) {
-            return new TODFieldMirror(vm, ((IClassInfo)classInfo).getField(name));
+            IFieldInfo field = ((IClassInfo)classInfo).getField(name);
+            return field != null ? new TODFieldMirror(vm, field) : null;
         } else {
             return null;
         }
@@ -199,7 +225,14 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
 
     @Override
     public List<ClassMirror> getSubclassMirrors() {
-        throw new UnsupportedOperationException();
+        // TODO-RS: Obviously very slow - this should be cached incrementally
+        List<ClassMirror> result = new ArrayList<ClassMirror>();
+        for (ClassMirror other : vm.findAllClasses()) {
+            if (equals(other.getSuperClassMirror())) {
+                result.add(other);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -220,12 +253,30 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     public ConstructorMirror getConstructor(String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
 
-        throw new UnsupportedOperationException();
+        List<String> paramTypeNamesList = Arrays.asList(paramTypeNames);
+        
+        for (ConstructorMirror cMirror : getDeclaredConstructors(false)) {
+            if (cMirror.getParameterTypeNames().equals(paramTypeNamesList)) {
+                return cMirror;
+            }
+        }
+        return null;
     }
 
     @Override
     public List<ConstructorMirror> getDeclaredConstructors(boolean publicOnly) {
-        throw new UnsupportedOperationException();
+        if (classInfo instanceof IClassInfo) {
+            IClassInfo ci = (IClassInfo)classInfo;
+            List<ConstructorMirror> result = new ArrayList<ConstructorMirror>();
+            for (IBehaviorInfo behavior : ci.getBehaviors()) {
+                if (behavior.getBehaviourKind() == BehaviorKind.CONSTRUCTOR) {
+                    result.add(vm.makeConstructorMirror(behavior));
+                }
+            }
+            return result;
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override
@@ -259,9 +310,9 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     }
 
     @Override
-    public InstanceMirror getStaticFieldValues() {
+    public StaticFieldValuesMirror getStaticFieldValues() {
         if (classInfo instanceof IClassInfo) {
-            return (InstanceMirror)vm.makeMirror(vm.getLogBrowser().createClassInspector((IClassInfo)classInfo));
+            return new TODStaticFieldValuesMirror(vm, (IClassInfo)classInfo);
         } else {
             return null;
         }
@@ -291,5 +342,10 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     @Override
     public FieldMirror createField(int modifiers, ClassMirror type, String name) {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + classInfo;
     }
 }
