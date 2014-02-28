@@ -329,7 +329,9 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     public Object wrapValue(ClassMirror type, Object value) {
-        if (type.getClassName().equals("long")) {
+        if (value instanceof ObjectId) {
+            return makeMirror(value);
+        } else if (type.getClassName().equals("long")) {
             return ((Number)value).longValue();
         } else {
             return value;
