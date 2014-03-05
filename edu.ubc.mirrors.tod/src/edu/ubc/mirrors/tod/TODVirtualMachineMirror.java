@@ -86,10 +86,7 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         }
         
         threadClass = findBootstrapClassMirror(Thread.class.getName());
-        for (FieldMirror f : threadClass.getDeclaredFields()) {
-            System.out.println(f);
-        }
-       
+
         // Precalculate the thread mirrors so we can store them by IThreadInfo
         for (ObjectMirror thread : threadClass.getInstances()) {
             IThreadInfo threadInfo = ((TODThreadMirror)thread).threadInfo;
@@ -161,7 +158,12 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         }
                
         if (todObject instanceof ITypeInfo) {
-            result = new TODClassMirror(this, (ITypeInfo)todObject);
+            // Ignore class infos with no bytecode - they are essentially not actually loaded classes.
+            if (todObject instanceof IClassInfo && ((IClassInfo)todObject).getBytecode() == null) {
+                result = null;
+            } else {
+                result = new TODClassMirror(this, (ITypeInfo)todObject);
+            }
         } else if (todObject instanceof ObjectId) {
             IObjectInspector inspector = logBrowser.createObjectInspector((ObjectId)todObject);
             result = makeMirror(inspector);
@@ -296,7 +298,10 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         // not all classes ever!
         List<ClassMirror> result = new ArrayList<ClassMirror>();
         for (IClassInfo classInfo : logBrowser.getStructureDatabase().getClasses()) {
-            result.add(makeClassMirror(classInfo));
+            ClassMirror classMirror = makeClassMirror(classInfo);
+            if (classMirror != null) {
+                result.add(classMirror);
+            }
         }
         return result;
     }
@@ -308,7 +313,7 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public boolean hasClassInitialization() {
-        return false;
+        return true;
     }
 
     @Override

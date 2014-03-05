@@ -38,6 +38,20 @@ public class TODFieldMirror implements FieldMirror {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof TODFieldMirror)) {
+            return false;
+        }
+        
+        return field.equals(((TODFieldMirror)obj).field);
+    }
+    
+    @Override
+    public int hashCode() {
+        return 23 * field.hashCode();
+    }
+    
+    @Override
     public ClassMirror getDeclaringClass() {
         return vm.makeClassMirror(field.getDeclaringType());
     }

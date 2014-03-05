@@ -306,7 +306,8 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
 
     @Override
     public boolean initialized() {
-        throw new UnsupportedOperationException();
+        // Only initialized classes show up in the trace.
+        return true;
     }
 
     @Override
