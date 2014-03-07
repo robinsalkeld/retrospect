@@ -21,6 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors.tod;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IObjectInspector.FieldEntryInfo;
 import tod.core.database.browser.IObjectInspector.IEntryInfo;
@@ -34,10 +37,15 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
 
     protected final TODVirtualMachineMirror vm;
     private final IObjectInspector inspector;
+    private final Map<IFieldInfo, IEntryInfo> entries = new HashMap<IFieldInfo, IEntryInfo>();
     
     public TODInstanceMirror(TODVirtualMachineMirror vm, IObjectInspector inspector) {
         this.vm = vm;
         this.inspector = inspector;
+        for (IEntryInfo entry : inspector.getEntries(0, Integer.MAX_VALUE)) {
+            FieldEntryInfo fieldEntry = (FieldEntryInfo)entry;
+            entries.put(fieldEntry.getField(), fieldEntry);
+        }
     }
 
     @Override
@@ -51,16 +59,14 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
         inspector.setReferenceEvent(vm.requestManager.currentLogEvent());
         
         IFieldInfo fieldInfo = ((TODFieldMirror)field).field;
-        // TODO-RS: Make this faster by caching the IEntryInfo (in the field?)
-        // Will be tricky since the IEntryInfos seem to be per-instance instead of
-        // per-class.
-        for (IEntryInfo entry : inspector.getEntries(0, Integer.MAX_VALUE)) {
-            FieldEntryInfo fieldEntry = (FieldEntryInfo)entry;
-            if (fieldEntry.getField().equals(fieldInfo)) {
-                return vm.wrapEntryValues(field.getType(), inspector.getEntryValue(entry));
-            }
+        IEntryInfo entry = entries.get(fieldInfo);
+        if (entry == null) {
+            throw new IllegalStateException("Couldn't find field " + fieldInfo + " on object " + inspector);
         }
-        throw new IllegalStateException("Couldn't find field " + fieldInfo + " on object " + inspector);
+        
+        Object result = vm.wrapEntryValues(field.getType(), inspector.getEntryValue(entry));
+        
+        return result;
     }
 
     @Override
@@ -71,6 +77,11 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
     @Override
     public int identityHashCode() {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + inspector.getObject() + " : " + inspector.getType();
     }
 
 }

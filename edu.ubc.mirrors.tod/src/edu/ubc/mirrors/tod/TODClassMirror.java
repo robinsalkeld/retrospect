@@ -50,6 +50,7 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -95,7 +96,7 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
 
     @Override
     public String getSignature() {
-        return classInfo.getName();
+        return Reflection.typeForClassMirror(this).getDescriptor();
     }
 
     @Override

@@ -47,11 +47,11 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
 import tod.core.session.SessionTypeManager;
+import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.EventDispatch;
-import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -92,6 +92,18 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
             IThreadInfo threadInfo = ((TODThreadMirror)thread).threadInfo;
             mirrors.put(threadInfo, thread);
         }
+        
+//        try {
+//            ClassMirror c = findBootstrapClassMirror("java.net.URL");
+//            InstanceMirror handlers = (InstanceMirror)c.getStaticFieldValues().get(c.getDeclaredField("handlers"));
+//            ObjectMirror table = handlers.get(handlers.getClassMirror().getDeclaredField("table"));
+//            
+//            ClassMirror c2 = findBootstrapClassMirror("java.lang.CharacterDataLatin1");
+//            ArrayMirror a = (ArrayMirror)c2.getStaticFieldValues().get(c2.getDeclaredField("A"));
+//            a.hashCode();
+//        } catch (IllegalAccessException e) {
+//            throw new RuntimeException(e);
+//        }
     }
     
     public Iterable<ILogEvent> asIterable(final IEventBrowser browser) {
@@ -170,7 +182,9 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         } else if (todObject instanceof IObjectInspector) {
             IObjectInspector inspector = (IObjectInspector)todObject;
             ClassMirror type = makeClassMirror(inspector.getType());
-            if (Reflection.isAssignableFrom(threadClass, type)) {
+            if (type.isArray()) {
+                result = new TODArrayMirror(this, inspector);
+            } else if (Reflection.isAssignableFrom(threadClass, type)) {
                 result = new TODThreadMirror(this, inspector);
             } else {
                 result = new TODInstanceMirror(this, inspector);

@@ -31,9 +31,10 @@ import edu.ubc.mirrors.BoxingArrayMirror;
 import edu.ubc.mirrors.BoxingInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 
-public class TODArrayMirror extends BoxingArrayMirror implements ArrayMirror {
+public class TODArrayMirror extends BoxingArrayMirror implements ObjectArrayMirror {
 
     private final TODVirtualMachineMirror vm;
     private final IObjectInspector inspector;
@@ -54,6 +55,11 @@ public class TODArrayMirror extends BoxingArrayMirror implements ArrayMirror {
     }
     
     @Override
+    public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
+        return (ObjectMirror)getBoxedValue(index);
+    }
+    
+    @Override
     protected Object getBoxedValue(int index) {
         // TODO-RS: Only do this when the VM actually changes events!
         inspector.setReferenceEvent(vm.requestManager.currentLogEvent());
@@ -63,7 +69,13 @@ public class TODArrayMirror extends BoxingArrayMirror implements ArrayMirror {
         // per-class.
         IEntryInfo entry = inspector.getEntries(0, Integer.MAX_VALUE).get(index);
         ArraySlotEntryInfo arraySlotEntry = (ArraySlotEntryInfo)entry;
-        return vm.wrapEntryValues(null, inspector.getEntryValue(arraySlotEntry));
+        return vm.wrapEntryValues(getClassMirror().getComponentClassMirror(), inspector.getEntryValue(arraySlotEntry));
+    }
+    
+    @Override
+    public void set(int index, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
+        setBoxedValue(index, o);
+        
     }
     
     @Override
@@ -73,12 +85,15 @@ public class TODArrayMirror extends BoxingArrayMirror implements ArrayMirror {
     
     @Override
     public int identityHashCode() {
-        // TODO-RS
-        return inspector.hashCode();
+        throw new UnsupportedOperationException();
     }
     
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
+    
+    public String toString() {
+        return getClass().getSimpleName() + " on " + inspector.getObject() + " : " + inspector.getType();
+    };
 }

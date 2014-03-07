@@ -833,6 +833,15 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         }
     }
     
+    @Override
+    public int getModifiers() {
+        try {
+            return super.getModifiers();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMirror().getModifiers();
+        }
+    }
+    
     public void registerPrepareCallback() {
         // Set up a callback so that if the wrapped VM defines this same class later on,
         // we can replace the holograph version with the "real" one. 

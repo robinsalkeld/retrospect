@@ -131,12 +131,20 @@ public class ConstructorHolograph implements ConstructorMirror {
 
     @Override
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
-        return wrapped.getAnnotations(thread);
+        try {
+            return wrapped.getAnnotations(thread);
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeConstructor().getAnnotations(thread);
+        }
     }
 
     @Override
     public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
-        return wrapped.getParameterAnnotations(thread);
+        try {
+            return wrapped.getParameterAnnotations(thread);
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeConstructor().getParameterAnnotations(thread);
+        }
     }
 
     @Override
@@ -146,23 +154,27 @@ public class ConstructorHolograph implements ConstructorMirror {
 
     @Override
     public int getModifiers() {
-        return wrapped.getModifiers();
+        try {
+            return wrapped.getModifiers();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeConstructor().getModifiers();
+        }
     }
 
     @Override
     public List<String> getExceptionTypeNames() {
-        if (klass.hasBytecode()) {
+        try {
             return wrapped.getExceptionTypeNames();
-        } else {
+        } catch (UnsupportedOperationException e) {
             return getBytecodeConstructor().getExceptionTypeNames();
         }
     }
     
     @Override
     public List<ClassMirror> getExceptionTypes() {
-        if (klass.hasBytecode()) {
+        try {
 	    return wrapped.getExceptionTypes();
-	} else {
+	} catch (UnsupportedOperationException e) {
 	    return getBytecodeConstructor().getExceptionTypes();
 	}
     }

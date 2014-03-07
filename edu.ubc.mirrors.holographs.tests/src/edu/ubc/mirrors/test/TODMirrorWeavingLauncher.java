@@ -13,7 +13,7 @@ import edu.ubc.mirrors.tod.TODVirtualMachineMirror;
 import edu.ubc.retrospect.MirrorWorld;
 
 public class TODMirrorWeavingLauncher {
-    public static void launch(String clientName, String aspectPath) throws Exception {
+    public static void launch(String clientName, String aspectPath, String hologramCachePath) throws Exception {
         final TODVirtualMachineMirror todVMM = TODVirtualMachineMirror.connect(clientName);
         ThreadMirror thread = null;
         for (ThreadMirror t : todVMM.getThreads()) {
@@ -29,9 +29,7 @@ public class TODMirrorWeavingLauncher {
         URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
         
         System.out.println("Booting up holographic VM...");
-//        // TODO-RS: Cheating for now...
-        File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/RacerTest/hologram_classes");
-        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(todVMM, cachePath,
+        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(todVMM, new File(hologramCachePath),
                 Collections.singletonMap("/", "/"));
         vm = vmh;
         thread = (ThreadMirror)vmh.getWrappedMirror(thread);

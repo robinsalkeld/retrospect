@@ -28,7 +28,8 @@ public class TODTest implements IApplication {
 
     public static void main(String[] args) throws Exception {
         TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
-                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
+                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin",
+                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/tod/TracingTest");
     }
 
     public Object start(IApplicationContext context) throws Exception {

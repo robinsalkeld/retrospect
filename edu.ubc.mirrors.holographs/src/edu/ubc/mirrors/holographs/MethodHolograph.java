@@ -103,9 +103,9 @@ public class MethodHolograph implements MethodMirror {
     
     @Override
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
-        if (klass.hasBytecode()) {
+        try {
             return wrapped.getAnnotations(thread);
-        } else {
+        } catch (UnsupportedOperationException e) {
             return getBytecodeMethod().getAnnotations(thread);
         }
     }
@@ -179,7 +179,11 @@ public class MethodHolograph implements MethodMirror {
 
     @Override
     public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
-        return wrapped.getParameterAnnotations(thread);
+        try {
+            return wrapped.getParameterAnnotations(thread);
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMethod().getParameterAnnotations(thread);
+        }
     }
     
     @Override
@@ -194,24 +198,28 @@ public class MethodHolograph implements MethodMirror {
 
     @Override
     public int getModifiers() {
-        return wrapped.getModifiers();
+        try {
+            return wrapped.getModifiers();
+        } catch (UnsupportedOperationException e) {
+            return getBytecodeMethod().getModifiers();
+        }
     }
 
     @Override
     public List<String> getExceptionTypeNames() {
-        if (klass.hasBytecode()) {
+        try {
             return wrapped.getExceptionTypeNames();
-        } else {
+        } catch (UnsupportedOperationException e) {
             return getBytecodeMethod().getExceptionTypeNames();
         }
     }
     
     @Override
     public List<ClassMirror> getExceptionTypes() {
-        if (klass.hasBytecode()) {
+        try {
             return wrapped.getExceptionTypes();
-	} else {
-	    return getBytecodeMethod().getExceptionTypes();
+	} catch (UnsupportedOperationException e) {
+            return getBytecodeMethod().getExceptionTypes();
 	}
     }
 
