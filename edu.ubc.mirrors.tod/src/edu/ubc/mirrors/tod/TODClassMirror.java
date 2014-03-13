@@ -59,6 +59,7 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
 
     private final TODVirtualMachineMirror vm;
     protected final ITypeInfo classInfo;
+    private Boolean initialized = null;
 
     public TODClassMirror(TODVirtualMachineMirror vm, ITypeInfo classInfo) {
         this.vm = vm;
@@ -198,29 +199,9 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     @Override
     public List<ObjectMirror> getInstances() {
         List<ObjectMirror> result = new ArrayList<ObjectMirror>();
-        
-        // TODO-RS: This is ideal but doesn't work well in practice since lots of instantiations
-        // won't appear in the log at all.
-//        IEventFilter filter = vm.getLogBrowser().createInstantiationsFilter(classInfo);
-//        for (ILogEvent event : vm.allEvents(filter)) {
-//            ICreationEvent creationEvent = (ICreationEvent)event;
-//            ObjectId objectId = (ObjectId)creationEvent.getInstance();
-//            result.add(vm.makeMirror(objectId));
-//        }
-
-        for (ILogEvent event : vm.allEvents()) {
-            if (event instanceof ITargetEvent) {
-                ITargetEvent targetEvent = (ITargetEvent)event;
-                ObjectId objectId = (ObjectId)targetEvent.getTarget();
-                if (objectId != null) {
-                    IObjectInspector browser = vm.getLogBrowser().createObjectInspector(objectId);
-                    if (browser.getType().equals(classInfo)) {
-                        result.add(vm.makeMirror(browser));
-                    }
-                }
-            }
+        for (ObjectId id : vm.getLogBrowser().getInstances(classInfo)) {
+            result.add(vm.makeMirror(id));
         }
-        
         return result;
     }
 
@@ -307,8 +288,14 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
 
     @Override
     public boolean initialized() {
-        // Only initialized classes show up in the trace.
-        return true;
+        if (classInfo instanceof IClassInfo) {
+            if (initialized == null) {
+                initialized = vm.getLogBrowser().isInitialized((IClassInfo)classInfo);
+            }
+            return initialized;
+        } else {
+            return true;
+        }
     }
 
     @Override

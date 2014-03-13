@@ -158,7 +158,8 @@ public class SanityTest extends TestCase {
     
     public void testTracingAspectTOD() throws Exception {
         TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
-                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
+                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin",
+                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/tod/TracingTest");
     }
     
 }

@@ -81,6 +81,8 @@ public class JDIFieldMirror extends JDIMirror implements FieldMirror {
 
     @Override
     public int getModifiers() {
-        return field.modifiers();
+        // TODO-RS: Seems to return invalid values sometimes
+//        return field.modifiers();
+        throw new UnsupportedOperationException();
     }
 }
