@@ -4,6 +4,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 
+import org.aspectj.bridge.IMessageHandler;
+
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.ClassPrepareEvent;
@@ -58,7 +60,7 @@ public class JDIMirrorWeavingLauncher {
         System.out.println("Creating class loader for aspects...");
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, null, new URL[] {urlPath, aspectRuntimeJar});
         
-        MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
+        MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread, IMessageHandler.SYSTEM_ERR);
         world.weave();
         
         vm.dispatch().start();

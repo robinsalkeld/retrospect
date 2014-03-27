@@ -55,6 +55,7 @@ public class HologramClassGenerator extends ClassVisitor {
     public static final String VERSION = "1.5";
     
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
+    public static Type throwableType = Type.getType(Throwable.class);
     public static Type classMirrorType = Type.getType(ClassMirror.class);
     public static Type instanceMirrorType = Type.getType(InstanceMirror.class);
     public static Type arrayMirrorType = Type.getType(ArrayMirror.class);
@@ -128,7 +129,7 @@ public class HologramClassGenerator extends ClassVisitor {
         this.name = name;
         this.isInterface = (Opcodes.ACC_INTERFACE & access) != 0;
         this.superName = getHologramSuperclassName(isInterface, name, superName);
-        interfaces = getHologramInterfaces(isInterface, interfaces);
+        interfaces = getHologramInterfaces(name, isInterface, interfaces);
         
         // Force everything to be public, since HologramClassLoader has to reflectively
         // construct holograms. Again, not a problem because the VM will see the original flags on the ClassMirror instead.
@@ -189,8 +190,8 @@ public class HologramClassGenerator extends ClassVisitor {
         }
     }
     
-    public static String[] getHologramInterfaces(boolean isInterface, String[] hologramInterfaces) {
-        if (isInterface) {
+    public static String[] getHologramInterfaces(String name, boolean isInterface, String[] hologramInterfaces) {
+        if (isInterface || name.equals(hologramThrowableType.getInternalName())) {
             String[] newInterfaces = new String[hologramInterfaces.length + 1];
             System.arraycopy(hologramInterfaces, 0, newInterfaces, 0, hologramInterfaces.length);
             newInterfaces[newInterfaces.length - 1] = Type.getInternalName(Hologram.class);
@@ -423,9 +424,10 @@ public class HologramClassGenerator extends ClassVisitor {
         if (isGetStackTrace) {
             desc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
         }
-//        if (name.equals("getStackTraceElement") && desc.equals(Type.getMethodDescriptor(getHologramType(Type.getType(StackTraceElement.class)), Type.INT_TYPE))) {
-//            desc = Type.getMethodDescriptor(Type.getType(StackTraceElement.class), Type.INT_TYPE);
-//        }
+        if (name.equals("fillInStackTrace") && this.name.equals(hologramThrowableType.getInternalName())) {
+            // Omit this - we'll use the Throwable superclass version
+            return null;
+        }
         
         // Take off the native keyword if it's there - we're going to fill in an actual
         // method (even if it's a stub that throws an exception).

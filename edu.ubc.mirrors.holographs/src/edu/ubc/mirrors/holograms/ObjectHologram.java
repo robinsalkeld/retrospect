@@ -61,7 +61,7 @@ public class ObjectHologram implements Hologram {
         }
         
         this.mirror = (ObjectMirror)mirror;
-        register();
+        register(this);
     }
     
     /**
@@ -71,9 +71,9 @@ public class ObjectHologram implements Hologram {
         this((Object)mirror);
     }
     
-    private void register() {
-        HologramClassLoader loader = ClassHolograph.getHologramClassLoader(mirror.getClassMirror());
-        loader.registerHologram(this);
+    public static void register(Hologram hologram) {
+        HologramClassLoader loader = ClassHolograph.getHologramClassLoader(hologram.getMirror().getClassMirror());
+        loader.registerHologram(hologram);
     }
     
     @Override

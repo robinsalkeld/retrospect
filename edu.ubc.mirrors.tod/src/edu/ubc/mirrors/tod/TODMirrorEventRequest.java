@@ -10,7 +10,6 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.BehaviorKind;
-import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 
 public abstract class TODMirrorEventRequest implements MirrorEventRequest, Iterator<TODMirrorEvent>, Comparable<TODMirrorEventRequest> {
@@ -118,13 +117,23 @@ public abstract class TODMirrorEventRequest implements MirrorEventRequest, Itera
         if (event instanceof IBehaviorCallEvent) {
             IBehaviorCallEvent bce = (IBehaviorCallEvent)event;
             BehaviorKind kind = bce.getExecutedBehavior().getBehaviourKind();
-            if (kind != BehaviorKind.STATIC_INIT) {
+            if (kind == BehaviorKind.METHOD || kind == BehaviorKind.STATIC_METHOD) {
                 return new TODMethodMirrorEntryEvent(vm, this, bce);
+            } else if (kind == BehaviorKind.CONSTRUCTOR) {
+                return new TODConstructorMirrorEntryEvent(vm, this, bce);
             } else {
                 return null;
             }
         } else if (event instanceof IBehaviorExitEvent) {
-            return null;
+            IBehaviorExitEvent bee = (IBehaviorExitEvent)event;
+            BehaviorKind kind = bee.getOperationBehavior().getBehaviourKind();
+            if (kind == BehaviorKind.METHOD || kind == BehaviorKind.STATIC_METHOD) {
+                return new TODMethodMirrorExitEvent(vm, this, bee);
+            } else if (kind == BehaviorKind.CONSTRUCTOR) {
+                return new TODConstructorMirrorExitEvent(vm, this, bee);
+            } else {
+                return null;
+            }
         } else {
             return null;
         }

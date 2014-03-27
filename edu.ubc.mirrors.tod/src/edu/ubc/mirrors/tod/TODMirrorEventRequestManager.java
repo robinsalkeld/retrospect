@@ -70,38 +70,38 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public MethodMirrorExitRequest createMethodMirrorExitRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        TODMethodMirrorExitRequest result = new TODMethodMirrorExitRequest(vm);
+        requests.add(result);
+        return result;
     }
 
     @Override
     public List<MethodMirrorExitRequest> methodMirrorExitRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        return allRequestsOfType(MethodMirrorExitRequest.class);
     }
 
     @Override
     public ConstructorMirrorEntryRequest createConstructorMirrorEntryRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        TODConstructorMirrorEntryRequest result = new TODConstructorMirrorEntryRequest(vm);
+        requests.add(result);
+        return result;
     }
 
     @Override
     public List<ConstructorMirrorEntryRequest> constructorMirrorEntryRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        return allRequestsOfType(ConstructorMirrorEntryRequest.class);
     }
 
     @Override
     public ConstructorMirrorExitRequest createConstructorMirrorExitRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        TODConstructorMirrorExitRequest result = new TODConstructorMirrorExitRequest(vm);
+        requests.add(result);
+        return result;
     }
 
     @Override
     public List<ConstructorMirrorExitRequest> constructorMirrorExitRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        return allRequestsOfType(ConstructorMirrorExitRequest.class);
     }
 
     @Override
@@ -208,6 +208,7 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
     
     public void resume() {
         if (!hasNext()) {
+            vm.queue.addEventSet(null);
             return;
         }
         

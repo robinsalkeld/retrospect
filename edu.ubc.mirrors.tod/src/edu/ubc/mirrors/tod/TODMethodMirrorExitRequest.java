@@ -1,17 +1,14 @@
 package edu.ubc.mirrors.tod;
 
-import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.BehaviorKind;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MethodMirrorEntryRequest;
+import edu.ubc.mirrors.MethodMirrorExitRequest;
 
-public class TODMethodMirrorEntryRequest extends TODBehaviorEventRequest implements MethodMirrorEntryRequest {
+public class TODMethodMirrorExitRequest extends TODBehaviorEventRequest implements MethodMirrorExitRequest {
 
-    public TODMethodMirrorEntryRequest(TODVirtualMachineMirror vm) {
+    public TODMethodMirrorExitRequest(TODVirtualMachineMirror vm) {
         super(vm);
     }
-
+    
     @Override
     protected boolean matchConstructors() {
         return false;
@@ -19,7 +16,7 @@ public class TODMethodMirrorEntryRequest extends TODBehaviorEventRequest impleme
     
     @Override
     protected boolean matchExits() {
-        return false;
+        return true;
     }
     
     @Override

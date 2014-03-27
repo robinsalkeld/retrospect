@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.holographs;
 
+import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 
 public class StaticFieldValuesHolograph extends InstanceHolograph implements StaticFieldValuesMirror {
@@ -35,5 +37,23 @@ public class StaticFieldValuesHolograph extends InstanceHolograph implements Sta
     @Override
     public ClassHolograph forClassMirror() {
         return (ClassHolograph)vm.getWrappedMirror(wrapped.forClassMirror());
+    }
+    
+    @Override
+    public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
+        if (forClassMirror().getClassName().equals("java.nio.charset.StandardCharsets")) {
+            forClassMirror();
+        }
+        
+        return super.get(field);
+    }
+    
+    @Override
+    public void set(FieldMirror field, ObjectMirror o) {
+        if (forClassMirror().getClassName().equals("java.nio.charset.StandardCharsets")) {
+            forClassMirror();
+        }
+        
+        super.set(field, o);
     }
 }

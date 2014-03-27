@@ -76,7 +76,8 @@ public class ReflectionStubs extends NativeStubs {
     
     @StubMethod
     public ClassMirror getCallerClass() {
-        return getCallerClassMirror(1);
+        // 0 = Reflection, 1 = caller of this method, 2 = desired caller
+        return getCallerClassMirror(2);
     }
     
     @StubMethod

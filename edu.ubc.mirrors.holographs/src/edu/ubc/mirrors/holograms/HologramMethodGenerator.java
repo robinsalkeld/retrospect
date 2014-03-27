@@ -32,6 +32,8 @@ import static edu.ubc.mirrors.holograms.HologramClassGenerator.hologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceHologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectHologramType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.throwableType;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.hologramThrowableType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.stringType;
 
@@ -192,6 +194,11 @@ public class HologramMethodGenerator extends InstructionAdapter {
 //                desc = Type.getMethodDescriptor(Type.VOID_TYPE, objectHologramType);
 //            }
 //        }
+        
+        if (owner.equals(hologramThrowableType.getInternalName()) && name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(hologramThrowableType))) {
+            desc = Type.getMethodDescriptor(throwableType);
+            owner = throwableType.getInternalName();
+        }
         
         if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Hologram.class)))) {
             desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, OBJECT_TYPE);
@@ -413,6 +420,16 @@ public class HologramMethodGenerator extends InstructionAdapter {
                              Type.getMethodDescriptor(Type.getType(StackTraceElement[].class), Type.getType(Hologram.class)));
             }
         }
+        
+        if (opcode == Opcodes.RETURN && owner.equals(hologramThrowableType) && name.equals("<init>")) {
+            load(0, owner);
+            new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ObjectHologram.register(null);;
+                }
+            }.invoke(this);
+        }
+        
         super.visitInsn(opcode);
     }
     

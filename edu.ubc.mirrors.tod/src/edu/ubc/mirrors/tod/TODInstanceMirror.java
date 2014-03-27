@@ -49,8 +49,28 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof TODInstanceMirror)) {
+            return false;
+        }
+        
+        TODInstanceMirror other = (TODInstanceMirror)obj;
+        return vm.equals(other.vm) &&
+                inspector.equals(other.inspector);
+    }
+    
+    @Override
+    public int hashCode() {
+        return vm.hashCode() * inspector.hashCode();
+    }
+    
+    @Override
     public ClassMirror getClassMirror() {
-        return vm.makeClassMirror(inspector.getType());
+        ClassMirror result = vm.makeClassMirror(inspector.getType());
+        if (result == null) {
+            throw new IllegalStateException();
+        } 
+        return result;
     }
 
     @Override

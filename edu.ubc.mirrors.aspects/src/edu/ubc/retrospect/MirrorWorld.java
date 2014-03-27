@@ -82,7 +82,7 @@ public class MirrorWorld extends World {
         }
     };
     
-    public MirrorWorld(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+    public MirrorWorld(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread, IMessageHandler messageHandler) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
         this.loader = loader;
         this.thread = thread;
@@ -91,7 +91,6 @@ public class MirrorWorld extends World {
         this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
         this.pointcutAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(org.aspectj.lang.annotation.Pointcut.class), false, loader);
         
-        IMessageHandler messageHandler = new DefaultMessageHandler();
         setMessageHandler(messageHandler);
         
         // These ones just have to be loaded because they are argument types in some of the factory methods

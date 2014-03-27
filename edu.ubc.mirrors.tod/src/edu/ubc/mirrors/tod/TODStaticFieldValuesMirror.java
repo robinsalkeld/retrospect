@@ -15,6 +15,11 @@ public class TODStaticFieldValuesMirror extends TODInstanceMirror implements Sta
     }
     
     @Override
+    public ClassMirror getClassMirror() {
+        return vm.findBootstrapClassMirror(Object.class.getName());
+    }
+    
+    @Override
     public ClassMirror forClassMirror() {
         return forClassMirror;
     }

@@ -47,7 +47,6 @@ import tod.core.database.structure.ITypeInfo;
 import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
 import tod.core.session.SessionTypeManager;
-import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
@@ -92,18 +91,6 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
             IThreadInfo threadInfo = ((TODThreadMirror)thread).threadInfo;
             mirrors.put(threadInfo, thread);
         }
-        
-//        try {
-//            ClassMirror c = findBootstrapClassMirror("java.net.URL");
-//            InstanceMirror handlers = (InstanceMirror)c.getStaticFieldValues().get(c.getDeclaredField("handlers"));
-//            ObjectMirror table = handlers.get(handlers.getClassMirror().getDeclaredField("table"));
-//            
-//            ClassMirror c2 = findBootstrapClassMirror("java.lang.CharacterDataLatin1");
-//            ArrayMirror a = (ArrayMirror)c2.getStaticFieldValues().get(c2.getDeclaredField("A"));
-//            a.hashCode();
-//        } catch (IllegalAccessException e) {
-//            throw new RuntimeException(e);
-//        }
     }
     
     public Iterable<ILogEvent> asIterable(final IEventBrowser browser) {
@@ -170,11 +157,12 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         }
                
         if (todObject instanceof ITypeInfo) {
+            ITypeInfo typeInfo = (ITypeInfo)todObject;
             // Ignore class infos with no bytecode - they are essentially not actually loaded classes.
-            if (todObject instanceof IClassInfo && ((IClassInfo)todObject).getBytecode() == null) {
+            if (typeInfo instanceof IClassInfo && !typeInfo.isPrimitive() && ((IClassInfo)todObject).getBytecode() == null) {
                 result = null;
             } else {
-                result = new TODClassMirror(this, (ITypeInfo)todObject);
+                result = new TODClassMirror(this, typeInfo);
             }
         } else if (todObject instanceof ObjectId) {
             IObjectInspector inspector = logBrowser.createObjectInspector((ObjectId)todObject);
@@ -186,13 +174,28 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
                 result = new TODArrayMirror(this, inspector);
             } else if (Reflection.isAssignableFrom(threadClass, type)) {
                 result = new TODThreadMirror(this, inspector);
+            } else if (type.getClassName().equals(Class.class.getName())) {
+                // Read the class name out of the instance variable
+                TODInstanceMirror asInstance = new TODInstanceMirror(this, inspector);
+                InstanceMirror nameMirror;
+                try {
+                    nameMirror = (InstanceMirror)asInstance.get(type.getDeclaredField("name"));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+                String name = Reflection.getRealStringForMirror(nameMirror);
+                Type asmType = Reflection.typeForClassName(name);
+                if (asmType.getSort() == Type.OBJECT || asmType.getSort() == Type.ARRAY) {
+                    // TODO-RS: Again, TOD doesn't support multiple class loaders properly.
+                    result = findBootstrapClassMirror(name);
+                } else {
+                    result = getPrimitiveClass(name);
+                }
             } else {
                 result = new TODInstanceMirror(this, inspector);
             }
         } else if (todObject instanceof IThreadInfo) {
             result = new TODThreadMirror(this, (IThreadInfo)todObject);
-//            // Shouldn't happen
-//            throw new InternalError();
         } else {
             throw new IllegalArgumentException("Unrecognized object type: " + todObject.getClass());
         }
@@ -259,7 +262,7 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public ClassMirror getPrimitiveClass(String name) {
         Type primitiveType = Reflection.typeForClassName(name);
-        return makeClassMirror(logBrowser.getStructureDatabase().getClass(primitiveType.getDescriptor(), false));
+        return makeClassMirror(logBrowser.getStructureDatabase().getType(primitiveType.getDescriptor(), false));
     }
 
     @Override

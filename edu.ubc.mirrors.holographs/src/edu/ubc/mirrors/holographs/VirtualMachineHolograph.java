@@ -155,19 +155,15 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         this.hologramBootstrapLoader = new HologramClassLoader(this, null);
         this.mappedFiles = mappedFiles;
         
-        if (!wrappedVM.canGetBytecodes()) {
-            List<URL> bootstrapPath = extractBootstrapPath(wrappedVM);
-            List<URL> filteredURLs = new ArrayList<URL>();
-            for (URL url : bootstrapPath) {
-                // Ignore invalid paths as the VM would
-                if (new FileURLMapper(url).exists()) {
-            	filteredURLs.add(url);
-                }
+        List<URL> bootstrapPath = extractBootstrapPath(wrappedVM);
+        List<URL> filteredURLs = new ArrayList<URL>();
+        for (URL url : bootstrapPath) {
+            // Ignore invalid paths as the VM would
+            if (new FileURLMapper(url).exists()) {
+        	filteredURLs.add(url);
             }
-            this.bootstrapBytecodeLoader = new SandboxedClassLoader(filteredURLs.toArray(new URL[filteredURLs.size()]));
-        } else {
-            this.bootstrapBytecodeLoader = null;
         }
+        this.bootstrapBytecodeLoader = new SandboxedClassLoader(filteredURLs.toArray(new URL[filteredURLs.size()]));
         
         // Start a thread dedicated to debugging, so the debugger has something to
         // execute mirror interface methods on without messing up the rest of the VM.
@@ -487,6 +483,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     static final Set<String> getBytecodeFailures = new TreeSet<String>();
     
     public byte[] getBytecode(ClassMirror holographClass) {
+        if (wrappedVM.canGetBytecodes()) {
+            return holographClass.getBytecode();
+        }
+        
         byte[] result;
         // Check any plugins first.
         // TODO-RS: It probably makes sense to move the "load the matching resource"

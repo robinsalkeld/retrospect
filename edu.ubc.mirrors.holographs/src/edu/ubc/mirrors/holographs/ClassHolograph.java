@@ -248,7 +248,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         
     public MethodMirror getDeclaredMethod(String name, String... paramTypeNames) throws SecurityException, NoSuchMethodException {
         try {
-            return super.getMethod(name, paramTypeNames);
+            return super.getDeclaredMethod(name, paramTypeNames);
         } catch (UnsupportedOperationException e) {
             return new MethodHolograph(this, getBytecodeMirror().getDeclaredMethod(name, paramTypeNames));
         }
@@ -817,9 +817,9 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     
     @Override
     public ClassMirror getEnclosingClassMirror() {
-        if (hasBytecode()) {
+        try {
             return super.getEnclosingClassMirror();
-        } else {
+        } catch (UnsupportedOperationException e) {
             return getBytecodeMirror().getEnclosingClassMirror();
         }
     }
