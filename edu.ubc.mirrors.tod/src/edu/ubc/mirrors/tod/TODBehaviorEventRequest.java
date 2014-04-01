@@ -29,10 +29,18 @@ public abstract class TODBehaviorEventRequest extends TODMirrorEventRequest {
     @Override
     protected IEventBrowser createEventBrowser() {
         IEventFilter filter;
-        if (behaviorInfo != null) {
-            filter = vm.getLogBrowser().createBehaviorCallFilter(behaviorInfo);
+        if (matchExits()) {
+            if (behaviorInfo != null) {
+                filter = vm.getLogBrowser().createBehaviorExitFilter(behaviorInfo);
+            } else {
+                filter = vm.getLogBrowser().createBehaviorExitFilter();
+            }
         } else {
-            filter = vm.getLogBrowser().createBehaviorCallFilter();
+            if (behaviorInfo != null) {
+                filter = vm.getLogBrowser().createBehaviorCallFilter(behaviorInfo);
+            } else {
+                filter = vm.getLogBrowser().createBehaviorCallFilter();
+            }
         }
         IEventPredicate predicate = new BehaviorEventPredicate(behaviorInfo, matchConstructors(), matchExits(), 
                 classNameFilters, classFilters);
