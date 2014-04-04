@@ -147,4 +147,9 @@ public class InflaterStubs extends NativeStubs {
         
         return (Long) ZipFileStubs.getHostNativeMethod(Inflater.class, "getBytesWritten", long.class).invoke(null, hostAddress);
     }
+    
+    @StubMethod
+    public void initIDs() {
+        // No-op
+    }
 }

@@ -27,6 +27,7 @@ import java.util.Map;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.browser.IObjectInspector.FieldEntryInfo;
 import tod.core.database.browser.IObjectInspector.IEntryInfo;
+import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IFieldInfo;
 import edu.ubc.mirrors.BoxingInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -37,6 +38,7 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
 
     protected final TODVirtualMachineMirror vm;
     private final IObjectInspector inspector;
+    private ILogEvent referenceEvent;
     private final Map<IFieldInfo, IEntryInfo> entries = new HashMap<IFieldInfo, IEntryInfo>();
     
     public TODInstanceMirror(TODVirtualMachineMirror vm, IObjectInspector inspector) {
@@ -75,8 +77,11 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
 
     @Override
     public Object getBoxedValue(FieldMirror field) throws IllegalAccessException {
-        // TODO-RS: Only do this when the VM actually changes events!
-        inspector.setReferenceEvent(vm.requestManager.currentLogEvent());
+        ILogEvent currentLogEvent = vm.requestManager.currentLogEvent();
+        if (!currentLogEvent.equals(referenceEvent)) {
+            inspector.setReferenceEvent(currentLogEvent);
+            referenceEvent = currentLogEvent;
+        }
         
         IFieldInfo fieldInfo = ((TODFieldMirror)field).field;
         IEntryInfo entry = entries.get(fieldInfo);

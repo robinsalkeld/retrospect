@@ -233,4 +233,14 @@ public class ZipFileStubs extends NativeStubs {
         
         return (ByteArrayMirror)Reflection.copyArray(getVM(), (ArrayMirror)NativeInstanceMirror.makeMirror(result));
     }
+    
+    @StubMethod
+    public boolean startsWithLOC(long jzentry) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        return (Boolean)getHostNativeMethod(ZipFile.class, "startsWithLOC", Long.TYPE).invoke(null, jzentry);
+    }
+    
+    @StubMethod
+    public void initIDs() {
+        // No-op
+    }
 }

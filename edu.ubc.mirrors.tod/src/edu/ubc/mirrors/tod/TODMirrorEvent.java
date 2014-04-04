@@ -17,6 +17,21 @@ public abstract class TODMirrorEvent implements MirrorEvent {
         this.event = event;
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof TODMirrorEvent)) {
+            return false;
+        }
+        
+        TODMirrorEvent other = (TODMirrorEvent)obj;
+        return vm.equals(other.vm) && event.equals(other.event);
+    }
+    
+    @Override
+    public int hashCode() {
+        return 37 * vm.hashCode() * vm.hashCode();
+    }
+    
     public ThreadMirror thread() {
         return vm.makeThreadMirror(event.getThread());
     }

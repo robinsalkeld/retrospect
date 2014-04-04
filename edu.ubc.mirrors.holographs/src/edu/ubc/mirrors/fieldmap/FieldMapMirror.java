@@ -41,4 +41,9 @@ public class FieldMapMirror extends BlankInstanceMirror implements NewInstanceMi
     public int identityHashCode() {
         return hashCode();
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " : " + getClassMirror();
+    }
 }

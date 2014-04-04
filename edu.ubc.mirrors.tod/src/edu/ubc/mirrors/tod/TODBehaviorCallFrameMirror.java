@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.tod;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.database.event.IBehaviorCallEvent;
@@ -47,14 +48,16 @@ public class TODBehaviorCallFrameMirror implements FrameMirror {
 
     @Override
     public InstanceMirror thisObject() {
-        // TODO Auto-generated method stub
-        return null;
+        return (InstanceMirror)vm.makeMirror(event.getTarget());
     }
 
     @Override
     public List<Object> arguments() {
-        // TODO Auto-generated method stub
-        return null;
+        List<Object> args = new ArrayList<Object>();
+        for (Object arg : event.getArguments()) {
+            args.add(vm.makeMirror(arg));
+        }
+        return args;
     }
 
 }

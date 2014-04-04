@@ -39,6 +39,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;

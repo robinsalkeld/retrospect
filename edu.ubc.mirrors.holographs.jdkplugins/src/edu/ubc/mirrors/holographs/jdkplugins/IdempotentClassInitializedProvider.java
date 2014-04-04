@@ -46,12 +46,6 @@ public class IdempotentClassInitializedProvider implements ClassMirrorInitialize
         if (idempotentClassInits.contains(classMirror.getClassName())) {
             return false;
         }
-        
-        // This one tries to load a native library, which I don't want to have to support
-        // (especially since it will just end up being a no-op anyway).
-//        if (classMirror.getClassName().equals("java.net.AbstractPlainSocketImpl")) {
-//            return true;
-//        }
 
         return null;
     }

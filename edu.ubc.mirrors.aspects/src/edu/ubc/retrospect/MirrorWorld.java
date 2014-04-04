@@ -82,7 +82,7 @@ public class MirrorWorld extends World {
         }
     };
     
-    public MirrorWorld(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread, IMessageHandler messageHandler) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+    public MirrorWorld(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
         this.loader = loader;
         this.thread = thread;
@@ -91,7 +91,11 @@ public class MirrorWorld extends World {
         this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
         this.pointcutAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(org.aspectj.lang.annotation.Pointcut.class), false, loader);
         
-        setMessageHandler(messageHandler);
+        if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
+            setMessageHandler(IMessageHandler.SYSTEM_ERR);
+        } else {
+            setMessageHandler(new DefaultMessageHandler());
+        }
         
         // These ones just have to be loaded because they are argument types in some of the factory methods
         Reflection.classMirrorForType(vm, thread, Type.getType(SourceLocation.class), true, loader);
@@ -355,14 +359,18 @@ public class MirrorWorld extends World {
                     showMessage(IMessage.DEBUG, "Installing event requests for advice: " + advice, null, null);
                     PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice, new Callback<MirrorEventShadow>() {
                         public void handle(MirrorEventShadow shadow) {
-                            if (shadow.getDeclaringClass().getLoader() == null) {
-                                return;
-                            }
-
-                            // TODO-RS: This is specified in the documentation for loadtime weaving,
-                            // so this check is probably already coded somewhere in the weaving library...
-                            if (shadow.getDeclaringClass().getClassName().startsWith("org.aspectj.")) {
-                                return;
+                            // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)
+                            // See also: http://www.eclipse.org/aspectj/doc/released/devguide/ltw-specialcases.html
+                            if (!Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses")) {
+                                // TODO-RS: This is specified in the documentation for loadtime weaving,
+                                // so this check is probably already coded somewhere in the weaving library...
+                                String declaringClassName = shadow.getDeclaringClass().getClassName();
+                                if (declaringClassName.startsWith("org.aspectj.") || 
+                                    declaringClassName.startsWith("java.") || 
+                                    declaringClassName.startsWith("javax.") ||
+                                    declaringClassName.startsWith("sun.reflect.")) {
+                                    return;
+                                }
                             }
                             
                             joinpointShadowsTL.get().add(shadow);
@@ -373,7 +381,8 @@ public class MirrorWorld extends World {
                 
                 vm.dispatch().addSetCallback(new Runnable() {
                     public void run() {
-                        for (MirrorEventShadow shadow : joinpointShadowsTL.get()) {
+                        Set<MirrorEventShadow> shadowSet = joinpointShadowsTL.get();
+                        for (MirrorEventShadow shadow : shadowSet) {
                             showMessage(IMessage.DEBUG, shadow.toString(), null, null);
                             for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
                                 if (munger.match(shadow, MirrorWorld.this)) {
@@ -382,7 +391,7 @@ public class MirrorWorld extends World {
                             }
                             shadow.implement();
                         }
-                        joinpointShadowsTL.get().clear();
+                        shadowSet.clear();
                     }
                 });
                 

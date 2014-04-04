@@ -71,7 +71,9 @@ public class ThrowableStubs extends NativeStubs {
     
     private StackTraceElement[] getNativeStack(InstanceMirror throwable) {
 	try {
-	    return (StackTraceElement[])throwable.getClass().getMethod("superGetStackTrace").invoke(throwable);
+	    // TODO-RS: The abstraction leaks a bit here since Throwable is a tricky special case.
+            Object hologram = ObjectHologram.make(throwable);
+	    return (StackTraceElement[])hologram.getClass().getMethod("superGetStackTrace").invoke(hologram);
 	} catch (IllegalAccessException e) {
 	    throw new IllegalAccessError(e.getMessage());
 	} catch (InvocationTargetException e) {

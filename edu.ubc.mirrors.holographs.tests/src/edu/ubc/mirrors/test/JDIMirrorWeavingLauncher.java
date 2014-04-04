@@ -60,7 +60,7 @@ public class JDIMirrorWeavingLauncher {
         System.out.println("Creating class loader for aspects...");
         final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, null, new URL[] {urlPath, aspectRuntimeJar});
         
-        MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread, IMessageHandler.SYSTEM_ERR);
+        MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
         world.weave();
         
         vm.dispatch().start();
