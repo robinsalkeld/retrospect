@@ -23,6 +23,7 @@ package edu.ubc.mirrors.wrapping;
 
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingMirrorEvent implements MirrorEvent {
 
@@ -37,6 +38,11 @@ public class WrappingMirrorEvent implements MirrorEvent {
     @Override
     public MirrorEventRequest request() {
 	return (MirrorEventRequest)wrapped.request().getProperty(WrappingMirrorEventRequest.WRAPPER);
+    }
+    
+    @Override
+    public ThreadMirror thread() {
+        return (ThreadMirror)vm.getWrappedMirror(wrapped.thread());
     }
     
     @Override

@@ -25,6 +25,7 @@ import com.sun.jdi.event.ClassPrepareEvent;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorPrepareEvent;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIClassMirrorPrepareEvent extends JDIMirrorEvent implements ClassMirrorPrepareEvent {
 
@@ -38,5 +39,10 @@ public class JDIClassMirrorPrepareEvent extends JDIMirrorEvent implements ClassM
     @Override
     public ClassMirror classMirror() {
 	return vm.makeClassMirror(wrapped.referenceType());
+    }
+    
+    @Override
+    public ThreadMirror thread() {
+        return (ThreadMirror)vm.makeMirror(wrapped.thread());
     }
 }

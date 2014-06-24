@@ -36,6 +36,7 @@ import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventSet;
 import edu.ubc.mirrors.MirrorLocationEvent;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingMirrorEventSet implements MirrorEventSet {
 
@@ -192,6 +193,11 @@ public class WrappingMirrorEventSet implements MirrorEventSet {
      */
     public <T> T[] toArray(T[] a) {
 	return wrappedSet().toArray(a);
+    }
+    
+    @Override
+    public ThreadMirror thread() {
+        return (ThreadMirror)vm.getWrappedMirror(wrapped.thread());
     }
     
     @Override

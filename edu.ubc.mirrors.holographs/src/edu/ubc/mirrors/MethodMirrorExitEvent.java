@@ -25,4 +25,5 @@ public interface MethodMirrorExitEvent extends MirrorEvent {
 
     public ThreadMirror thread();
     public MethodMirror method();
+    public Object returnValue();
 }

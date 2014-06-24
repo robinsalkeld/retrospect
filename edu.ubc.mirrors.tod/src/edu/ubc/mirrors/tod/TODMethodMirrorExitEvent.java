@@ -17,4 +17,9 @@ public class TODMethodMirrorExitEvent extends TODMirrorEvent implements MethodMi
     public MethodMirror method() {
         return vm.makeMethodMirror(logEvent.getOperationBehavior());
     }
+    
+    @Override
+    public Object returnValue() {
+        return vm.wrapValue(method().getReturnType(), logEvent.getResult());
+    }
 }

@@ -21,6 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors.wrapping;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.ThreadMirror;
@@ -42,5 +45,19 @@ public class WrappingMethodMirrorEntryEvent extends WrappingMirrorEvent implemen
     @Override
     public MethodMirror method() {
 	return vm.wrapMethod(wrapped.method());
+    }
+    
+    @Override
+    public List<Object> arguments() {
+        List<Object> result = new ArrayList<Object>();
+        for (Object a : wrapped.arguments()) {
+            result.add(vm.wrapValue(a));
+        }
+        return result;
+    }
+    
+    @Override
+    public void skip(Object returnValue) {
+        wrapped.skip(vm.unwrappedValue(returnValue));
     }
 }

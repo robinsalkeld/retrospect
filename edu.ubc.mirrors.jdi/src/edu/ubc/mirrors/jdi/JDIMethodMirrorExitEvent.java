@@ -46,6 +46,11 @@ public class JDIMethodMirrorExitEvent extends JDIMirrorEvent implements MethodMi
         return new JDIMethodMirror(vm, wrapped.method());
     }
     
+    @Override
+    public Object returnValue() {
+        return vm.wrapValue(wrapped.returnValue());
+    }
+    
     public static JDIMethodMirrorExitEvent wrap(JDIVirtualMachineMirror vm, MethodExitEvent mee) {
 	JDIMethodMirrorExitEvent result = new JDIMethodMirrorExitEvent(vm, mee);
 	Object request = mee.request().getProperty(JDIEventRequest.MIRROR_WRAPPER);

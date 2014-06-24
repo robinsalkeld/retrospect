@@ -26,4 +26,5 @@ import java.util.Set;
 public interface MirrorEventSet extends Set<MirrorEvent> {
 
     public void resume();
+    public ThreadMirror thread();
 }

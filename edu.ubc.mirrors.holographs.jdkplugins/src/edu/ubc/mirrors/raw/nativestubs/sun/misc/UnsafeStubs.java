@@ -183,7 +183,7 @@ public class UnsafeStubs extends NativeStubs {
     @StubMethod
     public long objectFieldBaseOffset() {
         // TODO-RS: Actually figure out dynamically.
-        return 12;
+        return 16;
     }
     
     @StubMethod

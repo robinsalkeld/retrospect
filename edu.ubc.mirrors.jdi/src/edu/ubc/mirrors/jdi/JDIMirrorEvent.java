@@ -26,7 +26,7 @@ import com.sun.jdi.event.Event;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 
-public class JDIMirrorEvent extends JDIMirror implements MirrorEvent {
+public abstract class JDIMirrorEvent extends JDIMirror implements MirrorEvent {
 
     private final Event wrapped;
     

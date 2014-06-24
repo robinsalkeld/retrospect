@@ -106,8 +106,11 @@ public class EventDispatch {
 	MirrorEventQueue q = vm.eventQueue();
 	MirrorEventSet eventSet = q.remove();
 	while (eventSet != null) {
-	    new SetCallbackThread(eventSet).start();
-	    
+	    for (MirrorEvent event : eventSet) {
+                handleEvent(event);
+            }
+            handleSetEvent(eventSet);
+            
 	    eventSet = q.remove();
 	}
     }

@@ -1,6 +1,7 @@
 package edu.ubc.retrospect;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.aspectj.bridge.ISourceLocation;
 import org.aspectj.lang.JoinPoint;
@@ -24,11 +25,28 @@ import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
-public abstract class MirrorEventShadow extends Shadow {
+/**
+ * Adapting a runtime event as a shadow. This is a somewhat degenerate but valid
+ * interpretation of shadows, in that they are one-to-one with individual ranges of
+ * runtime events instead of one-to-many.
+ * 
+ * These shadows are actually "executable", in that they expose a proceed method.
+ * To allow VMs that do not support behavioural intersession, if proceed is invoked exactly
+ * once with the same arguments as the event the implementation will resume until
+ * the matching event that delimits the end of the shadow occurs.
+ * 
+ * Weaving at this kind of shadow translates into actually executing the applicable
+ * advice.
+ * 
+ * @author robinsalkeld
+ */
+public abstract class MirrorEventShadow extends Shadow implements ProceedContinuation {
 
     protected final MirrorWorld world;
     protected final MirrorEvent event;
     private MirrorEvaluator evaluator;
+    
+    private boolean alreadyProceeded = false;
     
     public static final Object SHADOW_KIND_PROPERTY_KEY = new Object();
     public static final Object IS_ENTRY_PROPERTY_KEY = new Object();
@@ -126,19 +144,17 @@ public abstract class MirrorEventShadow extends Shadow {
         
         if (event instanceof ConstructorMirrorEntryEvent) {
             ConstructorMirrorEntryEvent cmee = (ConstructorMirrorEntryEvent)event;
-            Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
-            return new ConstructorMirrorEntryShadow(world, cmee, signature, null);
+            return new ConstructorMirrorExecutionShadow(world, cmee, null);
         } else if (event instanceof ConstructorMirrorExitEvent) {
             ConstructorMirrorExitEvent cmee = (ConstructorMirrorExitEvent)event;
-            Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
-            return new ConstructorMirrorExitShadow(world, cmee, signature, null);
+            return new ConstructorMirrorExecutionShadow(world, cmee, null);
         } else if (event instanceof MethodMirrorEntryEvent) {
             MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
             if (shadowKind == Shadow.SynchronizationLock) {
                 return new SynchronizedMethodMirrorEntryShadow(world, mmee, null);
             } else {
                 Member signature = MethodMirrorMember.make(world, mmee.method());
-                return new MethodMirrorEntryShadow(world, mmee, signature, null);
+                return new MethodMirrorExecutionShadow(world, mmee, null);
             }
         } else if (event instanceof MethodMirrorExitEvent) {
             MethodMirrorExitEvent mmee = (MethodMirrorExitEvent)event;
@@ -146,7 +162,7 @@ public abstract class MirrorEventShadow extends Shadow {
                 return new SynchronizedMethodMirrorExitShadow(world, mmee, null);
             } else {
                 Member signature = MethodMirrorMember.make(world, mmee.method());
-                return new MethodMirrorExitShadow(world, mmee, signature, null);
+                return new MethodMirrorExecutionShadow(world, mmee, null);
             }
         } else if (event instanceof FieldMirrorGetEvent) {
             FieldMirrorGetEvent fmge = (FieldMirrorGetEvent)event;
@@ -233,6 +249,18 @@ public abstract class MirrorEventShadow extends Shadow {
     public Var getThisAspectInstanceVar(ResolvedType aspectType) {
         return null;
     }
+    
+    @Override
+    public Object proceed(List<Object> arguments) {
+        if (alreadyProceeded) {
+            return proceedManually(arguments);
+        } else {
+            // TODO-RS: Wait for matching end event
+            throw new UnsupportedOperationException();
+        }
+    }
+    
+    protected abstract Object proceedManually(List<Object> arguments);
     
     @Override
     public String toString() {

@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.List;
+
 import com.sun.jdi.event.MethodEntryEvent;
 
 import edu.ubc.mirrors.MethodMirror;
@@ -46,6 +48,11 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
         return new JDIMethodMirror(vm, wrapped.method());
     }
     
+    @Override
+    public List<Object> arguments() {
+        return thread().getStackTrace().get(0).arguments();
+    }
+    
     public static JDIMethodMirrorEntryEvent wrap(JDIVirtualMachineMirror vm, MethodEntryEvent wrapped) {
 	Object request = wrapped.request().getProperty(JDIEventRequest.MIRROR_WRAPPER);
 	if (!(request instanceof JDIMethodMirrorEntryRequest)) {
@@ -58,5 +65,10 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
 	    return null;
 	}
 	return result;
+    }
+    
+    @Override
+    public void skip(Object returnValue) {
+        throw new UnsupportedOperationException();
     }
 }

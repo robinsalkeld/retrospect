@@ -80,7 +80,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         }
     };
     
-    public PointcutMirrorRequestExtractor(MirrorWorld world, Advice advice, Callback<MirrorEventShadow> callback) {
+    private PointcutMirrorRequestExtractor(MirrorWorld world, Advice advice, Callback<MirrorEventShadow> callback) {
         this.advice = advice;
         this.world = world;
         this.callback = callback;

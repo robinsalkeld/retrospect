@@ -43,4 +43,9 @@ public class WrappingMethodMirrorExitEvent extends WrappingMirrorEvent implement
     public MethodMirror method() {
 	return vm.wrapMethod(wrapped.method());
     }
+    
+    @Override
+    public Object returnValue() {
+        return vm.wrapValue(wrapped.returnValue());
+    }
 }

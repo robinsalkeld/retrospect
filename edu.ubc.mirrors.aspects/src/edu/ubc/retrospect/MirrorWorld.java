@@ -81,6 +81,7 @@ public class MirrorWorld extends World {
             return new HashSet<MirrorEventShadow>();
         }
     };
+    private final Map<ThreadMirror, MirrorAdviceThread> adviceThreads = new HashMap<ThreadMirror, MirrorAdviceThread>();
     
     public MirrorWorld(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
@@ -333,6 +334,16 @@ public class MirrorWorld extends World {
         }
     }
     
+    private MirrorAdviceThread getAdviceThread(ThreadMirror thread) {
+        MirrorAdviceThread result = adviceThreads.get(thread);
+        if (result == null) {
+            result = new MirrorAdviceThread(this);
+            adviceThreads.put(thread, result);
+            result.start();
+        }
+        return result;
+    }
+    
     public void weave() throws ClassNotFoundException, NoSuchMethodException, InterruptedException, MirrorInvocationTargetException {
         Reflection.withThread(thread, new Callable<Void>() {
             @Override
@@ -383,13 +394,8 @@ public class MirrorWorld extends World {
                     public void run() {
                         Set<MirrorEventShadow> shadowSet = joinpointShadowsTL.get();
                         for (MirrorEventShadow shadow : shadowSet) {
-                            showMessage(IMessage.DEBUG, shadow.toString(), null, null);
-                            for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
-                                if (munger.match(shadow, MirrorWorld.this)) {
-                                    shadow.addMunger(munger);
-                                }
-                            }
-                            shadow.implement();
+                            MirrorAdviceThread thread = getAdviceThread(shadow.getThread());
+                            thread.addShadow(shadow);
                         }
                         shadowSet.clear();
                     }

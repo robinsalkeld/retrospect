@@ -1,5 +1,7 @@
 package edu.ubc.retrospect;
 
+import java.util.List;
+
 import org.aspectj.weaver.MemberImpl;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
@@ -81,5 +83,10 @@ public class MirrorMonitorEnterShadow extends MirrorEventShadow {
     @Override
     protected InstanceMirror getThisJoinPointStaticPart() {
         return world.makeSynchronizationStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.SYNCHRONIZATION_LOCK, monitor);
+    }
+    
+    @Override
+    public Object proceedManually(List<Object> arguments) {
+        throw new UnsupportedOperationException();
     }
 }

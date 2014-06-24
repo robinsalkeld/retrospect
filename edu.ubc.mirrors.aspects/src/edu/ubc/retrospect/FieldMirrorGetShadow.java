@@ -1,10 +1,14 @@
 package edu.ubc.retrospect;
 
+import java.lang.reflect.Modifier;
+import java.util.List;
+
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetEvent;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -56,5 +60,24 @@ public class FieldMirrorGetShadow extends MirrorEventShadow {
     @Override
     protected InstanceMirror getThisJoinPointStaticPart() {
         return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.FIELD_GET, event.field());
+    }
+    
+    @Override
+    public Object proceed(List<Object> arguments) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public Object proceedManually(List<Object> arguments) {
+        try {
+            FieldMirror field = event.field();
+            if (Modifier.isStatic(field.getModifiers())) {
+                return field.getDeclaringClass().getStaticFieldValues().get(field);
+            } else {
+                return getThis().get(field);
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

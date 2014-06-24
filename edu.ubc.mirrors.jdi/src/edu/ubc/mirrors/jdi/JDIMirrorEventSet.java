@@ -37,11 +37,12 @@ import com.sun.jdi.event.ModificationWatchpointEvent;
 
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventSet;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
 
     private final EventSet eventSet;
-
+    
     public JDIMirrorEventSet(JDIVirtualMachineMirror vm, EventSet eventSet) {
 	super(vm, eventSet);
 	this.eventSet = eventSet;
@@ -208,6 +209,19 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      */
     public <T> T[] toArray(T[] a) {
 	return toMirrorSet().toArray(a);
+    }
+    
+    @Override
+    public ThreadMirror thread() {
+        ThreadMirror result = null;
+        for (MirrorEvent event : toMirrorSet()) {
+            if (result == null) {
+                result = event.thread();
+            } else if (!result.equals(event.thread())) {
+                throw new IllegalStateException("Wrong thread");
+            }
+        }
+        return result;
     }
     
     @Override

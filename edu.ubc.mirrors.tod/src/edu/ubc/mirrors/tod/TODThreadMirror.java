@@ -1,7 +1,6 @@
 package edu.ubc.mirrors.tod;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import tod.core.database.browser.IEventBrowser;
@@ -12,10 +11,8 @@ import tod.core.database.event.IBehaviorCallEvent;
 import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IThreadInfo;
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class TODThreadMirror extends TODInstanceMirror implements ThreadMirror {

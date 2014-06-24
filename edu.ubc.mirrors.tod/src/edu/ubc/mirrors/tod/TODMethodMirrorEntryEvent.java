@@ -1,6 +1,13 @@
 package edu.ubc.mirrors.tod;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.jdt.internal.compiler.ISourceElementRequestor.TypeInfo;
+
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.structure.ITypeInfo;
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 
@@ -16,5 +23,21 @@ public class TODMethodMirrorEntryEvent extends TODMirrorEvent implements MethodM
     @Override
     public MethodMirror method() {
         return vm.makeMethodMirror(logEvent.getExecutedBehavior());
+    }
+    
+    @Override
+    public List<Object> arguments() {
+        List<Object> result = new ArrayList<Object>();
+        List<ClassMirror> argTypes = method().getParameterTypes();
+        Object[] logArgs = logEvent.getArguments();
+        for (int i = 0; i < logArgs.length; i++) {
+            result.add(vm.wrapValue(argTypes.get(i), logArgs[i]));
+        }
+        return result;
+    }
+    
+    @Override
+    public void skip(Object returnValue) {
+        throw new UnsupportedOperationException();
     }
 }
