@@ -158,9 +158,14 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         List<URL> bootstrapPath = extractBootstrapPath(wrappedVM);
         List<URL> filteredURLs = new ArrayList<URL>();
         for (URL url : bootstrapPath) {
+        	URL mappedURL = getMappedURL(url);
+        	if (mappedURL == null) {
+        		continue;
+        	}
+        	
             // Ignore invalid paths as the VM would
             if (new FileURLMapper(url).exists()) {
-        	filteredURLs.add(url);
+            	filteredURLs.add(url);
             }
         }
         this.bootstrapBytecodeLoader = new SandboxedClassLoader(filteredURLs.toArray(new URL[filteredURLs.size()]));
@@ -370,6 +375,19 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         } else {
             return null;
         }
+    }
+    
+    public URL getMappedURL(URL mirrorURL) {
+    	if (mirrorURL.getProtocol().equals("file")) {
+    		try {
+				File mappedFile = getMappedFile(new File(mirrorURL.getPath()), false);
+				return new URL(mirrorURL, mappedFile.getPath());
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
+			}
+    	} else {
+    		return null;
+    	}
     }
     
     public Inflater getHostInflator(long address) {

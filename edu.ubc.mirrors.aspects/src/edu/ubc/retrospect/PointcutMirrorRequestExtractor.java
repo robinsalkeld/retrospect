@@ -80,7 +80,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         }
     };
     
-    private PointcutMirrorRequestExtractor(MirrorWorld world, Advice advice, Callback<MirrorEventShadow> callback) {
+    public PointcutMirrorRequestExtractor(MirrorWorld world, Advice advice, Callback<MirrorEventShadow> callback) {
         this.advice = advice;
         this.world = world;
         this.callback = callback;
@@ -129,21 +129,22 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     
     private void installIfNotBelowAnd(Object parent) {
         if (!(parent instanceof AndPointcut)) {
+            AdviceKind adviceKind = advice.getKind();
             for (final Shadow.Kind kind : Shadow.toSet(kinds)) {
                 switch (kind.bit) {
                 case (Shadow.MethodExecutionBit):
-                    if (!advice.getKind().isAfter() || advice.getKind().isCflow()) {
+                    if (!adviceKind.isAfter() || adviceKind.isCflow()) {
                         addFiltersAndInstall(manager.createMethodMirrorEntryRequest(), thisFilters);
                     }
-                    if (advice.getKind().isAfter() || advice.getKind().isCflow()) {
+                    if (adviceKind.isAfter() || adviceKind == AdviceKind.Around || adviceKind.isCflow()) {
                         addFiltersAndInstall(manager.createMethodMirrorExitRequest(), thisFilters);
                     }
                     break;
                 case (Shadow.ConstructorExecutionBit):
-                    if (!advice.getKind().isAfter() || advice.getKind().isCflow()) {
+                    if (!adviceKind.isAfter() || adviceKind.isCflow()) {
                         addFiltersAndInstall(manager.createConstructorMirrorEntryRequest(), thisFilters);
                     }
-                    if (advice.getKind().isAfter() || advice.getKind().isCflow()) {
+                    if (adviceKind.isAfter() || adviceKind == AdviceKind.Around || adviceKind.isCflow()) {
                         addFiltersAndInstall(manager.createConstructorMirrorExitRequest(), thisFilters);
                     }
                     break;

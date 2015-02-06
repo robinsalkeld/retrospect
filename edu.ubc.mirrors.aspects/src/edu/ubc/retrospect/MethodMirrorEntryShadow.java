@@ -1,28 +1,27 @@
 package edu.ubc.retrospect;
 
-import org.aspectj.weaver.MemberImpl;
+import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
-import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirrorExitEvent;
+import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class SynchronizedMethodMirrorExitShadow extends MirrorEventShadow {
+public class MethodMirrorEntryShadow extends MirrorEventShadow {
 
-    private final MethodMirrorExitEvent event;
+    private final MethodMirrorEntryEvent event;
     
-    protected SynchronizedMethodMirrorExitShadow(MirrorWorld world, MethodMirrorExitEvent event, Shadow enclosingShadow) {
-        super(world, event, Shadow.SynchronizationUnlock, MemberImpl.monitorExit(), enclosingShadow);
+    protected MethodMirrorEntryShadow(MirrorWorld world, MethodMirrorEntryEvent event, Member signature, Shadow enclosingShadow) {
+        super(world, event, Shadow.MethodExecution, signature, enclosingShadow);
         this.event = event;
     }
 
     @Override
     protected boolean equals(MirrorEventShadow other) {
-        SynchronizedMethodMirrorExitShadow shadow = (SynchronizedMethodMirrorExitShadow)other;
+        MethodMirrorEntryShadow shadow = (MethodMirrorEntryShadow)other;
         return event.method().equals(shadow.event.method());
     }
     
@@ -33,7 +32,7 @@ public class SynchronizedMethodMirrorExitShadow extends MirrorEventShadow {
     
     @Override
     public boolean isEntry() {
-        return false;
+        return true;
     }
     
     @Override
@@ -43,7 +42,7 @@ public class SynchronizedMethodMirrorExitShadow extends MirrorEventShadow {
     
     @Override
     public Var getThisVar() {
-        return new MirrorEventVar(world.resolve(getDeclaringClass()), getThis());
+        return new MirrorEventVar(world.resolve(event.method().getDeclaringClass()), getThis());
     }
 
     @Override
@@ -53,20 +52,17 @@ public class SynchronizedMethodMirrorExitShadow extends MirrorEventShadow {
 
     @Override
     public int getArgCount() {
-        return 1;
+        return event.method().getParameterTypes().size();
     }
     
     @Override
     public Var getArgVar(int i) {
-        return new MirrorEventVar(getArgType(i), getThis());
+        return new MirrorEventVar(getArgType(i), getArgument(i));
     }
     
     @Override
     public ResolvedType getArgType(int arg) {
-        if (arg != 0) {
-            throw new IllegalArgumentException();
-        }
-        return world.resolve(UnresolvedType.OBJECT);
+        return world.resolve(event.method().getParameterTypes().get(arg));
     }
     
     @Override
@@ -76,6 +72,6 @@ public class SynchronizedMethodMirrorExitShadow extends MirrorEventShadow {
     
     @Override
     protected InstanceMirror getThisJoinPointStaticPart() {
-        return world.makeSynchronizationStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.SYNCHRONIZATION_UNLOCK, getThis());
+        return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.METHOD_EXECUTION, event.method());
     }
 }

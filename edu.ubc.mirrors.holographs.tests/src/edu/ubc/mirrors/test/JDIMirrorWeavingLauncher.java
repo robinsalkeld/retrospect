@@ -44,7 +44,6 @@ public class JDIMirrorWeavingLauncher {
         
         File binDir = new File(aspectPath);
         URL urlPath = binDir.toURI().toURL();
-        URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
         
         System.out.println("Booting up holographic VM...");
 //        // TODO-RS: Cheating for now...
@@ -58,7 +57,8 @@ public class JDIMirrorWeavingLauncher {
         final ThreadMirror finalThread = thread;
         
         System.out.println("Creating class loader for aspects...");
-        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, null, new URL[] {urlPath, aspectRuntimeJar});
+        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, null, 
+        		new URL[] {urlPath, MirrorWorld.aspectRuntimeJar});
         
         MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
         world.weave();

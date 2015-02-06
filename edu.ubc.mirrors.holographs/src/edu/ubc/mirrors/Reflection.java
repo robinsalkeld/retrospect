@@ -500,6 +500,9 @@ public class Reflection {
         String javaHome = (String)System.getProperties().get("java.home");
         mappedFiles.put(javaHome, javaHome);
         
+        String oldDumpsJavaHome = "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre";
+        mappedFiles.put(oldDumpsJavaHome, javaHome);
+        
         String eclipsePlugins = "/Library/Application Support/eclipse/plugins";
         mappedFiles.put(eclipsePlugins, eclipsePlugins);
         

@@ -1,5 +1,6 @@
 package edu.ubc.retrospect;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,7 +61,17 @@ import edu.ubc.mirrors.holographs.ThreadHolograph;
  */
 public class MirrorWorld extends World {
 
-    public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After };
+    public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After, AdviceKind.Around };
+    
+    public static URL aspectRuntimeJar;
+    static {
+    	try {
+    		// TODO-RS: Automatically determine this
+    	    aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.aspects/lib/aspectjrt-1.7.3.jar!/");
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+    }
     
     final VirtualMachineMirror vm;
     final ClassMirrorLoader loader;
@@ -81,7 +92,6 @@ public class MirrorWorld extends World {
             return new HashSet<MirrorEventShadow>();
         }
     };
-    private final Map<ThreadMirror, MirrorAdviceThread> adviceThreads = new HashMap<ThreadMirror, MirrorAdviceThread>();
     
     public MirrorWorld(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
@@ -271,9 +281,18 @@ public class MirrorWorld extends World {
     }
     
     public ClassMirror getAnnotClassMirror(AdviceKind kind) {
-        UnresolvedType signature = kind.equals(AdviceKind.After) ? AjcMemberMaker.AFTER_ANNOTATION : AjcMemberMaker.BEFORE_ANNOTATION;
+        UnresolvedType annotationClass;
+        if (kind.equals(AdviceKind.Before)) {
+            annotationClass = AjcMemberMaker.BEFORE_ANNOTATION;
+        } else if (kind.equals(AdviceKind.After)) {
+            annotationClass = AjcMemberMaker.AFTER_ANNOTATION;
+        } else if (kind.equals(AdviceKind.Around)) {
+            annotationClass = AjcMemberMaker.AROUND_ANNOTATION;
+        } else {
+            throw new IllegalArgumentException();
+        }
         try {
-            return Reflection.classMirrorForType(vm, thread, Type.getType(signature.getSignature()), true, loader);
+            return Reflection.classMirrorForType(vm, thread, Type.getType(annotationClass.getSignature()), true, loader);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         } catch (MirrorInvocationTargetException e) {
@@ -334,16 +353,6 @@ public class MirrorWorld extends World {
         }
     }
     
-    private MirrorAdviceThread getAdviceThread(ThreadMirror thread) {
-        MirrorAdviceThread result = adviceThreads.get(thread);
-        if (result == null) {
-            result = new MirrorAdviceThread(this);
-            adviceThreads.put(thread, result);
-            result.start();
-        }
-        return result;
-    }
-    
     public void weave() throws ClassNotFoundException, NoSuchMethodException, InterruptedException, MirrorInvocationTargetException {
         Reflection.withThread(thread, new Callable<Void>() {
             @Override
@@ -394,8 +403,13 @@ public class MirrorWorld extends World {
                     public void run() {
                         Set<MirrorEventShadow> shadowSet = joinpointShadowsTL.get();
                         for (MirrorEventShadow shadow : shadowSet) {
-                            MirrorAdviceThread thread = getAdviceThread(shadow.getThread());
-                            thread.addShadow(shadow);
+                            showMessage(IMessage.DEBUG, shadow.toString(), null, null);
+                            for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
+                                if (munger.match(shadow, MirrorWorld.this)) {
+                                    shadow.addMunger(munger);
+                                }
+                            }
+                            shadow.implement();
                         }
                         shadowSet.clear();
                     }
