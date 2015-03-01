@@ -28,8 +28,8 @@ import org.objectweb.asm.Opcodes;
 
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.holographs.MirrorInvocationHandler;
 
 public class NativeStubsInvocationHandler implements MirrorInvocationHandler {
 

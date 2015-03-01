@@ -33,9 +33,9 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.holographs.MirrorInvocationHandler;
 import edu.ubc.mirrors.holographs.MirrorInvocationHandlerProvider;
 
 public class NativeStubsProvider implements MirrorInvocationHandlerProvider {

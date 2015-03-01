@@ -28,7 +28,7 @@ public class TracingExampleTest {
         JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
                 "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"", 
                 "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin", 
-                true);
+                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/TracingExampleTest/hologram_classes");
         
         
 //	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);

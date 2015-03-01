@@ -44,12 +44,12 @@ import org.objectweb.asm.util.CheckClassAdapter;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.holographs.MirrorInvocationHandler;
 import edu.ubc.mirrors.holographs.MirrorInvocationHandlerProvider;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.holographs.jdkplugins.JDKNativeStubsProvider;

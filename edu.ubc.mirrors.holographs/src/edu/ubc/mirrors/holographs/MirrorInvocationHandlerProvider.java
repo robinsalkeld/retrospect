@@ -22,6 +22,7 @@
 package edu.ubc.mirrors.holographs;
 
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 
 
 /**

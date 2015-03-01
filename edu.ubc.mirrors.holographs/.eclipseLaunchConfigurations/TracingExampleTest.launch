@@ -7,7 +7,7 @@
 <listEntry value="1"/>
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
-<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/OpenJDK 7"/>
+<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/Java 7 Update 25"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.ubc.mirrors.test.TracingExampleTest"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="edu.ubc.mirrors.holographs.tests"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dedu.ubc.mirrors.mirages.tracepath=${resource_loc:/edu.ubc.mirrors.holographs}/mirage_classes -Dedu.ubc.mirrors.mirages.debug=true -XX:-UseSplitVerifier"/>

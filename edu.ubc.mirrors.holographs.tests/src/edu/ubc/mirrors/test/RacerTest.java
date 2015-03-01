@@ -28,6 +28,6 @@ public class RacerTest {
         JDIMirrorWeavingLauncher.launch("Task", 
                 "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Racer Test/bin\" -DRACER_LOGGING=false", 
                 "/Users/robinsalkeld/Documents/UBC/Code/RacerAJ/bin", 
-                true);
+                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/RacerTest/hologram_classes");
     }
 }

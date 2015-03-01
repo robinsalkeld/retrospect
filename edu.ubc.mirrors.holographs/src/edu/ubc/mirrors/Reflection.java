@@ -501,9 +501,12 @@ public class Reflection {
         mappedFiles.put(javaHome, javaHome);
         
         String oldDumpsJavaHome = "/Library/Java/JavaVirtualMachines/1.7.0.jdk/Contents/Home/jre";
-        mappedFiles.put(oldDumpsJavaHome, javaHome);
+        mappedFiles.put(oldDumpsJavaHome, oldDumpsJavaHome);
         
-        String eclipsePlugins = "/Library/Application Support/eclipse/plugins";
+        String oldDumpsJavaHome2 = "/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/Home/jre";
+        mappedFiles.put(oldDumpsJavaHome2, oldDumpsJavaHome2);
+        
+        String eclipsePlugins = "/Users/robinsalkeld/Documents/UBC/Code/sample eclipse";
         mappedFiles.put(eclipsePlugins, eclipsePlugins);
         
         String extDir = "/System/Library/Java/Extensions/";

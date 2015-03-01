@@ -23,7 +23,7 @@ import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.retrospect.MirrorWorld;
 
 public class JDIMirrorWeavingLauncher {
-    public static void launch(String mainClassName, String options, String aspectPath, boolean holograms) throws Exception {
+    public static void launch(String mainClassName, String options, String aspectPath, String hologramClassPath) throws Exception {
         VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName, options, true, true);
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
@@ -45,13 +45,13 @@ public class JDIMirrorWeavingLauncher {
         File binDir = new File(aspectPath);
         URL urlPath = binDir.toURI().toURL();
         
-        System.out.println("Booting up holographic VM...");
-//        // TODO-RS: Cheating for now...
-        File cachePath = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/RacerTest/hologram_classes");
-        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, cachePath,
-                Collections.singletonMap("/", "/"));
-        vm = vmh;
-        thread = (ThreadMirror)vmh.getWrappedMirror(thread);
+        if (hologramClassPath != null) {
+	        System.out.println("Booting up holographic VM...");
+	        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, new File(hologramClassPath),
+	                Collections.singletonMap("/", "/"));
+	        vm = vmh;
+	        thread = (ThreadMirror)vmh.getWrappedMirror(thread);
+        }
         
         final VirtualMachineMirror finalVM = vm;
         final ThreadMirror finalThread = thread;

@@ -26,7 +26,7 @@ import java.util.Map;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.holographs.MirrorInvocationHandler;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.holographs.MirrorInvocationHandlerProvider;
 
 public class JDKNativeStubsProvider implements MirrorInvocationHandlerProvider {

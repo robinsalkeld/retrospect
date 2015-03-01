@@ -76,6 +76,7 @@ import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -142,6 +143,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
     }
     
+    private final HolographEventQueue eventQueue;
+    
     public VirtualMachineHolograph(VirtualMachineMirror wrappedVM, File bytecodeCacheDir, Map<String, String> mappedFiles) {
         super(wrappedVM);
         if (HologramClassLoader.debug) {
@@ -158,10 +161,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         List<URL> bootstrapPath = extractBootstrapPath(wrappedVM);
         List<URL> filteredURLs = new ArrayList<URL>();
         for (URL url : bootstrapPath) {
-        	URL mappedURL = getMappedURL(url);
-        	if (mappedURL == null) {
-        		continue;
-        	}
+//        	URL mappedURL = getMappedURL(url);
+//        	if (mappedURL == null) {
+//        		continue;
+//        	}
         	
             // Ignore invalid paths as the VM would
             if (new FileURLMapper(url).exists()) {
@@ -177,6 +180,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 //        this.debuggingThread.start();
         
         collectZipFiles();
+        
+        this.eventQueue = new HolographEventQueue(this, this.wrappedVM.eventQueue());
         
         if (HologramClassLoader.debug) {
             System.out.println("Done.");
@@ -379,15 +384,17 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     public URL getMappedURL(URL mirrorURL) {
     	if (mirrorURL.getProtocol().equals("file")) {
-    		try {
-				File mappedFile = getMappedFile(new File(mirrorURL.getPath()), false);
-				return new URL(mirrorURL, mappedFile.getPath());
-			} catch (MalformedURLException e) {
-				throw new RuntimeException(e);
+    		File mappedFile = getMappedFile(new File(mirrorURL.getPath()), false);
+			if (mappedFile != null) {
+	    		try {
+					return new URL(mirrorURL, mappedFile.getPath());
+				} catch (MalformedURLException e) {
+					throw new RuntimeException(e);
+				}
 			}
-    	} else {
-    		return null;
     	}
+
+		return null;
     }
     
     public Inflater getHostInflator(long address) {
@@ -802,6 +809,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             internedStrings.put(realString, interned);
         }
         return interned;
+    }
+    
+    @Override
+    public HolographEventQueue eventQueue() {
+        return eventQueue;
     }
     
     // TODO-RS: Temporary for evaluation

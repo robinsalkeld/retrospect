@@ -42,8 +42,10 @@ import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
@@ -203,5 +205,10 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     @Override
     public ThreadMirrorStartRequest createThreadMirrorStartRequest() {
         return new JDIThreadMirrorStartRequest(vm, wrapped.createThreadStartRequest());
+    }
+    
+    @Override
+    public MethodMirrorHandlerRequest createMethodMirrorHandlerRequest(MirrorInvocationHandler handler) {
+        throw new UnsupportedOperationException();
     }
 }
