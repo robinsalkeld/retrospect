@@ -16,14 +16,13 @@ public class WrappingMirrorInvocationHandler implements MirrorInvocationHandler 
     }
 
     @Override
-    public Object invoke(InstanceMirror target, MethodMirror method, Object[] args) throws MirrorInvocationTargetException {
-        InstanceMirror unwrappedTarget = vm.unwrapInstanceMirror(target);
-        MethodMirror unwrappedMethod = vm.unwrapMethodMirror(method);
+    public Object invoke(Object[] args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
         Object[] unwrappedArgs = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
             unwrappedArgs[i] = vm.unwrappedValue(args[i]);
         }
-        Object result = wrapped.invoke(unwrappedTarget, unwrappedMethod, unwrappedArgs);
+        MirrorInvocationHandler unwrappedOriginal = vm.unwrapInvocationHandler(original);
+        Object result = wrapped.invoke(unwrappedArgs, unwrappedOriginal);
         return vm.wrapValue(result);
     }
 

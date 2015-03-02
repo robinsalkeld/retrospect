@@ -24,10 +24,6 @@ package edu.ubc.mirrors.holographs.jdkplugins;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.objectweb.asm.Opcodes;
-
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 
@@ -42,15 +38,9 @@ public class NativeStubsInvocationHandler implements MirrorInvocationHandler {
     }
 
     @Override
-    public Object invoke(InstanceMirror object, MethodMirror method, Object[] args) throws MirrorInvocationTargetException {
-        Object[] stubsArgs = args;
-        if ((Opcodes.ACC_STATIC & method.getModifiers()) == 0) {
-            stubsArgs = new Object[args.length + 1];
-            stubsArgs[0] = object;
-            System.arraycopy(args, 0, stubsArgs, 1, args.length);
-        }
+    public Object invoke(Object[] args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
         try {
-            return stubsMethod.invoke(stubsClassInstance, stubsArgs);
+            return stubsMethod.invoke(stubsClassInstance, args);
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof MirrorInvocationTargetException) {
                 throw (MirrorInvocationTargetException)e.getCause();
@@ -60,5 +50,4 @@ public class NativeStubsInvocationHandler implements MirrorInvocationHandler {
             throw new RuntimeException(e);
         }
     }
-
 }

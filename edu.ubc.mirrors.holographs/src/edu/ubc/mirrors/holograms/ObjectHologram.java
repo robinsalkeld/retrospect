@@ -25,6 +25,7 @@ import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinary
 
 import java.lang.reflect.Modifier;
 
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ArrayMirror;
@@ -305,8 +306,15 @@ public class ObjectHologram implements Hologram {
         // TODO-RS: Caching! This is quite slow.
         MethodMirror method = Reflection.getDeclaredMethod(klass, methodName, methodType);
         
+        Object[] handlerArgs = args;
+        if ((Opcodes.ACC_STATIC & method.getModifiers()) == 0) {
+            handlerArgs = new Object[args.length + 1];
+            handlerArgs[0] = object;
+            System.arraycopy(args, 0, handlerArgs, 1, args.length);
+        }
+        
         try {
-            return classHolograph.invoke(object, method, args);
+            return classHolograph.getInvocationHandler(method).invoke(handlerArgs, null);
         } catch (MirrorInvocationTargetException e) {
             throw (Throwable)ObjectHologram.make(e.getTargetException());
         }

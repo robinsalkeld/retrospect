@@ -72,7 +72,7 @@ import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
-public class ClassHolograph extends WrappingClassMirror implements MirrorInvocationHandler {
+public class ClassHolograph extends WrappingClassMirror implements MirrorInvocationHandlerProvider {
 
     private InstanceMirror memberFieldsDelegate;
     private StaticFieldValuesMirror staticFieldValues;
@@ -219,14 +219,30 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     // TODO-RS: Temporary for evaluation
     static final Set<String> unsupportedNativeMethods = new TreeSet<String>();
     
-    public Object invoke(InstanceMirror object, MethodMirror method, Object[] args) throws MirrorInvocationTargetException {
-        MirrorInvocationHandler handler = getMethodHandler(method);
-        if (handler == null) {
-            String methodSig = getClassName() + "#" + method.getName() + Reflection.getMethodType(method);
+    private static class UnsupportedNativeMethodInvocationHandler implements MirrorInvocationHandler {
+
+        private final String methodSig;
+        
+        public UnsupportedNativeMethodInvocationHandler(MethodMirror method) {
+            String methodSig = method.getDeclaringClass().getClassName() + "#" + method.getName() + Reflection.getMethodType(method);
             unsupportedNativeMethods.add(methodSig);
+            this.methodSig = methodSig;
+        }
+        
+        @Override
+        public Object invoke(Object[] args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
             throw new InternalError("Unsupported native method: " + methodSig);
         }
-        return handler.invoke(object, method, args);
+        
+    }
+    
+    @Override
+    public MirrorInvocationHandler getInvocationHandler(MethodMirror method) {
+        MirrorInvocationHandler handler = getMethodHandler(method);
+        if (handler == null) {
+            handler = new UnsupportedNativeMethodInvocationHandler(method);
+        }
+        return handler;
     }
     
     public static String getIllegalNativeMethodMessage(String owner, MethodMirror method) {

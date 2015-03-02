@@ -31,12 +31,6 @@ import edu.ubc.mirrors.holographs.MirrorInvocationHandlerProvider;
 
 public class JDKNativeStubsProvider implements MirrorInvocationHandlerProvider {
 
-    // TODO-RS: To implement for the Eclipse example:
-    // java.io.RandomAccessFile#readBytes([BII)I
-    // java.io.RandomAccessFile#seek(J)V
-    // java.lang.Class#getEnclosingMethod0()[Ljava/lang/Object;
-    // java.util.ResourceBundle#getClassContext()[Ljava/lang/Class;
-    
     private final Map<ClassMirror, MirrorInvocationHandlerProvider> providersByClass 
         = new HashMap<ClassMirror, MirrorInvocationHandlerProvider>();
     

@@ -24,7 +24,7 @@ package edu.ubc.mirrors;
 
 public interface MirrorInvocationHandler {
 
-    public Object invoke(InstanceMirror proxy, MethodMirror method, Object[] args) 
+    public Object invoke(Object[] args, MirrorInvocationHandler original) 
             throws MirrorInvocationTargetException;
 
 }
