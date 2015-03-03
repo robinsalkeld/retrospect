@@ -101,7 +101,7 @@ public class EventDispatch {
         eventSet.resume();
     }
     
-    public void start() throws InterruptedException {
+    public void run() throws InterruptedException {
 	vm.resume();
 	MirrorEventQueue q = vm.eventQueue();
 	MirrorEventSet eventSet = q.remove();
@@ -113,6 +113,29 @@ public class EventDispatch {
             
 	    eventSet = q.remove();
 	}
+    }
+    
+    public MirrorEvent runUntil(MirrorEventRequest request) throws InterruptedException {
+        MirrorEventQueue q = vm.eventQueue();
+        MirrorEventSet eventSet = q.remove();
+        while (eventSet != null) {
+            MirrorEvent toReturn = null;
+            for (MirrorEvent event : eventSet) {
+                handleEvent(event);
+                if (event.request().equals(request)) {
+                    toReturn = event;
+                }
+            }
+            handleSetEvent(eventSet);
+            
+            if (toReturn != null) {
+                return toReturn;
+            }
+            
+            eventSet = q.remove();
+        }
+        
+        return null;
     }
     
     public void forAllClasses(final Callback<ClassMirror> callback) {
@@ -129,3 +152,4 @@ public class EventDispatch {
         request.enable();
     }
 }
+

@@ -230,7 +230,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         }
         
         @Override
-        public Object invoke(Object[] args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+        public Object invoke(List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
             throw new InternalError("Unsupported native method: " + methodSig);
         }
         

@@ -21,10 +21,11 @@
  ******************************************************************************/
 package edu.ubc.mirrors;
 
+import java.util.List;
 
 public interface MirrorInvocationHandler {
 
-    public Object invoke(Object[] args, MirrorInvocationHandler original) 
+    public Object invoke(List<Object> args, MirrorInvocationHandler original) 
             throws MirrorInvocationTargetException;
 
 }

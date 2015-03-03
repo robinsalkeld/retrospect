@@ -144,6 +144,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     private final HolographEventQueue eventQueue;
+    private final HolographEventRequestManager requestManager;
     
     public VirtualMachineHolograph(VirtualMachineMirror wrappedVM, File bytecodeCacheDir, Map<String, String> mappedFiles) {
         super(wrappedVM);
@@ -179,9 +180,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 //        this.debuggingThread.setDaemon(true);
 //        this.debuggingThread.start();
         
-        collectZipFiles();
-        
         this.eventQueue = new HolographEventQueue(this, this.wrappedVM.eventQueue());
+        this.requestManager = new HolographEventRequestManager(this, this.wrappedVM.eventRequestManager());
+        
+        collectZipFiles();
         
         if (HologramClassLoader.debug) {
             System.out.println("Done.");
@@ -814,6 +816,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     @Override
     public HolographEventQueue eventQueue() {
         return eventQueue;
+    }
+    
+    @Override
+    public MirrorEventRequestManager eventRequestManager() {
+        return requestManager;
     }
     
     // TODO-RS: Temporary for evaluation

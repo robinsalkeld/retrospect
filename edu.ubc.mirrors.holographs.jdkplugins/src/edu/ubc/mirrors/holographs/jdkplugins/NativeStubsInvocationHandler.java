@@ -23,6 +23,7 @@ package edu.ubc.mirrors.holographs.jdkplugins;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -38,9 +39,9 @@ public class NativeStubsInvocationHandler implements MirrorInvocationHandler {
     }
 
     @Override
-    public Object invoke(Object[] args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+    public Object invoke(List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
         try {
-            return stubsMethod.invoke(stubsClassInstance, args);
+            return stubsMethod.invoke(stubsClassInstance, args.toArray(new Object[args.size()]));
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof MirrorInvocationTargetException) {
                 throw (MirrorInvocationTargetException)e.getCause();

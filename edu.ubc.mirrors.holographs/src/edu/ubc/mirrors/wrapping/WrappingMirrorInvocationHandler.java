@@ -1,7 +1,8 @@
 package edu.ubc.mirrors.wrapping;
 
-import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 
@@ -16,10 +17,10 @@ public class WrappingMirrorInvocationHandler implements MirrorInvocationHandler 
     }
 
     @Override
-    public Object invoke(Object[] args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
-        Object[] unwrappedArgs = new Object[args.length];
-        for (int i = 0; i < args.length; i++) {
-            unwrappedArgs[i] = vm.unwrappedValue(args[i]);
+    public Object invoke(List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+        List<Object> unwrappedArgs = new ArrayList<Object>(args.size());
+        for (Object arg : args) {
+            unwrappedArgs.add(vm.unwrappedValue(arg));
         }
         MirrorInvocationHandler unwrappedOriginal = vm.unwrapInvocationHandler(original);
         Object result = wrapped.invoke(unwrappedArgs, unwrappedOriginal);

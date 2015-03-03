@@ -63,6 +63,6 @@ public class JDIMirrorWeavingLauncher {
         MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
         world.weave();
         
-        vm.dispatch().start();
+        vm.dispatch().run();
     }
 }

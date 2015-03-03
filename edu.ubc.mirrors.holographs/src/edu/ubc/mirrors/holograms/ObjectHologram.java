@@ -24,6 +24,9 @@ package edu.ubc.mirrors.holograms;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinaryClassName;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -306,11 +309,10 @@ public class ObjectHologram implements Hologram {
         // TODO-RS: Caching! This is quite slow.
         MethodMirror method = Reflection.getDeclaredMethod(klass, methodName, methodType);
         
-        Object[] handlerArgs = args;
+        List<Object> handlerArgs = Arrays.asList(args);
         if ((Opcodes.ACC_STATIC & method.getModifiers()) == 0) {
-            handlerArgs = new Object[args.length + 1];
-            handlerArgs[0] = object;
-            System.arraycopy(args, 0, handlerArgs, 1, args.length);
+            handlerArgs = new ArrayList<Object>(handlerArgs);
+            handlerArgs.add(0, object);
         }
         
         try {

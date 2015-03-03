@@ -1,6 +1,6 @@
 PLATFORM=macos
 
-JAVA15_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_45.jdk/Contents/Home
+JAVA15_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/Home
 JAVA14_HOME=$(JAVA15_HOME)
 
 BOOST_VERSION=
