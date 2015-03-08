@@ -21,33 +21,89 @@
  ******************************************************************************/
 package edu.ubc.mirrors.holographs;
 
+import java.util.Arrays;
+import java.util.BitSet;
+
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.wrapping.WrappingCharArrayMirror;
 
 public class MutableCharArrayMirror extends WrappingCharArrayMirror {
 
+    private final VirtualMachineHolograph vm;
     private final CharArrayMirror immutableMirror;
-    private char[] values;
+    
+    private char[] cached;
+    private long mark = -1;
+    
+    private char[] newValues;
+    private final BitSet overwritten = new BitSet();
     
     public MutableCharArrayMirror(VirtualMachineHolograph vm, CharArrayMirror immutableMirror) {
         super(vm, immutableMirror);
+        this.vm = vm;
         this.immutableMirror = immutableMirror;
-        
     }
+    
+    private void checkCache() {
+        long currentMark = vm.eventQueue().getEventsCount();
+        if (mark != currentMark){
+            cached = immutableMirror.getChars(0, immutableMirror.length());
+            mark = currentMark;
+        }     
+    }
+    
     
     @Override
     public char getChar(int index) throws ArrayIndexOutOfBoundsException {
-        return values != null ? values[index] : immutableMirror.getChar(index);
+        if (overwritten.get(index)) {
+            return newValues[index];
+        }
+        
+        checkCache();
+        return cached[index];
     }
 
     @Override
-    public void setChar(int index, char c) throws ArrayIndexOutOfBoundsException {
-        if (values == null) {
-            this.values = new char[immutableMirror.length()];
-            for (int i = 0; i < values.length; i++) {
-                values[i] = immutableMirror.getChar(i);
-            }
+    public char[] getChars(int index, int length) throws ArrayIndexOutOfBoundsException {
+        if (length == 0) {
+             return new char[0];
         }
-        values[index] = c;
+        
+        int end = index + length;
+        
+        // All overwritten
+        if (overwritten.nextClearBit(index) >= end) {
+            return Arrays.copyOfRange(newValues, index, end);
+        }
+                
+        // Nothing overwritten
+        int firstOverwritten = overwritten.nextSetBit(index);
+        if (firstOverwritten >= end || firstOverwritten == -1) {
+            checkCache();
+            return Arrays.copyOfRange(cached, index, end);
+        }
+        
+        // General case - some overwritten
+        return super.getChars(index, length);
+    }
+    
+    private void initNewValues() {
+        if (newValues == null) {
+            this.newValues = new char[length()];
+        }
+    }
+    
+    @Override
+    public void setChar(int index, char b) throws ArrayIndexOutOfBoundsException {
+        initNewValues();
+        newValues[index] = b;
+        overwritten.set(index);
+    }
+
+    @Override
+    public void setChars(int index, char[] b) throws ArrayIndexOutOfBoundsException {
+        initNewValues();
+        System.arraycopy(b, 0, newValues, index, b.length);
+        overwritten.set(index, index + b.length);
     }
 }

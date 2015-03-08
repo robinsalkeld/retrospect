@@ -39,8 +39,18 @@ public class CharArrayHologram extends ArrayHologram implements CharArrayMirror 
     }
 
     @Override
+    public char[] getChars(int index, int length) throws ArrayIndexOutOfBoundsException {
+        return mirror.getChars(index, length);
+    }
+    
+    @Override
     public void setChar(int index, char b) throws ArrayIndexOutOfBoundsException {
         mirror.setChar(index, b);
+    }
+    
+    @Override
+    public void setChars(int index, char[] b) throws ArrayIndexOutOfBoundsException {
+        mirror.setChars(index, b);
     }
     
     public static char getHologram(CharArrayMirror mirror, int index) throws Throwable {

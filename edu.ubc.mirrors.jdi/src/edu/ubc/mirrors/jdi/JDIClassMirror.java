@@ -99,6 +99,9 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     protected final ReferenceType refType;
     
     private ClassMirrorLoader loader;
+    private boolean loaderFetched = false;
+    
+    private boolean initialized = false;
     
     public JDIClassMirror(JDIVirtualMachineMirror vm, ClassObjectReference t) {
         super(vm, t);
@@ -132,8 +135,9 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public ClassMirrorLoader getLoader() {
-        if (loader == null) {
+        if (!loaderFetched) {
             loader = (ClassMirrorLoader)vm.makeMirror(refType.classLoader());
+            loaderFetched = true;
         }
         return loader;
     }
@@ -343,7 +347,11 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public boolean initialized() {
-        return refType.isInitialized();
+        // Once initialized, a class stays initialized
+        if (!initialized) {
+            initialized = refType.isInitialized();
+        }
+        return initialized;
     }
 
     @Override

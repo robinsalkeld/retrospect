@@ -74,8 +74,24 @@ public abstract class BoxingArrayMirror implements
         return ((Character)getBoxedValue(index)).charValue();
     }
 
+    @Override
+    public char[] getChars(int index, int length) throws ArrayIndexOutOfBoundsException {
+        char[] result = new char[length];
+        for (int i = 0; i < length; i++) {
+            result[i] = getChar(index + i);
+        }
+        return result;
+    }
+    
     public void setChar(int index, char c) throws ArrayIndexOutOfBoundsException {
         setBoxedValue(index, Character.valueOf(c));
+    }
+    
+    @Override
+    public void setChars(int index, char[] b) throws ArrayIndexOutOfBoundsException {
+        for (int i = 0; i < b.length; i++) {
+            setChar(index + i, b[i]);
+        }
     }
 
     public byte getByte(int index) throws ArrayIndexOutOfBoundsException {

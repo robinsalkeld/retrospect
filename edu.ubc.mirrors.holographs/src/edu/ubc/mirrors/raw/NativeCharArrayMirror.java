@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw;
 
+import java.util.Arrays;
+
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 
@@ -41,8 +43,18 @@ public class NativeCharArrayMirror extends NativeObjectMirror implements CharArr
         return array[index];
     }
 
+    @Override
+    public char[] getChars(int index, int length) throws ArrayIndexOutOfBoundsException {
+        return Arrays.copyOfRange(array, index, index + length);
+    }
+    
     public void setChar(int index, char c) throws ArrayIndexOutOfBoundsException {
         array[index] = c;
     }
 
+    @Override
+    public void setChars(int index, char[] b) throws ArrayIndexOutOfBoundsException {
+        System.arraycopy(b, 0, array, index, b.length);
+    }
+    
 }

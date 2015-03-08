@@ -25,5 +25,9 @@ public interface CharArrayMirror extends ArrayMirror {
 
     public char getChar(int index) throws ArrayIndexOutOfBoundsException;
     
+    public char[] getChars(int index, int length) throws ArrayIndexOutOfBoundsException;
+    
     public void setChar(int index, char b) throws ArrayIndexOutOfBoundsException;
+
+    public void setChars(int index, char[] b) throws ArrayIndexOutOfBoundsException;
 }

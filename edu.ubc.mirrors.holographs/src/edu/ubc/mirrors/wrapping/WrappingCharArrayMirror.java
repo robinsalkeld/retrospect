@@ -41,9 +41,19 @@ public class WrappingCharArrayMirror extends WrappingMirror implements CharArray
     public char getChar(int index) throws ArrayIndexOutOfBoundsException {
         return wrappedArray.getChar(index);
     }
+    
+    @Override
+    public char[] getChars(int index, int length) throws ArrayIndexOutOfBoundsException {
+        return wrappedArray.getChars(index, length);
+    }
 
     @Override
     public void setChar(int index, char c) throws ArrayIndexOutOfBoundsException {
         wrappedArray.setChar(index, c);
+    }
+    
+    @Override
+    public void setChars(int index, char[] c) throws ArrayIndexOutOfBoundsException {
+        wrappedArray.setChars(index, c);
     }
 }

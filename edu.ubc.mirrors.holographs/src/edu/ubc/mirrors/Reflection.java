@@ -707,6 +707,15 @@ public class Reflection {
             return;
         }
         
+        if (signature.equals("[C")) {
+            if (!dest.getClassMirror().getSignature().equals("[C")) {
+                throw new ArrayStoreException();
+            }
+            char[] values = ((CharArrayMirror)src).getChars(srcPos, length);
+            ((CharArrayMirror)dest).setChars(destPos, values);
+            return;
+        }
+        
         for (int off = 0; off < length; off++) {
             setArrayElement(dest, destPos + off, getArrayElement(src, srcPos + off));
         }

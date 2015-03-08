@@ -25,6 +25,7 @@ import java.util.List;
 
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ByteValue;
+import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
@@ -100,6 +101,21 @@ public class JDIArrayMirror extends BoxingArrayMirror implements JDIObjectMirror
         byte[] result = new byte[values.size()];
         for (int i = 0; i < result.length; i++) {
             result[i] = ((ByteValue)values.get(i)).byteValue();
+        }
+        return result;
+    }
+    
+    @Override
+    public char[] getChars(int index, int length) throws ArrayIndexOutOfBoundsException {
+        // Special case to avoid incorrect range check in JDI code
+        if (length == 0) {
+            return new char[0];
+        }
+        
+        List<Value> values = array.getValues(index, length);
+        char[] result = new char[values.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = ((CharValue)values.get(i)).charValue();
         }
         return result;
     }
