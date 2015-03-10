@@ -40,6 +40,7 @@ import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
+import edu.ubc.mirrors.InvocableMirror;
 import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEventQueue;
@@ -340,7 +341,23 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return ((WrappingMethodMirror)method).wrapped;
     }
 
+    public ConstructorMirror unwrapConstructorMirror(ConstructorMirror constructor) {
+        return ((WrappingConstructorMirror)constructor).wrapped;
+    }
+
     public MirrorInvocationHandler unwrapInvocationHandler(MirrorInvocationHandler handler) {
         return ((WrappingMirrorInvocationHandler)handler).wrapped;
+    }
+
+    public ThreadMirror unwrapThread(ThreadMirror thread) {
+        return ((WrappingThreadMirror)thread).wrappedThread;
+    }
+
+    public InvocableMirror unwrapInvocable(InvocableMirror invocable) {
+        if (invocable instanceof ConstructorMirror) {
+            return unwrapConstructorMirror((ConstructorMirror)invocable);
+        } else {
+            return unwrapMethodMirror((MethodMirror)invocable);
+        }
     }
 }

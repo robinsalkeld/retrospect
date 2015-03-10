@@ -51,6 +51,7 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.InvocableMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
@@ -230,7 +231,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         }
         
         @Override
-        public Object invoke(List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+        public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
             throw new InternalError("Unsupported native method: " + methodSig);
         }
         
@@ -870,7 +871,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
             request.addClassFilter(getClassName());
             vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
                 @Override
-                public void handle(MirrorEvent event) {
+                public Object handle(MirrorEvent event) {
                     ClassMirrorPrepareEvent prepareEvent = (ClassMirrorPrepareEvent)event;
                     ClassHolograph prepared = (ClassHolograph)prepareEvent.classMirror();
                     // The name will match, but we have to check the class loader manually.
@@ -879,6 +880,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
                     if (preparedLoader == null ? holographLoader == null : preparedLoader.equals(holographLoader)) {
                         setWrapped(prepared.getWrappedClassMirror());
                     }
+                    return null;
                 }
             });
             request.enable();

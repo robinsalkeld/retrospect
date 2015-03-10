@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.List;
+
 import com.sun.jdi.event.MethodEntryEvent;
 
 import edu.ubc.mirrors.ConstructorMirror;
@@ -59,5 +61,9 @@ public class JDIConstructorMirrorEntryEvent extends JDIMirrorEvent implements Co
     public ThreadMirror thread() {
         return (ThreadMirror)vm.makeMirror(wrapped.thread());
     }
-
+    
+    @Override
+    public List<Object> arguments() {
+        return thread().getStackTrace().get(0).arguments();
+    }
 }

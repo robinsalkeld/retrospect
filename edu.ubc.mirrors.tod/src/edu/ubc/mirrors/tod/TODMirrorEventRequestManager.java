@@ -11,6 +11,7 @@ import tod.core.database.event.ILogEvent;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
+import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
@@ -226,6 +227,11 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public MethodMirrorHandlerRequest createMethodMirrorHandlerRequest(MirrorInvocationHandler handler) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ConstructorMirrorHandlerRequest createConstructorMirrorHandlerRequest(MirrorInvocationHandler handler) {
         throw new UnsupportedOperationException();
     }
 }

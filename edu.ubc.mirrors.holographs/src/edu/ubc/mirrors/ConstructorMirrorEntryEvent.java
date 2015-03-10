@@ -21,8 +21,11 @@
  ******************************************************************************/
 package edu.ubc.mirrors;
 
+import java.util.List;
+
 public interface ConstructorMirrorEntryEvent extends MirrorEvent {
 
     public ConstructorMirror constructor();
     public ThreadMirror thread();
+    public List<Object> arguments();
 }

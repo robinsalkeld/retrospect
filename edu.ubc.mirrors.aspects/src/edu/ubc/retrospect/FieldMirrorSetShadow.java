@@ -1,5 +1,6 @@
 package edu.ubc.retrospect;
 
+import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.ast.Var;
@@ -29,8 +30,8 @@ public class FieldMirrorSetShadow extends MirrorEventShadow {
     }
     
     @Override
-    public boolean isEntry() {
-        return true;
+    public AdviceKind kind() {
+        return AdviceKind.After;
     }
 
     @Override

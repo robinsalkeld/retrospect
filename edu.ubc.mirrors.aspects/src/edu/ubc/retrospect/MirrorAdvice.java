@@ -48,6 +48,11 @@ public class MirrorAdvice extends Advice {
         Object[] args = new Object[state.size()];
 
         int baseArgCount = getBaseParameterCount();
+        if (this.kind == AdviceKind.Around) {
+            args[baseArgCount - 1] = shadow.evaluateExpr(shadow.getAroundClosureVar());
+            baseArgCount--;
+        }
+        
         for (int i = 0; i < baseArgCount; i++) {
             args[i] = shadow.evaluateExpr(state.get(i));
         }
@@ -154,7 +159,7 @@ public class MirrorAdvice extends Advice {
                 if (state.size() == 0) {
                     Expr fieldGet = new FieldGet(getSignature(), concreteAspect);
                     InstanceMirror counter = (InstanceMirror)eventShadow.evaluateExpr(fieldGet);
-                    Member method = eventShadow.isEntry() ? cflowCounterIncMethod : cflowCounterDecMethod;
+                    Member method = eventShadow.kind() == AdviceKind.Before ? cflowCounterIncMethod : cflowCounterDecMethod;
                     eventShadow.evaluateCall(counter, method, Expr.NONE);
                 } else {
                     throw new IllegalStateException();
@@ -194,10 +199,6 @@ public class MirrorAdvice extends Advice {
         }
         
         MirrorEventShadow eventShadow = (MirrorEventShadow)shadow;
-        if (eventShadow.isEntry()) {
-            return !kind.isAfter();
-        } else {
-            return kind.isAfter();
-        }
+        return eventShadow.kind() == kind;
     }
 }

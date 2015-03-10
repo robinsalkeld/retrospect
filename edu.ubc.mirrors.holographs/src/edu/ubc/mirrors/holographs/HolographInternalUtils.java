@@ -106,10 +106,7 @@ public class HolographInternalUtils {
 
     public static ClassMirror classMirrorForType(VirtualMachineMirror vm, ThreadMirror thread, Type type, boolean resolve, ClassMirrorLoader loader) {
         try {
-            // Need to use ThreadHolograph.currentThreadMirrorNoError() in case we are trying to load a bootstrap
-            // class and don't have an active thread. This is safe since downstream methods will check for a valid
-            // thread if they need one.
-            return Reflection.classMirrorForType(vm, ThreadHolograph.currentThreadMirrorNoError(), type, false, loader);
+            return Reflection.classMirrorForType(vm, thread, type, false, loader);
         } catch (ClassNotFoundException e) {
             NoClassDefFoundError error = new NoClassDefFoundError(e.getMessage());
             error.initCause(e);

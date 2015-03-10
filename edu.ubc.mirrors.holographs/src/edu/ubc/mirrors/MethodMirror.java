@@ -23,7 +23,7 @@ package edu.ubc.mirrors;
 
 import java.util.List;
 
-public interface MethodMirror {
+public interface MethodMirror extends InvocableMirror {
     
     public byte[] getBytecode();
     

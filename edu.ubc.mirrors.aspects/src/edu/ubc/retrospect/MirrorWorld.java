@@ -14,6 +14,7 @@ import org.aspectj.bridge.IMessageHandler;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.SourceLocation;
+import org.aspectj.runtime.internal.AroundClosure;
 import org.aspectj.runtime.reflect.Factory;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AjcMemberMaker;
@@ -80,6 +81,7 @@ public class MirrorWorld extends World {
     private final ConstructorMirror factoryConstructor;
     private final ClassMirror aspectAnnotClass;
     private final ClassMirror pointcutAnnotClass;
+    private final ClassMirror aroundClosureClass;
 
     private final Map<String, ClassMirror> classMirrors =
             new HashMap<String, ClassMirror>();
@@ -101,6 +103,7 @@ public class MirrorWorld extends World {
         this.factoryConstructor = factoryClass.getConstructor(String.class.getName(), Class.class.getName());
         this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
         this.pointcutAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(org.aspectj.lang.annotation.Pointcut.class), false, loader);
+        this.aroundClosureClass = Reflection.classMirrorForType(vm, thread, Type.getType(AroundClosure.class), false, loader);
         
         if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
             setMessageHandler(IMessageHandler.SYSTEM_ERR);
@@ -115,6 +118,10 @@ public class MirrorWorld extends World {
 
     public ClassMirror getPointcutAnnotClass() {
         return pointcutAnnotClass;
+    }
+    
+    public ClassMirror getAroundClosureClass() {
+        return aroundClosureClass;
     }
     
     @Override
@@ -378,7 +385,7 @@ public class MirrorWorld extends World {
                     MirrorAdvice advice = (MirrorAdvice)munger;
                     showMessage(IMessage.DEBUG, "Installing event requests for advice: " + advice, null, null);
                     PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice, new Callback<MirrorEventShadow>() {
-                        public void handle(MirrorEventShadow shadow) {
+                        public Object handle(MirrorEventShadow shadow) {
                             // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)
                             // See also: http://www.eclipse.org/aspectj/doc/released/devguide/ltw-specialcases.html
                             if (!Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses")) {
@@ -389,11 +396,13 @@ public class MirrorWorld extends World {
                                     declaringClassName.startsWith("java.") || 
                                     declaringClassName.startsWith("javax.") ||
                                     declaringClassName.startsWith("sun.reflect.")) {
-                                    return;
+                                    return null;
                                 }
                             }
                             
                             joinpointShadowsTL.get().add(shadow);
+                            
+                            return null;
                         }
                     });
                     showMessage(IMessage.DEBUG, "Done.", null, null);

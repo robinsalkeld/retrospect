@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.aspectj.bridge.ISourceLocation;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
@@ -88,11 +89,11 @@ public abstract class MirrorEventShadow extends Shadow {
     
     protected abstract ClassMirror getDeclaringClass();
     
-    public abstract boolean isEntry();
+    public abstract AdviceKind kind();
     
     @Override
     protected void prepareForMungers() {
-        if (isEntry()) {
+        if (kind() == AdviceKind.Before) {
             Collections.reverse(mungers);
         }
     }
@@ -127,11 +128,13 @@ public abstract class MirrorEventShadow extends Shadow {
         if (event instanceof ConstructorMirrorEntryEvent) {
             ConstructorMirrorEntryEvent cmee = (ConstructorMirrorEntryEvent)event;
             Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
-            return new ConstructorMirrorEntryShadow(world, cmee, signature, null);
+            return new ConstructorMirrorExecutionShadow(world, AdviceKind.Before, cmee.constructor(),
+                    cmee.thread(), null, signature, null);
         } else if (event instanceof ConstructorMirrorExitEvent) {
             ConstructorMirrorExitEvent cmee = (ConstructorMirrorExitEvent)event;
             Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
-            return new ConstructorMirrorExitShadow(world, cmee, signature, null);
+            return new ConstructorMirrorExecutionShadow(world, AdviceKind.After, cmee.constructor(),
+                    cmee.thread(), null, signature, null);
         } else if (event instanceof MethodMirrorEntryEvent) {
             MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
             if (shadowKind == Shadow.SynchronizationLock) {
@@ -234,8 +237,12 @@ public abstract class MirrorEventShadow extends Shadow {
         return null;
     }
     
+    public Var getAroundClosureVar() {
+        return null;
+    }
+    
     @Override
     public String toString() {
-        return (isEntry() ? "entering " : "exiting ") + super.toString();
+        return kind() + " " + super.toString();
     }
 }

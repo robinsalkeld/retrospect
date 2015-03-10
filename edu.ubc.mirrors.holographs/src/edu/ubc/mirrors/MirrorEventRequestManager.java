@@ -63,6 +63,8 @@ public interface MirrorEventRequestManager {
     
     MethodMirrorHandlerRequest createMethodMirrorHandlerRequest(MirrorInvocationHandler handler);
     
+    ConstructorMirrorHandlerRequest createConstructorMirrorHandlerRequest(MirrorInvocationHandler handler);
+    
     void deleteMirrorEventRequest(MirrorEventRequest request);
 
 

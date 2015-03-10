@@ -25,7 +25,7 @@ import java.util.List;
 
 public interface MirrorInvocationHandler {
 
-    public Object invoke(List<Object> args, MirrorInvocationHandler original) 
+    public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) 
             throws MirrorInvocationTargetException;
 
 }

@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.holographs;
 
+import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
@@ -17,6 +18,11 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
     @Override
     public MethodMirrorHandlerRequest createMethodMirrorHandlerRequest(MirrorInvocationHandler handler) {
         return new MethodHolographHandlerRequest(vm, handler);
+    }
+    
+    @Override
+    public ConstructorMirrorHandlerRequest createConstructorMirrorHandlerRequest(MirrorInvocationHandler handler) {
+        return new ConstructorHolographHandlerRequest(vm, handler);
     }
 }
 

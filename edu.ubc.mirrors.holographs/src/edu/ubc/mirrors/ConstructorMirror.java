@@ -23,7 +23,7 @@ package edu.ubc.mirrors;
 
 import java.util.List;
 
-public interface ConstructorMirror {
+public interface ConstructorMirror extends InvocableMirror {
     
     public ClassMirror getDeclaringClass();
     

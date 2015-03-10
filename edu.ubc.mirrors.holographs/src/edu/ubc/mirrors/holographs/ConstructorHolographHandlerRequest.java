@@ -4,30 +4,30 @@ import java.util.List;
 
 import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.InvocableMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MethodMirrorEntryEvent;
-import edu.ubc.mirrors.MethodMirrorEntryRequest;
-import edu.ubc.mirrors.MethodMirrorExitEvent;
-import edu.ubc.mirrors.MethodMirrorExitRequest;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
+import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
+import edu.ubc.mirrors.ConstructorMirrorExitEvent;
+import edu.ubc.mirrors.ConstructorMirrorExitRequest;
+import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest, MirrorInvocationHandler {
+public class ConstructorHolographHandlerRequest implements ConstructorMirrorHandlerRequest, MirrorInvocationHandler {
 
     private final VirtualMachineHolograph vm;
     private final MirrorInvocationHandler handler;
-    private final MethodMirrorEntryRequest entryRequest;
-    private final MethodMirrorExitRequest exitRequest;
+    private final ConstructorMirrorEntryRequest entryRequest;
+    private final ConstructorMirrorExitRequest exitRequest;
     
     private final Callback<MirrorEvent> entryCallback = new Callback<MirrorEvent>() {
         @Override
         public Object handle(MirrorEvent t) {
-            MethodMirrorEntryEvent entryEvent = (MethodMirrorEntryEvent)t;
+            ConstructorMirrorEntryEvent entryEvent = (ConstructorMirrorEntryEvent)t;
             try {
-                Object result = handler.invoke(entryEvent.thread(), entryEvent.method(), entryEvent.arguments(), MethodHolographHandlerRequest.this);
+                Object result = handler.invoke(entryEvent.thread(), entryEvent.constructor(), entryEvent.arguments(), ConstructorHolographHandlerRequest.this);
                 // TODO-RS: Check result value
                 return result;
             } catch (MirrorInvocationTargetException e) {
@@ -36,13 +36,13 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         }
     };
     
-    public MethodHolographHandlerRequest(VirtualMachineHolograph vm, MirrorInvocationHandler handler) {
+    public ConstructorHolographHandlerRequest(VirtualMachineHolograph vm, MirrorInvocationHandler handler) {
         this.vm = vm;
         this.handler = handler;
-        this.entryRequest = vm.eventRequestManager().createMethodMirrorEntryRequest();
+        this.entryRequest = vm.eventRequestManager().createConstructorMirrorEntryRequest();
         vm.dispatch().addCallback(entryRequest, entryCallback); 
         
-        this.exitRequest = vm.eventRequestManager().createMethodMirrorExitRequest();
+        this.exitRequest = vm.eventRequestManager().createConstructorMirrorExitRequest();
         
     }
 
@@ -86,9 +86,9 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     }
     
     @Override
-    public void setMethodFilter(MethodMirror method) {
-        entryRequest.setMethodFilter(method);
-        exitRequest.setMethodFilter(method);
+    public void setConstructorFilter(ConstructorMirror method) {
+        entryRequest.setConstructorFilter(method);
+        exitRequest.setConstructorFilter(method);
     }
 
     public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
@@ -98,8 +98,8 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         // TODO-RS: Track how many times this is called
         
         try {
-            MethodMirrorExitEvent exitEvent = (MethodMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
-            return exitEvent.returnValue();
+            ConstructorMirrorExitEvent exitEvent = (ConstructorMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
+            return null;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -18,6 +18,7 @@ import org.aspectj.apache.bcel.generic.InstructionHandle;
 import org.aspectj.apache.bcel.generic.InstructionList;
 import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
+import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ReferenceType;
 import org.aspectj.weaver.ResolvedMember;
 import org.aspectj.weaver.Shadow;
@@ -36,14 +37,20 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.InvocableMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorInvocationHandler;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationEvent;
 import edu.ubc.mirrors.MirrorLocationRequest;
@@ -74,9 +81,27 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     
     private final Callback<MirrorEvent> EVENT_CALLBACK = new Callback<MirrorEvent>() {
         @Override
-        public void handle(MirrorEvent event) {
+        public Object handle(MirrorEvent event) {
             MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
-            callback.handle(shadow);
+            return callback.handle(shadow);
+        }
+    };
+    
+    private final MirrorInvocationHandler METHOD_INVOCATION_CALLBACK = new MirrorInvocationHandler() {
+        public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+            MethodMirror method = (MethodMirror)invocable;
+            Member signature = MethodMirrorMember.make(world, method);
+            MethodMirrorExecutionShadow shadow = new MethodMirrorExecutionShadow(world, method, thread, original, signature, null);
+            return callback.handle(shadow);
+        }
+    };
+    
+    private final MirrorInvocationHandler CONSTRUCTOR_INVOCATION_CALLBACK = new MirrorInvocationHandler() {
+        public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+            ConstructorMirror constructor = (ConstructorMirror)invocable;
+            Member signature = ConstructorMirrorMember.make(world, constructor);
+            ConstructorMirrorExecutionShadow shadow = new ConstructorMirrorExecutionShadow(world, AdviceKind.Around, constructor, thread, original, signature, null);
+            return callback.handle(shadow);
         }
     };
     
@@ -133,19 +158,25 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
             for (final Shadow.Kind kind : Shadow.toSet(kinds)) {
                 switch (kind.bit) {
                 case (Shadow.MethodExecutionBit):
-                    if (!adviceKind.isAfter() || adviceKind.isCflow()) {
+                    if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
                         addFiltersAndInstall(manager.createMethodMirrorEntryRequest(), thisFilters);
                     }
-                    if (adviceKind.isAfter() || adviceKind == AdviceKind.Around || adviceKind.isCflow()) {
+                    if (adviceKind.isAfter() || adviceKind.isCflow()) {
                         addFiltersAndInstall(manager.createMethodMirrorExitRequest(), thisFilters);
+                    }
+                    if (adviceKind == AdviceKind.Around) {
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(METHOD_INVOCATION_CALLBACK), thisFilters);
                     }
                     break;
                 case (Shadow.ConstructorExecutionBit):
-                    if (!adviceKind.isAfter() || adviceKind.isCflow()) {
+                    if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
                         addFiltersAndInstall(manager.createConstructorMirrorEntryRequest(), thisFilters);
                     }
-                    if (adviceKind.isAfter() || adviceKind == AdviceKind.Around || adviceKind.isCflow()) {
+                    if (adviceKind.isAfter() || adviceKind.isCflow()) {
                         addFiltersAndInstall(manager.createConstructorMirrorExitRequest(), thisFilters);
+                    }
+                    if (adviceKind == AdviceKind.Around) {
+                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(CONSTRUCTOR_INVOCATION_CALLBACK), thisFilters);
                     }
                     break;
                 case (Shadow.FieldSetBit):
@@ -172,17 +203,17 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     
     private void forAllWovenClasses(final Callback<ClassMirror> callback) {
         world.vm.dispatch().forAllClasses(new Callback<ClassMirror>() {
-            public void handle(ClassMirror klass) {
+            public Object handle(ClassMirror klass) {
                 if (klass.getLoader() == null) {
-                    return;
+                    return null;
                 }
                 
                  // TODO-RS: Cheating to account for lack of requests/events on holographic execution
                 if (klass instanceof ClassHolograph && ((ClassHolograph)klass).getWrapped() instanceof BytecodeClassMirror) {
-                    return;
+                    return null;
                 }
                     
-                callback.handle(klass);
+                return callback.handle(klass);
             }
         });
     }
@@ -199,7 +230,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         // reads the right state.
         final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
         forAllWovenClasses(new Callback<ClassMirror>() {
-            public void handle(ClassMirror klass) {
+            public Object handle(ClassMirror klass) {
                 ReferenceType type = (ReferenceType)world.resolve(klass);
                 for (ResolvedMember field : type.getDeclaredFields()) {
                     boolean matches = true;
@@ -223,6 +254,8 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                         addFiltersAndInstall(request, callbackFilters);
                     }
                 }
+                
+                return null;
             };
         });
     }
@@ -240,7 +273,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         // Realistically it doesn't matter unless the code queries the thread state in very specific ways.
         final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
         forAllWovenClasses(new Callback<ClassMirror>() {
-            public void handle(ClassMirror klass) {
+            public Object handle(ClassMirror klass) {
                 ReferenceType type = (ReferenceType)world.resolve(klass);
                 
                 // These are handled in two parts:
@@ -312,6 +345,8 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                 } catch (ClassFormatException | IOException | SecurityException e) {
                     throw new RuntimeException(e);
                 }
+                
+                return null;
             };
         });
     }
@@ -320,7 +355,11 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         for (PatternNode pattern : filters) {
             addPatternFilter(request, pattern);
         }
-        world.vm.dispatch().addCallback(request, EVENT_CALLBACK);
+        if (request instanceof MethodMirrorHandlerRequest || request instanceof ConstructorMirrorHandlerRequest) {
+            request.enable();
+        } else {
+            world.vm.dispatch().addCallback(request, EVENT_CALLBACK);
+        }
         request.enable();
     }
     
@@ -331,10 +370,11 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         MirrorLocation location = methodMirror.locationForBytecodeOffset(offset);
         MirrorLocationRequest request = manager.createLocationRequest(location);
         world.vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
-            public void handle(MirrorEvent event) {
+            public Object handle(MirrorEvent event) {
                 MirrorLocationEvent locationEvent = (MirrorLocationEvent)event;
                 ThreadMirror thread = locationEvent.thread();
                 ownedMonitors.put(thread, new HashSet<InstanceMirror>(thread.getOwnedMonitors()));
+                return null;
             } 
         });
         request.enable();
@@ -342,7 +382,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         location = methodMirror.locationForBytecodeOffset(offset + 1);
         request = manager.createLocationRequest(location);
         world.vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
-            public void handle(MirrorEvent event) {
+            public Object handle(MirrorEvent event) {
                 MirrorLocationEvent locationEvent = (MirrorLocationEvent)event;
                 ThreadMirror thread = locationEvent.thread();
                 Set<InstanceMirror> monitorsBefore = ownedMonitors.get(thread);
@@ -366,7 +406,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                 } else {
                     shadow = new MirrorMonitorExitShadow(world, locationEvent, monitor, !advice.getKind().isAfter(), null);
                 }
-                callback.handle(shadow);
+                return callback.handle(shadow);
             }
         });
         request.enable();

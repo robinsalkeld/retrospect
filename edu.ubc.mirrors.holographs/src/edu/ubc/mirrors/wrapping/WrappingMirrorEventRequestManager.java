@@ -26,6 +26,7 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
+import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
@@ -152,5 +153,11 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     public MethodMirrorHandlerRequest createMethodMirrorHandlerRequest(MirrorInvocationHandler handler) {
         return new WrappingMethodMirrorHandlerRequest(vm, 
                 wrapped.createMethodMirrorHandlerRequest(vm.unwrapInvocationHandler(handler)));
+    }
+    
+    @Override
+    public ConstructorMirrorHandlerRequest createConstructorMirrorHandlerRequest(MirrorInvocationHandler handler) {
+        return new WrappingConstructorMirrorHandlerRequest(vm, 
+                wrapped.createConstructorMirrorHandlerRequest(vm.unwrapInvocationHandler(handler)));
     }
 }

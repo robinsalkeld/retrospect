@@ -30,7 +30,7 @@ import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingThreadMirror extends WrappingInstanceMirror implements ThreadMirror {
 
-    private final ThreadMirror wrappedThread;
+    protected final ThreadMirror wrappedThread;
     
     public WrappingThreadMirror(WrappingVirtualMachine vm, ThreadMirror wrappedThread) {
         super(vm, wrappedThread);

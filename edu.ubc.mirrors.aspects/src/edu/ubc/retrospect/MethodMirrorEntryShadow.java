@@ -1,5 +1,6 @@
 package edu.ubc.retrospect;
 
+import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
@@ -31,8 +32,8 @@ public class MethodMirrorEntryShadow extends MirrorEventShadow {
     }
     
     @Override
-    public boolean isEntry() {
-        return true;
+    public AdviceKind kind() {
+        return AdviceKind.Before;
     }
     
     @Override

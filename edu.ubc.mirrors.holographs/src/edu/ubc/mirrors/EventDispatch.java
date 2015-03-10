@@ -144,9 +144,10 @@ public class EventDispatch {
         }
         ClassMirrorPrepareRequest request = vm.eventRequestManager().createClassMirrorPrepareRequest();
         addCallback(request, new Callback<MirrorEvent>() {
-            public void handle(MirrorEvent t) {
+            public Object handle(MirrorEvent t) {
                 ClassMirrorPrepareEvent event = (ClassMirrorPrepareEvent)t;
                 callback.handle(event.classMirror());
+                return null;
             }
         });
         request.enable();

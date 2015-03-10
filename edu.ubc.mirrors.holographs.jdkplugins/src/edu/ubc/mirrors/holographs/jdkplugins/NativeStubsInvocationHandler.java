@@ -25,8 +25,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import edu.ubc.mirrors.InvocableMirror;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.ThreadMirror;
 
 public class NativeStubsInvocationHandler implements MirrorInvocationHandler {
 
@@ -39,7 +41,7 @@ public class NativeStubsInvocationHandler implements MirrorInvocationHandler {
     }
 
     @Override
-    public Object invoke(List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+    public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
         try {
             return stubsMethod.invoke(stubsClassInstance, args.toArray(new Object[args.size()]));
         } catch (InvocationTargetException e) {
