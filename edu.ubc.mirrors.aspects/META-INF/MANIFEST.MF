@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: edu.ubc.mirrors.aspects
-Bundle-SymbolicName: edu.ubc.mirrors.aspects
+Bundle-SymbolicName: edu.ubc.mirrors.aspects;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: edu.ubc.retrospect

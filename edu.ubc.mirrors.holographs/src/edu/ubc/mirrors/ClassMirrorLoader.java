@@ -23,6 +23,7 @@ package edu.ubc.mirrors;
 
 import java.util.List;
 
+// TODO-RS: Rename to ClassLoaderMirror
 public interface ClassMirrorLoader extends InstanceMirror {
     
     public List<ClassMirror> loadedClassMirrors();

@@ -58,10 +58,7 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     }
     
     public Var getAroundClosureVar() {
-        ResolvedType aroundClosureType = world.resolve(world.getAroundClosureClass());
-        InstanceMirror closure = world.getAroundClosureClass().newRawInstance();
-        InstanceMirror closureWrapper =  new AroundClosureMirror(closure, handler);
-        return new MirrorEventVar(aroundClosureType, closureWrapper);
+        return world.makeInvocationHandlerAroundClosureVar(handler);
     }
 
     @Override

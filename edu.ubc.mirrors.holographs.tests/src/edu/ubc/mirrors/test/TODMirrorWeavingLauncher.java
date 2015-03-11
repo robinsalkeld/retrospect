@@ -29,7 +29,6 @@ public class TODMirrorWeavingLauncher {
         
         File binDir = new File(aspectPath);
         URL urlPath = binDir.toURI().toURL();
-        URL aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/workspace/org.aspectj.runtime/aspectjrt.jar!/");
         
         System.out.println("Booting up holographic VM...");
         final VirtualMachineHolograph vmh = new VirtualMachineHolograph(todVMM, new File(hologramCachePath),
@@ -40,10 +39,7 @@ public class TODMirrorWeavingLauncher {
         final VirtualMachineMirror finalVM = vm;
         final ThreadMirror finalThread = thread;
         
-        System.out.println("Creating class loader for aspects...");
-        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, null, new URL[] {urlPath, aspectRuntimeJar});
-        
-        MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
+        MirrorWorld world = new MirrorWorld(finalVM, finalThread, urlPath);
         world.weave();
         
         vm.dispatch().run();

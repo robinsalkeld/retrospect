@@ -14,7 +14,6 @@ import org.aspectj.bridge.IMessageHandler;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.SourceLocation;
-import org.aspectj.runtime.internal.AroundClosure;
 import org.aspectj.runtime.reflect.Factory;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AjcMemberMaker;
@@ -30,6 +29,7 @@ import org.aspectj.weaver.ShadowMunger;
 import org.aspectj.weaver.SourceContextImpl;
 import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.World;
+import org.aspectj.weaver.ast.Var;
 import org.aspectj.weaver.loadtime.DefaultMessageHandler;
 import org.aspectj.weaver.loadtime.definition.Definition;
 import org.aspectj.weaver.loadtime.definition.DocumentParser;
@@ -48,12 +48,15 @@ import edu.ubc.mirrors.InputStreamMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
+import edu.ubc.mirrors.raw.NativeByteArrayMirror;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 
 /**
  * Where good is evil, and evil good. Or something like that.
@@ -95,15 +98,26 @@ public class MirrorWorld extends World {
         }
     };
     
-    public MirrorWorld(VirtualMachineMirror vm, ClassMirrorLoader loader, ThreadMirror thread) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+    public MirrorWorld(VirtualMachineMirror vm, ThreadMirror thread, URL aspectPath) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
-        this.loader = loader;
+        
+        System.out.println("Creating class loader for aspects...");
+        this.loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {aspectPath, MirrorWorld.aspectRuntimeJar});
+        
         this.thread = thread;
         ClassMirror factoryClass = Reflection.classMirrorForType(vm, thread, Type.getType(Factory.class), true, loader);
         this.factoryConstructor = factoryClass.getConstructor(String.class.getName(), Class.class.getName());
         this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
         this.pointcutAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(org.aspectj.lang.annotation.Pointcut.class), false, loader);
-        this.aroundClosureClass = Reflection.classMirrorForType(vm, thread, Type.getType(AroundClosure.class), false, loader);
+        
+        this.aroundClosureClass = Reflection.withThread(thread, new Callable<ClassMirror>() {
+            public ClassMirror call() throws Exception {
+                ClassMirror nativeClass = new NativeClassMirror(MirrorInvocationHandlerAroundClosure.class);
+                byte[] bytecode = nativeClass.getBytecode();
+                return loader.defineClass(nativeClass.getClassName(), new NativeByteArrayMirror(bytecode), 
+                        0, bytecode.length, null, null, false);
+            }
+        });
         
         if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
             setMessageHandler(IMessageHandler.SYSTEM_ERR);
@@ -122,6 +136,18 @@ public class MirrorWorld extends World {
     
     public ClassMirror getAroundClosureClass() {
         return aroundClosureClass;
+    }
+    
+    public Var makeInvocationHandlerAroundClosureVar(final MirrorInvocationHandler handler) {
+        return Reflection.withThread(thread, new Callable<Var>() {
+            public Var call() throws Exception {
+                ResolvedType aroundClosureType = resolve(getAroundClosureClass());
+                InstanceMirror closure = getAroundClosureClass().newRawInstance();
+                FieldMirror handlerField = getAroundClosureClass().getDeclaredField("handler");
+                closure.set(handlerField, new AroundClosureMirror(vm, handler));
+                return new MirrorEventVar(aroundClosureType, closure);
+            }
+        });
     }
     
     @Override

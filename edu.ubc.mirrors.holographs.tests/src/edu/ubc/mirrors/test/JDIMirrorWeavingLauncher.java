@@ -14,12 +14,16 @@ import com.sun.jdi.event.EventSet;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
+import edu.ubc.mirrors.raw.NativeByteArrayMirror;
+import edu.ubc.mirrors.raw.NativeClassMirror;
+import edu.ubc.retrospect.AroundClosureMirror;
 import edu.ubc.retrospect.MirrorWorld;
 
 public class JDIMirrorWeavingLauncher {
@@ -56,11 +60,7 @@ public class JDIMirrorWeavingLauncher {
         final VirtualMachineMirror finalVM = vm;
         final ThreadMirror finalThread = thread;
         
-        System.out.println("Creating class loader for aspects...");
-        final ClassMirrorLoader loader = Reflection.newURLClassLoader(vm, finalThread, null, 
-        		new URL[] {urlPath, MirrorWorld.aspectRuntimeJar});
-        
-        MirrorWorld world = new MirrorWorld(finalVM, loader, finalThread);
+        MirrorWorld world = new MirrorWorld(finalVM, finalThread, urlPath);
         world.weave();
         
         vm.dispatch().run();

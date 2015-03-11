@@ -11,6 +11,7 @@ import org.aspectj.weaver.ast.Var;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.Reflection;
@@ -89,13 +90,6 @@ public class ConstructorMirrorExecutionShadow extends MirrorEventShadow {
     }
     
     public Var getAroundClosureVar() {
-        return Reflection.withThread(thread, new Callable<Var>() {
-            public Var call() throws Exception {
-                ResolvedType aroundClosureType = world.resolve(world.getAroundClosureClass());
-                InstanceMirror closure = world.getAroundClosureClass().newRawInstance();
-                InstanceMirror closureWrapper =  new AroundClosureMirror(closure, handler);
-                return new MirrorEventVar(aroundClosureType, closureWrapper);
-            }
-        });
+        return world.makeInvocationHandlerAroundClosureVar(handler);
     }
 }
