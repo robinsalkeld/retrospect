@@ -22,7 +22,11 @@
 package edu.ubc.mirrors;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EventDispatch {
 
@@ -56,12 +60,26 @@ public class EventDispatch {
 //          }
         }
     }
+
+    private Comparator<MirrorEvent> REQUEST_ORDER_COMPARATOR = new Comparator<MirrorEvent>() {
+        @Override
+        public int compare(MirrorEvent left, MirrorEvent right) {
+            return Integer.compare(getRequestOrder(left.request()),
+                                   getRequestOrder(right.request()));
+        }
+    };
     
     private static final Object CALLBACKS_KEY = new Object();
     
     private final VirtualMachineMirror vm;
     
     private final List<Runnable> eventSetCallbacks = new ArrayList<Runnable>();
+    private final Map<MirrorEventRequest, Integer> requestOrder = new HashMap<MirrorEventRequest, Integer>();
+    private int nextOrder = 0;
+    
+    private boolean currentSetHandled = false;
+    private MirrorEventSet currentSet = null;
+    private List<MirrorEvent> pending = new ArrayList<MirrorEvent>();
     
     public EventDispatch(VirtualMachineMirror vm) {
 	this.vm = vm;
@@ -75,6 +93,15 @@ public class EventDispatch {
 	    request.putProperty(CALLBACKS_KEY, callbacks);
 	}
 	callbacks.add(callback);
+	
+        if (!requestOrder.containsKey(request)) {
+            requestOrder.put(request, nextOrder++);
+        }
+    }
+    
+    private int getRequestOrder(MirrorEventRequest request) {
+        Integer order = requestOrder.get(request);
+        return order != null ? order : 0;
     }
     
     public void addSetCallback(Runnable callback) {
@@ -98,44 +125,47 @@ public class EventDispatch {
         for (Runnable setCallback : eventSetCallbacks) {
             setCallback.run();
         }
-        eventSet.resume();
     }
     
     public void run() throws InterruptedException {
-	vm.resume();
-	MirrorEventQueue q = vm.eventQueue();
-	MirrorEventSet eventSet = q.remove();
-	while (eventSet != null) {
-	    for (MirrorEvent event : eventSet) {
-                handleEvent(event);
-            }
-            handleSetEvent(eventSet);
-            
-	    eventSet = q.remove();
-	}
+        runUntil(null);
     }
     
     public MirrorEvent runUntil(MirrorEventRequest request) throws InterruptedException {
-        MirrorEventQueue q = vm.eventQueue();
-        MirrorEventSet eventSet = q.remove();
-        while (eventSet != null) {
-            MirrorEvent toReturn = null;
-            for (MirrorEvent event : eventSet) {
-                handleEvent(event);
-                if (event.request().equals(request)) {
-                    toReturn = event;
-                }
-            }
-            handleSetEvent(eventSet);
-            
-            if (toReturn != null) {
-                return toReturn;
+        MirrorEvent event = nextEvent();
+        while (event != null) {
+            handleEvent(event);
+            if (event.request().equals(request)) {
+                return event;
             }
             
-            eventSet = q.remove();
+            event = nextEvent();
         }
         
         return null;
+    }
+    
+    public MirrorEvent nextEvent() throws InterruptedException {
+        while (pending.isEmpty()) {
+            if (currentSet != null) {
+                if (!currentSetHandled) {
+                    currentSetHandled = true;
+                    handleSetEvent(currentSet);
+                }
+                currentSet.resume();
+            }
+            
+            currentSet = vm.eventQueue().remove();
+            currentSetHandled = false;
+            if (currentSet == null) {
+                return null;
+            }
+            
+            pending.addAll(currentSet);
+            Collections.sort(pending, REQUEST_ORDER_COMPARATOR);
+        }
+        
+        return pending.remove(0);
     }
     
     public void forAllClasses(final Callback<ClassMirror> callback) {

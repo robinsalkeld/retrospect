@@ -16,6 +16,7 @@ import org.aspectj.apache.bcel.classfile.JavaClass;
 import org.aspectj.apache.bcel.classfile.Method;
 import org.aspectj.apache.bcel.generic.InstructionHandle;
 import org.aspectj.apache.bcel.generic.InstructionList;
+import org.aspectj.bridge.IMessage;
 import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.Member;
@@ -358,6 +359,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         if (request instanceof MethodMirrorHandlerRequest || request instanceof ConstructorMirrorHandlerRequest) {
             request.enable();
         } else {
+            world.showMessage(IMessage.DEBUG, request.toString(), null, null);
             world.vm.dispatch().addCallback(request, EVENT_CALLBACK);
         }
         request.enable();

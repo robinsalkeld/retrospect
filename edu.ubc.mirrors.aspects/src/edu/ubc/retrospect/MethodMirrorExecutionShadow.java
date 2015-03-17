@@ -38,11 +38,6 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     }
 
     @Override
-    protected ClassMirror getDeclaringClass() {
-        return method.getDeclaringClass();
-    }
-
-    @Override
     public AdviceKind kind() {
         return AdviceKind.Around;
     }
@@ -51,7 +46,37 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     public ThreadMirror getThread() {
         return thread;
     }
+    
+    @Override
+    public Var getThisVar() {
+        return new MirrorEventVar(world.resolve(method.getDeclaringClass()), getThis());
+    }
 
+    @Override
+    public Var getTargetVar() {
+        return getThisVar();
+    }
+
+    @Override
+    public int getArgCount() {
+        return method.getParameterTypes().size();
+    }
+    
+    @Override
+    public Var getArgVar(int i) {
+        return new MirrorEventVar(getArgType(i), getArgument(i));
+    }
+    
+    @Override
+    public ResolvedType getArgType(int arg) {
+        return world.resolve(method.getParameterTypes().get(arg));
+    }
+    
+    @Override
+    protected ClassMirror getDeclaringClass() {
+        return method.getDeclaringClass();
+    }
+    
     @Override
     protected InstanceMirror getThisJoinPointStaticPart() {
         return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.METHOD_EXECUTION, method);

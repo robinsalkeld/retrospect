@@ -70,11 +70,11 @@ public class MirrorWorld extends World {
     public static URL aspectRuntimeJar;
     static {
     	try {
-    		// TODO-RS: Automatically determine this
+    	    // TODO-RS: Automatically determine this
     	    aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.aspects/lib/aspectjrt-1.7.3.jar!/");
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
+    	} catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     final VirtualMachineMirror vm;
@@ -437,7 +437,9 @@ public class MirrorWorld extends World {
                 vm.dispatch().addSetCallback(new Runnable() {
                     public void run() {
                         Set<MirrorEventShadow> shadowSet = joinpointShadowsTL.get();
-                        for (MirrorEventShadow shadow : shadowSet) {
+                        Set<MirrorEventShadow> copy = new HashSet<MirrorEventShadow>(shadowSet);
+                        shadowSet.clear();
+                        for (MirrorEventShadow shadow : copy) {
                             showMessage(IMessage.DEBUG, shadow.toString(), null, null);
                             for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
                                 if (munger.match(shadow, MirrorWorld.this)) {
@@ -455,5 +457,8 @@ public class MirrorWorld extends World {
                 return null;
             }
         });
+        
+        vm.resume();
+        vm.dispatch().run();
     }
 }
