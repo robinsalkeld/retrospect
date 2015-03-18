@@ -629,7 +629,8 @@ public class HologramMethodGenerator extends InstructionAdapter {
                 checkcast(Type.getType(boxingType));
                 invokevirtual(Type.getInternalName(boxingType), returnType.getClassName() + "Value", Type.getMethodType(returnType).getDescriptor());
             } else {
-                MethodHandle.OBJECT_HOLOGRAM_MAKE.invoke(this);
+                getClassMirror(owner);
+                MethodHandle.OBJECT_HOLOGRAM_MAKE_FROM_OBJECT.invoke(this);
                 checkcast(returnType);
             }
         }

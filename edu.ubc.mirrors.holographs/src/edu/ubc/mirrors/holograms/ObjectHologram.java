@@ -162,6 +162,30 @@ public class ObjectHologram implements Hologram {
         }
     }
     
+    public static Hologram makeFromObject(Object mirrorOrBoxedPrimitive, ClassMirror callingClass) {
+        if (mirrorOrBoxedPrimitive == null || mirrorOrBoxedPrimitive instanceof ObjectMirror) {
+            return make((ObjectMirror)mirrorOrBoxedPrimitive);
+        } else {
+            return make(mirrorBox(callingClass.getVM(), mirrorOrBoxedPrimitive));
+        }
+        
+        
+    }
+    
+    private static InstanceMirror mirrorBox(VirtualMachineMirror vm, Object box) {
+        try {
+            Class<?> boxingClass = box.getClass();
+            Class<?> primitiveClass = (Class<?>)boxingClass.getDeclaredField("TYPE").get(null);
+            ClassMirror boxingClassMirror = vm.findBootstrapClassMirror(boxingClass.getName());
+            
+            MethodMirror valueOfMethod = boxingClassMirror.getDeclaredMethod("valueOf", primitiveClass.getName());
+            return (InstanceMirror)valueOfMethod.invoke(ThreadHolograph.currentThreadMirror(), null, box);
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException
+                | NoSuchMethodException | MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     public static Hologram make(ObjectMirror mirror) {
         if (mirror == null) {
             return null;

@@ -51,6 +51,13 @@ public abstract class MethodHandle {
         }
     };
     
+    public static MethodHandle OBJECT_HOLOGRAM_MAKE_FROM_OBJECT = new MethodHandle() {
+        @Override 
+        public void methodCall() {
+            ObjectHologram.makeFromObject(null, null);
+        }
+    };
+    
     public static MethodHandle HOLOGRAM_CLASS_LOADER_LOAD_ORIGINAL_CLASS_MIRROR = new MethodHandle() {
         HologramClassLoader loader = null;
         @Override
