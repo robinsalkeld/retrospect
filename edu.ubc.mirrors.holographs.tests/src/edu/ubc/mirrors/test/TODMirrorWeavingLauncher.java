@@ -41,7 +41,5 @@ public class TODMirrorWeavingLauncher {
         
         MirrorWorld world = new MirrorWorld(finalVM, finalThread, urlPath);
         world.weave();
-        
-        vm.dispatch().run();
     }
 }

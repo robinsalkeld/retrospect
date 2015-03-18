@@ -106,6 +106,7 @@ public class JDIUtils {
     private static class StreamSiphon extends Thread {
         
         public StreamSiphon(InputStream in, OutputStream out) {
+            super("StreamSiphon for " + in);
             this.in = in;
             this.out = out;
         }
