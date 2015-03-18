@@ -101,7 +101,13 @@ public class MirrorWorld extends World {
     public MirrorWorld(VirtualMachineMirror vm, ThreadMirror thread, URL aspectPath) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
         
-        System.out.println("Creating class loader for aspects...");
+        if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
+            setMessageHandler(IMessageHandler.SYSTEM_ERR);
+        } else {
+            setMessageHandler(new DefaultMessageHandler());
+        }
+        
+        showMessage(IMessage.DEBUG, "Creating class loader for aspects...", null, null);
         this.loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {aspectPath, MirrorWorld.aspectRuntimeJar});
         
         this.thread = thread;
@@ -118,12 +124,6 @@ public class MirrorWorld extends World {
                         0, bytecode.length, null, null, false);
             }
         });
-        
-        if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
-            setMessageHandler(IMessageHandler.SYSTEM_ERR);
-        } else {
-            setMessageHandler(new DefaultMessageHandler());
-        }
         
         // These ones just have to be loaded because they are argument types in some of the factory methods
         Reflection.classMirrorForType(vm, thread, Type.getType(SourceLocation.class), true, loader);
