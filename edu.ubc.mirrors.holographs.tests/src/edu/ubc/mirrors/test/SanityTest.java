@@ -59,9 +59,9 @@ public class SanityTest extends TestCase {
         HeapDumpTest2.main(new String[] {"/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/jruby_irb/java_pid41658.0001.jrubyirb.hprof"});
     }
     
-    public void testPrintOSGiBundles() throws Exception {
-        EclipseHeapDumpTest.main(new String[] {"/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid2675.0001.subeclipseonjava7.hprof"});
-    }
+//    public void testPrintOSGiBundles() throws Exception {
+//        EclipseHeapDumpTest.main(new String[] {"/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid52701.0001.hprof"});
+//    }
     
     public void testCDTBugSetup() throws Exception {
         MethodMirror method = CDTBugTest.getNameKeyMethod("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/cdt_oom_bug/java_pid7720.hprof");
@@ -156,10 +156,10 @@ public class SanityTest extends TestCase {
         RacerTest.main(new String[0]);
     }
     
-    public void testTracingAspectTOD() throws Exception {
-        TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
-                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin",
-                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/tod/TracingTest");
-    }
+//    public void testTracingAspectTOD() throws Exception {
+//        TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
+//                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin",
+//                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/tod/TracingTest");
+//    }
     
 }
