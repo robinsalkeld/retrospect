@@ -21,13 +21,16 @@
  ******************************************************************************/
 package edu.ubc.mirrors.test;
 
+import junit.framework.TestCase;
 
-public class RacerTest {
 
-    public static void main(String[] args) throws Exception {
-        JDIMirrorWeavingLauncher.launch("Task", 
+public class RacerTest extends TestCase {
+
+    public void testRacerExample() throws Exception {
+        String output = JDIMirrorWeavingLauncher.launch("Task", 
                 "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Racer Test/bin\" -DRACER_LOGGING=false", 
                 "/Users/robinsalkeld/Documents/UBC/Code/RacerAJ/bin", 
                 "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/RacerTest/hologram_classes");
+        assertTrue(output.contains("Field 'static int Task.shared' is accessed unprotected."));
     }
 }

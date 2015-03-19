@@ -29,6 +29,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.holographs.jdkplugins.NativeStubs;
 import edu.ubc.mirrors.holographs.jdkplugins.StubMethod;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -54,9 +55,9 @@ public class FileOutputStreamStubs extends NativeStubs {
 	ArrayMirror nativeBytesMirror = new NativeByteArrayMirror(nativeBytes);
 	Reflection.arraycopy(b, off, nativeBytesMirror, 0, len);
 	if (fd == 1) {
-	    System.out.write(nativeBytes);
+	    getVM().getSystemOut().write(nativeBytes);
 	} else if (fd == 2) {
-	    System.err.write(nativeBytes);
+	    getVM().getSystemErr().write(nativeBytes);
 	} else {
 	    throw new InternalError("Illegal write to FileOutputStream");
 	}

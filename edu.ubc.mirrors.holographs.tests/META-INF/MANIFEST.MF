@@ -38,6 +38,7 @@ Import-Package: com.sun.jdi,
  org.eclipse.mat.snapshot.model,
  org.eclipse.mat.util,
  org.eclipse.osgi.framework.internal.core,
+ org.junit;version="4.11.0",
  org.osgi.framework;version="1.6.0",
  tod.core.database.browser
 Bundle-ClassPath: .,

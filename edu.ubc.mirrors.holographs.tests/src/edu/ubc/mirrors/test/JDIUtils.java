@@ -43,7 +43,7 @@ import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
 
 public class JDIUtils {
-    public static VirtualMachine commandLineLaunch(String mainAndArgs, String vmArgs, boolean suspend, boolean echoStreams) throws VMStartException, IOException {
+    public static VirtualMachine commandLineLaunch(String mainAndArgs, String vmArgs, boolean suspend, OutputStream out, OutputStream err) throws VMStartException, IOException {
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List<Connector> connectors = vmm.allConnectors();
         LaunchingConnector c = null;
@@ -70,13 +70,13 @@ public class JDIUtils {
                     }
                 }
             });
-            return fixTimeoutAndHandleStreams(vm, echoStreams);
+            return fixTimeoutAndHandleStreams(vm, out, err);
         } catch (IllegalConnectorArgumentsException e) {
             throw new RuntimeException(e);
         }
     }
     
-    public static VirtualMachine connectOnPort(int port, boolean echoStreams) throws IOException, IllegalConnectorArgumentsException {
+    public static VirtualMachine connectOnPort(int port, OutputStream out, OutputStream err) throws IOException, IllegalConnectorArgumentsException {
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List<Connector> connectors = vmm.allConnectors();
         AttachingConnector c = null;
@@ -89,15 +89,16 @@ public class JDIUtils {
         
         Map<String, Argument> connectorArgs = c.defaultArguments();
         ((IntegerArgument)connectorArgs.get("port")).setValue(port);
-        return fixTimeoutAndHandleStreams(c.attach(connectorArgs), echoStreams);
+        return fixTimeoutAndHandleStreams(c.attach(connectorArgs), out, err);
     }
     
-    private static VirtualMachine fixTimeoutAndHandleStreams(VirtualMachine vm, boolean echoStreams) {
+    private static VirtualMachine fixTimeoutAndHandleStreams(VirtualMachine vm, OutputStream out, OutputStream err) {
         ((org.eclipse.jdi.VirtualMachine)vm).setRequestTimeout(6000000);
-        if (echoStreams) {
-            Process process = vm.process();
-            new StreamSiphon(process.getInputStream(), System.out).start();
-            new StreamSiphon(process.getErrorStream(), System.err).start();
+        if (out != null) {
+            new StreamSiphon(vm.process().getInputStream(), out).start();
+        }
+        if (err != null) {
+            new StreamSiphon(vm.process().getErrorStream(), err).start();
         }
         
         return vm;

@@ -108,7 +108,7 @@ public class SanityTest extends TestCase {
         final VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
                 "edu.ubc.mirrors.test.JREOnly", 
                 "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.holographs.tests/bin\"",
-                false, false);
+                false, null, null);
         
         // Ignore the VMStartEvent
         jdiVM.eventQueue().remove();
@@ -149,11 +149,11 @@ public class SanityTest extends TestCase {
 //    }
     
     public void testTracingAspect() throws Exception {
-        TracingExampleTest.main(new String[0]);
+        new TracingExampleTest().testTracingAspect();
     }
     
     public void testRacerAspects() throws Exception {
-        RacerTest.main(new String[0]);
+        new RacerTest().testRacerExample(); 
     }
     
 //    public void testTracingAspectTOD() throws Exception {

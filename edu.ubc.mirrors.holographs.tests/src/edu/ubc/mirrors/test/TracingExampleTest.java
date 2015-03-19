@@ -21,16 +21,22 @@
  ******************************************************************************/
 package edu.ubc.mirrors.test;
 
+import junit.framework.TestCase;
 
-public class TracingExampleTest {
+import edu.ubc.mirrors.raw.NativeClassMirror;
 
-    public static void main(String[] args) throws Exception {
-        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
+
+public class TracingExampleTest extends TestCase {
+
+    public void testTracingAspect() throws Exception {
+        String combinedOutput = JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
                 "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"", 
                 "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin", 
                 "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/TracingExampleTest/hologram_classes");
         
-        
+        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
+        assertEquals(expectedOutput, combinedOutput);
+    
 //	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
 //	
 //	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());

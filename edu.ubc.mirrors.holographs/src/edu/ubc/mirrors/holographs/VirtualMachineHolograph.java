@@ -30,6 +30,7 @@ import java.io.FileReader;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
@@ -111,6 +112,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     // TODO-RS: Move all this data that is only relevant for MNMs to
     // the plugins.
     
+    private OutputStream systemOut;
+    private OutputStream systemErr;
+    
     private final Map<String, String> mappedFiles;
     private final ClassLoader bootstrapBytecodeLoader;
     private final Map<String, ClassHolograph> dynamicallyDefinedClasses =
@@ -151,6 +155,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         if (HologramClassLoader.debug) {
             System.out.println("Creating VM holograph...");
         }
+        
+        this.systemOut = System.out;
+        this.systemErr = System.err;
         
         this.bytecodeCacheDir = bytecodeCacheDir;
         HologramClassLoader.checkHologramBytecodeVersion(this);
@@ -822,6 +829,22 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     @Override
     public MirrorEventRequestManager eventRequestManager() {
         return requestManager;
+    }
+    
+    public OutputStream getSystemOut() {
+        return systemOut;
+    }
+    
+    public OutputStream getSystemErr() {
+        return systemErr;
+    }
+    
+    public void setSystemOut(OutputStream systemOut) {
+        this.systemOut = systemOut;
+    }
+    
+    public void setSystemErr(OutputStream systemErr) {
+        this.systemErr = systemErr;
     }
     
     // TODO-RS: Temporary for evaluation
