@@ -2,30 +2,22 @@ package edu.ubc.mirrors.test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.Collections;
-
-import org.aspectj.bridge.IMessageHandler;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
+import com.sun.jdi.event.VMStartEvent;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
 
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
-import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
-import edu.ubc.mirrors.raw.NativeByteArrayMirror;
-import edu.ubc.mirrors.raw.NativeClassMirror;
-import edu.ubc.retrospect.AroundClosureMirror;
 import edu.ubc.retrospect.MirrorWorld;
 
 public class JDIMirrorWeavingLauncher {
