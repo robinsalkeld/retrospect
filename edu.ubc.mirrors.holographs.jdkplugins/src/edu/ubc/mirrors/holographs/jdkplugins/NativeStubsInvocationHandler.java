@@ -32,10 +32,10 @@ import edu.ubc.mirrors.ThreadMirror;
 
 public class NativeStubsInvocationHandler implements MirrorInvocationHandler {
 
-    private final Object stubsClassInstance;
+    private final NativeStubs stubsClassInstance;
     private final Method stubsMethod;
     
-    public NativeStubsInvocationHandler(Object stubsClassInstance, Method stubsMethod) {
+    public NativeStubsInvocationHandler(NativeStubs stubsClassInstance, Method stubsMethod) {
         this.stubsClassInstance = stubsClassInstance;
         this.stubsMethod = stubsMethod;
     }

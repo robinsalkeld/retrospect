@@ -40,9 +40,12 @@ public class JDIMirrorWeavingLauncher {
         r.enable();
         jdiVM.resume();
         EventQueue q = jdiVM.eventQueue();
-        // Ignore the VMStartEvent
-        q.remove();
         EventSet es = q.remove();
+        // Ignore the VMStartEvent
+        if (es.size() == 1 && es.iterator().next() instanceof VMStartEvent) {
+            es.resume();
+            es = q.remove();
+        }
         ClassPrepareEvent cpe = (ClassPrepareEvent)es.eventIterator().next();
         final ThreadReference threadRef = cpe.thread();
         

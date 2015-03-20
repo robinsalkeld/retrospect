@@ -379,14 +379,13 @@ public class MirrorWorld extends World {
         }, vm.makeString(definitionPath));
         FakeURLStreamHandler handler = new FakeURLStreamHandler(new InputStreamMirror(thread, definitionStream));
         try {
-            URL fakeURL = new URL("file", "", 0, definitionPath, handler);
-            definition = DocumentParser.parse(fakeURL);
+            definition = DocumentParser.parse(handler.getURL());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
     
-    public void weave() throws ClassNotFoundException, NoSuchMethodException, InterruptedException, MirrorInvocationTargetException {
+    public void weave() throws ClassNotFoundException, InterruptedException {
         Reflection.withThread(thread, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -397,8 +396,12 @@ public class MirrorWorld extends World {
                 
                 showMessage(IMessage.DEBUG, "Loading aspects...", null, null);
                 for (String aspectClassName : definition.getAspectClassNames()) {
-                    ReferenceType aspectType = (ReferenceType)resolve(aspectClassName);
-                    getCrosscuttingMembersSet().addOrReplaceAspect(aspectType);
+                    ResolvedType aspectType = resolve(aspectClassName);
+                    if (aspectType.isMissing()) {
+                        throw new ClassNotFoundException("Couldn't load aspect: " + aspectClassName); 
+                    }
+                    
+                    getCrosscuttingMembersSet().addOrReplaceAspect((ReferenceType)aspectType);
                 }
                 
                 showMessage(IMessage.DEBUG, "Weaving aspects...", null, null);

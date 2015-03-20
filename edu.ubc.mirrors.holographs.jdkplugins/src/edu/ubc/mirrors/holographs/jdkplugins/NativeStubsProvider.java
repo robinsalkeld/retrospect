@@ -42,7 +42,7 @@ public class NativeStubsProvider implements MirrorInvocationHandlerProvider {
 
     public NativeStubsProvider(ClassMirror classMirror, Class<?> stubsClass) {
         try {
-            this.stubsClassInstance = stubsClass.getConstructor(ClassHolograph.class).newInstance(classMirror);
+            this.stubsClassInstance = (NativeStubs)stubsClass.getConstructor(ClassHolograph.class).newInstance(classMirror);
         } catch (InstantiationException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException
                 | NoSuchMethodException | SecurityException e) {
@@ -51,7 +51,7 @@ public class NativeStubsProvider implements MirrorInvocationHandlerProvider {
         this.handlers = indexStubMethods(stubsClass);
     }
 
-    private final Object stubsClassInstance;
+    private final NativeStubs stubsClassInstance;
     private final Map<org.objectweb.asm.commons.Method, MirrorInvocationHandler> handlers;
     
     private Map<org.objectweb.asm.commons.Method, MirrorInvocationHandler> indexStubMethods(Class<?> nativeStubsClass) {
