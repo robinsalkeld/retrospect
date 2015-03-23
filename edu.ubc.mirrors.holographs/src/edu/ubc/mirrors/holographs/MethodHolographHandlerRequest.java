@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.holographs;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
@@ -12,6 +15,7 @@ import edu.ubc.mirrors.MirrorEvent;
 public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest {
 
     private final VirtualMachineHolograph vm;
+    private final Map<Object, Object> properties = new HashMap<Object, Object>();
     private final MethodMirrorEntryRequest entryRequest;
     private final MethodMirrorExitRequest exitRequest;
     private MethodMirror methodFilter;
@@ -60,12 +64,12 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
 
     @Override
     public Object getProperty(Object key) {
-        return entryRequest.getProperty(key);
+        return properties.get(key);
     }
 
     @Override
     public void putProperty(Object key, Object value) {
-        entryRequest.putProperty(key, value);
+        properties.put(key, value);
     }
 
     @Override
