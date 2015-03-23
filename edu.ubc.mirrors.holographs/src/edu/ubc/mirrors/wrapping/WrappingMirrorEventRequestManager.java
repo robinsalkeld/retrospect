@@ -29,6 +29,7 @@ import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetRequest;
+import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
@@ -150,14 +151,18 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
     
     @Override
-    public MethodMirrorHandlerRequest createMethodMirrorHandlerRequest(MirrorInvocationHandler handler) {
-        return new WrappingMethodMirrorHandlerRequest(vm, 
-                wrapped.createMethodMirrorHandlerRequest(vm.unwrapInvocationHandler(handler)));
+    public MethodMirrorHandlerRequest createMethodMirrorHandlerRequest() {
+        return new WrappingMethodMirrorHandlerRequest(vm, wrapped.createMethodMirrorHandlerRequest());
     }
     
     @Override
-    public ConstructorMirrorHandlerRequest createConstructorMirrorHandlerRequest(MirrorInvocationHandler handler) {
-        return new WrappingConstructorMirrorHandlerRequest(vm, 
-                wrapped.createConstructorMirrorHandlerRequest(vm.unwrapInvocationHandler(handler)));
+    public ConstructorMirrorHandlerRequest createConstructorMirrorHandlerRequest() {
+        return new WrappingConstructorMirrorHandlerRequest(vm, wrapped.createConstructorMirrorHandlerRequest());
+    }
+    
+    @Override
+    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field) {
+        return new WrappingFieldMirrorSetHandlerRequest(vm, 
+                wrapped.createFieldMirrorSetHandlerRequest(vm.unwrapFieldMirror(field)));
     }
 }

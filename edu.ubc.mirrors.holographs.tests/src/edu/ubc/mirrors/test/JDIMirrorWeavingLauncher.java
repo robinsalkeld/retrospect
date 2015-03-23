@@ -21,6 +21,9 @@ import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.retrospect.MirrorWorld;
 
 public class JDIMirrorWeavingLauncher {
+    
+    private static String GUARD_ASPECTS_PATH = "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/Retroactive Aspect Guards/bin";
+    
     public static String launch(String mainClassName, String options, String aspectPath, String hologramClassPath) throws Exception {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         
@@ -48,6 +51,9 @@ public class JDIMirrorWeavingLauncher {
         File binDir = new File(aspectPath);
         URL urlPath = binDir.toURI().toURL();
         
+        File guardAspects = new File(GUARD_ASPECTS_PATH);
+        URL guardAspectsPath = guardAspects.toURI().toURL();
+        
         if (hologramClassPath != null) {
 	        System.out.println("Booting up holographic VM...");
 	        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, new File(hologramClassPath),
@@ -62,7 +68,7 @@ public class JDIMirrorWeavingLauncher {
         final VirtualMachineMirror finalVM = vm;
         final ThreadMirror finalThread = thread;
         
-        MirrorWorld world = new MirrorWorld(finalVM, finalThread, urlPath);
+        MirrorWorld world = new MirrorWorld(finalVM, finalThread, urlPath, guardAspectsPath);
         world.weave();
         
         return output.toString();

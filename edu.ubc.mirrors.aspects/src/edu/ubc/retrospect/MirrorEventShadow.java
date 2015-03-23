@@ -17,11 +17,13 @@ import org.aspectj.weaver.ast.Var;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
 import edu.ubc.mirrors.ConstructorMirrorExitEvent;
+import edu.ubc.mirrors.ConstructorMirrorHandlerEvent;
 import edu.ubc.mirrors.FieldMirrorGetEvent;
 import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
+import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -125,7 +127,12 @@ public abstract class MirrorEventShadow extends Shadow {
     public static MirrorEventShadow make(MirrorWorld world, MirrorEvent event) {
         Shadow.Kind shadowKind = (Shadow.Kind)event.request().getProperty(SHADOW_KIND_PROPERTY_KEY); 
         
-        if (event instanceof ConstructorMirrorEntryEvent) {
+        if (event instanceof ConstructorMirrorHandlerEvent) {
+            ConstructorMirrorHandlerEvent cmhe = (ConstructorMirrorHandlerEvent)event;
+            Member signature = ConstructorMirrorMember.make(world, cmhe.constructor());
+            return new ConstructorMirrorExecutionShadow(world, AdviceKind.Around, cmhe.constructor(),
+                    cmhe.thread(), cmhe.proceed(), signature, null);
+        } else if (event instanceof ConstructorMirrorEntryEvent) {
             ConstructorMirrorEntryEvent cmee = (ConstructorMirrorEntryEvent)event;
             Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
             return new ConstructorMirrorExecutionShadow(world, AdviceKind.Before, cmee.constructor(),
@@ -135,6 +142,11 @@ public abstract class MirrorEventShadow extends Shadow {
             Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
             return new ConstructorMirrorExecutionShadow(world, AdviceKind.After, cmee.constructor(),
                     cmee.thread(), null, signature, null);
+        } else if (event instanceof MethodMirrorHandlerEvent) {
+            MethodMirrorHandlerEvent mmhe = (MethodMirrorHandlerEvent)event;
+            Member signature = MethodMirrorMember.make(world, mmhe.method());
+            return new MethodMirrorExecutionShadow(world, mmhe.method(),
+                    mmhe.thread(), mmhe.proceed(), signature, null);
         } else if (event instanceof MethodMirrorEntryEvent) {
             MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
             if (shadowKind == Shadow.SynchronizationLock) {

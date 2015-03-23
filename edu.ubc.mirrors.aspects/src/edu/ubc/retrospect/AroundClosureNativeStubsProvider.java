@@ -25,13 +25,13 @@ public class AroundClosureNativeStubsProvider implements MirrorInvocationHandler
     }
     
     private static final MirrorInvocationHandler HANDLER = new MirrorInvocationHandler() {
-        public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+        public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
             InstanceMirror closure = (InstanceMirror)args.get(0);
             ObjectArrayMirror closureArgsMirror = (ObjectArrayMirror)args.get(1);
             Object[] closureArgs = Reflection.fromArray(closureArgsMirror);
             try {
                 AroundClosureMirror mirror = (AroundClosureMirror)closure.get(closure.getClassMirror().getDeclaredField("handler"));
-                return mirror.getHandler().invoke(thread, null, Arrays.asList(closureArgs), null);
+                return mirror.getHandler().invoke(thread, Arrays.asList(closureArgs));
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }

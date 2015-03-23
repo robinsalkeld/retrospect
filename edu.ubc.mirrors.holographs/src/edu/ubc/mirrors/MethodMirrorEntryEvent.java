@@ -25,7 +25,6 @@ import java.util.List;
 
 public interface MethodMirrorEntryEvent extends MirrorEvent {
 
-    public ThreadMirror thread();
     public MethodMirror method();
     public List<Object> arguments();
     

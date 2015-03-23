@@ -38,6 +38,8 @@ import edu.ubc.mirrors.raw.NativeByteArrayMirror;
 
 public class FileInputStreamStubs extends NativeStubs {
 
+    private int nextFD = 0;
+    
     public FileInputStreamStubs(ClassHolograph klass) {
 	super(klass);
     }
@@ -47,7 +49,8 @@ public class FileInputStreamStubs extends NativeStubs {
         VirtualMachineHolograph vm = klass.getVM();
         
         InstanceMirror fdMirror = (InstanceMirror)HolographInternalUtils.getField(fis, "fd");
-        int fd = fdMirror.getInt(fdMirror.getClassMirror().getDeclaredField("fd"));
+        int fd = nextFD++; 
+        fdMirror.setInt(fdMirror.getClassMirror().getDeclaredField("fd"), fd);
         
         String realName = Reflection.getRealStringForMirror(name);
         File mappedPath = vm.getMappedFile(new File(realName), true);

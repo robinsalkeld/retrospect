@@ -19,7 +19,6 @@ import org.aspectj.apache.bcel.generic.InstructionList;
 import org.aspectj.bridge.IMessage;
 import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
-import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ReferenceType;
 import org.aspectj.weaver.ResolvedMember;
 import org.aspectj.weaver.Shadow;
@@ -38,20 +37,14 @@ import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ConstructorMirror;
-import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.InvocableMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
-import edu.ubc.mirrors.MirrorInvocationHandler;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationEvent;
 import edu.ubc.mirrors.MirrorLocationRequest;
@@ -84,24 +77,6 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         @Override
         public Object handle(MirrorEvent event) {
             MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
-            return callback.handle(shadow);
-        }
-    };
-    
-    private final MirrorInvocationHandler METHOD_INVOCATION_CALLBACK = new MirrorInvocationHandler() {
-        public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
-            MethodMirror method = (MethodMirror)invocable;
-            Member signature = MethodMirrorMember.make(world, method);
-            MethodMirrorExecutionShadow shadow = new MethodMirrorExecutionShadow(world, method, thread, original, signature, null);
-            return callback.handle(shadow);
-        }
-    };
-    
-    private final MirrorInvocationHandler CONSTRUCTOR_INVOCATION_CALLBACK = new MirrorInvocationHandler() {
-        public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
-            ConstructorMirror constructor = (ConstructorMirror)invocable;
-            Member signature = ConstructorMirrorMember.make(world, constructor);
-            ConstructorMirrorExecutionShadow shadow = new ConstructorMirrorExecutionShadow(world, AdviceKind.Around, constructor, thread, original, signature, null);
             return callback.handle(shadow);
         }
     };
@@ -166,7 +141,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                         addFiltersAndInstall(manager.createMethodMirrorExitRequest(), thisFilters);
                     }
                     if (adviceKind == AdviceKind.Around) {
-                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(METHOD_INVOCATION_CALLBACK), thisFilters);
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
                     }
                     break;
                 case (Shadow.ConstructorExecutionBit):
@@ -177,7 +152,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                         addFiltersAndInstall(manager.createConstructorMirrorExitRequest(), thisFilters);
                     }
                     if (adviceKind == AdviceKind.Around) {
-                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(CONSTRUCTOR_INVOCATION_CALLBACK), thisFilters);
+                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);
                     }
                     break;
                 case (Shadow.FieldSetBit):
@@ -356,12 +331,8 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         for (PatternNode pattern : filters) {
             addPatternFilter(request, pattern);
         }
-        if (request instanceof MethodMirrorHandlerRequest || request instanceof ConstructorMirrorHandlerRequest) {
-            request.enable();
-        } else {
-            world.showMessage(IMessage.DEBUG, request.toString(), null, null);
-            world.vm.dispatch().addCallback(request, EVENT_CALLBACK);
-        }
+        world.showMessage(IMessage.DEBUG, request.toString(), null, null);
+        world.vm.dispatch().addCallback(request, EVENT_CALLBACK);
         request.enable();
     }
     

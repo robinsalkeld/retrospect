@@ -19,15 +19,13 @@ public class WrappingMirrorInvocationHandler implements MirrorInvocationHandler 
     }
 
     @Override
-    public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
         ThreadMirror unwrappedThread = vm.unwrapThread(thread);
-        InvocableMirror unwrappedInvocable = vm.unwrapInvocable(invocable);
         List<Object> unwrappedArgs = new ArrayList<Object>(args.size());
         for (Object arg : args) {
             unwrappedArgs.add(vm.unwrappedValue(arg));
         }
-        MirrorInvocationHandler unwrappedOriginal = vm.unwrapInvocationHandler(original);
-        Object result = wrapped.invoke(unwrappedThread, unwrappedInvocable, unwrappedArgs, unwrappedOriginal);
+        Object result = wrapped.invoke(unwrappedThread, unwrappedArgs);
         return vm.wrapValue(result);
     }
 

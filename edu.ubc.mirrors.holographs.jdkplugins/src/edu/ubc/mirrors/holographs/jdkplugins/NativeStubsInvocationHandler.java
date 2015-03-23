@@ -41,7 +41,7 @@ public class NativeStubsInvocationHandler implements MirrorInvocationHandler {
     }
 
     @Override
-    public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
         try {
             return stubsMethod.invoke(stubsClassInstance, args.toArray(new Object[args.size()]));
         } catch (InvocationTargetException e) {

@@ -25,7 +25,6 @@ import static edu.ubc.mirrors.holograms.HologramClassGenerator.getHologramBinary
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationHandler;
@@ -141,9 +140,8 @@ public class Reflection {
     }
     
     public static ClassMirrorLoader newURLClassLoader(VirtualMachineMirror vm, ThreadMirror thread, ClassMirrorLoader parent, URL[] urls) {
-//        ThreadHolograph threadHolograph = (ThreadHolograph)thread;
-//        threadHolograph.enterHologramExecution();
-//        try {
+        ThreadHolograph.raiseMetalevel();
+        try {
             ClassMirror urlClass = vm.findBootstrapClassMirror(URL.class.getName());
             ConstructorMirror urlConstructor = HolographInternalUtils.getConstructor(urlClass, String.class.getName());
             
@@ -157,9 +155,9 @@ public class Reflection {
             ConstructorMirror constructor = HolographInternalUtils.getConstructor(urlClassLoaderClass, urlsMirror.getClassMirror().getClassName(), ClassLoader.class.getName());
             
             return (ClassMirrorLoader)HolographInternalUtils.newInstance(constructor, thread, urlsMirror, parent);
-//        } finally {
-//            threadHolograph.exitHologramExecution();
-//        }
+        } finally {
+            ThreadHolograph.lowerMetalevel();   
+        }
     }
     
     public static String getRealStringForMirror(InstanceMirror mirror) {
@@ -945,6 +943,29 @@ public class Reflection {
             result.addAll(collectAllSubclasses(subclass));
         }
         return result;
+    }
+
+    public static void setField(InstanceMirror target, FieldMirror field, Object newValue) throws IllegalAccessException {
+        String typeName = field.getTypeName();
+        if (typeName.equals("boolean")) {
+            target.setBoolean(field, (Boolean)newValue);
+        } else if (typeName.equals("byte")) {
+            target.setByte(field, (Byte)newValue);
+        } else if (typeName.equals("char")) {
+            target.setChar(field, (Character)newValue);
+        } else if (typeName.equals("short")) {
+            target.setShort(field, (Short)newValue);
+        } else if (typeName.equals("int")) {
+            target.setInt(field, (Integer)newValue);
+        } else if (typeName.equals("long")) {
+            target.setLong(field, (Long)newValue);
+        } else if (typeName.equals("float")) {
+            target.setFloat(field, (Float)newValue);
+        } else if (typeName.equals("double")) {
+            target.setDouble(field, (Double)newValue);
+        } else {
+            target.set(field, (ObjectMirror)newValue);
+        }
     }
     
     

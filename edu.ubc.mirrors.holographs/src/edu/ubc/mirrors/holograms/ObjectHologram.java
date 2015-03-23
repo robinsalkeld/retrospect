@@ -340,7 +340,7 @@ public class ObjectHologram implements Hologram {
         }
         
         try {
-            return classHolograph.getInvocationHandler(method).invoke(ThreadHolograph.currentThreadMirror(), method, handlerArgs, null);
+            return classHolograph.getInvocationHandler(method).invoke(ThreadHolograph.currentThreadMirror(), handlerArgs);
         } catch (MirrorInvocationTargetException e) {
             throw (Throwable)ObjectHologram.make(e.getTargetException());
         }

@@ -18,6 +18,10 @@ public class FakeURLStreamHandler extends URLStreamHandler {
         this.stream = stream;
     }
     
+    public static URL makeURL(InputStream stream) {
+        return new FakeURLStreamHandler(stream).getURL();
+    }
+    
     public URL getURL() {
         try {
             return new URL("fake", "", 0, "" + suffix, this);

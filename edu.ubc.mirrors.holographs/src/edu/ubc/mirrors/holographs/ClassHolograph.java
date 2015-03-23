@@ -206,14 +206,18 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         return wrapped;
     }
     
-    public static MirrorInvocationHandler getMethodHandler(MethodMirror method) {
-        MirrorInvocationHandler handler;
+    public MirrorInvocationHandler getMethodHandler(MethodMirror method) {
         for (MirrorInvocationHandlerProvider provider : invocationHandlerProviders) {
-            handler = provider.getInvocationHandler(method);
+            MirrorInvocationHandler handler = provider.getInvocationHandler(method);
             if (handler != null) {
                 return handler;
             }
         }
+        
+        for (MethodHolographHandlerRequest handler : vm.eventRequestManager().requestsForMethodMirror(method)) {
+            // TODO-RS: etc.
+        }
+        
         return null;
     }
     
@@ -231,7 +235,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         }
         
         @Override
-        public Object invoke(ThreadMirror thread, InvocableMirror invocable, List<Object> args, MirrorInvocationHandler original) throws MirrorInvocationTargetException {
+        public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
             throw new InternalError("Unsupported native method: " + methodSig);
         }
         

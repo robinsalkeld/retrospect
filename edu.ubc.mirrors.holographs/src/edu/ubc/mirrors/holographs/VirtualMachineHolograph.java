@@ -827,7 +827,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     @Override
-    public MirrorEventRequestManager eventRequestManager() {
+    public HolographEventRequestManager eventRequestManager() {
         return requestManager;
     }
     

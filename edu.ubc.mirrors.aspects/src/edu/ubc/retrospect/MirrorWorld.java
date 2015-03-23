@@ -2,8 +2,11 @@ package edu.ubc.retrospect;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -43,6 +46,7 @@ import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.EnumerationMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InputStreamMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -51,6 +55,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -90,7 +95,7 @@ public class MirrorWorld extends World {
             new HashMap<String, ClassMirror>();
     
     private final MirrorWeavingSupport weavingSupport = new MirrorWeavingSupport(this);
-    private Definition definition;
+    private List<Definition> definitions;
     private final ThreadLocal<Set<MirrorEventShadow>> joinpointShadowsTL = new ThreadLocal<Set<MirrorEventShadow>>() {
         @Override
         protected Set<MirrorEventShadow> initialValue() {
@@ -98,7 +103,7 @@ public class MirrorWorld extends World {
         }
     };
     
-    public MirrorWorld(VirtualMachineMirror vm, ThreadMirror thread, URL aspectPath) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+    public MirrorWorld(VirtualMachineMirror vm, ThreadMirror thread, URL... aspectPaths) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = vm;
         
         if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
@@ -108,7 +113,10 @@ public class MirrorWorld extends World {
         }
         
         showMessage(IMessage.DEBUG, "Creating class loader for aspects...", null, null);
-        this.loader = Reflection.newURLClassLoader(vm, thread, null, new URL[] {aspectPath, MirrorWorld.aspectRuntimeJar});
+        URL[] paths = new URL[aspectPaths.length + 1];
+        System.arraycopy(aspectPaths, 0, paths, 0, aspectPaths.length);
+        paths[paths.length - 1] = MirrorWorld.aspectRuntimeJar;
+        this.loader = Reflection.newURLClassLoader(vm, thread, null, paths);
         
         this.thread = thread;
         ClassMirror factoryClass = Reflection.classMirrorForType(vm, thread, Type.getType(Factory.class), true, loader);
@@ -190,7 +198,12 @@ public class MirrorWorld extends World {
     
     @Override
     public boolean isAspectIncluded(ResolvedType aspectType) {
-        return definition.getAspectClassNames().contains(aspectType.getName());
+        for (Definition definition : definitions) {
+            if (definition.getAspectClassNames().contains(aspectType.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private InstanceMirror getAJFactory(ThreadMirror thread, ClassMirror classMirror) {
@@ -371,17 +384,27 @@ public class MirrorWorld extends World {
     }
     
     private void parseConfiguration() {
+        definitions = new ArrayList<Definition>();
         String definitionPath = "META-INF/aop-ajc.xml";
-        InstanceMirror definitionStream = (InstanceMirror)Reflection.invokeMethodHandle(loader, thread, new MethodHandle() {
+        InstanceMirror urlsEnumeration = (InstanceMirror)Reflection.invokeMethodHandle(loader, thread, new MethodHandle() {
             protected void methodCall() throws Throwable {
-                ((ClassLoader)null).getResourceAsStream((String)null);
+                ((ClassLoader)null).getResources((String)null);
             }
         }, vm.makeString(definitionPath));
-        FakeURLStreamHandler handler = new FakeURLStreamHandler(new InputStreamMirror(thread, definitionStream));
-        try {
-            definition = DocumentParser.parse(handler.getURL());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        Enumeration<ObjectMirror> urls = new EnumerationMirror(thread, urlsEnumeration);
+        while (urls.hasMoreElements()) {
+            InstanceMirror urlMirror = (InstanceMirror)urls.nextElement();
+            InstanceMirror streamMirror = (InstanceMirror)Reflection.invokeMethodHandle(urlMirror, thread, new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ((URL)null).openStream();
+                }
+            });
+            URL handler = FakeURLStreamHandler.makeURL(new InputStreamMirror(thread, streamMirror));
+            try {
+                definitions.add(DocumentParser.parse(handler));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
     
@@ -395,13 +418,15 @@ public class MirrorWorld extends World {
                 parseConfiguration();
                 
                 showMessage(IMessage.DEBUG, "Loading aspects...", null, null);
-                for (String aspectClassName : definition.getAspectClassNames()) {
-                    ResolvedType aspectType = resolve(aspectClassName);
-                    if (aspectType.isMissing()) {
-                        throw new ClassNotFoundException("Couldn't load aspect: " + aspectClassName); 
+                for (Definition definition : definitions) {
+                    for (String aspectClassName : definition.getAspectClassNames()) {
+                        ResolvedType aspectType = resolve(aspectClassName);
+                        if (aspectType.isMissing()) {
+                            throw new ClassNotFoundException("Couldn't load aspect: " + aspectClassName); 
+                        }
+                        
+                        getCrosscuttingMembersSet().addOrReplaceAspect((ReferenceType)aspectType);
                     }
-                    
-                    getCrosscuttingMembersSet().addOrReplaceAspect((ReferenceType)aspectType);
                 }
                 
                 showMessage(IMessage.DEBUG, "Weaving aspects...", null, null);

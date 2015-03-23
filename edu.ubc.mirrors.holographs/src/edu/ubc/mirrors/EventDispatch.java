@@ -109,7 +109,7 @@ public class EventDispatch {
     }
     
     @SuppressWarnings("unchecked")
-    public static void handleEvent(MirrorEvent event) {
+    public void handleEvent(MirrorEvent event) {
 	MirrorEventRequest request = event.request();
 	if (request != null) {
 	    List<?> callbacks = (List<?>)request.getProperty(CALLBACKS_KEY);

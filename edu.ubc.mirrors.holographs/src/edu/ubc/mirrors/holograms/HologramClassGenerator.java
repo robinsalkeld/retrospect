@@ -47,7 +47,6 @@ import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
@@ -454,7 +453,7 @@ public class HologramClassGenerator extends ClassVisitor {
                 } catch (NoSuchMethodException e) {
                     throw new RuntimeException(e);
                 }
-                MirrorInvocationHandler handler = ClassHolograph.getMethodHandler(method);
+                MirrorInvocationHandler handler = ((ClassHolograph)classMirror).getMethodHandler(method);
                 if (handler != null) {
                     needsThunk = true;
                 }
