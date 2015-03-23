@@ -23,6 +23,7 @@ import org.aspectj.weaver.patterns.Declare;
 import org.aspectj.weaver.patterns.PerClause;
 import org.aspectj.weaver.patterns.PerSingleton;
 import org.aspectj.weaver.patterns.Pointcut;
+import org.aspectj.weaver.patterns.Pointcut.State;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -63,7 +64,7 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
     
     private Object memberForMethodMirror(MethodMirror m) {
         AnnotationMirror annot = Reflection.getAnnotation(m.getAnnotations(getWorld().thread), getWorld().getPointcutAnnotClass());
-        if (annot != null && !Modifier.isAbstract(m.getModifiers())) {
+        if (annot != null) {
             String parameterNamesString = (String)annot.getValue(getWorld().thread, "argNames");
             String[] parameterNames = parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(",");
             
@@ -74,8 +75,13 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
             
             String name = getPointcutName(m);
             
-            String pointcut = (String)annot.getValue(getWorld().thread, "value");
-            Pointcut pc = getWorld().parsePointcut(pointcut);
+            Pointcut pc;
+            if (Modifier.isAbstract(m.getModifiers())) {
+                pc = Pointcut.makeMatchesNothing(Pointcut.RESOLVED);
+            } else {
+                String pointcut = (String)annot.getValue(getWorld().thread, "value");
+                pc = getWorld().parsePointcut(pointcut);
+            }
             
             ResolvedPointcutDefinition def = new ResolvedPointcutDefinition(getResolvedTypeX(), m.getModifiers(), name,
                     parameterTypes, pc);
@@ -114,7 +120,9 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
             
             for (Member m : declaredPointcuts) {
                 ResolvedPointcutDefinition rpc = (ResolvedPointcutDefinition)m;
-                rpc.setPointcut(getWorld().resolvePointcut(rpc, rpc.getPointcut()));
+                if (rpc.getPointcut().state == Pointcut.SYMBOLIC) {
+                    rpc.setPointcut(getWorld().resolvePointcut(rpc, rpc.getPointcut()));
+                }
             }
         }
     }

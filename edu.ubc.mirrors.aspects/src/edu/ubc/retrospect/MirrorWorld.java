@@ -12,8 +12,10 @@ import java.util.regex.Pattern;
 import org.aspectj.bridge.IMessage;
 import org.aspectj.bridge.IMessageHandler;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.SourceLocation;
+import org.aspectj.runtime.internal.AroundClosure;
 import org.aspectj.runtime.reflect.Factory;
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.AjcMemberMaker;
@@ -75,6 +77,15 @@ public class MirrorWorld extends World {
     	} catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    private static Set<String> implicitPointcutFormalTypes = new HashSet<String>();
+    static {
+        implicitPointcutFormalTypes.add(JoinPoint.class.getName());
+        implicitPointcutFormalTypes.add(ProceedingJoinPoint.class.getName());
+        implicitPointcutFormalTypes.add(JoinPoint.StaticPart.class.getName());
+        implicitPointcutFormalTypes.add(JoinPoint.EnclosingStaticPart.class.getName());
+        implicitPointcutFormalTypes.add(AroundClosure.class.getName());
     }
     
     final VirtualMachineMirror vm;
@@ -355,7 +366,11 @@ public class MirrorWorld extends World {
         FormalBinding[] formals = new FormalBinding[parameterNames.length];
         for (int i = 0; i < formals.length; i++) {
             UnresolvedType paramType = signature.getParameterTypes()[i];
-            formals[i] = new FormalBinding(paramType, parameterNames[i], i);
+            if (implicitPointcutFormalTypes.contains(paramType.getName())) {
+                formals[i] = new FormalBinding.ImplicitFormalBinding(paramType, parameterNames[i], i);   
+            } else {
+                formals[i] = new FormalBinding(paramType, parameterNames[i], i);
+            }
         }
         BindingScope scope = new BindingScope((ResolvedType)signature.getDeclaringType(), pointcut.getSourceContext(), formals);
         return pointcut.resolve(scope);
@@ -401,7 +416,9 @@ public class MirrorWorld extends World {
                         throw new ClassNotFoundException("Couldn't load aspect: " + aspectClassName); 
                     }
                     
-                    getCrosscuttingMembersSet().addOrReplaceAspect((ReferenceType)aspectType);
+                    if (!aspectType.isAbstract()) {
+                        getCrosscuttingMembersSet().addOrReplaceAspect((ReferenceType)aspectType);
+                    }
                 }
                 
                 showMessage(IMessage.DEBUG, "Weaving aspects...", null, null);
