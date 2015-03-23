@@ -171,7 +171,10 @@ public class MirrorWorld extends World {
             } catch (ClassNotFoundException e) {
                 return null;
             } catch (MirrorInvocationTargetException e) {
-                return null;
+                if (e.getTargetException().getClassMirror().getClassName().equals(ClassNotFoundException.class.getName())) {
+                    return null;
+                }
+                throw new RuntimeException(e);
             }
             classMirrors.put(typeName, klass);
         }
