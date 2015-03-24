@@ -51,7 +51,6 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.InvocableMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
@@ -69,11 +68,12 @@ import edu.ubc.mirrors.fieldmap.FieldMapThreadMirror;
 import edu.ubc.mirrors.holograms.Hologram;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.MethodHologramHandlerEvent;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
 import edu.ubc.mirrors.wrapping.WrappingClassMirror;
 
-public class ClassHolograph extends WrappingClassMirror implements MirrorInvocationHandlerProvider {
+public class ClassHolograph extends WrappingClassMirror {
 
     private InstanceMirror memberFieldsDelegate;
     private StaticFieldValuesMirror staticFieldValues;
@@ -207,15 +207,13 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
     }
     
     public MirrorInvocationHandler getMethodHandler(MethodMirror method) {
+        // TODO-RS: This doesn't handle nested handlers yet
+        
         for (MirrorInvocationHandlerProvider provider : invocationHandlerProviders) {
             MirrorInvocationHandler handler = provider.getInvocationHandler(method);
             if (handler != null) {
                 return handler;
             }
-        }
-        
-        for (MethodHolographHandlerRequest handler : vm.eventRequestManager().requestsForMethodMirror(method)) {
-            // TODO-RS: etc.
         }
         
         return null;
@@ -241,8 +239,7 @@ public class ClassHolograph extends WrappingClassMirror implements MirrorInvocat
         
     }
     
-    @Override
-    public MirrorInvocationHandler getInvocationHandler(MethodMirror method) {
+    public MirrorInvocationHandler getNativeMethodHandler(MethodMirror method) {
         MirrorInvocationHandler handler = getMethodHandler(method);
         if (handler == null) {
             handler = new UnsupportedNativeMethodInvocationHandler(method);

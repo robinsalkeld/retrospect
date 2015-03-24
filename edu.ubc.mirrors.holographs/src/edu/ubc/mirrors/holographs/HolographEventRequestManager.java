@@ -10,7 +10,9 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.holograms.FieldHologramSetEvent;
+import edu.ubc.mirrors.holograms.MethodHologramHandlerEvent;
 import edu.ubc.mirrors.wrapping.WrappingMirrorEventRequestManager;
 
 public class HolographEventRequestManager extends WrappingMirrorEventRequestManager {
@@ -56,14 +58,26 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
 //        return handlers;
 //    }
     
-    public List<MethodHolographHandlerRequest> requestsForMethodMirror(MethodMirror method) {
-        List<MethodHolographHandlerRequest> handlers = new ArrayList<MethodHolographHandlerRequest>();
+    public Object handleMethodInvocation(MirrorInvocationHandler original, MethodMirror method, List<Object> arguments) throws MirrorInvocationTargetException {
+        MirrorInvocationHandler handler = original;
         for (MethodHolographHandlerRequest request : methodHandlerRequests) {
             if (method.equals(request.getMethodFilter())) {
-                handlers.add(request);
+                MethodHologramHandlerEvent handlerEvent = new MethodHologramHandlerEvent(request, ThreadHolograph.currentThreadMirror(), method, arguments);
+                vm.dispatch().handleEvent(handlerEvent);
+                handler = handlerEvent.proceed();
             }
         }
-        return handlers;
+        return handler.invoke(ThreadHolograph.currentThreadMirror(), arguments);
+    }
+
+    public boolean methodRequested(MethodMirror method) {
+        for (MethodHolographHandlerRequest request : methodHandlerRequests) {
+            MethodMirror methodFilter = request.getMethodFilter();
+            if (/*methodFilter == null || */method.equals(methodFilter)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

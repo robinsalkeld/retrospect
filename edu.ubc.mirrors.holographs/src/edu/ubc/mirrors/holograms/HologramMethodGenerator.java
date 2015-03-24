@@ -588,7 +588,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
         }
     }
     
-    public void generateNativeThunk() {
+    public void generateThunk() {
         visitCode();
         
         getClassMirror(owner);

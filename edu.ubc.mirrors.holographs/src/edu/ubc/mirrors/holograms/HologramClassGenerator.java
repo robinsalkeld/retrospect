@@ -438,14 +438,9 @@ public class HologramClassGenerator extends ClassVisitor {
             hologramAccess = forcePublic(hologramAccess);
         }
         
-        MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);
-        
-        HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString, isGetStackTrace);
-        LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
-        generator.setLocalVariablesSorter(lvs);
-        
-        boolean needsThunk = (Opcodes.ACC_NATIVE & access) != 0;
-        if (!needsThunk && !name.startsWith("<")) {
+        boolean isNative = (Opcodes.ACC_NATIVE & access) != 0;
+        boolean needsThunk = isNative;
+        if (!isNative && !name.startsWith("<")) {
             if ((Opcodes.ACC_ABSTRACT & access) == 0) {
                 MethodMirror method;
                 try {
@@ -457,13 +452,28 @@ public class HologramClassGenerator extends ClassVisitor {
                 if (handler != null) {
                     needsThunk = true;
                 }
+                
+                needsThunk |= ((ClassHolograph)classMirror).getVM().eventRequestManager().methodRequested(method);
             }
         }
         
         if (needsThunk) {
-            generator.generateNativeThunk();
-            return null;
+            MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);
+            HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString, isGetStackTrace);
+            
+            generator.generateThunk();
+            
+            if (isNative) {
+                return null;
+            }
+            
+            name = name + "_original";
         }
+        
+        MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);
+        HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString, isGetStackTrace);
+        LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
+        generator.setLocalVariablesSorter(lvs);
         
         return lvs;
     }
