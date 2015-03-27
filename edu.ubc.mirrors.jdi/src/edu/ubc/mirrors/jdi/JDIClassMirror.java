@@ -119,7 +119,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
         ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
         ClassType classClass = (ClassType)vm.jdiVM.classesByName(Class.class.getName()).get(0);
         Method getAnnotationsMethod = classClass.methodsByName("getAnnotations", "()[Ljava/lang/annotation/Annotation;").get(0);
-        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(refType.classObject(), threadRef, getAnnotationsMethod);
+        ArrayReference annotsArray = (ArrayReference)vm.safeInvoke(refType.classObject(), threadRef, getAnnotationsMethod);
         return (List<AnnotationMirror>)vm.wrapAnnotationValue(threadRef, annotsArray);
     }
     

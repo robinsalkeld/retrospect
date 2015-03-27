@@ -102,7 +102,7 @@ public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
         ObjectReference methodInstance = getReflectiveInstance(thread);
         ClassType methodClass = (ClassType)methodInstance.referenceType();
         Method getAnnotationsMethod = methodClass.methodsByName("getDeclaredAnnotations", "()[Ljava/lang/annotation/Annotation;").get(0);
-        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(methodInstance, threadRef, getAnnotationsMethod);
+        ArrayReference annotsArray = (ArrayReference)vm.safeInvoke(methodInstance, threadRef, getAnnotationsMethod);
         return vm.wrapAnnotationArray(threadRef, annotsArray);
     }
     
@@ -111,7 +111,7 @@ public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
         ObjectReference methodInstance = getReflectiveInstance(thread);
         ClassType methodClass = (ClassType)methodInstance.referenceType();
         Method getAnnotationsMethod = methodClass.methodsByName("getParameterAnnotations", "()[[Ljava/lang/annotation/Annotation;").get(0);
-        ArrayReference annotsArray = (ArrayReference)JDIVirtualMachineMirror.safeInvoke(methodInstance, threadRef, getAnnotationsMethod);
+        ArrayReference annotsArray = (ArrayReference)vm.safeInvoke(methodInstance, threadRef, getAnnotationsMethod);
         return vm.wrapAnnotationArrayOfArrays(threadRef, annotsArray);
     }
     

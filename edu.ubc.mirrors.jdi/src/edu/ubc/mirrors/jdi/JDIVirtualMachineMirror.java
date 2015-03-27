@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.BooleanValue;
@@ -472,23 +473,23 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         return new JDIMirrorLocation(this, location);
     }
     
-    public static Value safeInvoke(ObjectReference o, ThreadReference t, Method m, Value...values) {
+    public Value safeInvoke(final ObjectReference o, final ThreadReference t, final Method m, final Value...values) {
         List<Value> args;
         if (values.length == 0) {
             args = Collections.emptyList();
         } else {
             args = Arrays.asList(values);
         }
+        final List<Value> finalArgs = args;
         
         try {
-            return o.invokeMethod(t, m, args, 0);
-        } catch (InvalidTypeException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotLoadedException e) {
-            throw new RuntimeException(e);
-        } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationException e) {
+            return Reflection.withEventDispatchThread(this, new Callable<Value>() {
+                @Override
+                public Value call() throws Exception {
+                    return o.invokeMethod(t, m, finalArgs, 0);
+                }
+            });
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -528,7 +529,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
             ClassType klass = (ClassType)object.referenceType();
             if (klass.isEnum()) {
                 Method nameMethod = jdiVM.classesByName(Enum.class.getName()).get(0).methodsByName("name").get(0);
-                StringReference name = (StringReference)JDIVirtualMachineMirror.safeInvoke(object, thread, nameMethod);
+                StringReference name = (StringReference)safeInvoke(object, thread, nameMethod);
                 return new EnumMirror(makeClassMirror(klass), name.value());
             } else {
                 return new JDIAnnotationMirror(this, thread, object);

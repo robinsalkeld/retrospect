@@ -30,34 +30,22 @@ import java.util.Map;
 
 public class EventDispatch {
 
-    private class SetCallbackThread extends Thread {
+    public static class EventDispatchThread extends Thread {
         
-        private MirrorEventSet eventSet;
-//      private boolean stop = false;
-//      private Semaphore semaphore = new Semaphore(0);
+        private final EventDispatch dispatch;
         
-        private SetCallbackThread(MirrorEventSet eventSet) {
-            setEventSet(eventSet);
+        public EventDispatchThread(EventDispatch dispatch) {
+            super("EventDispatchThread");
+            this.dispatch = dispatch;
         }
         
-        public void setEventSet(MirrorEventSet eventSet) {
-            this.eventSet = eventSet;
-//          semaphore.release();
-        }
         
         @Override
         public void run() {
-//          while (!stop) {
-//              try {
-//                  semaphore.acquire();
-//              } catch (InterruptedException e) {
-//                  throw new RuntimeException(e);
-//              }
-            for (MirrorEvent event : eventSet) {
-                handleEvent(event);
+            try {
+                dispatch.run();
+            } catch (InterruptedException e) {
             }
-            handleSetEvent(eventSet);
-//          }
         }
     }
 

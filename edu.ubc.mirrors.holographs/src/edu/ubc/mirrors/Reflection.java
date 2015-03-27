@@ -968,5 +968,13 @@ public class Reflection {
         }
     }
     
-    
+    public static <T> T withEventDispatchThread(VirtualMachineMirror vm, Callable<T> callback) throws Exception {
+        Thread dispatchThread = new EventDispatch.EventDispatchThread(vm.dispatch());
+        dispatchThread.start();
+        try {
+            return callback.call();
+        } finally {
+            dispatchThread.interrupt();
+        }
+    }
 }
