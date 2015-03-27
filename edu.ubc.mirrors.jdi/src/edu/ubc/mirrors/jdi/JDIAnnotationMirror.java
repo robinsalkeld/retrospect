@@ -28,7 +28,7 @@ public class JDIAnnotationMirror extends JDIMirror implements AnnotationMirror {
         ReferenceType annotationRT = vm.jdiVM.classesByName(Annotation.class.getName()).get(0);
         Method annotationTypeMethod = annotationRT.methodsByName("annotationType").get(0);
         
-        ClassObjectReference annotTypeRef = (ClassObjectReference)JDIVirtualMachineMirror.safeInvoke(mirror, thread, annotationTypeMethod);
+        ClassObjectReference annotTypeRef = (ClassObjectReference)vm.safeInvoke(mirror, thread, annotationTypeMethod);
         annotType = (InterfaceType)annotTypeRef.reflectedType();
     }
 
@@ -50,6 +50,6 @@ public class JDIAnnotationMirror extends JDIMirror implements AnnotationMirror {
     public Object getValue(ThreadMirror thread, String name) {
         Method interfaceMethod = annotType.methodsByName(name).get(0);
         ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
-        return vm.wrapAnnotationValue(threadRef, JDIVirtualMachineMirror.safeInvoke(mirror, threadRef, interfaceMethod));
+        return vm.wrapAnnotationValue(threadRef, vm.safeInvoke(mirror, threadRef, interfaceMethod));
     }
 }

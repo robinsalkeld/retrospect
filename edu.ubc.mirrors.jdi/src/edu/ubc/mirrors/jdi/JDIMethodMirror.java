@@ -23,6 +23,7 @@ package edu.ubc.mirrors.jdi;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.eclipse.jdi.TimeoutException;
 
@@ -37,6 +38,7 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -59,16 +61,15 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
     }
 
     @Override
-    protected ObjectReference getReflectiveInstance(ThreadMirror thread) {
+    protected ObjectReference getReflectiveInstance(final ThreadMirror thread) {
         try {
-            return ((JDIObjectMirror)Reflection.methodInstanceForMethodMirror(thread, this)).getObjectReference();
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (MirrorInvocationTargetException e) {
+            return Reflection.withEventDispatchThread(vm, new Callable<ObjectReference>() {
+                @Override
+                public ObjectReference call() throws Exception {
+                    return ((JDIObjectMirror)Reflection.methodInstanceForMethodMirror(thread, JDIMethodMirror.this)).getObjectReference();
+                }
+            });
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -79,7 +80,7 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
         ObjectReference methodInstance = getReflectiveInstance(thread);
         ClassType methodClass = (ClassType)methodInstance.referenceType();
         Method getDefaultValueMethod = methodClass.methodsByName("getDefaultValue", "()Ljava/lang/Object;").get(0);
-        Value defaultValue = JDIVirtualMachineMirror.safeInvoke(methodInstance, threadRef, getDefaultValueMethod);
+        Value defaultValue = vm.safeInvoke(methodInstance, threadRef, getDefaultValueMethod);
         return vm.wrapAnnotationValue(threadRef, defaultValue);
     }
     
