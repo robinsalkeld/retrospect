@@ -11,7 +11,6 @@ import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
-import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
@@ -25,6 +24,7 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     private final Map<Object, Object> properties = new HashMap<Object, Object>();
     private final MethodMirrorEntryRequest entryRequest;
     private final MethodMirrorExitRequest exitRequest;
+    private MethodMirrorExitEvent exitEvent;
     private List<String> classNamePatterns = new ArrayList<String>();
     private MethodMirror methodFilter;
     
@@ -33,11 +33,20 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         public Object handle(MirrorEvent t) {
             MethodMirrorEntryEvent entryEvent = (MethodMirrorEntryEvent)t;
             MethodHolographHandlerEvent handlerEvent = new MethodHolographHandlerEvent(MethodHolographHandlerRequest.this, 
-                    entryEvent.thread(), entryEvent.method(), entryEvent.arguments());
-            handlerEvent.setProceed(MethodHolographHandlerRequest.this);
-            vm.dispatch().handleEvent(handlerEvent);
-            vm.dispatch().handleSetEvent();
-            return handlerEvent.proceed().invoke(entryEvent.thread(), entryEvent.arguments());
+                    entryEvent.thread(), entryEvent.method(), entryEvent.arguments(), MethodHolographHandlerRequest.this);
+            
+            MirrorInvocationHandler proceed = vm.dispatch().handleInvocableEvent(handlerEvent);
+            
+            Object result;
+            try {
+                result = proceed.invoke(entryEvent.thread(), entryEvent.arguments());
+            } catch (MirrorInvocationTargetException e) {
+                throw new IllegalSideEffectError(e);
+            }
+            
+            // TODO-RS: Check result against exitEvent
+            
+            return result;
         }
     };
     
@@ -124,7 +133,7 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         // TODO-RS: Track how many times this is called
         
         try {
-            MethodMirrorExitEvent exitEvent = (MethodMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
+            exitEvent = (MethodMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
             return exitEvent.returnValue();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

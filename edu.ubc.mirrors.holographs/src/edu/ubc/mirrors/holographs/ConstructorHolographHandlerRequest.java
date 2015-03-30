@@ -12,6 +12,7 @@ import edu.ubc.mirrors.ConstructorMirrorExitEvent;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.ConstructorMirrorHandlerEvent;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
+import edu.ubc.mirrors.InvocableMirrorEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -28,8 +29,16 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
         @Override
         public Object handle(MirrorEvent t) {
             ConstructorMirrorEntryEvent entryEvent = (ConstructorMirrorEntryEvent)t;
-            ConstructorMirrorHandlerEvent handlerEvent = new ConstructorHolographHandlerEvent(vm, ConstructorHolographHandlerRequest.this, entryEvent, exitRequest);
-            vm.dispatch().handleEvent(handlerEvent);
+            ConstructorMirrorHandlerEvent handlerEvent = new ConstructorHolographHandlerEvent(ConstructorHolographHandlerRequest.this, 
+                    entryEvent.thread(), entryEvent.constructor(), entryEvent.arguments(), ConstructorHolographHandlerRequest.this);
+            MirrorInvocationHandler proceed = vm.dispatch().handleInvocableEvent(handlerEvent);
+            
+            try {
+                proceed.invoke(entryEvent.thread(), entryEvent.arguments());
+            } catch (MirrorInvocationTargetException e) {
+                throw new IllegalSideEffectError(e);
+            }
+        
             return null;
         }
     };
@@ -88,6 +97,7 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
         exitRequest.setConstructorFilter(method);
     }
 
+    @Override
     public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
         // TODO-RS: Check thread
         // TODO-RS: Check arguments

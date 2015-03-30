@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.ubc.mirrors.holographs.ThreadHolograph;
+
 public class EventDispatch {
 
     public static class EventDispatchThread extends Thread {
@@ -107,6 +109,28 @@ public class EventDispatch {
 		}
 	    }
 	}
+    }
+    
+    @SuppressWarnings("unchecked")
+    public MirrorInvocationHandler handleInvocableEvent(final InvocableMirrorEvent event) {
+        MirrorEventRequest request = event.request();
+        MirrorInvocationHandler proceed = event.getProceed();
+        if (request != null) {
+            List<?> callbacks = (List<?>)request.getProperty(CALLBACKS_KEY);
+            if (callbacks != null) {
+                for (Object callback : callbacks) {
+                    final Callback<MirrorEvent> finalCallback = (Callback<MirrorEvent>)callback;
+                    final MirrorInvocationHandler proceedBefore = proceed;
+                    proceed = new MirrorInvocationHandler() {
+                        public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                            InvocableMirrorEvent newEvent = event.setProceed(proceedBefore, args);
+                            return finalCallback.handle(newEvent);
+                        }
+                    };
+                }
+            }
+        }
+        return proceed;
     }
     
     public void handleSetEvent() {
