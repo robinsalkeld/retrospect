@@ -467,7 +467,7 @@ public class HologramClassGenerator extends ClassVisitor {
                 return null;
             }
             
-            name = name + "_original";
+            name = ClassHolograph.originalMethodName(getOriginalBinaryClassName(this.name), name);
         }
         
         MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);

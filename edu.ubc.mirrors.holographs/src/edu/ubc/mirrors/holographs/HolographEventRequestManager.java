@@ -61,8 +61,9 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
     public Object handleMethodInvocation(MirrorInvocationHandler original, MethodMirror method, List<Object> arguments) throws MirrorInvocationTargetException {
         MirrorInvocationHandler handler = original;
         for (MethodHolographHandlerRequest request : methodHandlerRequests) {
-            if (method.equals(request.getMethodFilter())) {
+            if (request.matches(method)) {
                 MethodHologramHandlerEvent handlerEvent = new MethodHologramHandlerEvent(request, ThreadHolograph.currentThreadMirror(), method, arguments);
+                handlerEvent.setProceed(handler);
                 vm.dispatch().handleEvent(handlerEvent);
                 handler = handlerEvent.proceed();
             }
@@ -72,8 +73,7 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
 
     public boolean methodRequested(MethodMirror method) {
         for (MethodHolographHandlerRequest request : methodHandlerRequests) {
-            MethodMirror methodFilter = request.getMethodFilter();
-            if (/*methodFilter == null || */method.equals(methodFilter)) {
+            if (request.matches(method)) {
                 return true;
             }
         }

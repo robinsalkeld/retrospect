@@ -52,6 +52,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorInvoker;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -68,6 +69,7 @@ import edu.ubc.mirrors.fieldmap.FieldMapThreadMirror;
 import edu.ubc.mirrors.holograms.Hologram;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.MethodHologram;
 import edu.ubc.mirrors.holograms.MethodHologramHandlerEvent;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror.StaticsInfo;
@@ -239,12 +241,23 @@ public class ClassHolograph extends WrappingClassMirror {
         
     }
     
-    public MirrorInvocationHandler getNativeMethodHandler(MethodMirror method) {
+    public static String originalMethodName(String declaringClassName, String name) {
+        return declaringClassName.replace('.', '_').replace('$', '_') + "_" + name + "_original";
+    }
+    
+    public MirrorInvocationHandler getOriginalMethodHandler(MethodMirror method) {
         MirrorInvocationHandler handler = getMethodHandler(method);
-        if (handler == null) {
-            handler = new UnsupportedNativeMethodInvocationHandler(method);
+        if (handler != null) {
+            return handler;
         }
-        return handler;
+        
+        if ((method.getModifiers() & Modifier.NATIVE) != 0) {
+            return new UnsupportedNativeMethodInvocationHandler(method);
+        } else {
+            return MethodHologram.make(this, 
+                    originalMethodName(method.getDeclaringClass().getClassName(), method.getName()), 
+                    method.getParameterTypes());
+        }
     }
     
     public static String getIllegalNativeMethodMessage(String owner, MethodMirror method) {

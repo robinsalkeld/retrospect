@@ -21,8 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors.holographs;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import edu.ubc.mirrors.AnnotationMirror;
@@ -31,17 +32,15 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.wrapping.WrappingMethodMirror;
+import edu.ubc.mirrors.holograms.MethodHologram;
 
 public class MethodHolograph implements MethodMirror {
 
     private final ClassHolograph klass;
     private final MethodMirror wrapped;
     private MethodMirror bytecodeMethod;
-    private Method hologramClassMethod;
-    private boolean accessible = false;
+    private MethodHologram hologramMethod;
     
     public MethodHolograph(ClassHolograph klass, MethodMirror wrapped) {
 	this.klass = klass;
@@ -74,22 +73,9 @@ public class MethodHolograph implements MethodMirror {
     }
     
     private void resolveMethod() {
-        List<ClassMirror> paramTypes = getParameterTypes();
-        Class<?>[] hologramParamTypes = new Class<?>[paramTypes.size()];
-        for (int i = 0; i < hologramParamTypes.length; i++) {
-            hologramParamTypes[i] = ClassHolograph.getHologramClass(paramTypes.get(i), false);
+        if (hologramMethod == null) {
+            hologramMethod = MethodHologram.make(klass, getName(), getParameterTypes());
         }
-        Class<?> hologramClass = klass.getHologramClass(true);
-        // Account for the fact that ObjectHologram is not actually the top of the type lattice
-        if (klass.getClassName().equals(Object.class.getName())) {
-            hologramClass = Object.class;
-        }
-        try {
-            hologramClassMethod = hologramClass.getDeclaredMethod(getName(), hologramParamTypes);
-        } catch (NoSuchMethodException e) {
-            throw new NoSuchMethodError(getName());
-        }
-        hologramClassMethod.setAccessible(accessible);
     }
     
     @Override
@@ -121,23 +107,11 @@ public class MethodHolograph implements MethodMirror {
         try {
             resolveMethod();
             
-            Object[] hologramArgs = new Object[args.length];
-            for (int i = 0; i < args.length; i++) {
-                hologramArgs[i] = ClassHolograph.makeHologram(args[i]);
+            List<Object> combinedArgs = new ArrayList<Object>(Arrays.asList(args));
+            if ((getModifiers() & Modifier.STATIC) == 0) {
+                combinedArgs.add(0, obj);
             }
-            Object hologramObj = ClassHolograph.makeHologram(obj);
-            try {
-                Object result = hologramClassMethod.invoke(hologramObj, hologramArgs);
-                // Account for the fact that toString() has to return a real String here
-                if (result instanceof String) {
-                    return klass.getVM().makeString((String)result);
-                } else {
-                    return ClassHolograph.unwrapHologram(result);
-                }
-            
-            } catch (InvocationTargetException e) {
-                throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
-            }
+            return hologramMethod.invoke(threadHolograph, combinedArgs);
         } finally {
             threadHolograph.exitHologramExecution();
         }
@@ -145,11 +119,7 @@ public class MethodHolograph implements MethodMirror {
     
     @Override
     public void setAccessible(boolean flag) {
-        if (hologramClassMethod != null) {
-            hologramClassMethod.setAccessible(flag);
-        } else {
-            accessible = flag;
-        }
+        // Ignore
     }
     
     @Override

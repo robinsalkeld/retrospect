@@ -37,6 +37,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -129,12 +130,12 @@ public class ObjectHologram implements Hologram {
         throw ie;
     }
     
-    public static String getRealStringForHologram(ObjectHologram hologram) {
+    public static String getRealStringForHologram(Hologram hologram) {
         if (hologram == null) {
             return null;
         }
         
-        return Reflection.getRealStringForMirror((InstanceMirror)hologram.mirror);
+        return Reflection.getRealStringForMirror((InstanceMirror)hologram.getMirror());
     }
     
     public static StackTraceElement[] getRealStackTraceForHologram(Hologram hologram) {
@@ -339,10 +340,14 @@ public class ObjectHologram implements Hologram {
             handlerArgs.add(0, object);
         }
         
+        MirrorInvocationHandler handler = classHolograph.getOriginalMethodHandler(method);
+
         try {
-            return classHolograph.getNativeMethodHandler(method).invoke(ThreadHolograph.currentThreadMirror(), handlerArgs);
+            return classHolograph.getVM().eventRequestManager().handleMethodInvocation(handler, method, handlerArgs);
         } catch (MirrorInvocationTargetException e) {
             throw (Throwable)ObjectHologram.make(e.getTargetException());
+        } catch (Exception e) {
+            throw e;
         }
     }
 }

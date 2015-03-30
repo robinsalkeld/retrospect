@@ -81,6 +81,20 @@ public abstract class MethodHandle {
         }
     };
     
+    public static MethodHandle OBJECT_HOLOGRAM_GET_REAL_STRING_FOR_HOLOGRAM_HANDLER = new MethodHandle() {
+        @Override
+        public void methodCall() throws Throwable {
+            ObjectHologram.getRealStringForHologram(null);
+        }
+    };
+    
+    public static MethodHandle OBJECT_HOLOGRAM_GET_REAL_STACK_TRACE_FOR_HOLOGRAM_HANDLER = new MethodHandle() {
+        @Override
+        public void methodCall() throws Throwable {
+            ObjectHologram.getRealStackTraceForHologram(null);
+        }
+    };
+    
     ////
     
     private MethodInsnNode method;

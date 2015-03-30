@@ -109,7 +109,7 @@ public class EventDispatch {
 	}
     }
     
-    public void handleSetEvent(MirrorEventSet eventSet) {
+    public void handleSetEvent() {
         for (Runnable setCallback : eventSetCallbacks) {
             setCallback.run();
         }
@@ -138,7 +138,7 @@ public class EventDispatch {
             if (currentSet != null) {
                 if (!currentSetHandled) {
                     currentSetHandled = true;
-                    handleSetEvent(currentSet);
+                    handleSetEvent();
                 }
                 currentSet.resume();
             }

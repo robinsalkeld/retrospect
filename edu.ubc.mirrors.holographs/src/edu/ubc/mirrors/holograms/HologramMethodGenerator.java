@@ -411,13 +411,9 @@ public class HologramMethodGenerator extends InstructionAdapter {
         
         if (opcode == Opcodes.ARETURN) {
             if (isToString) {
-                invokestatic(objectHologramType.getInternalName(),
-                             "getRealStringForHologram",
-                             Type.getMethodDescriptor(Type.getType(String.class), Type.getType(ObjectHologram.class)));
+                MethodHandle.OBJECT_HOLOGRAM_GET_REAL_STRING_FOR_HOLOGRAM_HANDLER.invoke(this);
             } else if (isGetStackTrace) {
-                invokestatic(objectHologramType.getInternalName(),
-                             "getRealStackTraceForHologram",
-                             Type.getMethodDescriptor(Type.getType(StackTraceElement[].class), Type.getType(Hologram.class)));
+                MethodHandle.OBJECT_HOLOGRAM_GET_REAL_STACK_TRACE_FOR_HOLOGRAM_HANDLER.invoke(this);
             }
         }
         
@@ -631,6 +627,9 @@ public class HologramMethodGenerator extends InstructionAdapter {
             } else {
                 getClassMirror(owner);
                 MethodHandle.OBJECT_HOLOGRAM_MAKE_FROM_OBJECT.invoke(this);
+                if (isToString) {
+                    MethodHandle.OBJECT_HOLOGRAM_GET_REAL_STRING_FOR_HOLOGRAM_HANDLER.invoke(this);
+                }
                 checkcast(returnType);
             }
         }
