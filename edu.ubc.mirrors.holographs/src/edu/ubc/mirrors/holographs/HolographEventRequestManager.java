@@ -11,8 +11,7 @@ import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.holograms.FieldHologramSetEvent;
-import edu.ubc.mirrors.holograms.MethodHologramHandlerEvent;
+import edu.ubc.mirrors.holograms.MethodHolographHandlerEvent;
 import edu.ubc.mirrors.wrapping.WrappingMirrorEventRequestManager;
 
 public class HolographEventRequestManager extends WrappingMirrorEventRequestManager {
@@ -62,9 +61,10 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
         MirrorInvocationHandler handler = original;
         for (MethodHolographHandlerRequest request : methodHandlerRequests) {
             if (request.matches(method)) {
-                MethodHologramHandlerEvent handlerEvent = new MethodHologramHandlerEvent(request, ThreadHolograph.currentThreadMirror(), method, arguments);
+                MethodHolographHandlerEvent handlerEvent = new MethodHolographHandlerEvent(request, ThreadHolograph.currentThreadMirror(), method, arguments);
                 handlerEvent.setProceed(handler);
                 vm.dispatch().handleEvent(handlerEvent);
+                vm.dispatch().handleSetEvent();
                 handler = handlerEvent.proceed();
             }
         }

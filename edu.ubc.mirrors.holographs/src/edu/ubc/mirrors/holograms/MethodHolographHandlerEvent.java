@@ -9,7 +9,7 @@ import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class MethodHologramHandlerEvent implements MethodMirrorHandlerEvent {
+public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent {
 
     private final MethodMirrorHandlerRequest request;
     private final ThreadMirror thread;
@@ -17,7 +17,7 @@ public class MethodHologramHandlerEvent implements MethodMirrorHandlerEvent {
     private final List<Object> arguments;
     private MirrorInvocationHandler proceed;
     
-    public MethodHologramHandlerEvent(MethodMirrorHandlerRequest request, ThreadMirror thread, MethodMirror method, List<Object> arguments) {
+    public MethodHolographHandlerEvent(MethodMirrorHandlerRequest request, ThreadMirror thread, MethodMirror method, List<Object> arguments) {
         this.request = request;
         this.thread = thread;
         this.method = method;

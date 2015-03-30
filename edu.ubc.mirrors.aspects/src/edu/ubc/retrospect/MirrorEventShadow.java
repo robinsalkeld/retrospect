@@ -52,7 +52,8 @@ public abstract class MirrorEventShadow extends Shadow {
         if (obj == null || !getClass().equals(obj.getClass())) {
             return false;
         }
-        return equals((MirrorEventShadow)obj);
+        MirrorEventShadow other = (MirrorEventShadow)obj;
+        return getKind().equals(other.getKind()) && equals(other);
     }
     
     protected abstract boolean equals(MirrorEventShadow other);
