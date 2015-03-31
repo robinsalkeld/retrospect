@@ -1,40 +1,40 @@
 package edu.ubc.retrospect;
 
+import java.util.List;
+
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.ast.Var;
+import org.aspectj.weaver.patterns.ExposedState;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorHandlerEvent;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     
-    private final MethodMirror method;
-    private final ThreadMirror thread;
-    private final MirrorInvocationHandler handler;
+    MethodMirrorHandlerEvent event;
     
-    public MethodMirrorExecutionShadow(MirrorWorld world, MethodMirror method, ThreadMirror thread, 
-            MirrorInvocationHandler handler, Member signature, Shadow enclosingShadow) {
-        super(world, null, Shadow.MethodExecution, signature, enclosingShadow);
-        this.method = method;
-        this.thread = thread;
-        this.handler = handler;
+    public MethodMirrorExecutionShadow(MirrorWorld world, MethodMirrorHandlerEvent event, Member signature, Shadow enclosingShadow) {
+        super(world, event, Shadow.MethodExecution, signature, enclosingShadow);
+        this.event = event;
     }
 
     @Override
     protected boolean equals(MirrorEventShadow other) {
         MethodMirrorExecutionShadow shadow = (MethodMirrorExecutionShadow)other;
-        return method.equals(shadow.method);
+        return event.method().equals(shadow.event.method());
     }
 
     @Override
     public int hashCode() {
-        return method.hashCode();
+        return event.method().hashCode();
     }
 
     @Override
@@ -44,12 +44,12 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
 
     @Override
     public ThreadMirror getThread() {
-        return thread;
+        return event.thread();
     }
     
     @Override
     public Var getThisVar() {
-        return new MirrorEventVar(world.resolve(method.getDeclaringClass()), getThis());
+        return new MirrorEventVar(world.resolve(event.method().getDeclaringClass()), getThis());
     }
 
     @Override
@@ -59,7 +59,7 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
 
     @Override
     public int getArgCount() {
-        return method.getParameterTypes().size();
+        return event.method().getParameterTypes().size();
     }
     
     @Override
@@ -69,23 +69,40 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     
     @Override
     public ResolvedType getArgType(int arg) {
-        return world.resolve(method.getParameterTypes().get(arg));
+        return world.resolve(event.method().getParameterTypes().get(arg));
     }
     
     @Override
     protected ClassMirror getDeclaringClass() {
-        return method.getDeclaringClass();
+        return event.method().getDeclaringClass();
     }
     
     @Override
     protected InstanceMirror getThisJoinPointStaticPart() {
-        return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.METHOD_EXECUTION, method);
+        return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.METHOD_EXECUTION, event.method());
     }
     
     public Var getAroundClosureVar() {
-        return world.makeInvocationHandlerAroundClosureVar(handler);
+        return world.makeInvocationHandlerAroundClosureVar(event.getProceed());
     }
 
+    public void implementAdvice(final MirrorAdvice advice, ExposedState state) {
+        MirrorInvocationHandler handler = new MirrorInvocationHandler() {
+            public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                MirrorEvent newEvent = (MethodMirrorHandlerEvent)event.setProceed(event.getProceed(), args);
+                setEvent(newEvent);
+                
+                return advice.testAndExecute(MethodMirrorExecutionShadow.this);
+            }
+        };
+        setEvent(event.setProceed(handler, event.arguments()));
+    }
+    
+    @Override
+    public Object run() throws MirrorInvocationTargetException {
+        return event.getProceed().invoke(event.thread(), event.arguments());
+    }
+    
     @Override
     public String toString() {
         return getKind() + "(" + getSignature() + ")";

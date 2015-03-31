@@ -27,8 +27,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import edu.ubc.mirrors.holographs.ThreadHolograph;
+import java.util.concurrent.Callable;
 
 public class EventDispatch {
 
@@ -63,7 +62,7 @@ public class EventDispatch {
     
     private final VirtualMachineMirror vm;
     
-    private final List<Runnable> eventSetCallbacks = new ArrayList<Runnable>();
+    private Callable<Object> eventSetCallback = null;
     private final Map<MirrorEventRequest, Integer> requestOrder = new HashMap<MirrorEventRequest, Integer>();
     private int nextOrder = 0;
     
@@ -94,8 +93,8 @@ public class EventDispatch {
         return order != null ? order : 0;
     }
     
-    public void addSetCallback(Runnable callback) {
-	eventSetCallbacks.add(callback);
+    public void setEventSetCallback(Callable<Object> callback) {
+	eventSetCallback = callback;
     }
     
     @SuppressWarnings("unchecked")
@@ -133,9 +132,13 @@ public class EventDispatch {
         return proceed;
     }
     
-    public void handleSetEvent() {
-        for (Runnable setCallback : eventSetCallbacks) {
-            setCallback.run();
+    public Object handleSetEvent() throws MirrorInvocationTargetException {
+        try {
+            return eventSetCallback.call();
+        } catch (MirrorInvocationTargetException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
     
@@ -162,7 +165,11 @@ public class EventDispatch {
             if (currentSet != null) {
                 if (!currentSetHandled) {
                     currentSetHandled = true;
-                    handleSetEvent();
+                    try {
+                        handleSetEvent();
+                    } catch (MirrorInvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 currentSet.resume();
             }

@@ -482,21 +482,26 @@ public class MirrorWorld extends World {
                     showMessage(IMessage.DEBUG, "Done.", null, null);
                 }
                 
-                vm.dispatch().addSetCallback(new Runnable() {
-                    public void run() {
+                vm.dispatch().setEventSetCallback(new Callable<Object>() {
+                    public Object call() throws Exception {
                         Set<MirrorEventShadow> shadowSet = joinpointShadowsTL.get();
-                        Set<MirrorEventShadow> copy = new HashSet<MirrorEventShadow>(shadowSet);
-                        shadowSet.clear();
-                        for (MirrorEventShadow shadow : copy) {
-                            showMessage(IMessage.DEBUG, shadow.toString(), null, null);
-                            for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
-                                if (munger.match(shadow, MirrorWorld.this)) {
-                                    shadow.addMunger(munger);
-                                }
-                            }
-                            shadow.implement();
+                        
+                        if (shadowSet.size() > 1) {
+                            throw new IllegalStateException("Should have one shadow at a time");
                         }
+                        
+                        MirrorEventShadow shadow = shadowSet.iterator().next();
                         shadowSet.clear();
+                        
+                        showMessage(IMessage.DEBUG, shadow.toString(), null, null);
+                        for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
+                            if (munger.match(shadow, MirrorWorld.this)) {
+                                shadow.addMunger(munger);
+                            }
+                        }
+                        shadow.implement();
+                        
+                        return shadow.run();
                     }
                 });
                 

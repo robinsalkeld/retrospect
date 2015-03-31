@@ -42,8 +42,31 @@ public class MirrorAdvice extends Advice {
         this(world, new AjAttribute.AdviceAttribute(kind, pointcut, extraArgumentFlags, pointcut.getStart(), pointcut.getEnd(), pointcut.getSourceContext()), concreteAspect, signature, pointcut);
     }
 
-    public void execute(MirrorEventShadow shadow, ExposedState state) {
+    public Object testAndExecute(MirrorEventShadow shadow) throws MirrorInvocationTargetException {
         world.showMessage(IMessage.DEBUG, signature.toString(), null, null);
+        
+        ExposedState state = new ExposedState(signature);
+        Test test = getPointcut().findResidue(shadow, state);
+        if (shadow.evaluateTest(test)) {
+            return execute(shadow, state);
+        } else {
+            return null;
+        }
+    }
+
+    public Object execute(MirrorEventShadow shadow, ExposedState state) throws MirrorInvocationTargetException {
+        if (kind.isCflow()) {
+            if (state.size() == 0) {
+                Expr fieldGet = new FieldGet(getSignature(), concreteAspect);
+                InstanceMirror counter = (InstanceMirror)shadow.evaluateExpr(fieldGet);
+                Member method = shadow.kind() == AdviceKind.Before ? cflowCounterIncMethod : cflowCounterDecMethod;
+                shadow.evaluateCall(counter, method, Expr.NONE);
+                return null;
+            } else {
+                throw new IllegalStateException();
+            }
+        }
+        
         InstanceMirror aspectInstance = (InstanceMirror)shadow.evaluateExpr(state.getAspectInstance());
         Object[] args = new Object[state.size()];
 
@@ -63,18 +86,12 @@ public class MirrorAdvice extends Advice {
         
         try {
             MethodMirrorMember member = (MethodMirrorMember)signature;
-            member.method.invoke(shadow.getThread(), aspectInstance, args);
+            return member.method.invoke(shadow.getThread(), aspectInstance, args);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
-        } catch (MirrorInvocationTargetException e) {
-            // TODO-RS: Think about exceptions in general. Advice throwing exceptions
-            // would perturb the original execution so they need to be handled specially.
-            throw new RuntimeException(e);
         }
-
-        return;
     }
-
+    
     @Override
     public int compareTo(Object other) {
         // This is all copied directly from BcelAdvice - it seems to apply
@@ -149,26 +166,7 @@ public class MirrorAdvice extends Advice {
 
     @Override
     public boolean implementOn(Shadow shadow) {
-        ExposedState state = new ExposedState(signature);
-        MirrorEventShadow eventShadow = (MirrorEventShadow)shadow;
-        Test test = getPointcut().findResidue(shadow, state);
-        if (eventShadow.evaluateTest(test)) {
-            if (getSignature() instanceof MethodMirrorMember) {
-                execute(eventShadow, state);
-            } else if (kind.isCflow()) {
-                if (state.size() == 0) {
-                    Expr fieldGet = new FieldGet(getSignature(), concreteAspect);
-                    InstanceMirror counter = (InstanceMirror)eventShadow.evaluateExpr(fieldGet);
-                    Member method = eventShadow.kind() == AdviceKind.Before ? cflowCounterIncMethod : cflowCounterDecMethod;
-                    eventShadow.evaluateCall(counter, method, Expr.NONE);
-                } else {
-                    throw new IllegalStateException();
-                }
-            }
-            return true;
-        } else {
-            return false;
-        }
+        return true;
     }
 
     @Override

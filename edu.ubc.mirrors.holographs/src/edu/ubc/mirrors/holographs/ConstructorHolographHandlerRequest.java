@@ -49,7 +49,6 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
         vm.dispatch().addCallback(entryRequest, entryCallback); 
         
         this.exitRequest = vm.eventRequestManager().createConstructorMirrorExitRequest();
-        
     }
 
     @Override

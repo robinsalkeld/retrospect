@@ -8,6 +8,7 @@ import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
+import org.aspectj.weaver.ShadowMunger;
 import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.World;
 import org.aspectj.weaver.ast.Expr;
@@ -25,12 +26,13 @@ import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 
 public abstract class MirrorEventShadow extends Shadow {
 
     protected final MirrorWorld world;
-    protected final MirrorEvent event;
+    protected MirrorEvent event;
     private MirrorEvaluator evaluator;
     
     public static final Object SHADOW_KIND_PROPERTY_KEY = new Object();
@@ -60,6 +62,11 @@ public abstract class MirrorEventShadow extends Shadow {
     
     @Override
     public abstract int hashCode();
+    
+    protected void setEvent(MirrorEvent event) {
+        this.event = event;
+    }
+    
     
     @Override
     public World getIWorld() {
@@ -146,8 +153,7 @@ public abstract class MirrorEventShadow extends Shadow {
         } else if (event instanceof MethodMirrorHandlerEvent) {
             MethodMirrorHandlerEvent mmhe = (MethodMirrorHandlerEvent)event;
             Member signature = MethodMirrorMember.make(world, mmhe.method());
-            return new MethodMirrorExecutionShadow(world, mmhe.method(),
-                    mmhe.thread(), mmhe.getProceed(), signature, null);
+            return new MethodMirrorExecutionShadow(world, mmhe, signature, null);
         } else if (event instanceof MethodMirrorEntryEvent) {
             MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
             if (shadowKind == Shadow.SynchronizationLock) {
@@ -251,6 +257,18 @@ public abstract class MirrorEventShadow extends Shadow {
     }
     
     public Var getAroundClosureVar() {
+        return null;
+    }
+    
+    public MirrorEventShadow implementAdvice(MirrorAdvice advice) {
+        return this;
+    }
+    
+    public Object run() throws MirrorInvocationTargetException {
+        for (ShadowMunger munger : mungers) {
+            MirrorAdvice advice = (MirrorAdvice)munger;
+            advice.testAndExecute(this);
+        }
         return null;
     }
     
