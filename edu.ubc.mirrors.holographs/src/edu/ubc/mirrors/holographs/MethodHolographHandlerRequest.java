@@ -30,23 +30,11 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     
     private final Callback<MirrorEvent> entryCallback = new Callback<MirrorEvent>() {
         @Override
-        public Object handle(MirrorEvent t) {
+        public MirrorEvent handle(MirrorEvent t) {
             MethodMirrorEntryEvent entryEvent = (MethodMirrorEntryEvent)t;
             MethodHolographHandlerEvent handlerEvent = new MethodHolographHandlerEvent(MethodHolographHandlerRequest.this, 
                     entryEvent.thread(), entryEvent.method(), entryEvent.arguments(), MethodHolographHandlerRequest.this);
-            
-            MirrorInvocationHandler proceed = vm.dispatch().handleInvocableEvent(handlerEvent);
-            
-            Object result;
-            try {
-                result = proceed.invoke(entryEvent.thread(), entryEvent.arguments());
-            } catch (MirrorInvocationTargetException e) {
-                throw new IllegalSideEffectError(e);
-            }
-            
-            // TODO-RS: Check result against exitEvent
-            
-            return result;
+            return handlerEvent;
         }
     };
     

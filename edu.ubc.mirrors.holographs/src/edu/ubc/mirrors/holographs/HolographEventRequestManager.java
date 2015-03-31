@@ -2,7 +2,9 @@ package edu.ubc.mirrors.holographs;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
@@ -61,15 +63,14 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
 //    }
     
     public Object handleMethodInvocation(MirrorInvocationHandler original, MethodMirror method, List<Object> arguments) throws MirrorInvocationTargetException {
-        MirrorInvocationHandler handler = original;
+        Set<MirrorEvent> events = new HashSet<MirrorEvent>();
         for (MethodHolographHandlerRequest request : methodHandlerRequests) {
             if (request.matches(method)) {
-                MethodHolographHandlerEvent event = new MethodHolographHandlerEvent(request, ThreadHolograph.currentThreadMirror(), method, arguments, handler);
-                handler = vm.dispatch().handleInvocableEvent(event);
+                events.add(new MethodHolographHandlerEvent(request, ThreadHolograph.currentThreadMirror(), method, arguments, original));
             }
         }
         
-        return handler.invoke(ThreadHolograph.currentThreadMirror(), arguments);
+        return vm.dispatch().runCallbacks(events);
     }
 
     public boolean methodRequested(MethodMirror method) {

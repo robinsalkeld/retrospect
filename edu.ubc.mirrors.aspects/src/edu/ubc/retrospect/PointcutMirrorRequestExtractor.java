@@ -75,9 +75,10 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     
     private final Callback<MirrorEvent> EVENT_CALLBACK = new Callback<MirrorEvent>() {
         @Override
-        public Object handle(MirrorEvent event) {
+        public MirrorEvent handle(MirrorEvent event) {
             MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
-            return callback.handle(shadow);
+            callback.handle(shadow);
+            return event;
         }
     };
     
@@ -179,7 +180,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     
     private void forAllWovenClasses(final Callback<ClassMirror> callback) {
         world.vm.dispatch().forAllClasses(new Callback<ClassMirror>() {
-            public Object handle(ClassMirror klass) {
+            public ClassMirror handle(ClassMirror klass) {
                 if (klass.getLoader() == null) {
                     return null;
                 }
@@ -206,7 +207,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         // reads the right state.
         final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
         forAllWovenClasses(new Callback<ClassMirror>() {
-            public Object handle(ClassMirror klass) {
+            public ClassMirror handle(ClassMirror klass) {
                 ReferenceType type = (ReferenceType)world.resolve(klass);
                 for (ResolvedMember field : type.getDeclaredFields()) {
                     boolean matches = true;
@@ -249,7 +250,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         // Realistically it doesn't matter unless the code queries the thread state in very specific ways.
         final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
         forAllWovenClasses(new Callback<ClassMirror>() {
-            public Object handle(ClassMirror klass) {
+            public ClassMirror handle(ClassMirror klass) {
                 ReferenceType type = (ReferenceType)world.resolve(klass);
                 
                 // These are handled in two parts:
@@ -343,7 +344,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         MirrorLocation location = methodMirror.locationForBytecodeOffset(offset);
         MirrorLocationRequest request = manager.createLocationRequest(location);
         world.vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
-            public Object handle(MirrorEvent event) {
+            public MirrorEvent handle(MirrorEvent event) {
                 MirrorLocationEvent locationEvent = (MirrorLocationEvent)event;
                 ThreadMirror thread = locationEvent.thread();
                 ownedMonitors.put(thread, new HashSet<InstanceMirror>(thread.getOwnedMonitors()));
@@ -355,7 +356,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         location = methodMirror.locationForBytecodeOffset(offset + 1);
         request = manager.createLocationRequest(location);
         world.vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
-            public Object handle(MirrorEvent event) {
+            public MirrorEvent handle(MirrorEvent event) {
                 MirrorLocationEvent locationEvent = (MirrorLocationEvent)event;
                 ThreadMirror thread = locationEvent.thread();
                 Set<InstanceMirror> monitorsBefore = ownedMonitors.get(thread);
@@ -379,7 +380,8 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                 } else {
                     shadow = new MirrorMonitorExitShadow(world, locationEvent, monitor, !advice.getKind().isAfter(), null);
                 }
-                return callback.handle(shadow);
+                callback.handle(shadow);
+                return event;
             }
         });
         request.enable();

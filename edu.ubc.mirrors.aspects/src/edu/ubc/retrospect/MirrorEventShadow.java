@@ -260,8 +260,7 @@ public abstract class MirrorEventShadow extends Shadow {
         return null;
     }
     
-    public MirrorEventShadow implementAdvice(MirrorAdvice advice) {
-        return this;
+    public void implementAdvice(MirrorAdvice advice) {
     }
     
     public Object run() throws MirrorInvocationTargetException {

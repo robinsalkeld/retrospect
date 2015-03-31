@@ -27,19 +27,11 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
     
     private final Callback<MirrorEvent> entryCallback = new Callback<MirrorEvent>() {
         @Override
-        public Object handle(MirrorEvent t) {
+        public MirrorEvent handle(MirrorEvent t) {
             ConstructorMirrorEntryEvent entryEvent = (ConstructorMirrorEntryEvent)t;
             ConstructorMirrorHandlerEvent handlerEvent = new ConstructorHolographHandlerEvent(ConstructorHolographHandlerRequest.this, 
                     entryEvent.thread(), entryEvent.constructor(), entryEvent.arguments(), ConstructorHolographHandlerRequest.this);
-            MirrorInvocationHandler proceed = vm.dispatch().handleInvocableEvent(handlerEvent);
-            
-            try {
-                proceed.invoke(entryEvent.thread(), entryEvent.arguments());
-            } catch (MirrorInvocationTargetException e) {
-                throw new IllegalSideEffectError(e);
-            }
-        
-            return null;
+            return handlerEvent;
         }
     };
     

@@ -166,6 +166,7 @@ public class MirrorAdvice extends Advice {
 
     @Override
     public boolean implementOn(Shadow shadow) {
+        ((MirrorEventShadow)shadow).implementAdvice(this);
         return true;
     }
 

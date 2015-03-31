@@ -86,7 +86,8 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
         return world.makeInvocationHandlerAroundClosureVar(event.getProceed());
     }
 
-    public void implementAdvice(final MirrorAdvice advice, ExposedState state) {
+    @Override
+    public void implementAdvice(final MirrorAdvice advice) {
         MirrorInvocationHandler handler = new MirrorInvocationHandler() {
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
                 MirrorEvent newEvent = (MethodMirrorHandlerEvent)event.setProceed(event.getProceed(), args);

@@ -459,7 +459,7 @@ public class MirrorWorld extends World {
                     MirrorAdvice advice = (MirrorAdvice)munger;
                     showMessage(IMessage.DEBUG, "Installing event requests for advice: " + advice, null, null);
                     PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice, new Callback<MirrorEventShadow>() {
-                        public Object handle(MirrorEventShadow shadow) {
+                        public MirrorEventShadow handle(MirrorEventShadow shadow) {
                             // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)
                             // See also: http://www.eclipse.org/aspectj/doc/released/devguide/ltw-specialcases.html
                             if (!Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses")) {
@@ -473,37 +473,19 @@ public class MirrorWorld extends World {
                                     return null;
                                 }
                             }
+                        
+                            showMessage(IMessage.DEBUG, shadow.toString(), null, null);
+                            for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
+                                if (munger.match(shadow, MirrorWorld.this)) {
+                                    shadow.addMunger(munger);
+                                }
+                            }
+                            shadow.implement();
                             
-                            joinpointShadowsTL.get().add(shadow);
-                            
-                            return null;
+                            return shadow;
                         }
                     });
-                    showMessage(IMessage.DEBUG, "Done.", null, null);
                 }
-                
-                vm.dispatch().setEventSetCallback(new Callable<Object>() {
-                    public Object call() throws Exception {
-                        Set<MirrorEventShadow> shadowSet = joinpointShadowsTL.get();
-                        
-                        if (shadowSet.size() > 1) {
-                            throw new IllegalStateException("Should have one shadow at a time");
-                        }
-                        
-                        MirrorEventShadow shadow = shadowSet.iterator().next();
-                        shadowSet.clear();
-                        
-                        showMessage(IMessage.DEBUG, shadow.toString(), null, null);
-                        for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
-                            if (munger.match(shadow, MirrorWorld.this)) {
-                                shadow.addMunger(munger);
-                            }
-                        }
-                        shadow.implement();
-                        
-                        return shadow.run();
-                    }
-                });
                 
                 ThreadHolograph.lowerMetalevel();
                 

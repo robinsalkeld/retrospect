@@ -325,7 +325,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     private final Callback<MirrorEvent> ZIP_FILE_CREATED_CALLBACK = new Callback<MirrorEvent>() {
-	public Object handle(MirrorEvent event) {
+	public MirrorEvent handle(MirrorEvent event) {
 	    if (event instanceof FieldMirrorSetEvent) {
     	    	FieldMirrorSetEvent fieldSetEvent = (FieldMirrorSetEvent)event;
     	    	if (fieldSetEvent.field().getDeclaringClass().getClassName().equals(ZipFile.class.getName()) && fieldSetEvent.field().getName().equals("name")) {

@@ -25,9 +25,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.Set;
+
+import edu.ubc.mirrors.holographs.IllegalSideEffectError;
 
 public class EventDispatch {
 
@@ -50,11 +53,11 @@ public class EventDispatch {
         }
     }
 
-    private Comparator<MirrorEvent> REQUEST_ORDER_COMPARATOR = new Comparator<MirrorEvent>() {
+    private Comparator<MirrorEventRequest> REQUEST_ORDER_COMPARATOR = new Comparator<MirrorEventRequest>() {
         @Override
-        public int compare(MirrorEvent left, MirrorEvent right) {
-            return Integer.compare(getRequestOrder(left.request()),
-                                   getRequestOrder(right.request()));
+        public int compare(MirrorEventRequest left, MirrorEventRequest right) {
+            return Integer.compare(getRequestOrder(left),
+                                   getRequestOrder(right));
         }
     };
     
@@ -62,13 +65,8 @@ public class EventDispatch {
     
     private final VirtualMachineMirror vm;
     
-    private Callable<Object> eventSetCallback = null;
     private final Map<MirrorEventRequest, Integer> requestOrder = new HashMap<MirrorEventRequest, Integer>();
     private int nextOrder = 0;
-    
-    private boolean currentSetHandled = false;
-    private MirrorEventSet currentSet = null;
-    private List<MirrorEvent> pending = new ArrayList<MirrorEvent>();
     
     public EventDispatch(VirtualMachineMirror vm) {
 	this.vm = vm;
@@ -88,103 +86,90 @@ public class EventDispatch {
         }
     }
     
+    @SuppressWarnings("unchecked")
+    private List<Callback<MirrorEvent>> getCallbacks(MirrorEventRequest request) {
+        List<Callback<MirrorEvent>> callbacks = (List<Callback<MirrorEvent>>)request.getProperty(CALLBACKS_KEY);
+        return callbacks == null ? Collections.<Callback<MirrorEvent>>emptyList() : callbacks;
+    }
+    
     private int getRequestOrder(MirrorEventRequest request) {
         Integer order = requestOrder.get(request);
         return order != null ? order : 0;
-    }
-    
-    public void setEventSetCallback(Callable<Object> callback) {
-	eventSetCallback = callback;
-    }
-    
-    @SuppressWarnings("unchecked")
-    public void handleEvent(MirrorEvent event) {
-	MirrorEventRequest request = event.request();
-	if (request != null) {
-	    List<?> callbacks = (List<?>)request.getProperty(CALLBACKS_KEY);
-	    if (callbacks != null) {
-		for (Object callback : callbacks) {
-		    ((Callback<MirrorEvent>)callback).handle(event);
-		}
-	    }
-	}
-    }
-    
-    @SuppressWarnings("unchecked")
-    public MirrorInvocationHandler handleInvocableEvent(final InvocableMirrorEvent event) {
-        MirrorEventRequest request = event.request();
-        MirrorInvocationHandler proceed = event.getProceed();
-        if (request != null) {
-            List<?> callbacks = (List<?>)request.getProperty(CALLBACKS_KEY);
-            if (callbacks != null) {
-                for (Object callback : callbacks) {
-                    final Callback<MirrorEvent> finalCallback = (Callback<MirrorEvent>)callback;
-                    final MirrorInvocationHandler proceedBefore = proceed;
-                    proceed = new MirrorInvocationHandler() {
-                        public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-                            InvocableMirrorEvent newEvent = event.setProceed(proceedBefore, args);
-                            return finalCallback.handle(newEvent);
-                        }
-                    };
-                }
-            }
-        }
-        return proceed;
-    }
-    
-    public Object handleSetEvent() throws MirrorInvocationTargetException {
-        try {
-            return eventSetCallback.call();
-        } catch (MirrorInvocationTargetException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
     
     public void run() throws InterruptedException {
         runUntil(null);
     }
     
-    public MirrorEvent runUntil(MirrorEventRequest request) throws InterruptedException {
-        MirrorEvent event = nextEvent();
-        while (event != null) {
-            handleEvent(event);
-            if (event.request().equals(request)) {
-                return event;
+    public MirrorEvent runUntil(MirrorEventRequest endRequest) throws InterruptedException {
+        MirrorEventSet eventSet = vm.eventQueue().remove();
+        while (eventSet != null && eventSet.isEmpty()) {
+            eventSet = vm.eventQueue().remove();
+
+            MirrorEvent result = null;
+            for (MirrorEvent event : eventSet) {
+                if (event.request().equals(endRequest)) {
+                    result = event;
+                }
             }
             
-            event = nextEvent();
+            try {
+                runCallbacks(eventSet);
+            } catch (MirrorInvocationTargetException e) {
+                throw new IllegalSideEffectError(e);
+            }
+
+            if (result != null) {
+                return result;
+            }
+            
+            eventSet.resume();
+            eventSet = vm.eventQueue().remove();
         }
         
         return null;
     }
     
-    public MirrorEvent nextEvent() throws InterruptedException {
-        while (pending.isEmpty()) {
-            if (currentSet != null) {
-                if (!currentSetHandled) {
-                    currentSetHandled = true;
-                    try {
-                        handleSetEvent();
-                    } catch (MirrorInvocationTargetException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                currentSet.resume();
-            }
-            
-            currentSet = vm.eventQueue().remove();
-            currentSetHandled = false;
-            if (currentSet == null) {
-                return null;
-            }
-            
-            pending.addAll(currentSet);
-            Collections.sort(pending, REQUEST_ORDER_COMPARATOR);
+    public Object runCallbacks(Set<MirrorEvent> events) throws MirrorInvocationTargetException {
+        List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();
+        for (MirrorEvent event : events) {
+            MirrorEventRequest request = event.request();
+            requests.add(request);
+        }
+        Collections.sort(requests, REQUEST_ORDER_COMPARATOR);
+
+        Set<Callback<MirrorEvent>> callbacks = new LinkedHashSet<Callback<MirrorEvent>>();
+        for (MirrorEventRequest request : requests) {
+            callbacks.addAll(getCallbacks(request));
         }
         
-        return pending.remove(0);
+        MirrorEvent event = mergeEvents(events);
+        for (Callback<MirrorEvent> callback : callbacks) {
+            event = callback.handle(event);
+        }
+        
+        if (event instanceof InvocableMirrorEvent) {
+            InvocableMirrorEvent invocableEvent = (InvocableMirrorEvent)event;
+            return invocableEvent.getProceed().invoke(invocableEvent.thread(), invocableEvent.arguments());
+        } else {
+            return null;
+        }
+    }
+    
+    private MirrorEvent mergeEvents(Set<MirrorEvent> events) {
+        MirrorEvent merged = null;
+        for (MirrorEvent event : events) {
+            if (merged == null) {
+                merged = event;
+            } else {
+                if (!merged.getClass().equals(event.getClass())) {
+                    throw new IllegalArgumentException("Incompatible events: " + merged + ", " + event);
+                }
+                // TODO-RS: Complete this - should be equivalent to MirrorEventShadow.equals()
+                throw new IllegalArgumentException();
+            }
+        }
+        return merged;
     }
     
     public void forAllClasses(final Callback<ClassMirror> callback) {
@@ -193,7 +178,7 @@ public class EventDispatch {
         }
         ClassMirrorPrepareRequest request = vm.eventRequestManager().createClassMirrorPrepareRequest();
         addCallback(request, new Callback<MirrorEvent>() {
-            public Object handle(MirrorEvent t) {
+            public MirrorEvent handle(MirrorEvent t) {
                 ClassMirrorPrepareEvent event = (ClassMirrorPrepareEvent)t;
                 callback.handle(event.classMirror());
                 return null;

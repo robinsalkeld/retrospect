@@ -885,7 +885,7 @@ public class ClassHolograph extends WrappingClassMirror {
             request.addClassFilter(getClassName());
             vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
                 @Override
-                public Object handle(MirrorEvent event) {
+                public MirrorEvent handle(MirrorEvent event) {
                     ClassMirrorPrepareEvent prepareEvent = (ClassMirrorPrepareEvent)event;
                     ClassHolograph prepared = (ClassHolograph)prepareEvent.classMirror();
                     // The name will match, but we have to check the class loader manually.
