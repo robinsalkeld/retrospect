@@ -144,16 +144,17 @@ public class EventDispatch {
         }
         
         MirrorEvent event = mergeEvents(events);
-        for (Callback<MirrorEvent> callback : callbacks) {
-            event = callback.handle(event);
-        }
-        
-        if (event instanceof InvocableMirrorEvent) {
-            InvocableMirrorEvent invocableEvent = (InvocableMirrorEvent)event;
-            return invocableEvent.getProceed().invoke(invocableEvent.thread(), invocableEvent.arguments());
-        } else {
+        if (event == null) {
             return null;
         }
+        for (Callback<MirrorEvent> callback : callbacks) {
+            event = callback.handle(event);
+            if (event == null) {
+                throw new NullPointerException();
+            }
+        }
+        
+        return event.getProceed().invoke(event.thread(), event.arguments());
     }
     
     private MirrorEvent mergeEvents(Set<MirrorEvent> events) {

@@ -28,4 +28,9 @@ public interface MirrorInvocationHandler {
     public Object invoke(ThreadMirror thread, List<Object> args) 
             throws MirrorInvocationTargetException;
 
+    public MirrorInvocationHandler NONE = new MirrorInvocationHandler() {
+        public Object invoke(ThreadMirror thread, java.util.List<Object> args) throws MirrorInvocationTargetException {
+            return null;
+        };
+    };
 }

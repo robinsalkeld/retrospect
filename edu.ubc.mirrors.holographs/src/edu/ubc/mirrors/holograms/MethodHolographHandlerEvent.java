@@ -8,7 +8,6 @@ import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent {
@@ -17,7 +16,7 @@ public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent {
     private final ThreadMirror thread;
     private final MethodMirror method;
     private final List<Object> arguments;
-    private final MirrorInvocationHandler proceed;
+    private MirrorInvocationHandler proceed;
     
     public MethodHolographHandlerEvent(MethodMirrorHandlerRequest request, ThreadMirror thread, MethodMirror method, List<Object> arguments, MirrorInvocationHandler proceed) {
         this.request = request;
@@ -53,7 +52,7 @@ public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent {
     }
     
     @Override
-    public InvocableMirrorEvent setProceed(MirrorInvocationHandler proceed, List<Object> arguments) {
-        return new MethodHolographHandlerEvent(request, thread, method, arguments, proceed);
+    public void setProceed(MirrorInvocationHandler proceed) {
+        this.proceed = proceed;
     }
 }

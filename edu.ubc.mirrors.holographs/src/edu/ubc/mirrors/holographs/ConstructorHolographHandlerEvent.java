@@ -16,7 +16,7 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
     private final ThreadMirror thread;
     private final ConstructorMirror constructor;
     private final List<Object> arguments;
-    private final MirrorInvocationHandler proceed;
+    private MirrorInvocationHandler proceed;
     
     public ConstructorHolographHandlerEvent(ConstructorMirrorHandlerRequest request, ThreadMirror thread, ConstructorMirror constructor, List<Object> arguments, MirrorInvocationHandler proceed) {
         this.request = request;
@@ -52,7 +52,7 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
     }
     
     @Override
-    public InvocableMirrorEvent setProceed(MirrorInvocationHandler proceed, List<Object> arguments) {
-        return new ConstructorHolographHandlerEvent(request, thread, constructor, arguments, proceed);
+    public void setProceed(MirrorInvocationHandler proceed) {
+        this.proceed = proceed;
     }
 }

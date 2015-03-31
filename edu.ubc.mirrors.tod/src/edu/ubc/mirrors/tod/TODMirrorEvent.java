@@ -3,6 +3,7 @@ package edu.ubc.mirrors.tod;
 import tod.core.database.event.ILogEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.ThreadMirror;
 
 public abstract class TODMirrorEvent implements MirrorEvent {
@@ -39,6 +40,16 @@ public abstract class TODMirrorEvent implements MirrorEvent {
     @Override
     public MirrorEventRequest request() {
         return request;
+    }
+    
+    @Override
+    public MirrorInvocationHandler getProceed() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public void setProceed(MirrorInvocationHandler handler) {
+        throw new UnsupportedOperationException();
     }
     
     @Override

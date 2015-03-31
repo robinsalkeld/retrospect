@@ -1,6 +1,7 @@
 package edu.ubc.retrospect;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.aspectj.bridge.IMessage;
@@ -22,6 +23,7 @@ import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.Pointcut;
 
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 
 public class MirrorAdvice extends Advice {
@@ -42,46 +44,49 @@ public class MirrorAdvice extends Advice {
         this(world, new AjAttribute.AdviceAttribute(kind, pointcut, extraArgumentFlags, pointcut.getStart(), pointcut.getEnd(), pointcut.getSourceContext()), concreteAspect, signature, pointcut);
     }
 
-    public Object testAndExecute(MirrorEventShadow shadow) throws MirrorInvocationTargetException {
+    public Object testAndExecute(MirrorEventShadow shadow, MirrorInvocationHandler proceed, List<Object> arguments) throws MirrorInvocationTargetException {
         world.showMessage(IMessage.DEBUG, signature.toString(), null, null);
         
         ExposedState state = new ExposedState(signature);
         Test test = getPointcut().findResidue(shadow, state);
-        if (shadow.evaluateTest(test)) {
-            return execute(shadow, state);
+        MirrorEvaluator evaluator = shadow.getEvaluator(arguments);
+        if (evaluator.evaluateTest(test)) {
+            return execute(shadow, state, proceed, arguments);
         } else {
             return null;
         }
     }
 
-    public Object execute(MirrorEventShadow shadow, ExposedState state) throws MirrorInvocationTargetException {
+    public Object execute(MirrorEventShadow shadow, ExposedState state, MirrorInvocationHandler proceed, List<Object> arguments) throws MirrorInvocationTargetException {
+        MirrorEvaluator evaluator = shadow.getEvaluator(arguments);
+        
         if (kind.isCflow()) {
             if (state.size() == 0) {
                 Expr fieldGet = new FieldGet(getSignature(), concreteAspect);
-                InstanceMirror counter = (InstanceMirror)shadow.evaluateExpr(fieldGet);
+                InstanceMirror counter = (InstanceMirror)evaluator.evaluateExpr(fieldGet);
                 Member method = shadow.kind() == AdviceKind.Before ? cflowCounterIncMethod : cflowCounterDecMethod;
-                shadow.evaluateCall(counter, method, Expr.NONE);
+                evaluator.evaluateCall(counter, method, Expr.NONE);
                 return null;
             } else {
                 throw new IllegalStateException();
             }
         }
         
-        InstanceMirror aspectInstance = (InstanceMirror)shadow.evaluateExpr(state.getAspectInstance());
+        InstanceMirror aspectInstance = (InstanceMirror)evaluator.evaluateExpr(state.getAspectInstance());
         Object[] args = new Object[state.size()];
 
         int baseArgCount = getBaseParameterCount();
         if (this.kind == AdviceKind.Around) {
-            args[baseArgCount - 1] = shadow.evaluateExpr(shadow.getAroundClosureVar());
+            args[baseArgCount - 1] = world.makeInvocationHandlerAroundClosure(proceed);
             baseArgCount--;
         }
         
         for (int i = 0; i < baseArgCount; i++) {
-            args[i] = shadow.evaluateExpr(state.get(i));
+            args[i] = evaluator.evaluateExpr(state.get(i));
         }
         
         if ((getExtraParameterFlags() & Advice.ThisJoinPointStaticPart) != 0) {
-            args[args.length - 1] = shadow.evaluateExpr(shadow.getThisJoinPointStaticPartVar());
+            args[args.length - 1] = evaluator.evaluateExpr(shadow.getThisJoinPointStaticPartVar());
         }
         
         try {

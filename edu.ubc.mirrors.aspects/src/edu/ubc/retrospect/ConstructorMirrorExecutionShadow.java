@@ -83,8 +83,4 @@ public class ConstructorMirrorExecutionShadow extends MirrorEventShadow {
     protected InstanceMirror getThisJoinPointStaticPart() {
         return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.CONSTRUCTOR_EXECUTION, constructor);
     }
-    
-    public Var getAroundClosureVar() {
-        return world.makeInvocationHandlerAroundClosureVar(handler);
-    }
 }

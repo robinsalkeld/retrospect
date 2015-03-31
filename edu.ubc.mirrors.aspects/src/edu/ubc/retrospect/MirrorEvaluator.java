@@ -1,5 +1,7 @@
 package edu.ubc.retrospect;
 
+import java.util.List;
+
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ReferenceType;
 import org.aspectj.weaver.ResolvedMemberImpl;
@@ -30,11 +32,13 @@ public class MirrorEvaluator implements ITestVisitor {
 
     private final MirrorWorld world;
     private final ThreadMirror thread;
+    private final List<Object> arguments;
     private boolean success;
     
-    public MirrorEvaluator(MirrorWorld world, ThreadMirror thread) {
+    public MirrorEvaluator(MirrorWorld world, ThreadMirror thread, List<Object> arguments) {
         this.world = world;
         this.thread = thread;
+        this.arguments = arguments;
     }
 
     public boolean evaluateTest(Test t) {

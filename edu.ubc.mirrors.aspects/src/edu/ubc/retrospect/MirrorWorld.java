@@ -157,14 +157,13 @@ public class MirrorWorld extends World {
         return aroundClosureClass;
     }
     
-    public Var makeInvocationHandlerAroundClosureVar(final MirrorInvocationHandler handler) {
-        return Reflection.withThread(thread, new Callable<Var>() {
-            public Var call() throws Exception {
-                ResolvedType aroundClosureType = resolve(getAroundClosureClass());
+    public InstanceMirror makeInvocationHandlerAroundClosure(final MirrorInvocationHandler handler) {
+        return Reflection.withThread(thread, new Callable<InstanceMirror>() {
+            public InstanceMirror call() throws Exception {
                 InstanceMirror closure = getAroundClosureClass().newRawInstance();
                 FieldMirror handlerField = getAroundClosureClass().getDeclaredField("handler");
                 closure.set(handlerField, new AroundClosureMirror(vm, handler));
-                return new MirrorEventVar(aroundClosureType, closure);
+                return closure;
             }
         });
     }

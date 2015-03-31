@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.tod;
 
+import java.util.Collections;
+import java.util.List;
+
 import tod.core.database.event.IBehaviorExitEvent;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorExitEvent;
@@ -12,6 +15,11 @@ public class TODConstructorMirrorExitEvent extends TODMirrorEvent implements Con
     }
     
     private final IBehaviorExitEvent logEvent;
+    
+    @Override
+    public List<Object> arguments() {
+        return Collections.emptyList();
+    }
     
     @Override
     public ConstructorMirror constructor() {

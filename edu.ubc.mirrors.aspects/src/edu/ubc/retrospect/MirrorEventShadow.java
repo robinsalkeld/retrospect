@@ -1,6 +1,7 @@
 package edu.ubc.retrospect;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.aspectj.bridge.ISourceLocation;
 import org.aspectj.lang.JoinPoint;
@@ -26,6 +27,7 @@ import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 
@@ -73,23 +75,8 @@ public abstract class MirrorEventShadow extends Shadow {
         return world;
     }
 
-    public MirrorEvaluator getEvaluator() {
-        if (evaluator == null) {
-            evaluator = new MirrorEvaluator(world, getThread());
-        }
-        return evaluator;
-    }
-    
-    public Object evaluateExpr(Expr expr) {
-        return getEvaluator().evaluateExpr(expr);
-    }
-    
-    public boolean evaluateTest(Test test) {
-        return getEvaluator().evaluateTest(test);
-    }
-    
-    public Object evaluateCall(InstanceMirror obj, Member method, Expr[] args) {
-        return getEvaluator().evaluateCall(obj, method, args);
+    public MirrorEvaluator getEvaluator(List<Object> arguments) {
+        return new MirrorEvaluator(world, getThread(), arguments);
     }
     
     @Override
@@ -260,15 +247,15 @@ public abstract class MirrorEventShadow extends Shadow {
         return null;
     }
     
-    public void implementAdvice(MirrorAdvice advice) {
-    }
-    
-    public Object run() throws MirrorInvocationTargetException {
-        for (ShadowMunger munger : mungers) {
-            MirrorAdvice advice = (MirrorAdvice)munger;
-            advice.testAndExecute(this);
-        }
-        return null;
+    public void implementAdvice(final MirrorAdvice advice) {
+        final MirrorInvocationHandler handler = event.getProceed();
+        MirrorInvocationHandler newHandler = new MirrorInvocationHandler() {
+            @Override
+            public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                return advice.testAndExecute(MirrorEventShadow.this, handler, args);
+            }
+        };
+        event.setProceed(newHandler);
     }
     
     @Override

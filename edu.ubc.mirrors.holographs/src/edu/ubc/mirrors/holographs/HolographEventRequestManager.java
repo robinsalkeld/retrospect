@@ -70,7 +70,11 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
             }
         }
         
-        return vm.dispatch().runCallbacks(events);
+        if (events.isEmpty()) {
+            return original.invoke(ThreadHolograph.currentThreadMirror(), arguments);
+        } else {
+            return vm.dispatch().runCallbacks(events);
+        }
     }
 
     public boolean methodRequested(MethodMirror method) {

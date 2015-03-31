@@ -21,8 +21,14 @@
  ******************************************************************************/
 package edu.ubc.mirrors;
 
+import java.util.List;
+
 public interface MirrorEvent {
 
     MirrorEventRequest request();
     ThreadMirror thread();
+    
+    List<Object> arguments();
+    MirrorInvocationHandler getProceed();
+    void setProceed(MirrorInvocationHandler handler);
 }

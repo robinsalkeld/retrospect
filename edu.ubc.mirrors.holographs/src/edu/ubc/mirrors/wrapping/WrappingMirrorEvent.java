@@ -21,18 +21,23 @@
  ******************************************************************************/
 package edu.ubc.mirrors.wrapping;
 
+import java.util.List;
+
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingMirrorEvent implements MirrorEvent {
 
     protected final WrappingVirtualMachine vm;
     private final MirrorEvent wrapped;
+    private MirrorInvocationHandler proceed;
     
     public WrappingMirrorEvent(WrappingVirtualMachine vm, MirrorEvent wrapped) {
 	this.vm = vm;
 	this.wrapped = wrapped;
+	this.proceed = MirrorInvocationHandler.NONE;
     }
 
     @Override
@@ -43,6 +48,21 @@ public class WrappingMirrorEvent implements MirrorEvent {
     @Override
     public ThreadMirror thread() {
         return (ThreadMirror)vm.getWrappedMirror(wrapped.thread());
+    }
+    
+    @Override
+    public List<Object> arguments() {
+        return vm.wrapValueList(wrapped.arguments());
+    }
+    
+    @Override
+    public MirrorInvocationHandler getProceed() {
+        return proceed;
+    }
+    
+    @Override
+    public void setProceed(MirrorInvocationHandler handler) {
+        this.proceed = handler;
     }
     
     @Override

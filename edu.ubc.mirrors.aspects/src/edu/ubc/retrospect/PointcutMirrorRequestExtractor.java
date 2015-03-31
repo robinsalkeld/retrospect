@@ -45,6 +45,7 @@ import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationEvent;
 import edu.ubc.mirrors.MirrorLocationRequest;
@@ -78,7 +79,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         public MirrorEvent handle(MirrorEvent event) {
             MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
             callback.handle(shadow);
-            return event;
+            return shadow.event;
         }
     };
     

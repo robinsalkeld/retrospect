@@ -360,4 +360,12 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
             return unwrapMethodMirror((MethodMirror)invocable);
         }
     }
+    
+    public List<Object> wrapValueList(List<Object> values) {
+        List<Object> result = new ArrayList<Object>();
+        for (Object a : values) {
+            result.add(wrapValue(a));
+        }
+        return result;
+    }
 }

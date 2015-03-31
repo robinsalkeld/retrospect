@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.tod;
 
+import java.util.Collections;
+import java.util.List;
+
 import tod.core.database.event.IBehaviorExitEvent;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
@@ -12,6 +15,11 @@ public class TODMethodMirrorExitEvent extends TODMirrorEvent implements MethodMi
     }
     
     private final IBehaviorExitEvent logEvent;
+    
+    @Override
+    public List<Object> arguments() {
+        return Collections.emptyList();
+    }
     
     @Override
     public MethodMirror method() {
