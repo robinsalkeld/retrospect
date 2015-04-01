@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.ClassPrepareEvent;
@@ -182,7 +183,10 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
      * @see com.sun.jdi.event.EventSet#resume()
      */
     public void resume() {
-	eventSet.resume();
+        try {
+            eventSet.resume();
+        } catch (VMDisconnectedException e) {
+        }
     }
 
     /**

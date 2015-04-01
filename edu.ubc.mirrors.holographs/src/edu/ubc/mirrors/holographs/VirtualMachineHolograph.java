@@ -345,7 +345,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 	        dispatch().addCallback(request, this);
 	        request.enable();
 	    }
-	    return null;
+	    return event;
 	}
     };
     

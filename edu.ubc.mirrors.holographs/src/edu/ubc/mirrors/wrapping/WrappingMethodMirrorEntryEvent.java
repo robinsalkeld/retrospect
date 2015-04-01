@@ -22,6 +22,7 @@
 package edu.ubc.mirrors.wrapping;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import edu.ubc.mirrors.MethodMirror;
@@ -50,7 +51,11 @@ public class WrappingMethodMirrorEntryEvent extends WrappingMirrorEvent implemen
     @Override
     public List<Object> arguments() {
         List<Object> result = new ArrayList<Object>();
-        for (Object a : wrapped.arguments()) {
+        List<Object> args = wrapped.arguments();
+        if (args == null) {
+            return Collections.emptyList();
+        }
+        for (Object a : args) {
             result.add(vm.wrapValue(a));
         }
         return result;

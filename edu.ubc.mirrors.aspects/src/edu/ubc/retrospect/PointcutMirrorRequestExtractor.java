@@ -233,7 +233,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                     }
                 }
                 
-                return null;
+                return klass;
             };
         });
     }
@@ -324,7 +324,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                     throw new RuntimeException(e);
                 }
                 
-                return null;
+                return klass;
             };
         });
     }
@@ -349,7 +349,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
                 MirrorLocationEvent locationEvent = (MirrorLocationEvent)event;
                 ThreadMirror thread = locationEvent.thread();
                 ownedMonitors.put(thread, new HashSet<InstanceMirror>(thread.getOwnedMonitors()));
-                return null;
+                return event;
             } 
         });
         request.enable();

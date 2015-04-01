@@ -101,11 +101,17 @@ public class EventDispatch {
         runUntil(null);
     }
     
-    public MirrorEvent runUntil(MirrorEventRequest endRequest) throws InterruptedException {
+    public MirrorEventSet nextEventSet() throws InterruptedException {
         MirrorEventSet eventSet = vm.eventQueue().remove();
         while (eventSet != null && eventSet.isEmpty()) {
             eventSet = vm.eventQueue().remove();
-
+        }
+        return eventSet;
+    }
+    
+    public MirrorEvent runUntil(MirrorEventRequest endRequest) throws InterruptedException {
+        MirrorEventSet eventSet = nextEventSet();
+        while (eventSet != null) {
             MirrorEvent result = null;
             for (MirrorEvent event : eventSet) {
                 if (event.request().equals(endRequest)) {
@@ -118,17 +124,18 @@ public class EventDispatch {
             } catch (MirrorInvocationTargetException e) {
                 throw new IllegalSideEffectError(e);
             }
-
+    
             if (result != null) {
                 return result;
             }
             
             eventSet.resume();
-            eventSet = vm.eventQueue().remove();
+            eventSet = nextEventSet();
         }
         
         return null;
     }
+    
     
     public Object runCallbacks(Set<MirrorEvent> events) throws MirrorInvocationTargetException {
         List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();
@@ -167,7 +174,6 @@ public class EventDispatch {
                     throw new IllegalArgumentException("Incompatible events: " + merged + ", " + event);
                 }
                 // TODO-RS: Complete this - should be equivalent to MirrorEventShadow.equals()
-                throw new IllegalArgumentException();
             }
         }
         return merged;
@@ -182,7 +188,7 @@ public class EventDispatch {
             public MirrorEvent handle(MirrorEvent t) {
                 ClassMirrorPrepareEvent event = (ClassMirrorPrepareEvent)t;
                 callback.handle(event.classMirror());
-                return null;
+                return t;
             }
         });
         request.enable();

@@ -894,7 +894,7 @@ public class ClassHolograph extends WrappingClassMirror {
                     if (preparedLoader == null ? holographLoader == null : preparedLoader.equals(holographLoader)) {
                         setWrapped(prepared.getWrappedClassMirror());
                     }
-                    return null;
+                    return event;
                 }
             });
             request.enable();

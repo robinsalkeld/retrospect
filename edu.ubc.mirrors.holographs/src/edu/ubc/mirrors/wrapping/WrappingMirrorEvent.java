@@ -37,6 +37,9 @@ public class WrappingMirrorEvent implements MirrorEvent {
     public WrappingMirrorEvent(WrappingVirtualMachine vm, MirrorEvent wrapped) {
 	this.vm = vm;
 	this.wrapped = wrapped;
+	if (wrapped == null) {
+	    throw new NullPointerException();
+	}
 	this.proceed = MirrorInvocationHandler.NONE;
     }
 

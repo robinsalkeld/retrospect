@@ -9,7 +9,7 @@ import org.aspectj.weaver.ast.Var;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MirrorInvocationHandler;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class ConstructorMirrorExecutionShadow extends MirrorEventShadow {
@@ -17,15 +17,13 @@ public class ConstructorMirrorExecutionShadow extends MirrorEventShadow {
     private final AdviceKind kind;
     private final ConstructorMirror constructor;
     private final ThreadMirror thread;
-    private final MirrorInvocationHandler handler;
     
-    protected ConstructorMirrorExecutionShadow(MirrorWorld world, AdviceKind kind, ConstructorMirror constructor, ThreadMirror thread, 
-            MirrorInvocationHandler handler, Member signature, Shadow enclosingShadow) {
-        super(world, null, Shadow.ConstructorExecution, signature, enclosingShadow);
+    protected ConstructorMirrorExecutionShadow(MirrorWorld world, AdviceKind kind, MirrorEvent event, 
+            ConstructorMirror constructor, ThreadMirror thread, Member signature, Shadow enclosingShadow) {
+        super(world, event, Shadow.ConstructorExecution, signature, enclosingShadow);
         this.kind = kind;
         this.constructor = constructor;
         this.thread = thread;
-        this.handler = handler;
     }
 
     @Override
