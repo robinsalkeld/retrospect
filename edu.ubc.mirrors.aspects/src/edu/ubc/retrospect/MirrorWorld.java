@@ -34,7 +34,6 @@ import org.aspectj.weaver.ShadowMunger;
 import org.aspectj.weaver.SourceContextImpl;
 import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.World;
-import org.aspectj.weaver.ast.Var;
 import org.aspectj.weaver.loadtime.DefaultMessageHandler;
 import org.aspectj.weaver.loadtime.definition.Definition;
 import org.aspectj.weaver.loadtime.definition.DocumentParser;
@@ -54,6 +53,7 @@ import edu.ubc.mirrors.InputStreamMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
@@ -70,7 +70,7 @@ import edu.ubc.mirrors.raw.NativeClassMirror;
  * 
  * @author robinsalkeld
  */
-public class MirrorWorld extends World {
+public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
 
     public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After, AdviceKind.Around };
     
@@ -457,33 +457,7 @@ public class MirrorWorld extends World {
                 for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
                     MirrorAdvice advice = (MirrorAdvice)munger;
                     showMessage(IMessage.DEBUG, "Installing event requests for advice: " + advice, null, null);
-                    PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice, new Callback<MirrorEventShadow>() {
-                        public MirrorEventShadow handle(MirrorEventShadow shadow) {
-                            // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)
-                            // See also: http://www.eclipse.org/aspectj/doc/released/devguide/ltw-specialcases.html
-                            if (!Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses")) {
-                                // TODO-RS: This is specified in the documentation for loadtime weaving,
-                                // so this check is probably already coded somewhere in the weaving library...
-                                String declaringClassName = shadow.getDeclaringClass().getClassName();
-                                if (declaringClassName.startsWith("org.aspectj.") || 
-                                    declaringClassName.startsWith("java.") || 
-                                    declaringClassName.startsWith("javax.") ||
-                                    declaringClassName.startsWith("sun.reflect.")) {
-                                    return null;
-                                }
-                            }
-                        
-                            showMessage(IMessage.DEBUG, shadow.toString(), null, null);
-                            for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
-                                if (munger.match(shadow, MirrorWorld.this)) {
-                                    shadow.addMunger(munger);
-                                }
-                            }
-                            shadow.implement();
-                            
-                            return shadow;
-                        }
-                    });
+                    PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice, MirrorWorld.this);
                 }
                 
                 ThreadHolograph.lowerMetalevel();
@@ -494,5 +468,44 @@ public class MirrorWorld extends World {
         
         vm.resume();
         vm.dispatch().run();
+    }
+    
+    private final Callback<MirrorEvent> eventCallback = new Callback<MirrorEvent>() {
+        public MirrorEvent handle(MirrorEvent event) {
+            MirrorEventShadow shadow = MirrorEventShadow.make(MirrorWorld.this, event);
+            MirrorWorld.this.handle(shadow);
+            return shadow.event;
+        };
+    };
+    
+    public Callback<MirrorEvent> eventCallback() {
+        return eventCallback;
+    }
+    
+    @Override
+    public MirrorEventShadow handle(MirrorEventShadow shadow) {
+        // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)
+        // See also: http://www.eclipse.org/aspectj/doc/released/devguide/ltw-specialcases.html
+        if (!Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses")) {
+            // TODO-RS: This is specified in the documentation for loadtime weaving,
+            // so this check is probably already coded somewhere in the weaving library...
+            String declaringClassName = shadow.getDeclaringClass().getClassName();
+            if (declaringClassName.startsWith("org.aspectj.") || 
+                declaringClassName.startsWith("java.") || 
+                declaringClassName.startsWith("javax.") ||
+                declaringClassName.startsWith("sun.reflect.")) {
+                return null;
+            }
+        }
+    
+        showMessage(IMessage.DEBUG, shadow.toString(), null, null);
+        for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
+            if (munger.match(shadow, MirrorWorld.this)) {
+                shadow.addMunger(munger);
+            }
+        }
+        shadow.implement();
+        
+        return shadow;
     }
 }

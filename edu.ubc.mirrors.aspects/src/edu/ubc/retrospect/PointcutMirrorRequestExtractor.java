@@ -74,15 +74,6 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     private final Callback<MirrorEventShadow> callback;
     private final MirrorEventRequestManager manager;
     
-    private final Callback<MirrorEvent> EVENT_CALLBACK = new Callback<MirrorEvent>() {
-        @Override
-        public MirrorEvent handle(MirrorEvent event) {
-            MirrorEventShadow shadow = MirrorEventShadow.make(world, event);
-            callback.handle(shadow);
-            return shadow.event;
-        }
-    };
-    
     public PointcutMirrorRequestExtractor(MirrorWorld world, Advice advice, Callback<MirrorEventShadow> callback) {
         this.advice = advice;
         this.world = world;
@@ -334,7 +325,7 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
             addPatternFilter(request, pattern);
         }
         world.showMessage(IMessage.DEBUG, request.toString(), null, null);
-        world.vm.dispatch().addCallback(request, EVENT_CALLBACK);
+        world.vm.dispatch().addCallback(request, world.eventCallback());
         request.enable();
     }
     
