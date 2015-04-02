@@ -68,6 +68,7 @@ public class EventDispatch {
     private final Map<MirrorEventRequest, Integer> requestOrder = new HashMap<MirrorEventRequest, Integer>();
     private int nextOrder = 0;
     private MirrorEventSet currentSet = null;
+    private boolean started = false;
     
     public EventDispatch(VirtualMachineMirror vm) {
 	this.vm = vm;
@@ -103,18 +104,26 @@ public class EventDispatch {
     }
     
     public MirrorEventSet nextEventSet() throws InterruptedException {
-        MirrorEventSet eventSet = vm.eventQueue().remove();
-        while (eventSet != null && eventSet.isEmpty()) {
-            eventSet = vm.eventQueue().remove();
+        if (started && currentSet != null) {
+            currentSet.resume();
+        } else {
+            started = true;
         }
-        return eventSet;
+        
+        currentSet = vm.eventQueue().remove();
+        while (currentSet != null) {
+            if (!currentSet.isEmpty()) {
+                return currentSet;
+            }
+            
+            currentSet.resume();
+            currentSet = vm.eventQueue().remove();
+        }
+        
+        return null;
     }
     
     public MirrorEvent runUntil(MirrorEventRequest endRequest) throws InterruptedException {
-        if (currentSet != null) {
-            currentSet.resume();
-        }
-        
         currentSet = nextEventSet();
         while (currentSet != null) {
             MirrorEvent result = null;

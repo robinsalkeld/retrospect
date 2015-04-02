@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.holographs;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +33,15 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         @Override
         public MirrorEvent handle(MirrorEvent t) {
             MethodMirrorEntryEvent entryEvent = (MethodMirrorEntryEvent)t;
-            MethodHolographHandlerEvent handlerEvent = new MethodHolographHandlerEvent(MethodHolographHandlerRequest.this, 
+            final MethodHolographHandlerEvent handlerEvent = new MethodHolographHandlerEvent(MethodHolographHandlerRequest.this, 
                     entryEvent.thread(), entryEvent.method(), entryEvent.arguments(), MethodHolographHandlerRequest.this);
-            return handlerEvent;
+            
+            t.setProceed(new MirrorInvocationHandler() {
+                public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                    return vm.dispatch().runCallbacks(Collections.<MirrorEvent>singleton(handlerEvent));
+                }
+            });
+            return t;
         }
     };
     

@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.holographs;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,6 @@ import edu.ubc.mirrors.ConstructorMirrorExitEvent;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.ConstructorMirrorHandlerEvent;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
-import edu.ubc.mirrors.InvocableMirrorEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -29,9 +29,15 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
         @Override
         public MirrorEvent handle(MirrorEvent t) {
             ConstructorMirrorEntryEvent entryEvent = (ConstructorMirrorEntryEvent)t;
-            ConstructorMirrorHandlerEvent handlerEvent = new ConstructorHolographHandlerEvent(ConstructorHolographHandlerRequest.this, 
+            final ConstructorMirrorHandlerEvent handlerEvent = new ConstructorHolographHandlerEvent(ConstructorHolographHandlerRequest.this, 
                     entryEvent.thread(), entryEvent.constructor(), entryEvent.arguments(), ConstructorHolographHandlerRequest.this);
-            return handlerEvent;
+            
+            t.setProceed(new MirrorInvocationHandler() {
+                public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                    return vm.dispatch().runCallbacks(Collections.<MirrorEvent>singleton(handlerEvent));
+                }
+            });
+            return t;
         }
     };
     
