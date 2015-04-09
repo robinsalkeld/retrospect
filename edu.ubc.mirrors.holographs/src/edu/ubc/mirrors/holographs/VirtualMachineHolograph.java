@@ -452,7 +452,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         } else if (mirror instanceof InstanceMirror) {
             return new InstanceHolograph(this, (InstanceMirror)mirror);
         } else if (mirror.getClassMirror().getClassName().length() == 2) {
-            // TODO-RS: wrapping primitive array mirrors
             return super.wrapMirror(mirror);
         } else if (mirror instanceof ObjectArrayMirror) {
             return new ObjectArrayHolograph(this, (ObjectArrayMirror)mirror);

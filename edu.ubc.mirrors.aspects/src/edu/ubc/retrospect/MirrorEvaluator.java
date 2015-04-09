@@ -27,6 +27,7 @@ import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 
 public class MirrorEvaluator implements ITestVisitor {
 
@@ -42,7 +43,9 @@ public class MirrorEvaluator implements ITestVisitor {
     }
 
     public boolean evaluateTest(Test t) {
+        ThreadHolograph.raiseMetalevel();
         t.accept(this);
+        ThreadHolograph.lowerMetalevel();
         return success;
     }
     

@@ -21,12 +21,15 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.EventDispatch;
@@ -177,5 +180,13 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public EventDispatch dispatch() {
         throw new UnsupportedOperationException();
+    }
+    
+    public static List<AnnotationMirror> makeAnnotations(List<Annotation> annotations) {
+        List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
+        for (Annotation a : annotations) {
+            result.add(new NativeAnnotationMirror(a));
+        }
+        return result;
     }
 }

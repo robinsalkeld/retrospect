@@ -107,15 +107,21 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     
     private final MirrorWeavingSupport weavingSupport = new MirrorWeavingSupport(this);
     private List<Definition> definitions;
-    private final ThreadLocal<Set<MirrorEventShadow>> joinpointShadowsTL = new ThreadLocal<Set<MirrorEventShadow>>() {
-        @Override
-        protected Set<MirrorEventShadow> initialValue() {
-            return new HashSet<MirrorEventShadow>();
-        }
-    };
     
-    public MirrorWorld(VirtualMachineMirror vm, ThreadMirror thread, URL... aspectPaths) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
-        this.vm = vm;
+    public static ClassMirrorLoader makeClassLoaderMirror(VirtualMachineMirror vm, ThreadMirror thread, URL...aspectPaths) {
+//        showMessage(IMessage.DEBUG, "Creating class loader for aspects...", null, null);
+        URL[] paths = new URL[aspectPaths.length + 1];
+        System.arraycopy(aspectPaths, 0, paths, 0, aspectPaths.length);
+        paths[paths.length - 1] = MirrorWorld.aspectRuntimeJar;
+        return Reflection.newURLClassLoader(vm, thread, null, paths);
+    }
+    
+    public MirrorWorld(VirtualMachineMirror vm, ThreadMirror thread, URL...aspectPaths) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+        this(thread, makeClassLoaderMirror(vm, thread, aspectPaths));
+    }
+    
+    public MirrorWorld(ThreadMirror thread, final ClassMirrorLoader loader) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+        this.vm = loader.getClassMirror().getVM();
         
         if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
             setMessageHandler(IMessageHandler.SYSTEM_ERR);
@@ -123,13 +129,8 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
             setMessageHandler(new DefaultMessageHandler());
         }
         
-        showMessage(IMessage.DEBUG, "Creating class loader for aspects...", null, null);
-        URL[] paths = new URL[aspectPaths.length + 1];
-        System.arraycopy(aspectPaths, 0, paths, 0, aspectPaths.length);
-        paths[paths.length - 1] = MirrorWorld.aspectRuntimeJar;
-        this.loader = Reflection.newURLClassLoader(vm, thread, null, paths);
-        
         this.thread = thread;
+        this.loader = loader;
         ClassMirror factoryClass = Reflection.classMirrorForType(vm, thread, Type.getType(Factory.class), true, loader);
         this.factoryConstructor = factoryClass.getConstructor(String.class.getName(), Class.class.getName());
         this.aspectAnnotClass = Reflection.classMirrorForType(vm, thread, Type.getType(Aspect.class), false, loader);
@@ -143,10 +144,6 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                         0, bytecode.length, null, null, false);
             }
         });
-        
-        // These ones just have to be loaded because they are argument types in some of the factory methods
-        Reflection.classMirrorForType(vm, thread, Type.getType(SourceLocation.class), true, loader);
-        resolve(UnresolvedType.forName(JoinPoint.StaticPart.class.getName()));
     }
 
     public ClassMirror getPointcutAnnotClass() {

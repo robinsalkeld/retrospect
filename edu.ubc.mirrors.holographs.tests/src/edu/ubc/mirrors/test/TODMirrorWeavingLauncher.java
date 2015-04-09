@@ -4,10 +4,6 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 
-import org.aspectj.bridge.IMessageHandler;
-
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;

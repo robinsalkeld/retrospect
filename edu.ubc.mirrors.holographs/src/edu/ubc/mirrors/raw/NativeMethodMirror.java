@@ -21,9 +21,11 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import edu.ubc.mirrors.AnnotationMirror;
@@ -127,14 +129,16 @@ public class NativeMethodMirror implements MethodMirror {
     
     @Override
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
-        // TODO For now
-        throw new UnsupportedOperationException();
+        return NativeVirtualMachineMirror.makeAnnotations(Arrays.asList(nativeMethod.getAnnotations()));
     }
 
     @Override
     public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
-        // TODO For now
-        throw new UnsupportedOperationException();
+        List<List<AnnotationMirror>> result = new ArrayList<List<AnnotationMirror>>();
+        for (Annotation[] annotations : nativeMethod.getParameterAnnotations()) {
+            result.add(NativeVirtualMachineMirror.makeAnnotations(Arrays.asList(annotations)));
+        }
+        return result;
     }
     
     @Override

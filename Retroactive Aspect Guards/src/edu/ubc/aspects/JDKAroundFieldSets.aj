@@ -12,8 +12,7 @@ public aspect JDKAroundFieldSets {
 //        }
 //    }
     
-    void around(String s, int h): set(* String.hash) && cflow(within(Trace)) && this(s) && args(h) {
+    void around(Class c, String n): set(* Class.name) && cflow(within(*.Racer)) && this(c) && args(n) {
         // Don't proceed, just let it be recalculated every time
-//        s.otherhash = h;
     }
 }

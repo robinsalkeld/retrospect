@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -387,7 +388,11 @@ public class NativeClassMirror extends NativeInstanceMirror implements ClassMirr
     
     @Override
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
-        throw new UnsupportedOperationException();
+        List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
+        for (Annotation a : klass.getAnnotations()) {
+            result.add(new NativeAnnotationMirror(a));
+        }
+        return result;
     }
     
     @Override

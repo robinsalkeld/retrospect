@@ -2,6 +2,7 @@ package edu.ubc.mirrors.test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.Collections;
 
@@ -25,9 +26,11 @@ public class JDIMirrorWeavingLauncher {
     private static String GUARD_ASPECTS_PATH = "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/Retroactive Aspect Guards/bin";
     
     public static String launch(String mainClassName, String options, String aspectPath, String hologramClassPath) throws Exception {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        ByteArrayOutputStream mergedOutput = new ByteArrayOutputStream();
+        OutputStream teedOut = new TeeOutputStream(mergedOutput, System.out);
+        OutputStream teedErr = new TeeOutputStream(mergedOutput, System.err);
         
-        VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName, options, true, output, output);
+        VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName, options, true, teedOut, teedErr);
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
         r.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
@@ -58,8 +61,8 @@ public class JDIMirrorWeavingLauncher {
 	        System.out.println("Booting up holographic VM...");
 	        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, new File(hologramClassPath),
 	                Collections.singletonMap("/", "/"));
-	        vmh.setSystemOut(output);
-	        vmh.setSystemErr(output);
+	        vmh.setSystemOut(teedOut);
+	        vmh.setSystemErr(teedErr);
 	        
 	        vm = vmh;
 	        thread = (ThreadMirror)vmh.getWrappedMirror(thread);
@@ -71,6 +74,6 @@ public class JDIMirrorWeavingLauncher {
         MirrorWorld world = new MirrorWorld(finalVM, finalThread, urlPath, guardAspectsPath);
         world.weave();
         
-        return output.toString();
+        return mergedOutput.toString();
     }
 }

@@ -28,7 +28,7 @@ public class RacerTest extends TestCase {
 
     public void testRacerExample() throws Exception {
         String output = JDIMirrorWeavingLauncher.launch("Task", 
-                "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Racer Test/bin\" -DRACER_LOGGING=false", 
+                "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Racer Test/bin\"", 
                 "/Users/robinsalkeld/Documents/UBC/Code/RacerAJ/bin", 
                 "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/RacerTest/hologram_classes");
         assertTrue(output.contains("Field 'static int Task.shared' is accessed unprotected."));

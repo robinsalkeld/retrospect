@@ -36,8 +36,8 @@ public class TracingExampleTest extends TestCase {
         
         String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
         assertEquals(expectedOutput, combinedOutput);
-    
-//	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
+
+        //	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);
 //	
 //	ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
 //        InstanceMirror stream = (InstanceMirror)systemClass.getStaticFieldValues().get(systemClass.getDeclaredField("err"));
