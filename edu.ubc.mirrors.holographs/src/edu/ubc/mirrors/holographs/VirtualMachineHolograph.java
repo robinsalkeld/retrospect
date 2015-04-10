@@ -36,6 +36,7 @@ import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -116,7 +117,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     private OutputStream systemErr;
     
     private final Map<String, String> mappedFiles;
-    private final ClassLoader bootstrapBytecodeLoader;
+    private final SandboxedClassLoader bootstrapBytecodeLoader;
     private final Map<String, ClassHolograph> dynamicallyDefinedClasses =
             new HashMap<String, ClassHolograph>();
     
@@ -680,6 +681,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     @Override
+    public Enumeration<URL> findBootstrapResources(String name) throws IOException {
+        return bootstrapBytecodeLoader.getResources(name);
+    }
+    
+    @Override
     public ClassMirror getPrimitiveClass(String name) {
         ClassMirror result = super.getPrimitiveClass(name);
         if (result != null) {
@@ -844,6 +850,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     public void setSystemErr(OutputStream systemErr) {
         this.systemErr = systemErr;
+    }
+    
+    public void addBootstrapPathURL(URL url) {
+        bootstrapBytecodeLoader.addURL(url);
     }
     
     // TODO-RS: Temporary for evaluation

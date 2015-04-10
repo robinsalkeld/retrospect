@@ -21,10 +21,13 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import org.objectweb.asm.Type;
@@ -76,6 +79,11 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
 //        } catch (InvocationTargetException e) {
 //            throw new RuntimeException(e);
 //        }
+    }
+    
+    @Override
+    public Enumeration<URL> findBootstrapResources(String path) throws IOException {
+        throw new UnsupportedOperationException();
     }
     
     @Override

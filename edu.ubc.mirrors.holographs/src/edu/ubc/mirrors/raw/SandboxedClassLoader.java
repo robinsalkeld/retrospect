@@ -26,6 +26,13 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
 
+/**
+ * A class loader that does not delegate to its parent or the bootstrap
+ * class loader. Used to load bytecode from a very specific and isolated
+ * class path.
+ * 
+ * @author robinsalkeld
+ */
 public class SandboxedClassLoader extends URLClassLoader {
 
     public SandboxedClassLoader(URL[] urls) {
@@ -56,4 +63,9 @@ public class SandboxedClassLoader extends URLClassLoader {
         return findResources(name);
     }
     
+    
+    @Override
+    public void addURL(URL url) {
+        super.addURL(url);
+    }
 }

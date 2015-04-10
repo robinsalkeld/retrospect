@@ -1,5 +1,6 @@
 package edu.ubc.retrospect;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -121,7 +122,7 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     }
     
     public MirrorWorld(ThreadMirror thread, final ClassMirrorLoader loader) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
-        this.vm = loader.getClassMirror().getVM();
+        this.vm = thread.getClassMirror().getVM();
         
         if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
             setMessageHandler(IMessageHandler.SYSTEM_ERR);
@@ -139,9 +140,15 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
         this.aroundClosureClass = Reflection.withThread(thread, new Callable<ClassMirror>() {
             public ClassMirror call() throws Exception {
                 ClassMirror nativeClass = new NativeClassMirror(MirrorInvocationHandlerAroundClosure.class);
+                String className = nativeClass.getClassName();
                 byte[] bytecode = nativeClass.getBytecode();
-                return loader.defineClass(nativeClass.getClassName(), new NativeByteArrayMirror(bytecode), 
-                        0, bytecode.length, null, null, false);
+                NativeByteArrayMirror bytecodeMirror = new NativeByteArrayMirror(bytecode);
+                if (loader == null) {
+                    return vm.defineBootstrapClass(className, bytecodeMirror, 0, bytecode.length);
+                } else {
+                    return loader.defineClass(className, bytecodeMirror, 
+                            0, bytecode.length, null, null, false);
+                }
             }
         });
     }
@@ -397,10 +404,25 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
 //        System.out.println("Match: " + munger + " on " + shadow);
     }
     
-    private void parseConfiguration() {
+    private void parseConfiguration() throws IOException {
         definitions = new ArrayList<Definition>();
         String definitionPath = "META-INF/aop-ajc.xml";
-        InstanceMirror urlsEnumeration = (InstanceMirror)Reflection.invokeMethodHandle(loader, thread, new MethodHandle() {
+        
+        InstanceMirror urlsEnumeration;
+        if (loader == null) {
+            Enumeration<URL> urls = vm.findBootstrapResources(definitionPath);
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                try {
+                    definitions.add(DocumentParser.parse(url));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return;
+        }
+        
+        urlsEnumeration = (InstanceMirror)Reflection.invokeMethodHandle(loader, thread, new MethodHandle() {
             protected void methodCall() throws Throwable {
                 ((ClassLoader)null).getResources((String)null);
             }
@@ -413,9 +435,9 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                     ((URL)null).openStream();
                 }
             });
-            URL handler = FakeURLStreamHandler.makeURL(new InputStreamMirror(thread, streamMirror));
+            URL url = FakeURLStreamHandler.makeURL(new InputStreamMirror(thread, streamMirror));
             try {
-                definitions.add(DocumentParser.parse(handler));
+                definitions.add(DocumentParser.parse(url));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

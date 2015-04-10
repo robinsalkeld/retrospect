@@ -21,6 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.List;
 
 public interface VirtualMachineMirror {
@@ -30,6 +33,8 @@ public interface VirtualMachineMirror {
     public ClassMirror findBootstrapClassMirror(String name);
     
     public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len);
+    
+    public Enumeration<URL> findBootstrapResources(String path) throws IOException;
     
     public List<ClassMirror> findAllClasses();
     public List<ClassMirror> findAllClasses(String name, boolean includeSubclasses); 

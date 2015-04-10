@@ -21,10 +21,13 @@
  ******************************************************************************/
 package edu.ubc.mirrors.tod;
 
+import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -229,6 +232,11 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Enumeration<URL> findBootstrapResources(String path) throws IOException {
         throw new UnsupportedOperationException();
     }
 

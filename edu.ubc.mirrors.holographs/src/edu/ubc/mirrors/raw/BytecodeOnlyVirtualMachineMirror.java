@@ -21,6 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +70,11 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     @Override
     public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
         throw new UnsupportedOperationException(); 
+    }
+    
+    @Override
+    public Enumeration<URL> findBootstrapResources(String path) throws IOException {
+        return bootstrapLoader.getResources(path);
     }
     
     @Override

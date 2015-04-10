@@ -24,8 +24,11 @@ package edu.ubc.mirrors.eclipse.mat;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -180,6 +183,11 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
 
     @Override
     public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public Enumeration<URL> findBootstrapResources(String path) throws IOException {
         throw new UnsupportedOperationException();
     }
     

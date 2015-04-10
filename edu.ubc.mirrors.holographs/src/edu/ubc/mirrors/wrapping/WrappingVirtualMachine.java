@@ -21,7 +21,10 @@
  ******************************************************************************/
 package edu.ubc.mirrors.wrapping;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +80,11 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     public ClassMirror defineBootstrapClass(String name, ByteArrayMirror b, int off, int len) {
         ByteArrayMirror unwrappedB = (ByteArrayMirror)unwrapMirror(b);
         return getWrappedClassMirror(wrappedVM.defineBootstrapClass(name, unwrappedB, off, len));
+    }
+    
+    @Override
+    public Enumeration<URL> findBootstrapResources(String path) throws IOException {
+        return wrappedVM.findBootstrapResources(path);
     }
     
     // It would be great to make this a WeakHashMap, but since the wrapping objects may have state they can't
