@@ -12,7 +12,7 @@ public aspect JDKAroundFieldSets {
 //        }
 //    }
     
-    void around(Class c, String n): set(* Class.name) && cflow(within(*.Racer)) && this(c) && args(n) {
-        // Don't proceed, just let it be recalculated every time
-    }
+//    void around(Class c, String n): set(* Class.name) && cflow(within(*.Racer)) && this(c) && args(n) {
+//        // Don't proceed, just let it be recalculated every time
+//    }
 }
