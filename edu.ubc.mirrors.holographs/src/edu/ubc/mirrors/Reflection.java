@@ -27,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -968,13 +969,37 @@ public class Reflection {
         }
     }
     
+    private static class ExceptionPasser implements UncaughtExceptionHandler {
+
+        private Thread callingThread;
+        public Throwable throwable;
+        
+        public ExceptionPasser(Thread callingThread) {
+            this.callingThread = callingThread;
+        }
+        
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+            this.throwable = e;
+            callingThread.interrupt();
+        }
+    }
+    
     public static <T> T withEventDispatchThread(VirtualMachineMirror vm, Callable<T> callback) throws Exception {
         Thread dispatchThread = new EventDispatch.EventDispatchThread(vm.dispatch());
+        ExceptionPasser passer = new ExceptionPasser(Thread.currentThread());
+        dispatchThread.setUncaughtExceptionHandler(passer);
         dispatchThread.start();
+        T result;
         try {
-            return callback.call();
+            result = callback.call();
         } finally {
             dispatchThread.interrupt();
         }
+        if (passer.throwable != null) {
+            throw new RuntimeException(passer.throwable);
+        }
+        
+        return result;
     }
 }

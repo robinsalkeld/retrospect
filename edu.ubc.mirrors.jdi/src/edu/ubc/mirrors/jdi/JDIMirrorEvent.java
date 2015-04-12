@@ -51,7 +51,7 @@ public abstract class JDIMirrorEvent extends JDIMirror implements MirrorEvent {
     
     @Override
     public MirrorInvocationHandler getProceed() {
-        throw new UnsupportedOperationException();
+        return MirrorInvocationHandler.NONE;
     }
     
     @Override
