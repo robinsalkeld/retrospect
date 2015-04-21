@@ -2,7 +2,6 @@ package edu.ubc.mirrors.holograms;
 
 import java.util.List;
 
-import edu.ubc.mirrors.InvocableMirrorEvent;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;

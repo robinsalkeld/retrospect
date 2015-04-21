@@ -9,6 +9,7 @@ import java.util.Set;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
+import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.InvocableMirrorEvent;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
@@ -84,6 +85,10 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
             }
         }
         return false;
+    }
+    
+    public void handleFieldSetInt(InstanceMirror target, FieldMirror field, int newValue) throws IllegalAccessException {
+        target.setInt(field, newValue);
     }
 }
 

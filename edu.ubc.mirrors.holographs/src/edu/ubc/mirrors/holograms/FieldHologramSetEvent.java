@@ -4,13 +4,15 @@ import java.util.List;
 
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
-public class FieldHologramSetEvent implements MirrorInvocationHandler {
+public class FieldHologramSetEvent implements MirrorEvent {
 
     private final VirtualMachineHolograph vm;
     protected final FieldMirror field;
@@ -29,5 +31,35 @@ public class FieldHologramSetEvent implements MirrorInvocationHandler {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    @Override
+    public MirrorEventRequest request() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ThreadMirror thread() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Object> arguments() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public MirrorInvocationHandler getProceed() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setProceed(MirrorInvocationHandler handler) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
     }
 }

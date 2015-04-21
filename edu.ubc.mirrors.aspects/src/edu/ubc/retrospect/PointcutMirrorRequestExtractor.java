@@ -24,12 +24,16 @@ import org.aspectj.weaver.ResolvedMember;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.patterns.AbstractPatternNodeVisitor;
 import org.aspectj.weaver.patterns.AndPointcut;
+import org.aspectj.weaver.patterns.ArgsPointcut;
 import org.aspectj.weaver.patterns.KindedPointcut;
+import org.aspectj.weaver.patterns.NotPointcut;
 import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.PatternNode;
+import org.aspectj.weaver.patterns.PerSingleton;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.aspectj.weaver.patterns.PointcutRewriter;
 import org.aspectj.weaver.patterns.SignaturePattern;
+import org.aspectj.weaver.patterns.ThisOrTargetPointcut;
 import org.aspectj.weaver.patterns.TypePattern;
 import org.aspectj.weaver.patterns.WithinPointcut;
 import org.objectweb.asm.Opcodes;
@@ -63,7 +67,7 @@ import edu.ubc.mirrors.raw.BytecodeClassMirror;
  * @author Robin Salkeld
  *
  */
-public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
+public class PointcutMirrorRequestExtractor {
 
     int kinds = Shadow.ALL_SHADOW_KINDS_BITS;
     final List<PatternNode> thisFilters = new ArrayList<PatternNode>();
@@ -81,15 +85,35 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         this.manager = world.vm.eventRequestManager();
     }
     
-    @Override
-    public Object visit(WithinPointcut node, Object belowAnd) {
+    public Object visit(Pointcut node, Object parent) {
+        if (node instanceof AndPointcut) {
+            return visit((AndPointcut)node, parent);
+        } else if (node instanceof OrPointcut) {
+            return visit((OrPointcut)node, parent);
+        } else if (node instanceof NotPointcut) {
+            return visit((NotPointcut)node, parent);
+        } else if (node instanceof WithinPointcut) {
+            return visit((WithinPointcut)node, parent);
+        } else if (node instanceof KindedPointcut) {
+            return visit((KindedPointcut)node, parent);
+        } else if (node instanceof ThisOrTargetPointcut || node instanceof ArgsPointcut) {
+            // Could possibly add filters to match the type pattern...
+            return null;
+        } else if (node instanceof PerSingleton) {
+            // Ignore pointcuts with no scope
+            return null;
+        } else {
+            throw new UnsupportedOperationException("Unsupported pointcut type: " + node.getClass());
+        }
+    }
+    
+    public Object visit(WithinPointcut node, Object parent) {
         kinds &= node.couldMatchKinds();
         thisFilters.add(node.getTypePattern());
-        installIfNotBelowAnd(belowAnd);
+        installIfNotBelowAnd(parent);
         return null;
     }
     
-    @Override
     public Object visit(KindedPointcut node, Object parent) {
         kinds &= node.couldMatchKinds();
         if (node.getKind().bit == Shadow.FieldSetBit) {
@@ -101,23 +125,26 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
         return null;
     }
     
-    @Override
     public Object visit(OrPointcut node, Object parent) {
-        node.getLeft().accept(this, node);
+        visit(node.getLeft(), node);
         
         kinds = Shadow.ALL_SHADOW_KINDS_BITS;
         thisFilters.clear();
         
-        node.getRight().accept(this, node);
+        visit(node.getRight(), node);
 
         return null;
     }
     
-    @Override
     public Object visit(AndPointcut node, Object parent) {
-        node.getLeft().accept(this, node);
-        node.getRight().accept(this, node);
+        visit(node.getLeft(), node);
+        visit(node.getRight(), node);
         installIfNotBelowAnd(parent);
+        return null;
+    }
+    
+    public Object visit(NotPointcut node, Object parent) {
+        // TODO-RS: WRONG!
         return null;
     }
     
@@ -391,6 +418,6 @@ public class PointcutMirrorRequestExtractor extends AbstractPatternNodeVisitor {
     public static void installCallback(MirrorWorld world, Advice advice, Callback<MirrorEventShadow> callback) {
         PointcutMirrorRequestExtractor extractor = new PointcutMirrorRequestExtractor(world, advice, callback);
         Pointcut dnf = new PointcutRewriter().rewrite(advice.getPointcut());
-        dnf.accept(extractor, null);
+        extractor.visit(dnf, null);
     }
 }

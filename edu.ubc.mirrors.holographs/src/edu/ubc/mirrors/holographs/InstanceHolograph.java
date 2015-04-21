@@ -119,12 +119,12 @@ public class InstanceHolograph extends WrappingInstanceMirror {
     }
     
     private void checkForIllegalMutation(FieldMirror field) {
-        if (!(wrapped instanceof NewInstanceMirror)) {
-            String message = "Illegal set to field " + 
-                    field.getDeclaringClass().getClassName() + "." + field.getName();
-            System.err.println(message);
-//            throw new InternalError(message);
-        }
+//        if (!(wrapped instanceof NewInstanceMirror)) {
+//            String message = "Illegal set to field " + 
+//                    field.getDeclaringClass().getClassName() + "." + field.getName();
+//            System.err.println(message);
+////            throw new InternalError(message);
+//        }
     }
 
     public void set(FieldMirror field, ObjectMirror o) {
