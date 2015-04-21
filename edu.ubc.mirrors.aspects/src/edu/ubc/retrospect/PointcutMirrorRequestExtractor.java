@@ -144,8 +144,15 @@ public class PointcutMirrorRequestExtractor {
     }
     
     public Object visit(NotPointcut node, Object parent) {
-        // TODO-RS: WRONG!
-        return null;
+        if (parent instanceof AndPointcut) {
+            // Safe to just drop any nots underneath ands since the requests will
+            // still cover a superset of the correct events.
+            return null;
+        } else {
+            // Could implement by negating kinds and installing no filters,
+            // but that would be very inefficient and realistically never used.
+            throw new IllegalArgumentException("Not pointcuts that aren't under Ands not supported");
+        }
     }
     
     private void installIfNotBelowAnd(Object parent) {
