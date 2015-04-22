@@ -4,8 +4,8 @@ JAVA15_HOME=/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/Home
 JAVA14_HOME=$(JAVA15_HOME)
 
 BOOST_VERSION=
-BOOST_INCLUDES=/Users/robinsalkeld/Documents/UBC/Code/boost_1_55_0
+BOOST_INCLUDES=/Users/robinsalkeld/Documents/UBC/Code/boost_1_58_0_libs/include
 BOOST_FLAVOR=
-BOOST_LIBS=/Users/robinsalkeld/Documents/UBC/Code/boost_1_55_0/stage/lib
+BOOST_LIBS=/Users/robinsalkeld/Documents/UBC/Code/boost_1_58_0_libs/lib
 
 MACOS_ARCH=-arch x86_64

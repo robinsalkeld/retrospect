@@ -108,6 +108,12 @@ public class ClassStubs extends NativeStubs {
         return Reflection.classMirrorForType(getVM(), ThreadHolograph.currentThreadMirror(), type, resolve, loader);
     }
     
+    // JDK 7 u71 version
+    @StubMethod
+    public ClassMirror forName0(InstanceMirror name, boolean resolve, ClassMirrorLoader loader, ClassMirror caller) throws ClassNotFoundException, MirrorInvocationTargetException {
+        return forName0(name, resolve, loader);
+    }
+    
     @StubMethod
     public ObjectArrayMirror getDeclaredConstructors0(ClassMirror classMirror, boolean publicOnly) {
         List<ConstructorMirror> constructors = classMirror.getDeclaredConstructors(publicOnly);
