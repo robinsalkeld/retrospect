@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 
+import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -32,10 +33,10 @@ public class TODMirrorWeavingLauncher {
         vm = vmh;
         thread = (ThreadMirror)vmh.getWrappedMirror(thread);
         
-        final VirtualMachineMirror finalVM = vm;
-        final ThreadMirror finalThread = thread;
+        vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
+        vmh.addBootstrapPathURL(urlPath);
         
-        MirrorWorld world = new MirrorWorld(finalVM, finalThread, urlPath);
+        MirrorWorld world = new MirrorWorld(thread, null);
         world.weave();
     }
 }
