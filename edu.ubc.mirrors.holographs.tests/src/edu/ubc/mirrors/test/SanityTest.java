@@ -162,4 +162,11 @@ public class SanityTest extends TestCase {
                 "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/tod/TracingTest");
     }
     
+    public void testLeakDetectorAspect() throws Exception {
+        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
+                "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"", 
+                "/Users/robinsalkeld/Documents/UBC/Code/Leak Detection Aspect/bin", 
+                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/LeakDetectorAspectTest/hologram_classes");
+        
+    }
 }

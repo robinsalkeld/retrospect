@@ -21,6 +21,7 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.sun.jdi.event.MethodEntryEvent;
@@ -64,6 +65,7 @@ public class JDIConstructorMirrorEntryEvent extends JDIMirrorEvent implements Co
     
     @Override
     public List<Object> arguments() {
-        return thread().getStackTrace().get(0).arguments();
+        List<Object> arguments = thread().getStackTrace().get(0).arguments();
+        return arguments != null ? arguments : Collections.emptyList();
     }
 }

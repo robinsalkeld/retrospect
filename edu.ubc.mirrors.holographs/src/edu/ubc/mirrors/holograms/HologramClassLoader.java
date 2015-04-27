@@ -510,7 +510,7 @@ public class HologramClassLoader extends ClassLoader {
             }
             
             deleteRecursive(bytecodeCacheDir);
-            bytecodeCacheDir.mkdir();
+            createDirRecursive(bytecodeCacheDir);
             try {
                 PrintStream fileOut = new PrintStream(new FileOutputStream(versionFile));
                 fileOut.print(HologramClassGenerator.VERSION);

@@ -194,8 +194,7 @@ public class PointcutMirrorRequestExtractor {
                 case Shadow.InitializationBit:
                 case Shadow.PreInitializationBit:
                 case Shadow.ExceptionHandlerBit:
-                    // TODO-RS
-//                    System.err.println("Unsupported pointcut kind: " + kind);
+                    world.showMessage(IMessage.WARNING, "Unsupported pointcut kind: " + kind, null, null);
                     break;
                 }
             }

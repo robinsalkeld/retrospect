@@ -1,6 +1,6 @@
 package edu.ubc.mirrors.holographs;
 
-public class IllegalSideEffectError extends RuntimeException {
+public class IllegalSideEffectError extends VirtualMachineError {
 
     private static final long serialVersionUID = -8689548914975934532L;
 
@@ -13,10 +13,12 @@ public class IllegalSideEffectError extends RuntimeException {
     }
     
     public IllegalSideEffectError(String message, Throwable cause) {
-        super(message, cause);
+        super(message);
+        initCause(cause);
     }
     
     public IllegalSideEffectError(Throwable cause) {
-        super(cause);
+        super();
+        initCause(cause);
     }
 }

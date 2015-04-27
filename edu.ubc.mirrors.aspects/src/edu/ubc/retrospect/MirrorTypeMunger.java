@@ -26,5 +26,10 @@ public class MirrorTypeMunger extends ConcreteTypeMunger {
     public ConcreteTypeMunger parameterizeWith(Map<String, UnresolvedType> parameterizationMap, World world) {
         return new MirrorTypeMunger(munger.parameterizeWith(parameterizationMap, world), aspectType);
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + aspectType;
+    }
 
 }
