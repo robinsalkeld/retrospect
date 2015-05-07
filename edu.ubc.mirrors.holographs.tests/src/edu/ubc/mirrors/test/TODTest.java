@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.test;
 
+import java.io.File;
+
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
@@ -28,9 +30,8 @@ public class TODTest implements IApplication {
 
     public static void main(String[] args) throws Exception {
         try {
-            TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
-                    "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin",
-                    "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/tod/TracingTest");
+            TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin, 
+                    new File(EvalConstants.DataRoot, "/tod/TracingTest"));
         } catch (Throwable e) {
             e.printStackTrace();
         }

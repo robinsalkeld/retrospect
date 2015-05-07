@@ -36,6 +36,10 @@ public class ThrowableTest extends Throwable {
 	return this;
     }
     
+    public synchronized ThrowableTest fillInStackTrace() {
+        return (ThrowableTest)super.fillInStackTrace();
+    };
+    
     STE getStackTraceElement(int index) {
 	return getStackTraceElement(this, index);
     }

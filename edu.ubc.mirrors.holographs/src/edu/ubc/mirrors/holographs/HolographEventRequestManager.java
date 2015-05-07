@@ -1,6 +1,7 @@
 package edu.ubc.mirrors.holographs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,9 @@ import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.holograms.FieldHologramSetEvent;
 import edu.ubc.mirrors.holograms.MethodHolographHandlerEvent;
 import edu.ubc.mirrors.wrapping.WrappingMirrorEventRequestManager;
 
@@ -87,8 +91,19 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
         return false;
     }
     
-    public void handleFieldSetInt(InstanceMirror target, FieldMirror field, int newValue) throws IllegalAccessException {
-        target.setInt(field, newValue);
+    public void handleFieldSetInt(final InstanceMirror target, final FieldMirror field, final int newValue) throws IllegalAccessException, MirrorInvocationTargetException {
+        Set<MirrorEvent> events = new HashSet<MirrorEvent>();
+        for (FieldHolographSetHandlerRequest request : fieldSetHandlerRequests) {
+            if (request.matches(field)) {
+                events.add(new FieldHologramSetEvent(request, ThreadHolograph.currentThreadMirror(), target, field, newValue));
+            }
+        }
+        
+        if (events.isEmpty()) {
+            Reflection.setField(target, field, newValue);
+        } else {
+            vm.dispatch().runCallbacks(events);
+        }
     }
 }
 

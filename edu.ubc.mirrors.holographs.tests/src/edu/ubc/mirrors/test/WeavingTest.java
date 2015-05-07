@@ -42,7 +42,7 @@ public class WeavingTest {
 //        Definition aop = DocumentParser.parse(file.toURL());
 //        aop.getAspectClassNames();
         
-        File binDir = new File("/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin");
+        File binDir = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectEval/Tracing Example Aspects/bin");
         
         ClassReader reader = new ClassReader(new FileInputStream(binDir + "/tracing/version3/TraceMyClasses.class"));
         PrintWriter textFileWriter = new PrintWriter(System.out);

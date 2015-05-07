@@ -80,7 +80,6 @@ public class Reflection {
             try {
                 return c.call();
             } catch (Throwable e) {
-                e.printStackTrace();
                 throw new RuntimeException(e);
             } finally {
                 threadHolograph.exitHologramExecution();
@@ -985,8 +984,16 @@ public class Reflection {
         }
     }
     
+    private static Map<VirtualMachineMirror, Thread> eventDispatchThreads = new HashMap<VirtualMachineMirror, Thread>();
+    
     public static <T> T withEventDispatchThread(VirtualMachineMirror vm, Callable<T> callback) throws Exception {
+        if (eventDispatchThreads.containsKey(vm)) {
+            return callback.call();
+        }
+        
         Thread dispatchThread = new EventDispatch.EventDispatchThread(vm.dispatch());
+        eventDispatchThreads.put(vm, dispatchThread);
+        
         ExceptionPasser passer = new ExceptionPasser(Thread.currentThread());
         dispatchThread.setUncaughtExceptionHandler(passer);
         dispatchThread.start();
@@ -996,6 +1003,9 @@ public class Reflection {
         } finally {
             dispatchThread.interrupt();
         }
+        
+        eventDispatchThreads.remove(vm);
+        
         if (passer.throwable != null) {
             throw new RuntimeException(passer.throwable);
         }

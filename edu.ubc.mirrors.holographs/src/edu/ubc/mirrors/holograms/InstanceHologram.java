@@ -24,6 +24,7 @@ package edu.ubc.mirrors.holograms;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holograms.Hologram;
 import edu.ubc.mirrors.holograms.ObjectHologram;
@@ -148,13 +149,15 @@ public class InstanceHologram {
             throw new IllegalAccessError(e.getMessage());
         }
     }
-    public static void setIntField(Hologram m, int i, ClassMirror klass, String name) {
+    public static void setIntField(Hologram m, int i, ClassMirror klass, String name) throws Throwable {
         try {
             FieldMirror field = getFieldMirror(klass, name);
             InstanceMirror target = getInstanceMirror(m, klass);
             ((ClassHolograph)klass).getVM().eventRequestManager().handleFieldSetInt(target, field, i);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
+        } catch (MirrorInvocationTargetException e) {
+            throw (Throwable)ObjectHologram.make(e.getTargetException());
         }
     }
     public static void setLongField(Hologram m, long l, ClassMirror klass, String name) {

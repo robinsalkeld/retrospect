@@ -7,6 +7,7 @@ import java.util.Map;
 
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
+import edu.ubc.mirrors.MethodMirror;
 
 public class FieldHolographSetHandlerRequest implements FieldMirrorSetHandlerRequest {
 
@@ -56,4 +57,19 @@ public class FieldHolographSetHandlerRequest implements FieldMirrorSetHandlerReq
         classNamePatterns.add(classNamePattern);
     }
     
+    public boolean matches(FieldMirror field) {
+        if (!classNamePatterns.isEmpty()) {
+            if (!classNamePatterns.contains(field.getDeclaringClass().getClassName())) {
+                return false;
+            }
+        }
+        
+        if (fieldFilter != null) {
+            if (fieldFilter != field) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
 }

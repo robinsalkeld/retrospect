@@ -32,6 +32,7 @@ import java.util.Map;
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.CharArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -46,6 +47,8 @@ import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.InvocableMirror;
 import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
@@ -341,6 +344,11 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return dispatch;
     }
 
+    @Override
+    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback) {
+        dispatch.addCallback(request, callback);
+    }
+    
     public MirrorLocation wrapLocation(MirrorLocation location) {
         return new WrappingMirrorLocation(this, location);
     }

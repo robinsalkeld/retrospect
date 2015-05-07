@@ -1,9 +1,12 @@
 package edu.ubc.mirrors.holograms;
 
+import java.util.Arrays;
 import java.util.List;
 
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
@@ -14,52 +17,43 @@ import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
 public class FieldHologramSetEvent implements MirrorEvent {
 
-    private final VirtualMachineHolograph vm;
+    private final FieldMirrorSetHandlerRequest request;
+    private final ThreadMirror thread;
+    private final InstanceMirror target;
     protected final FieldMirror field;
+    private final Object newValue;
+    private MirrorInvocationHandler proceed;
     
-    public FieldHologramSetEvent(VirtualMachineHolograph vm, FieldMirror field) {
-        this.vm = vm;
+    public FieldHologramSetEvent(FieldMirrorSetHandlerRequest request, ThreadMirror thread, InstanceMirror target, FieldMirror field, Object newValue) {
+        this.request = request;
+        this.thread = thread;
+        this.target = target;
         this.field = field;
-    }
-
-    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-        InstanceMirror target = (InstanceMirror)args.get(0);
-        Object newValue = args.get(1);
-        try {
-            Reflection.setField(target, field, newValue);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return null;
+        this.newValue = newValue;
     }
 
     @Override
     public MirrorEventRequest request() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException();
+        return request;
     }
 
     @Override
     public ThreadMirror thread() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException();
+        return thread;
     }
 
     @Override
     public List<Object> arguments() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException();
+        return Arrays.asList(target, newValue);
     }
 
     @Override
     public MirrorInvocationHandler getProceed() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException();
+        return proceed;
     }
 
     @Override
-    public void setProceed(MirrorInvocationHandler handler) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException();
+    public void setProceed(MirrorInvocationHandler proceed) {
+        this.proceed = proceed;
     }
 }

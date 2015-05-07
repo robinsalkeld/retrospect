@@ -38,7 +38,14 @@ public class MethodMirrorMember extends ResolvedMemberImpl {
                 String parameterNamesString = (String)annot.getValue(world.thread, "argNames");
                 this.setParameterNames(parameterNamesString.isEmpty() ? new String[0] : parameterNamesString.split(","));
                 
-                String pointcut = (String)annot.getValue(world.thread, "value");
+                String pointcut = null;
+                if (kind == AdviceKind.AfterReturning) {
+                    pointcut = (String)annot.getValue(world.thread, "pointcut");
+                }
+                if (pointcut == null) {
+                    pointcut = (String)annot.getValue(world.thread, "value");
+                }
+                
                 Pointcut pc = world.parsePointcut(pointcut);
                 pc = world.resolvePointcut(this, pc);
                 

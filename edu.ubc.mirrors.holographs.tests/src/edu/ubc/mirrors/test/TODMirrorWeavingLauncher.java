@@ -13,7 +13,7 @@ import edu.ubc.mirrors.tod.TODVirtualMachineMirror;
 import edu.ubc.retrospect.MirrorWorld;
 
 public class TODMirrorWeavingLauncher {
-    public static void launch(String clientName, String aspectPath, String hologramCachePath) throws Exception {
+    public static void launch(String clientName, File aspectPath, File hologramCachePath) throws Exception {
         final TODVirtualMachineMirror todVMM = TODVirtualMachineMirror.connect(clientName);
         ThreadMirror thread = null;
         for (ThreadMirror t : todVMM.getThreads()) {
@@ -24,11 +24,10 @@ public class TODMirrorWeavingLauncher {
         }
         VirtualMachineMirror vm = todVMM; 
         
-        File binDir = new File(aspectPath);
-        URL urlPath = binDir.toURI().toURL();
+        URL urlPath = aspectPath.toURI().toURL();
         
         System.out.println("Booting up holographic VM...");
-        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(todVMM, new File(hologramCachePath),
+        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(todVMM, hologramCachePath,
                 Collections.singletonMap("/", "/"));
         vm = vmh;
         thread = (ThreadMirror)vmh.getWrappedMirror(thread);

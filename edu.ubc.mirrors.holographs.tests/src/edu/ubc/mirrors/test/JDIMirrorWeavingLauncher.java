@@ -25,7 +25,7 @@ public class JDIMirrorWeavingLauncher {
     
     private static String GUARD_ASPECTS_PATH = "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/Retroactive Aspect Guards/bin";
     
-    public static String launch(String mainClassName, String options, String aspectPath, String hologramClassPath) throws Exception {
+    public static String launch(String mainClassName, String options, File aspectPath, File hologramClassPath) throws Exception {
         ByteArrayOutputStream mergedOutput = new ByteArrayOutputStream();
         OutputStream teedOut = new TeeOutputStream(mergedOutput, System.out);
         OutputStream teedErr = new TeeOutputStream(mergedOutput, System.err);
@@ -51,15 +51,14 @@ public class JDIMirrorWeavingLauncher {
         ThreadMirror thread = (ThreadMirror)jdiVMM.makeMirror(threadRef);
         VirtualMachineMirror vm = jdiVMM; 
         
-        File binDir = new File(aspectPath);
-        URL urlPath = binDir.toURI().toURL();
+        URL urlPath = aspectPath.toURI().toURL();
         
         File guardAspects = new File(GUARD_ASPECTS_PATH);
         URL guardAspectsPath = guardAspects.toURI().toURL();
         
         if (hologramClassPath != null) {
 	        System.out.println("Booting up holographic VM...");
-	        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, new File(hologramClassPath),
+	        final VirtualMachineHolograph vmh = new VirtualMachineHolograph(jdiVMM, hologramClassPath,
 	                Collections.singletonMap("/", "/"));
 	        vmh.setSystemOut(teedOut);
 	        vmh.setSystemErr(teedErr);
@@ -68,9 +67,8 @@ public class JDIMirrorWeavingLauncher {
 	        thread = (ThreadMirror)vmh.getWrappedMirror(thread);
 	        
                 vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
-                vmh.addBootstrapPathURL(urlPath);
                 vmh.addBootstrapPathURL(guardAspectsPath);
-	        
+                vmh.addBootstrapPathURL(urlPath);	        
         }
         
         final VirtualMachineMirror finalVM = vm;

@@ -156,17 +156,16 @@ public class SanityTest extends TestCase {
         new RacerTest().testRacerExample(); 
     }
     
-    public void testTracingAspectTOD() throws Exception {
-        TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
-                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin",
-                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/tod/TracingTest");
-    }
-    
+//    public void testTracingAspectTOD() throws Exception {
+//        TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin,
+//                new File(EvalConstants.DataRoot, "tod/TracingTest"));
+//    }
+//    
     public void testLeakDetectorAspect() throws Exception {
         JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
-                "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"", 
-                "/Users/robinsalkeld/Documents/UBC/Code/Leak Detection Aspect/bin", 
-                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/LeakDetectorAspectTest/hologram_classes");
-        
+                "-cp \"" + EvalConstants.TracingExampleBin + "\"", 
+                EvalConstants.LeakDetectorAspectBin, 
+                new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
+//        
     }
 }

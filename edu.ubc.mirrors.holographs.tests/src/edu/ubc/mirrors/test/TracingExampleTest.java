@@ -21,8 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors.test;
 
-import junit.framework.TestCase;
+import java.io.File;
 
+import junit.framework.TestCase;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 
@@ -30,9 +31,9 @@ public class TracingExampleTest extends TestCase {
 
     public void testTracingAspect() throws Exception {
         String combinedOutput = JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
-                "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Tracing Example/bin\"", 
-                "/Users/robinsalkeld/Documents/UBC/Code/Tracing Example Aspects/bin", 
-                "/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/jdi/TracingExampleTest/hologram_classes");
+                "-cp \"" + EvalConstants.TracingExampleBin + "\"", 
+                EvalConstants.TracingAspectsBin, 
+                new File(EvalConstants.DataRoot, "jdi/TracingExampleTest/hologram_classes"));
         
         String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
         assertEquals(expectedOutput, combinedOutput);

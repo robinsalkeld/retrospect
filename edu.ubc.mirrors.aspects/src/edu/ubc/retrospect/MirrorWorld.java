@@ -73,7 +73,7 @@ import edu.ubc.mirrors.raw.NativeClassMirror;
  */
 public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
 
-    public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After, AdviceKind.Around };
+    public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After, AdviceKind.AfterReturning, AdviceKind.Around };
     
     public static URL aspectRuntimeJar;
     static {
@@ -349,6 +349,8 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
             annotationClass = AjcMemberMaker.BEFORE_ANNOTATION;
         } else if (kind.equals(AdviceKind.After)) {
             annotationClass = AjcMemberMaker.AFTER_ANNOTATION;
+        } else if (kind.equals(AdviceKind.AfterReturning)) {
+            annotationClass = AjcMemberMaker.AFTERRETURNING_ANNOTATION;
         } else if (kind.equals(AdviceKind.Around)) {
             annotationClass = AjcMemberMaker.AROUND_ANNOTATION;
         } else {
@@ -456,6 +458,7 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                 showMessage(IMessage.DEBUG, "Loading aspects...", null, null);
                 for (Definition definition : definitions) {
                     for (String aspectClassName : definition.getAspectClassNames()) {
+                        showMessage(IMessage.DEBUG, "Loading aspect: " + aspectClassName, null, null);
                         ResolvedType aspectType = resolve(aspectClassName);
                         if (aspectType.isMissing()) {
                             throw new ClassNotFoundException("Couldn't load aspect: " + aspectClassName); 

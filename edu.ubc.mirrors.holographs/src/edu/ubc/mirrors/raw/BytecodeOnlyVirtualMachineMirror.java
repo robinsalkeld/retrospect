@@ -31,9 +31,12 @@ import java.util.Map;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ByteArrayMirror;
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ThreadMirror;
@@ -149,6 +152,11 @@ public class BytecodeOnlyVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public EventDispatch dispatch() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback) {
         throw new UnsupportedOperationException();
     }
 }

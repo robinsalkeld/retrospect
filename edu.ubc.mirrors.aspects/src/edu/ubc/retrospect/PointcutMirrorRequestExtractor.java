@@ -24,6 +24,7 @@ import org.aspectj.weaver.ResolvedMember;
 import org.aspectj.weaver.Shadow;
 import org.aspectj.weaver.patterns.AndPointcut;
 import org.aspectj.weaver.patterns.ArgsPointcut;
+import org.aspectj.weaver.patterns.ConcreteCflowPointcut;
 import org.aspectj.weaver.patterns.KindedPointcut;
 import org.aspectj.weaver.patterns.NotPointcut;
 import org.aspectj.weaver.patterns.OrPointcut;
@@ -97,7 +98,7 @@ public class PointcutMirrorRequestExtractor {
         } else if (node instanceof ThisOrTargetPointcut || node instanceof ArgsPointcut) {
             // Could possibly add filters to match the type pattern...
             return null;
-        } else if (node instanceof PerSingleton) {
+        } else if (node instanceof PerSingleton || node instanceof ConcreteCflowPointcut) {
             // Ignore pointcuts with no scope
             return null;
         } else {
@@ -204,14 +205,14 @@ public class PointcutMirrorRequestExtractor {
     private void forAllWovenClasses(final Callback<ClassMirror> callback) {
         world.vm.dispatch().forAllClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
-                if (klass.getLoader() == null) {
-                    return null;
-                }
-                
-                 // TODO-RS: Cheating to account for lack of requests/events on holographic execution
-                if (klass instanceof ClassHolograph && ((ClassHolograph)klass).getWrapped() instanceof BytecodeClassMirror) {
-                    return null;
-                }
+//                if (klass.getLoader() == null) {
+//                    return null;
+//                }
+//                
+//                 // TODO-RS: Cheating to account for lack of requests/events on holographic execution
+//                if (klass instanceof ClassHolograph && ((ClassHolograph)klass).getWrapped() instanceof BytecodeClassMirror) {
+//                    return null;
+//                }
                     
                 return callback.handle(klass);
             }
@@ -246,10 +247,20 @@ public class PointcutMirrorRequestExtractor {
                         FieldMirrorMember member = (FieldMirrorMember)field;
                         MirrorEventRequest request;
                         FieldMirror fieldMirror = member.getField();
-                        if (kind.bit == Shadow.FieldSetBit) {
-                            request = manager.createFieldMirrorSetRequest(fieldMirror);
+                        if (advice.getKind() == AdviceKind.Around) {
+                            if (kind.bit == Shadow.FieldSetBit) {
+                                request = manager.createFieldMirrorSetHandlerRequest(fieldMirror);
+                            } else {
+                                throw new IllegalArgumentException("Around advice on field get not supported");
+                            }
+                        } else if (advice.getKind() == AdviceKind.Before) {
+                            if (kind.bit == Shadow.FieldSetBit) {
+                                request = manager.createFieldMirrorSetRequest(fieldMirror);
+                            } else {
+                                request = manager.createFieldMirrorGetRequest(fieldMirror);
+                            }
                         } else {
-                            request = manager.createFieldMirrorGetRequest(fieldMirror);
+                            throw new IllegalArgumentException("After advice on field get/set not supported");
                         }
                         addFiltersAndInstall(request, callbackFilters);
                     }

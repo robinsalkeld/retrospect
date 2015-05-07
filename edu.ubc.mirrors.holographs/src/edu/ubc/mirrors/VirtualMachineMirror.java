@@ -29,6 +29,7 @@ import java.util.List;
 public interface VirtualMachineMirror {
 
     public EventDispatch dispatch();
+    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback);
     
     public ClassMirror findBootstrapClassMirror(String name);
     
@@ -59,4 +60,5 @@ public interface VirtualMachineMirror {
 
     public InstanceMirror makeString(String s);
     public InstanceMirror getInternedString(String s);
+
 }

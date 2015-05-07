@@ -16,7 +16,7 @@ public aspect JDKAroundFieldSets {
 //        // Don't proceed(), just let it be recalculated every time
 //    }
 //    
-//    void around(String s, int h): set(* String.hash) && this(s) && args(h) {
-//        // Don't proceed(), just let it be recalculated every time
-//    }
+    void around(String s, int h): set(* String.hash) && this(s) && args(h) {
+        // Don't proceed(), just let it be recalculated every time
+    }
 }

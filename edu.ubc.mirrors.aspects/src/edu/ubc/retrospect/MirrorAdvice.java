@@ -203,6 +203,11 @@ public class MirrorAdvice extends Advice {
         }
         
         MirrorEventShadow eventShadow = (MirrorEventShadow)shadow;
+        
+        if (kind == AdviceKind.AfterReturning && eventShadow.kind() == AdviceKind.After) {
+            return true;
+        }
+        
         return eventShadow.kind() == kind;
     }
 }

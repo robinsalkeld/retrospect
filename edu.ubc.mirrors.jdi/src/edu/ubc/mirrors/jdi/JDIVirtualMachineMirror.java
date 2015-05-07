@@ -65,9 +65,12 @@ import com.sun.jdi.VoidValue;
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.AnnotationMirror.EnumMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorLocation;
@@ -477,6 +480,11 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         return dispatch;
     }
     
+    @Override
+    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback) {
+        dispatch.addCallback(request, callback);
+    }
+    
     public MirrorLocation makeMirrorLocation(Location location) {
         return new JDIMirrorLocation(this, location);
     }
@@ -502,13 +510,22 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         }
     }
 
-    public List<AnnotationMirror> wrapAnnotationArray(ThreadReference thread, ArrayReference array) {
-        List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
-        int size = array.length();
-        for (int i = 0; i < size; i++) {
-            result.add(new JDIAnnotationMirror(this, thread, (ObjectReference)array.getValue(i)));
+    public List<AnnotationMirror> wrapAnnotationArray(final ThreadReference thread, final ArrayReference array) {
+        try {
+            return Reflection.withEventDispatchThread(this, new Callable<List<AnnotationMirror>>() {
+                @Override
+                public List<AnnotationMirror> call() throws Exception {
+                    List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
+                    int size = array.length();
+                    for (int i = 0; i < size; i++) {
+                        result.add(new JDIAnnotationMirror(JDIVirtualMachineMirror.this, thread, (ObjectReference)array.getValue(i)));
+                    }
+                    return result;
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return result;
     }
     
     public List<List<AnnotationMirror>> wrapAnnotationArrayOfArrays(ThreadReference thread, ArrayReference array) {

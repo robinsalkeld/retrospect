@@ -52,12 +52,15 @@ import tod.core.database.structure.ObjectId;
 import tod.core.session.ISession;
 import tod.core.session.SessionTypeManager;
 import edu.ubc.mirrors.ByteArrayMirror;
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
@@ -318,6 +321,11 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         return dispatch;
     }
 
+    @Override
+    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback) {
+        dispatch.addCallback(request, callback);
+    }
+    
     @Override
     public List<ClassMirror> findAllClasses() {
         // TODO-RS: This should be all classes at a particular timestamp,
