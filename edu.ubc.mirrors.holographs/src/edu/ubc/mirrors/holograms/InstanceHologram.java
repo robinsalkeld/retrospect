@@ -111,11 +111,15 @@ public class InstanceHologram {
        }
     }
     
-    public static void setField(Hologram m, Hologram o, ClassMirror klass, String name) {
+    public static void setField(Hologram m, Hologram o, ClassMirror klass, String name) throws Throwable {
         try {
-            getInstanceMirror(m, klass).set(getFieldMirror(klass, name), ObjectHologram.getMirror(o));
+            FieldMirror field = getFieldMirror(klass, name);
+            InstanceMirror target = getInstanceMirror(m, klass);
+            ((ClassHolograph)klass).getVM().eventRequestManager().handleFieldSet(target, field, ObjectHologram.getMirror(o));
        } catch (IllegalAccessException e) {
            throw new IllegalAccessError(e.getMessage());
+       } catch (MirrorInvocationTargetException e) {
+           throw (Throwable)ObjectHologram.make(e.getTargetException());
        }
    }
    
@@ -153,7 +157,7 @@ public class InstanceHologram {
         try {
             FieldMirror field = getFieldMirror(klass, name);
             InstanceMirror target = getInstanceMirror(m, klass);
-            ((ClassHolograph)klass).getVM().eventRequestManager().handleFieldSetInt(target, field, i);
+            ((ClassHolograph)klass).getVM().eventRequestManager().handleFieldSet(target, field, i);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
         } catch (MirrorInvocationTargetException e) {

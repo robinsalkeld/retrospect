@@ -67,8 +67,8 @@ public class JDIMirrorWeavingLauncher {
 	        thread = (ThreadMirror)vmh.getWrappedMirror(thread);
 	        
                 vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
+                vmh.addBootstrapPathURL(urlPath);               
                 vmh.addBootstrapPathURL(guardAspectsPath);
-                vmh.addBootstrapPathURL(urlPath);	        
         }
         
         final VirtualMachineMirror finalVM = vm;

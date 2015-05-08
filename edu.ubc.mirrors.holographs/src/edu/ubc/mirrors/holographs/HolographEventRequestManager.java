@@ -21,6 +21,7 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holograms.FieldHologramSetEvent;
+import edu.ubc.mirrors.holograms.FieldSetProceed;
 import edu.ubc.mirrors.holograms.MethodHolographHandlerEvent;
 import edu.ubc.mirrors.wrapping.WrappingMirrorEventRequestManager;
 
@@ -91,11 +92,12 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
         return false;
     }
     
-    public void handleFieldSetInt(final InstanceMirror target, final FieldMirror field, final int newValue) throws IllegalAccessException, MirrorInvocationTargetException {
+    public void handleFieldSet(final InstanceMirror target, final FieldMirror field, final Object newValue) throws IllegalAccessException, MirrorInvocationTargetException {
+        MirrorInvocationHandler original = new FieldSetProceed(field);
         Set<MirrorEvent> events = new HashSet<MirrorEvent>();
         for (FieldHolographSetHandlerRequest request : fieldSetHandlerRequests) {
             if (request.matches(field)) {
-                events.add(new FieldHologramSetEvent(request, ThreadHolograph.currentThreadMirror(), target, field, newValue));
+                events.add(new FieldHolographSetHandlerEvent(request, ThreadHolograph.currentThreadMirror(), target, field, newValue, original));
             }
         }
         

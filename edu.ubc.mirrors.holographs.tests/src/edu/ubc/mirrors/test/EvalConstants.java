@@ -4,6 +4,7 @@ import java.io.File;
 
 public class EvalConstants {
 
+    public static File Root = new File("/Users/robinsalkeld/Documents/UBC/Code/Retrospect");
     public static File EvalRoot = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectEval");
     public static File DataRoot = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData");
     
@@ -21,4 +22,5 @@ public class EvalConstants {
     
     public static File LeakDetectorAspectBin = new File(new File(EvalRoot, "Leak Detection Aspect"), "bin");
     
+    public static File GuardAspectsBin = new File(Root, "Retroactive Aspect Guards/bin");
 }
