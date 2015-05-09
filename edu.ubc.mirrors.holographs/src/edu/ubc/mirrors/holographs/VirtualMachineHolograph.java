@@ -452,10 +452,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
             return new StaticFieldValuesHolograph(this, (StaticFieldValuesMirror)mirror);
         } else if (mirror instanceof InstanceMirror) {
             return new InstanceHolograph(this, (InstanceMirror)mirror);
-        } else if (mirror.getClassMirror().getClassName().length() == 2) {
-            return super.wrapMirror(mirror);
-        } else if (mirror instanceof ObjectArrayMirror) {
-            return new ObjectArrayHolograph(this, (ObjectArrayMirror)mirror);
         } else {
             return super.wrapMirror(mirror);
         }

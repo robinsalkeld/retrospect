@@ -28,6 +28,7 @@ import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
@@ -173,6 +174,11 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
     
     @Override
     public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field) {
         throw new UnsupportedOperationException();
     }
 }

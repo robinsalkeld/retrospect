@@ -13,6 +13,7 @@ import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorSetRequest;
@@ -22,7 +23,6 @@ import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
-import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
@@ -238,6 +238,11 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
     
     @Override
     public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field) {
         throw new UnsupportedOperationException();
     }
 }

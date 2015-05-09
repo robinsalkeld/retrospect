@@ -968,6 +968,29 @@ public class Reflection {
         }
     }
     
+    public static Object getFieldValue(InstanceMirror target, FieldMirror field) throws IllegalAccessException {
+        String typeName = field.getTypeName();
+        if (typeName.equals("boolean")) {
+            return target.getBoolean(field);
+        } else if (typeName.equals("byte")) {
+            return target.getByte(field);
+        } else if (typeName.equals("char")) {
+            return target.getChar(field);
+        } else if (typeName.equals("short")) {
+            return target.getShort(field);
+        } else if (typeName.equals("int")) {
+            return target.getInt(field);
+        } else if (typeName.equals("long")) {
+            return target.getLong(field);
+        } else if (typeName.equals("float")) {
+            return target.getFloat(field);
+        } else if (typeName.equals("double")) {
+            return target.getDouble(field);
+        } else {
+            return target.get(field);
+        }
+    }
+    
     private static class ExceptionPasser implements UncaughtExceptionHandler {
 
         private Thread callingThread;

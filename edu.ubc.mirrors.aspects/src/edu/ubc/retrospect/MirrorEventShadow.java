@@ -18,6 +18,7 @@ import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
 import edu.ubc.mirrors.ConstructorMirrorExitEvent;
 import edu.ubc.mirrors.ConstructorMirrorHandlerEvent;
 import edu.ubc.mirrors.FieldMirrorGetEvent;
+import edu.ubc.mirrors.FieldMirrorGetHandlerEvent;
 import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.FieldMirrorSetHandlerEvent;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
@@ -158,6 +159,10 @@ public abstract class MirrorEventShadow extends Shadow {
             FieldMirrorSetEvent fmge = (FieldMirrorSetEvent)event;
             Member signature = FieldMirrorMember.make(world, fmge.field());
             return new FieldMirrorSetShadow(world, fmge, signature, null);
+        } else if (event instanceof FieldMirrorGetHandlerEvent) {
+            FieldMirrorGetHandlerEvent fmghe = (FieldMirrorGetHandlerEvent)event;
+            Member signature = FieldMirrorMember.make(world, fmghe.field());
+            return new FieldMirrorGetHandlerShadow(world, fmghe, signature, null);
         } else if (event instanceof FieldMirrorSetHandlerEvent) {
             FieldMirrorSetHandlerEvent fmshe = (FieldMirrorSetHandlerEvent)event;
             Member signature = FieldMirrorMember.make(world, fmshe.field());

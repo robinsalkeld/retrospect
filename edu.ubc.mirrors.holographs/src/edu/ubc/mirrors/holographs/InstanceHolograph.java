@@ -32,7 +32,7 @@ import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
 
 public class InstanceHolograph extends WrappingInstanceMirror {
 
-    private static final boolean UNSAFE_MODE = Boolean.getBoolean("edu.ubc.mirrors.holographs.unsafe");
+    public static final boolean UNSAFE_MODE = Boolean.getBoolean("edu.ubc.mirrors.holographs.unsafe");
     
     protected final VirtualMachineHolograph vm;
     private Map<FieldMirror, Object> newValues;
@@ -124,6 +124,10 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         if (!UNSAFE_MODE && !(wrapped instanceof NewInstanceMirror)) {
             String message = "Illegal set to field " + 
                     field.getDeclaringClass().getClassName() + "." + field.getName();
+            if (field.getName().equals("hexFloatPattern")) {
+                int bp= 4;
+                bp++;
+            }
             System.err.println(message);
 //            throw new InternalError(message);
         }

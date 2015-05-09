@@ -25,6 +25,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holograms.Hologram;
 import edu.ubc.mirrors.holograms.ObjectHologram;
@@ -44,11 +45,17 @@ public class InstanceHologram {
         return (m == null) ? klass.getStaticFieldValues() : (InstanceMirror)m.getMirror();
     }
     
-    public static Hologram getField(Hologram m, ClassMirror klass, String name) {
-         try {
-            return ObjectHologram.make(getInstanceMirror(m, klass).get(getFieldMirror(klass, name)));
+    public static Hologram getField(Hologram m, ClassMirror klass, String name) throws Throwable {
+        try {
+            FieldMirror field = getFieldMirror(klass, name);
+            InstanceMirror target = getInstanceMirror(m, klass);
+            ObjectMirror result = (ObjectMirror)((ClassHolograph)klass).getVM().eventRequestManager().handleFieldGet(target, field);
+
+            return ObjectHologram.make(result);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
+        } catch (MirrorInvocationTargetException e) {
+            throw (Throwable)ObjectHologram.make(e.getTargetException());
         }
     }
     

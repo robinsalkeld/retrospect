@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
+import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
 
-public class FieldHolographSetHandlerRequest implements FieldMirrorSetHandlerRequest {
+public class FieldHolographGetHandlerRequest implements FieldMirrorGetHandlerRequest {
 
     private final VirtualMachineHolograph vm;
     private boolean enabled = false;
@@ -16,7 +16,7 @@ public class FieldHolographSetHandlerRequest implements FieldMirrorSetHandlerReq
     private final FieldMirror fieldFilter;
     private final List<String> classNamePatterns = new ArrayList<String>();
     
-    public FieldHolographSetHandlerRequest(VirtualMachineHolograph vm, FieldMirror field) {
+    public FieldHolographGetHandlerRequest(VirtualMachineHolograph vm, FieldMirror field) {
         this.vm = vm;
         this.fieldFilter = field;
     }

@@ -65,6 +65,8 @@ public interface MirrorEventRequestManager {
     
     ConstructorMirrorHandlerRequest createConstructorMirrorHandlerRequest();
     
+    FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field);
+    
     FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field);
     
     void deleteMirrorEventRequest(MirrorEventRequest request);

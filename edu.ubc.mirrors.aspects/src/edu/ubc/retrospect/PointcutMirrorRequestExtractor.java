@@ -251,7 +251,7 @@ public class PointcutMirrorRequestExtractor {
                             if (kind.bit == Shadow.FieldSetBit) {
                                 request = manager.createFieldMirrorSetHandlerRequest(fieldMirror);
                             } else {
-                                throw new IllegalArgumentException("Around advice on field get not supported");
+                                request = manager.createFieldMirrorGetHandlerRequest(fieldMirror);
                             }
                         } else if (advice.getKind() == AdviceKind.Before) {
                             if (kind.bit == Shadow.FieldSetBit) {

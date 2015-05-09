@@ -9,6 +9,7 @@ import java.util.Set;
 
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
+import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.InvocableMirrorEvent;
@@ -18,8 +19,10 @@ import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.holograms.FieldGetProceed;
 import edu.ubc.mirrors.holograms.FieldHologramSetEvent;
 import edu.ubc.mirrors.holograms.FieldSetProceed;
 import edu.ubc.mirrors.holograms.MethodHolographHandlerEvent;
@@ -29,6 +32,8 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
 
     private final VirtualMachineHolograph vm;
     
+    private final List<FieldHolographGetHandlerRequest> fieldGetHandlerRequests =
+            new ArrayList<FieldHolographGetHandlerRequest>();
     private final List<FieldHolographSetHandlerRequest> fieldSetHandlerRequests =
             new ArrayList<FieldHolographSetHandlerRequest>();
     private final List<MethodHolographHandlerRequest> methodHandlerRequests =
@@ -52,21 +57,18 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
     }
     
     @Override
+    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field) {
+        FieldHolographGetHandlerRequest request = new FieldHolographGetHandlerRequest(vm, field);
+        fieldGetHandlerRequests.add(request);
+        return request;
+    }
+    
+    @Override
     public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field) {
         FieldHolographSetHandlerRequest request = new FieldHolographSetHandlerRequest(vm, field);
         fieldSetHandlerRequests.add(request);
         return request;
     }
-    
-//    public List<FieldHologramSetEvent> requestsForFieldSet(FieldMirror field) {
-//        List<FieldHologramSetEvent> handlers = new ArrayList<FieldHologramSetEvent>();
-//        for (FieldHologramSetEvent request : fieldSetHandlerRequests) {
-//            if (request.get.equals(field)) {
-//                handlers.add(request);
-//            }
-//        }
-//        return handlers;
-//    }
     
     public Object handleMethodInvocation(MirrorInvocationHandler original, MethodMirror method, List<Object> arguments) throws MirrorInvocationTargetException {
         Set<MirrorEvent> events = new HashSet<MirrorEvent>();
@@ -105,6 +107,22 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
             Reflection.setField(target, field, newValue);
         } else {
             vm.dispatch().runCallbacks(events);
+        }
+    }
+
+    public Object handleFieldGet(InstanceMirror target, FieldMirror field) throws IllegalAccessException, MirrorInvocationTargetException {
+        MirrorInvocationHandler original = new FieldGetProceed(field);
+        Set<MirrorEvent> events = new HashSet<MirrorEvent>();
+        for (FieldHolographGetHandlerRequest request : fieldGetHandlerRequests) {
+            if (request.matches(field)) {
+                events.add(new FieldHolographGetHandlerEvent(request, ThreadHolograph.currentThreadMirror(), target, field, original));
+            }
+        }
+        
+        if (events.isEmpty()) {
+            return Reflection.getFieldValue(target, field);
+        } else {
+            return vm.dispatch().runCallbacks(events);
         }
     }
 }

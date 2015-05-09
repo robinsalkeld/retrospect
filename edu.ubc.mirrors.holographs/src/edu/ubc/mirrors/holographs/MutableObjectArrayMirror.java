@@ -43,6 +43,12 @@ public class MutableObjectArrayMirror extends WrappingObjectArrayMirror {
 
     @Override
     public void set(int i, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
+        if (!InstanceHolograph.UNSAFE_MODE && !(wrapped instanceof NewInstanceMirror)) {
+            String message = "Illegal set to array of type" + wrapped.getClassMirror().getClassName();
+            System.err.println(message);
+//                throw new InternalError(message);
+        }
+        
         if (mutableValues == null) {
             this.mutableValues = new ObjectMirror[immutableMirror.length()];
             for (int index = 0; index < mutableValues.length; index++) {
