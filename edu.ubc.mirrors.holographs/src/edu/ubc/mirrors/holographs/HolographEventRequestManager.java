@@ -120,7 +120,7 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
         }
         
         if (events.isEmpty()) {
-            return Reflection.getFieldValue(target, field);
+            return Reflection.getBoxedValue(target, field);
         } else {
             return vm.dispatch().runCallbacks(events);
         }

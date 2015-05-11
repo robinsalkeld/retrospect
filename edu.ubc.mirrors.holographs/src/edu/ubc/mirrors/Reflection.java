@@ -668,7 +668,7 @@ public class Reflection {
         return result;
     }
 
-    public static Object getBoxedValue(FieldMirror field, InstanceMirror instance) throws IllegalAccessException {
+    public static Object getBoxedValue(InstanceMirror instance, FieldMirror field) throws IllegalAccessException {
         Type fieldType = Reflection.typeForClassMirror(field.getType());
         switch (fieldType.getSort()) {
         case Type.BOOLEAN: return instance.getBoolean(field);
@@ -879,8 +879,8 @@ public class Reflection {
         return Type.getObjectType(builder.toString());
     }
     
-    public static Class<?> getBoxingType(Type type) {
-        switch (type.getSort()) {
+    public static Class<?> getBoxingType(Type primitiveType) {
+        switch (primitiveType.getSort()) {
         case Type.BOOLEAN: return Boolean.class;
         case Type.BYTE: return Byte.class;
         case Type.CHAR: return Character.class;
@@ -891,6 +891,22 @@ public class Reflection {
         case Type.DOUBLE: return Double.class;
         case Type.VOID: return Void.class;
         default: return null;
+        }
+    }
+    
+    public static Class<?> getBoxedType(Class<?> boxingType) {
+        String boxingClassName = boxingType.getName();
+        switch (boxingClassName) {
+        case "java.lang.Boolean": return Boolean.TYPE;
+        case "java.lang.Byte": return Byte.TYPE;
+        case "java.lang.Character": return Character.TYPE;
+        case "java.lang.Short": return Short.TYPE;
+        case "java.lang.Integer": return Integer.TYPE;
+        case "java.lang.Long": return Long.TYPE;
+        case "java.lang.Float": return Float.TYPE;
+        case "java.lang.Double": return Double.TYPE;
+        case "java.lang.Void": return Void.TYPE;
+        default: return null;    
         }
     }
     
@@ -968,29 +984,6 @@ public class Reflection {
         }
     }
     
-    public static Object getFieldValue(InstanceMirror target, FieldMirror field) throws IllegalAccessException {
-        String typeName = field.getTypeName();
-        if (typeName.equals("boolean")) {
-            return target.getBoolean(field);
-        } else if (typeName.equals("byte")) {
-            return target.getByte(field);
-        } else if (typeName.equals("char")) {
-            return target.getChar(field);
-        } else if (typeName.equals("short")) {
-            return target.getShort(field);
-        } else if (typeName.equals("int")) {
-            return target.getInt(field);
-        } else if (typeName.equals("long")) {
-            return target.getLong(field);
-        } else if (typeName.equals("float")) {
-            return target.getFloat(field);
-        } else if (typeName.equals("double")) {
-            return target.getDouble(field);
-        } else {
-            return target.get(field);
-        }
-    }
-    
     private static class ExceptionPasser implements UncaughtExceptionHandler {
 
         private Thread callingThread;
@@ -1034,5 +1027,30 @@ public class Reflection {
         }
         
         return result;
+    }
+    
+    public static InstanceMirror box(ThreadMirror thread, Object value) {
+        VirtualMachineMirror vm = thread.getClassMirror().getVM();
+        ClassMirror boxClass = vm.findBootstrapClassMirror(value.getClass().getName());
+        Class<?> primitiveType = getBoxedType(value.getClass());
+        try {
+            // could safely cheat and do this without a thread using newRawInstance and setting
+            // the final field directly.
+            ConstructorMirror cons = boxClass.getConstructor(primitiveType.getName());
+            return cons.newInstance(thread, value);
+        } catch (SecurityException | NoSuchMethodException | IllegalAccessException | IllegalArgumentException
+                | MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static Object unbox(InstanceMirror value) {
+        ClassMirror valueClass = value.getClassMirror();
+        FieldMirror valueField = valueClass.getDeclaredField("value");
+        try {
+            return value.get(valueField);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

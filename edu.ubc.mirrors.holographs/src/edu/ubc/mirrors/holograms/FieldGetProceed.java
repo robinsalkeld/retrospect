@@ -21,7 +21,7 @@ public class FieldGetProceed implements MirrorInvocationHandler {
     public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
         InstanceMirror target = (InstanceMirror)args.get(0);
         try {
-            return Reflection.getFieldValue(target, field);
+            return Reflection.getBoxedValue(target, field);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }

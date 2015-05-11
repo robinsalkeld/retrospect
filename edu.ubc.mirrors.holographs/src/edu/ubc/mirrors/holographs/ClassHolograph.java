@@ -382,10 +382,14 @@ public class ClassHolograph extends WrappingClassMirror {
         }
     }
     
-    public static Object makeHologram(Object mirror) {
+    public static Object makeHologram(ThreadMirror thread, Class<?> targetType, Object mirror) {
         if (mirror instanceof ObjectMirror) {
             ObjectMirror objectMirror = (ObjectMirror)mirror;
             return getHologramClassLoader(objectMirror.getClassMirror()).makeHologram(objectMirror);
+        } else if (targetType.equals(Hologram.class) && mirror != null) {
+            // Object is replaced with Hologram, which won't trigger autoboxing,
+            // so handle it here manually.
+            return makeHologram(thread, targetType, Reflection.box(thread, mirror));
         } else {
             return mirror;
         }

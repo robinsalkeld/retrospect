@@ -104,8 +104,9 @@ public class ConstructorHolograph implements ConstructorMirror {
             // Add the extra implicit mirror parameter
             InstanceMirror mirror = getDeclaringClass().newRawInstance();
             Object[] hologramArgs = new Object[args.length + 1];
+            Class<?>[] paramTypes = hologramClassConstructor.getParameterTypes(); 
             for (int i = 0; i < args.length; i++) {
-                hologramArgs[i] = ClassHolograph.makeHologram(args[i]);
+                hologramArgs[i] = ClassHolograph.makeHologram(thread, paramTypes[i], args[i]);
             }
             hologramArgs[args.length] = mirror;
             Object result = hologramClassConstructor.newInstance(hologramArgs);

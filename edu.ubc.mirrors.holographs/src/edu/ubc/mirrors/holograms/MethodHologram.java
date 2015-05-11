@@ -44,13 +44,14 @@ public class MethodHologram implements MirrorInvocationHandler {
     public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
         Object hologramObj = null;
         if ((hologramMethod.getModifiers() & Modifier.STATIC) == 0) {
-            hologramObj = ClassHolograph.makeHologram(args.get(0));
+            hologramObj = ClassHolograph.makeHologram(thread, hologramMethod.getDeclaringClass(), args.get(0));
             args = args.subList(1, args.size());
         }
         
         Object[] hologramArgs = new Object[args.size()];
+        Class<?>[] paramTypes = hologramMethod.getParameterTypes();
         for (int i = 0; i < hologramArgs.length; i++) {
-            hologramArgs[i] = ClassHolograph.makeHologram(args.get(i));
+            hologramArgs[i] = ClassHolograph.makeHologram(thread, paramTypes[i], args.get(i));
         }
         try {
             Object result = hologramMethod.invoke(hologramObj, hologramArgs);
