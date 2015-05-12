@@ -1,7 +1,10 @@
 package edu.ubc.aspects;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public aspect JDKAroundFieldSets {
 
@@ -19,7 +22,7 @@ public aspect JDKAroundFieldSets {
         // Don't proceed(), just let it be recalculated every time
     }
     
-    private static Map<String, Object> floatingDecimalStatics = new HashMap<String, Object>();
+    private final Map<String, Object> floatingDecimalStatics = new HashMap<String, Object>();
     
     void around(Object value): set(static * sun.misc.FloatingDecimal.*) && args(value) {
         String fieldName = thisJoinPointStaticPart.getSignature().getName();
@@ -30,6 +33,33 @@ public aspect JDKAroundFieldSets {
         String fieldName = thisJoinPointStaticPart.getSignature().getName();
         return floatingDecimalStatics.get(fieldName);
     }
+    
+    // Thread locals
+    
+    private final Map<ThreadLocal<?>, Object> newThreadLocalValues = new HashMap<ThreadLocal<?>, Object>();
+    
+    private static AtomicInteger nextHashCodeForNewThreadLocals = new AtomicInteger();
+    
+    int around(): execution(int ThreadLocal.nextHashCode()) {
+        return nextHashCodeForNewThreadLocals.getAndIncrement();
+    }
+    
+    // Standard streams
+    
+//    private static final ByteArrayOutputStream newStdoutBaos = new ByteArrayOutputStream();
+//    private static final PrintStream newStdout = new PrintStream(newStdoutBaos);
+//    
+//    PrintStream around(): get(PrintStream System.out) {
+//        return newStdout;
+//    }
+//    
+//    private static final ByteArrayOutputStream newStderrBaos = new ByteArrayOutputStream();
+//    private static final PrintStream newStderr = new PrintStream(newStderrBaos);
+//    
+//    PrintStream around(): get(PrintStream System.err) {
+//        return newStderr;
+//    }
+    
 //    
 //    void around(): set(* String.hash) {
 //        // Don't proceed(), just let it be recalculated every time

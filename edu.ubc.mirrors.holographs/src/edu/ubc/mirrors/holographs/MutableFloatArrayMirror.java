@@ -26,11 +26,13 @@ import edu.ubc.mirrors.wrapping.WrappingFloatArrayMirror;
 
 public class MutableFloatArrayMirror extends WrappingFloatArrayMirror {
 
+    private final VirtualMachineHolograph vm;
     private final FloatArrayMirror immutableMirror;
     private float[] values;
     
     public MutableFloatArrayMirror(VirtualMachineHolograph vm, FloatArrayMirror immutableMirror) {
         super(vm, immutableMirror);
+        this.vm = vm;
         this.immutableMirror = immutableMirror;
         
     }
@@ -42,6 +44,8 @@ public class MutableFloatArrayMirror extends WrappingFloatArrayMirror {
 
     @Override
     public void setFloat(int index, float f) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
         if (values == null) {
             this.values = new float[immutableMirror.length()];
             for (int i = 0; i < values.length; i++) {

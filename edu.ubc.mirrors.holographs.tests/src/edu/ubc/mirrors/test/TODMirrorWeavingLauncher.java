@@ -4,7 +4,9 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -22,14 +24,12 @@ public class TODMirrorWeavingLauncher {
                 break;
             }
         }
-        VirtualMachineMirror vm = todVMM; 
         
         URL urlPath = aspectPath.toURI().toURL();
         
         System.out.println("Booting up holographic VM...");
         final VirtualMachineHolograph vmh = new VirtualMachineHolograph(todVMM, hologramCachePath,
                 Collections.singletonMap("/", "/"));
-        vm = vmh;
         thread = (ThreadMirror)vmh.getWrappedMirror(thread);
         
         vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
@@ -38,5 +38,13 @@ public class TODMirrorWeavingLauncher {
         
         MirrorWorld world = new MirrorWorld(thread, null);
         world.weave();
+        
+        vmh.resume();
+        vmh.dispatch().run();
+        
+//        ClassMirror guardAspect = vmh.findBootstrapClassMirror("edu.ubc.aspects.JDKAroundFieldSets");
+//        ObjectMirror newOut = guardAspect.get(guardAspect.getDeclaredField("newStdoutBaos"));
+//        String output = Reflection.toString(newOut, thread);
+//        System.out.print(output);
     }
 }

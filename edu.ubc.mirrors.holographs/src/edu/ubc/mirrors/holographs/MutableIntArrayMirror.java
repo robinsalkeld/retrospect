@@ -26,11 +26,13 @@ import edu.ubc.mirrors.wrapping.WrappingIntArrayMirror;
 
 public class MutableIntArrayMirror extends WrappingIntArrayMirror {
 
+    private final VirtualMachineHolograph vm;
     private final IntArrayMirror immutableMirror;
     private int[] values;
     
     public MutableIntArrayMirror(VirtualMachineHolograph vm, IntArrayMirror immutableMirror) {
         super(vm, immutableMirror);
+        this.vm = vm;
         this.immutableMirror = immutableMirror;
         
     }
@@ -42,6 +44,8 @@ public class MutableIntArrayMirror extends WrappingIntArrayMirror {
 
     @Override
     public void setInt(int index, int value) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
         if (values == null) {
             this.values = new int[immutableMirror.length()];
             for (int i = 0; i < values.length; i++) {

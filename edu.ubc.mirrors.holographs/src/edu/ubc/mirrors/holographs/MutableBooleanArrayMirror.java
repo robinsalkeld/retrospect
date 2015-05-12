@@ -26,11 +26,13 @@ import edu.ubc.mirrors.wrapping.WrappingBooleanArrayMirror;
 
 public class MutableBooleanArrayMirror extends WrappingBooleanArrayMirror {
 
+    private final VirtualMachineHolograph vm;
     private final BooleanArrayMirror immutableMirror;
     private boolean[] values;
     
     public MutableBooleanArrayMirror(VirtualMachineHolograph vm, BooleanArrayMirror immutableMirror) {
         super(vm, immutableMirror);
+        this.vm = vm;
         this.immutableMirror = immutableMirror;
         
     }
@@ -42,6 +44,8 @@ public class MutableBooleanArrayMirror extends WrappingBooleanArrayMirror {
 
     @Override
     public void setBoolean(int index, boolean b) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
         if (values == null) {
             this.values = new boolean[immutableMirror.length()];
             for (int i = 0; i < values.length; i++) {

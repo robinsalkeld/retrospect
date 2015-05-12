@@ -109,6 +109,9 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     private final MirrorWeavingSupport weavingSupport = new MirrorWeavingSupport(this);
     private List<Definition> definitions;
     
+    // Mild hack - allows loading and weaving aspects in stages to carefully control side-effects in the bootstraping stage
+    private Set<ResolvedType> wovenAspects = new HashSet<ResolvedType>();
+    
     public static ClassMirrorLoader makeClassLoaderMirror(VirtualMachineMirror vm, ThreadMirror thread, URL...aspectPaths) {
 //        showMessage(IMessage.DEBUG, "Creating class loader for aspects...", null, null);
         URL[] paths = new URL[aspectPaths.length + 1];
@@ -464,8 +467,13 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                             throw new ClassNotFoundException("Couldn't load aspect: " + aspectClassName); 
                         }
                         
+                        if (wovenAspects.contains(aspectType)) {
+                            continue;
+                        }
+                        
                         if (!aspectType.isAbstract()) {
                             getCrosscuttingMembersSet().addOrReplaceAspect((ReferenceType)aspectType);
+                            wovenAspects.add(aspectType);
                         }
                     }
                 }
@@ -487,9 +495,6 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                 return null;
             }
         });
-        
-        vm.resume();
-        vm.dispatch().run();
     }
     
     private final Callback<MirrorEvent> eventCallback = new Callback<MirrorEvent>() {

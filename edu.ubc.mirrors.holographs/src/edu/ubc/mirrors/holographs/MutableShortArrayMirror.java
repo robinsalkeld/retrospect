@@ -26,11 +26,13 @@ import edu.ubc.mirrors.wrapping.WrappingShortArrayMirror;
 
 public class MutableShortArrayMirror extends WrappingShortArrayMirror {
 
+    private final VirtualMachineHolograph vm;
     private final ShortArrayMirror immutableMirror;
     private short[] values;
     
     public MutableShortArrayMirror(VirtualMachineHolograph vm, ShortArrayMirror immutableMirror) {
         super(vm, immutableMirror);
+        this.vm = vm;
         this.immutableMirror = immutableMirror;
     }
     
@@ -41,6 +43,8 @@ public class MutableShortArrayMirror extends WrappingShortArrayMirror {
 
     @Override
     public void setShort(int index, short s) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
         if (values == null) {
             this.values = new short[immutableMirror.length()];
             for (int i = 0; i < values.length; i++) {

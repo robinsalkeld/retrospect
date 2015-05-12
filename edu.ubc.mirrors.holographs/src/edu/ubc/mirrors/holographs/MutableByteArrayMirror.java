@@ -95,6 +95,8 @@ public class MutableByteArrayMirror extends WrappingByteArrayMirror {
     
     @Override
     public void setByte(int index, byte b) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
         initNewValues();
         newValues[index] = b;
         overwritten.set(index);
@@ -102,6 +104,8 @@ public class MutableByteArrayMirror extends WrappingByteArrayMirror {
 
     @Override
     public void setBytes(int index, byte[] b) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
         initNewValues();
         System.arraycopy(b, 0, newValues, index, b.length);
         overwritten.set(index, index + b.length);

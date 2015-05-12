@@ -113,6 +113,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     // TODO-RS: Move all this data that is only relevant for MNMs to
     // the plugins.
     
+    public static final boolean UNSAFE_MODE = Boolean.getBoolean("edu.ubc.mirrors.holographs.unsafe");
+    
     private OutputStream systemOut;
     private OutputStream systemErr;
     
@@ -850,6 +852,14 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     public void addBootstrapPathURL(URL url) {
         bootstrapBytecodeLoader.addURL(url);
+    }
+    
+    protected void checkForIllegalMutation(ObjectMirror mirror) {
+        if (!UNSAFE_MODE) {
+            String message = "Illegal set to array of type " + mirror.getClassMirror().getClassName();
+            System.err.println(message);
+//                throw new InternalError(message);
+        }
     }
     
     // TODO-RS: Temporary for evaluation

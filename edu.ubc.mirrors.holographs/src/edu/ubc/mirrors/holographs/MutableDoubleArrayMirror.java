@@ -26,11 +26,13 @@ import edu.ubc.mirrors.wrapping.WrappingDoubleArrayMirror;
 
 public class MutableDoubleArrayMirror extends WrappingDoubleArrayMirror {
 
+    private final VirtualMachineHolograph vm;
     private final DoubleArrayMirror immutableMirror;
     private double[] values;
     
     public MutableDoubleArrayMirror(VirtualMachineHolograph vm, DoubleArrayMirror immutableMirror) {
         super(vm, immutableMirror);
+        this.vm = vm;
         this.immutableMirror = immutableMirror;
     }
 
@@ -41,6 +43,8 @@ public class MutableDoubleArrayMirror extends WrappingDoubleArrayMirror {
 
     @Override
     public void setDouble(int index, double d) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
         if (values == null) {
             this.values = new double[immutableMirror.length()];
             for (int i = 0; i < values.length; i++) {

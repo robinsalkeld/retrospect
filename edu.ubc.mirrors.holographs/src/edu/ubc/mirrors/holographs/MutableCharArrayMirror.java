@@ -95,6 +95,8 @@ public class MutableCharArrayMirror extends WrappingCharArrayMirror {
     
     @Override
     public void setChar(int index, char b) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
         initNewValues();
         newValues[index] = b;
         overwritten.set(index);
@@ -102,6 +104,8 @@ public class MutableCharArrayMirror extends WrappingCharArrayMirror {
 
     @Override
     public void setChars(int index, char[] b) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
         initNewValues();
         System.arraycopy(b, 0, newValues, index, b.length);
         overwritten.set(index, index + b.length);

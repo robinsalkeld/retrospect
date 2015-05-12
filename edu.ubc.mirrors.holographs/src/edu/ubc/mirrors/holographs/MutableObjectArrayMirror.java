@@ -27,11 +27,13 @@ import edu.ubc.mirrors.wrapping.WrappingObjectArrayMirror;
 
 public class MutableObjectArrayMirror extends WrappingObjectArrayMirror {
 
+    private final VirtualMachineHolograph vm;
     private ObjectMirror[] mutableValues;
     private final ObjectArrayMirror immutableMirror;
     
     public MutableObjectArrayMirror(VirtualMachineHolograph vm, ObjectArrayMirror immutableMirror) {
         super(vm, immutableMirror);
+        this.vm = vm;
         this.immutableMirror = immutableMirror;
         
     }
@@ -43,11 +45,7 @@ public class MutableObjectArrayMirror extends WrappingObjectArrayMirror {
 
     @Override
     public void set(int i, ObjectMirror o) throws ArrayIndexOutOfBoundsException {
-        if (!InstanceHolograph.UNSAFE_MODE && !(wrapped instanceof NewInstanceMirror)) {
-            String message = "Illegal set to array of type " + wrapped.getClassMirror().getClassName();
-            System.err.println(message);
-//                throw new InternalError(message);
-        }
+        vm.checkForIllegalMutation(wrapped);
         
         if (mutableValues == null) {
             this.mutableValues = new ObjectMirror[immutableMirror.length()];

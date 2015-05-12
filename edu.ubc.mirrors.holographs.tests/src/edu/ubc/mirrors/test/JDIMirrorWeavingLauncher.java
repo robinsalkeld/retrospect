@@ -77,6 +77,9 @@ public class JDIMirrorWeavingLauncher {
         MirrorWorld world = new MirrorWorld(finalThread, null);
         world.weave();
         
+        vm.resume();
+        vm.dispatch().run();
+        
         return mergedOutput.toString();
     }
 }

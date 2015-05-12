@@ -156,10 +156,10 @@ public class SanityTest extends TestCase {
         new RacerTest().testRacerExample(); 
     }
     
-//    public void testTracingAspectTOD() throws Exception {
-//        TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin,
-//                new File(EvalConstants.DataRoot, "tod/TracingTest"));
-//    }
+    public void testTracingAspectTOD() throws Exception {
+        TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin,
+                new File(EvalConstants.DataRoot, "tod/TracingTest"));
+    }
     
 //    public void testLeakDetectorAspect() throws Exception {
 //        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
