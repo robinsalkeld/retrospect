@@ -21,12 +21,12 @@ public aspect JDKAroundFieldSets {
     
     private static Map<String, Object> floatingDecimalStatics = new HashMap<String, Object>();
     
-    void around(Object value): set(static * sun.misc.FloatingDecimal.perThreadBuffer) && args(value) {
+    void around(Object value): set(static * sun.misc.FloatingDecimal.*) && args(value) {
         String fieldName = thisJoinPointStaticPart.getSignature().getName();
         floatingDecimalStatics.put(fieldName, value);
     }
     
-    Object around(): get(static * sun.misc.FloatingDecimal.perThreadBuffer) {
+    Object around(): get(static * sun.misc.FloatingDecimal.*) {
         String fieldName = thisJoinPointStaticPart.getSignature().getName();
         return floatingDecimalStatics.get(fieldName);
     }

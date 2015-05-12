@@ -59,12 +59,16 @@ public class InstanceHologram {
         }
     }
     
-    public static boolean getBooleanField(Hologram m, ClassMirror klass, String name) {
+    public static boolean getBooleanField(Hologram m, ClassMirror klass, String name) throws Throwable {
         try {
-           return getInstanceMirror(m, klass).getBoolean(getFieldMirror(klass, name));
-       } catch (IllegalAccessException e) {
-           throw new IllegalAccessError(e.getMessage());
-       }
+            FieldMirror field = getFieldMirror(klass, name);
+            InstanceMirror target = getInstanceMirror(m, klass);
+            return (Boolean)((ClassHolograph)klass).getVM().eventRequestManager().handleFieldGet(target, field);
+        } catch (IllegalAccessException e) {
+            throw new IllegalAccessError(e.getMessage());
+        } catch (MirrorInvocationTargetException e) {
+            throw (Throwable)ObjectHologram.make(e.getTargetException());
+        }
     }
     
     public static byte getByteField(Hologram m, ClassMirror klass, String name) {
@@ -130,11 +134,15 @@ public class InstanceHologram {
        }
    }
    
-   public static void setBooleanField(Hologram m, boolean b, ClassMirror klass, String name) {
+   public static void setBooleanField(Hologram m, boolean b, ClassMirror klass, String name) throws Throwable {
         try {
-            getInstanceMirror(m, klass).setBoolean(getFieldMirror(klass, name), b);
+            FieldMirror field = getFieldMirror(klass, name);
+            InstanceMirror target = getInstanceMirror(m, klass);
+            ((ClassHolograph)klass).getVM().eventRequestManager().handleFieldSet(target, field, b);
         } catch (IllegalAccessException e) {
             throw new IllegalAccessError(e.getMessage());
+        } catch (MirrorInvocationTargetException e) {
+            throw (Throwable)ObjectHologram.make(e.getTargetException());
         }
     }
 

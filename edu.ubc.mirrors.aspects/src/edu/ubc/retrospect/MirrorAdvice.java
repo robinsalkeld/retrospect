@@ -25,6 +25,8 @@ import org.aspectj.weaver.patterns.Pointcut;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 
 public class MirrorAdvice extends Advice {
     private static final Member cflowCounterIncMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
@@ -91,7 +93,14 @@ public class MirrorAdvice extends Advice {
         
         try {
             MethodMirrorMember member = (MethodMirrorMember)signature;
-            return member.method.invoke(shadow.getThread(), aspectInstance, args);
+            Object result = member.method.invoke(shadow.getThread(), aspectInstance, args);
+            
+            // Autounboxing
+            if (world.resolve(shadow.getReturnType()).isPrimitiveType() && (result instanceof InstanceMirror)) {
+                return Reflection.unbox((InstanceMirror)result);
+            } else {
+                return result;
+            }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }

@@ -1048,7 +1048,7 @@ public class Reflection {
         ClassMirror valueClass = value.getClassMirror();
         FieldMirror valueField = valueClass.getDeclaredField("value");
         try {
-            return value.get(valueField);
+            return getBoxedValue(value, valueField);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
