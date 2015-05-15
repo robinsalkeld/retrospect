@@ -72,7 +72,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
-import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
@@ -86,13 +86,19 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     protected final VirtualMachine jdiVM;
     private final EventDispatch dispatch;
     
+    private final JDIMirrorEventRequestManager requestManager;
+    private final MirrorEventQueue queue;
+    
     private final Map<Mirror, ObjectMirror> mirrors = new HashMap<Mirror, ObjectMirror>();
     
     private final Map<String, ClassMirror> bootstrapClasses = new HashMap<String, ClassMirror>();
     
     public JDIVirtualMachineMirror(VirtualMachine jdiVM) {
         this.jdiVM = jdiVM;
+        this.queue = //new JDIMirrorEventQueueBuffer(
+                new JDIMirrorEventQueue(this, jdiVM.eventQueue());//);
         this.dispatch = new EventDispatch(this);
+        this.requestManager = new JDIMirrorEventRequestManager(this, jdiVM.eventRequestManager());
         
 //        ClassType threadType = (ClassType)jdiVM.classesByName(Thread.class.getName()).get(0);
 //        Method constructor = threadType.methodsByName("<init>", "(Ljava/lang/String;)V").get(0);
@@ -348,13 +354,13 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     }
 
     @Override
-    public MirrorEventRequestManager eventRequestManager() {
-	return new JDIMirrorEventRequestManager(this, jdiVM.eventRequestManager());
+    public JDIMirrorEventRequestManager eventRequestManager() {
+	return requestManager;
     }
     
     @Override
     public MirrorEventQueue eventQueue() {
-        return new JDIMirrorEventQueue(this, jdiVM.eventQueue());
+        return queue;
     }
     
     @Override
@@ -489,6 +495,19 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         return new JDIMirrorLocation(this, location);
     }
     
+    public <T> T withoutEventRequests(Callable<T> callback) throws Exception {
+        for (MirrorEventRequest request : eventRequestManager().allRequests()) {
+            request.disable();
+        }
+        try {
+            return callback.call();
+        } finally {
+            for (MirrorEventRequest request : eventRequestManager().allRequests()) {
+                request.enable();
+            }
+        }
+    }
+    
     public Value safeInvoke(final ObjectReference o, final ThreadReference t, final Method m, final Value...values) {
         List<Value> args;
         if (values.length == 0) {
@@ -499,7 +518,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         final List<Value> finalArgs = args;
         
         try {
-            return Reflection.withEventDispatchThread(this, new Callable<Value>() {
+            return withoutEventRequests(new Callable<Value>() {
                 @Override
                 public Value call() throws Exception {
                     return o.invokeMethod(t, m, finalArgs, 0);
@@ -512,7 +531,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
 
     public List<AnnotationMirror> wrapAnnotationArray(final ThreadReference thread, final ArrayReference array) {
         try {
-            return Reflection.withEventDispatchThread(this, new Callable<List<AnnotationMirror>>() {
+            return withoutEventRequests(new Callable<List<AnnotationMirror>>() {
                 @Override
                 public List<AnnotationMirror> call() throws Exception {
                     List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();

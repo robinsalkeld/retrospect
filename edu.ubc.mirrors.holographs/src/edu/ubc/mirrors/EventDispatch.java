@@ -48,6 +48,8 @@ public class EventDispatch {
         public void run() {
             try {
                 dispatch.run();
+//            } catch (TimeoutException e) {
+                // This can happen if the VM ends while this thread is running
             } catch (InterruptedException e) {
             }
         }

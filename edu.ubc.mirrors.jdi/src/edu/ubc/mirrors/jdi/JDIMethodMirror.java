@@ -63,7 +63,7 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
     @Override
     protected ObjectReference getReflectiveInstance(final ThreadMirror thread) {
         try {
-            return Reflection.withEventDispatchThread(vm, new Callable<ObjectReference>() {
+            return vm.withoutEventRequests(new Callable<ObjectReference>() {
                 @Override
                 public ObjectReference call() throws Exception {
                     return ((JDIObjectMirror)Reflection.methodInstanceForMethodMirror(thread, JDIMethodMirror.this)).getObjectReference();

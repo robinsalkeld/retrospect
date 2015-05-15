@@ -984,51 +984,6 @@ public class Reflection {
         }
     }
     
-    private static class ExceptionPasser implements UncaughtExceptionHandler {
-
-        private Thread callingThread;
-        public Throwable throwable;
-        
-        public ExceptionPasser(Thread callingThread) {
-            this.callingThread = callingThread;
-        }
-        
-        @Override
-        public void uncaughtException(Thread t, Throwable e) {
-            this.throwable = e;
-            callingThread.interrupt();
-        }
-    }
-    
-    private static Map<VirtualMachineMirror, Thread> eventDispatchThreads = new HashMap<VirtualMachineMirror, Thread>();
-    
-    public static <T> T withEventDispatchThread(VirtualMachineMirror vm, Callable<T> callback) throws Exception {
-        if (eventDispatchThreads.containsKey(vm)) {
-            return callback.call();
-        }
-        
-        Thread dispatchThread = new EventDispatch.EventDispatchThread(vm.dispatch());
-        eventDispatchThreads.put(vm, dispatchThread);
-        
-        ExceptionPasser passer = new ExceptionPasser(Thread.currentThread());
-        dispatchThread.setUncaughtExceptionHandler(passer);
-        dispatchThread.start();
-        T result;
-        try {
-            result = callback.call();
-        } finally {
-            dispatchThread.interrupt();
-        }
-        
-        eventDispatchThreads.remove(vm);
-        
-        if (passer.throwable != null) {
-            throw new RuntimeException(passer.throwable);
-        }
-        
-        return result;
-    }
-    
     public static InstanceMirror box(ThreadMirror thread, Object value) {
         VirtualMachineMirror vm = thread.getClassMirror().getVM();
         ClassMirror boxClass = vm.findBootstrapClassMirror(value.getClass().getName());

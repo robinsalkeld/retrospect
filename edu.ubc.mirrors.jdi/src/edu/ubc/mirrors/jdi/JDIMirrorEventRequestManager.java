@@ -22,7 +22,9 @@
 package edu.ubc.mirrors.jdi;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.sun.jdi.Field;
 import com.sun.jdi.Location;
@@ -48,7 +50,6 @@ import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
-import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
@@ -58,16 +59,23 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 
     private final JDIVirtualMachineMirror vm;
     private final EventRequestManager wrapped;
+    private final Set<MirrorEventRequest> allRequests = new HashSet<MirrorEventRequest>();
     
     public JDIMirrorEventRequestManager(JDIVirtualMachineMirror vm, EventRequestManager wrapped) {
 	this.vm = vm;
 	this.wrapped = wrapped;
     }
 
+    public Set<MirrorEventRequest> allRequests() {
+        return allRequests;
+    }
+    
     @Override
     public MirrorLocationRequest createLocationRequest(MirrorLocation location) {
         Location jdiLoc = ((JDIMirrorLocation)location).getWrapped();
-        return new JDIMirrorLocationRequest(vm, wrapped.createBreakpointRequest(jdiLoc));
+        JDIMirrorLocationRequest result = new JDIMirrorLocationRequest(vm, wrapped.createBreakpointRequest(jdiLoc));
+        allRequests.add(result);
+        return result;
     }
     
     @Override
@@ -84,7 +92,9 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     
     @Override
     public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
-	return new JDIMethodMirrorEntryRequest(vm, wrapped.createMethodEntryRequest());
+        JDIMethodMirrorEntryRequest result = new JDIMethodMirrorEntryRequest(vm, wrapped.createMethodEntryRequest());
+        allRequests.add(result);
+        return result;
     }
 
     @Override
@@ -101,7 +111,9 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public MethodMirrorExitRequest createMethodMirrorExitRequest() {
-	return new JDIMethodMirrorExitRequest(vm, wrapped.createMethodExitRequest());
+        JDIMethodMirrorExitRequest result = new JDIMethodMirrorExitRequest(vm, wrapped.createMethodExitRequest());
+        allRequests.add(result);
+        return result;
     }
 
     @Override
@@ -118,7 +130,9 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     
     @Override
     public ConstructorMirrorEntryRequest createConstructorMirrorEntryRequest() {
-	return new JDIConstructorMirrorEntryRequest(vm, wrapped.createMethodEntryRequest());
+        JDIConstructorMirrorEntryRequest result = new JDIConstructorMirrorEntryRequest(vm, wrapped.createMethodEntryRequest());
+        allRequests.add(result);
+        return result;
     }
 
     @Override
@@ -135,7 +149,9 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public ConstructorMirrorExitRequest createConstructorMirrorExitRequest() {
-	return new JDIConstructorMirrorExitRequest(vm, wrapped.createMethodExitRequest());
+        JDIConstructorMirrorExitRequest result = new JDIConstructorMirrorExitRequest(vm, wrapped.createMethodExitRequest());
+        allRequests.add(result);
+        return result;
     }
 
     @Override
@@ -153,7 +169,9 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     @Override
     public FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror fieldMirror) {
         Field f = ((JDIFieldMirror)fieldMirror).field;
-        return new JDIFieldMirrorGetRequest(vm, wrapped.createAccessWatchpointRequest(f));
+        JDIFieldMirrorGetRequest result = new JDIFieldMirrorGetRequest(vm, wrapped.createAccessWatchpointRequest(f));
+        allRequests.add(result);
+        return result;
     }
 
     @Override
@@ -168,7 +186,9 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     @Override
     public FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror fieldMirror) {
 	Field f = ((JDIFieldMirror)fieldMirror).field;
-	return new JDIFieldMirrorSetRequest(vm, wrapped.createModificationWatchpointRequest(f));
+	JDIFieldMirrorSetRequest result = new JDIFieldMirrorSetRequest(vm, wrapped.createModificationWatchpointRequest(f));
+	allRequests.add(result);
+	return result;
     }
 
     @Override
@@ -182,7 +202,9 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public ClassMirrorPrepareRequest createClassMirrorPrepareRequest() {
-	return new JDIClassMirrorPrepareRequest(vm, wrapped.createClassPrepareRequest());
+        JDIClassMirrorPrepareRequest result = new JDIClassMirrorPrepareRequest(vm, wrapped.createClassPrepareRequest());
+        allRequests.add(result);
+        return result;
     }
 
     @Override
@@ -196,6 +218,7 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public void deleteMirrorEventRequest(MirrorEventRequest request) {
+        allRequests.remove(request);
 	EventRequest unwrapped = ((JDIEventRequest)request).wrapped;
 	wrapped.deleteEventRequest(unwrapped);
     }

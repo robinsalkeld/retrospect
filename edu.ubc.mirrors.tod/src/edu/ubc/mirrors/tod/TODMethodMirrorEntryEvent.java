@@ -3,10 +3,7 @@ package edu.ubc.mirrors.tod;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.internal.compiler.ISourceElementRequestor.TypeInfo;
-
 import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.structure.ITypeInfo;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;

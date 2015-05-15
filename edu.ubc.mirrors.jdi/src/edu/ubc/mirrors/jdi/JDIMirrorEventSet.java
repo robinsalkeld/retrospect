@@ -230,6 +230,6 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ": " + eventSet;
+        return getClass().getSimpleName() + ": " + new HashSet<Event>(eventSet);
     }
 }

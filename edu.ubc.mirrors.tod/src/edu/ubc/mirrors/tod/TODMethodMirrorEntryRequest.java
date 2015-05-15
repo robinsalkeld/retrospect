@@ -1,8 +1,5 @@
 package edu.ubc.mirrors.tod;
 
-import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.ILogEvent;
-import tod.core.database.structure.BehaviorKind;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 
