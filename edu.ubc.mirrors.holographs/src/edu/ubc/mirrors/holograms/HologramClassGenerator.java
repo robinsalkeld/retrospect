@@ -416,7 +416,8 @@ public class HologramClassGenerator extends ClassVisitor {
         if (isToString) {
             desc = Type.getMethodDescriptor(Type.getType(String.class));
         }
-        if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Hologram.class)))) {
+        boolean isEquals = name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Hologram.class)));
+        if (isEquals) {
             desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Object.class));
         }
         boolean isGetStackTrace = this.name.equals(hologramThrowableType.getInternalName()) && name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getHologramType(Type.getType(StackTraceElement[].class)))); 
@@ -468,6 +469,18 @@ public class HologramClassGenerator extends ClassVisitor {
             }
             
             name = ClassHolograph.originalMethodName(getOriginalBinaryClassName(this.name), name);
+            if (isToString) {
+                isToString = false;
+                desc = Type.getMethodDescriptor(getHologramType(Type.getType(String.class)));
+            }
+            if (isEquals) {
+                isEquals = false;
+                desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, hologramType);
+            }
+            if (isGetStackTrace) {
+                isGetStackTrace = false;
+                desc = Type.getMethodDescriptor(getHologramType(Type.getType(StackTraceElement[].class)));
+            }
         }
         
         MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);

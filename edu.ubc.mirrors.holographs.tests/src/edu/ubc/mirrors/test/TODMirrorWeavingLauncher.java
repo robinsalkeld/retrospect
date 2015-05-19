@@ -33,8 +33,8 @@ public class TODMirrorWeavingLauncher {
         thread = (ThreadMirror)vmh.getWrappedMirror(thread);
         
         vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
-        vmh.addBootstrapPathURL(urlPath);
         vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
+        vmh.addBootstrapPathURL(urlPath);
         
         MirrorWorld world = new MirrorWorld(thread, null);
         world.weave();

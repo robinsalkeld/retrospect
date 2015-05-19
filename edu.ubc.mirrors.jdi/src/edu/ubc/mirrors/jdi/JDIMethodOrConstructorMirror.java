@@ -21,6 +21,7 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.sun.jdi.ArrayReference;
@@ -98,21 +99,11 @@ public abstract class JDIMethodOrConstructorMirror extends JDIMirror {
     }
 
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
-        ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
-        ObjectReference methodInstance = getReflectiveInstance(thread);
-        ClassType methodClass = (ClassType)methodInstance.referenceType();
-        Method getAnnotationsMethod = methodClass.methodsByName("getDeclaredAnnotations", "()[Ljava/lang/annotation/Annotation;").get(0);
-        ArrayReference annotsArray = (ArrayReference)vm.safeInvoke(methodInstance, threadRef, getAnnotationsMethod);
-        return vm.wrapAnnotationArray(threadRef, annotsArray);
+        throw new UnsupportedOperationException();
     }
     
     public List<List<AnnotationMirror>> getParameterAnnotations(ThreadMirror thread) {
-        ThreadReference threadRef = ((JDIThreadMirror)thread).thread;
-        ObjectReference methodInstance = getReflectiveInstance(thread);
-        ClassType methodClass = (ClassType)methodInstance.referenceType();
-        Method getAnnotationsMethod = methodClass.methodsByName("getParameterAnnotations", "()[[Ljava/lang/annotation/Annotation;").get(0);
-        ArrayReference annotsArray = (ArrayReference)vm.safeInvoke(methodInstance, threadRef, getAnnotationsMethod);
-        return vm.wrapAnnotationArrayOfArrays(threadRef, annotsArray);
+        throw new UnsupportedOperationException();
     }
     
     protected abstract ObjectReference getReflectiveInstance(ThreadMirror thread);

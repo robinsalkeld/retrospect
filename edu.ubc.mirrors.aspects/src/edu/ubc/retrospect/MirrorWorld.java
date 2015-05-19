@@ -479,15 +479,15 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                 }
                 
                 showMessage(IMessage.DEBUG, "Weaving aspects...", null, null);
-                for (ConcreteTypeMunger munger : getCrosscuttingMembersSet().getTypeMungers()) {
-                    MirrorTypeMunger mirrorMunger = (MirrorTypeMunger)munger;
-                    mirrorMunger.munge(MirrorWorld.this);
-                }
-                
                 for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
                     MirrorAdvice advice = (MirrorAdvice)munger;
                     showMessage(IMessage.DEBUG, "Installing event requests for advice: " + advice, null, null);
                     PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice, MirrorWorld.this);
+                }
+                
+                for (ConcreteTypeMunger munger : getCrosscuttingMembersSet().getTypeMungers()) {
+                    MirrorTypeMunger mirrorMunger = (MirrorTypeMunger)munger;
+                    mirrorMunger.munge(MirrorWorld.this);
                 }
                 
                 ThreadHolograph.lowerMetalevel();
