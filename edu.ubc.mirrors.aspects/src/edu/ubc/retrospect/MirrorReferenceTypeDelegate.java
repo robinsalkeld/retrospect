@@ -39,6 +39,7 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
     private ResolvedMember[] declaredMethods;
     private ResolvedMember[] declaredPointcuts;
     private ResolvedMember[] declaredFields;
+    private PerClause perClause;
     
     public MirrorReferenceTypeDelegate(ReferenceType resolvedTypeX, ClassMirror klass) {
         super(resolvedTypeX, true);
@@ -129,7 +130,7 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
     
     @Override
     public boolean isAspect() {
-        return getWorld().isAspect(klass);
+        return getWorld().getAspectAnnotation(klass) != null;
     }
 
     @Override
@@ -251,8 +252,12 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
     @Override
     public PerClause getPerClause() {
-        // TODO-RS
-        return new PerSingleton();
+        if (perClause == null) {
+            AnnotationMirror annot = getWorld().getAspectAnnotation(klass);
+            String value = (String)annot.getValue(getWorld().thread, "value");
+            perClause = getWorld().parsePerClause(value);
+        }
+        return perClause;
     }
 
     @Override

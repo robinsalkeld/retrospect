@@ -29,6 +29,7 @@ import org.aspectj.weaver.patterns.KindedPointcut;
 import org.aspectj.weaver.patterns.NotPointcut;
 import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.PatternNode;
+import org.aspectj.weaver.patterns.PerClause;
 import org.aspectj.weaver.patterns.PerSingleton;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.aspectj.weaver.patterns.PointcutRewriter;
@@ -98,7 +99,7 @@ public class PointcutMirrorRequestExtractor {
         } else if (node instanceof ThisOrTargetPointcut || node instanceof ArgsPointcut) {
             // Could possibly add filters to match the type pattern...
             return null;
-        } else if (node instanceof PerSingleton || node instanceof ConcreteCflowPointcut) {
+        } else if (node instanceof PerClause || node instanceof ConcreteCflowPointcut) {
             // Ignore pointcuts with no scope
             return null;
         } else {

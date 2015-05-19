@@ -80,4 +80,9 @@ public class FieldMirrorGetHandlerShadow extends MirrorEventShadow {
     public String toString() {
         return getKind() + "(" + getSignature() + ")";
     }
+    
+    @Override
+    public Member getEnclosingCodeSignature() {
+        return null;
+    }
 }

@@ -41,9 +41,12 @@ import org.aspectj.weaver.loadtime.definition.DocumentParser;
 import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.FormalBinding;
 import org.aspectj.weaver.patterns.PatternParser;
+import org.aspectj.weaver.patterns.PerClause;
+import org.aspectj.weaver.patterns.PerSingleton;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.objectweb.asm.Type;
 
+import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
@@ -218,6 +221,11 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     
     @Override
     public boolean isAspectIncluded(ResolvedType aspectType) {
+        // Some synthetic advice has no declaring aspect, which leads to passing null here
+        if (aspectType == null) {
+            return true;
+        }
+
         for (Definition definition : definitions) {
             if (definition.getAspectClassNames().contains(aspectType.getName())) {
                 return true;
@@ -373,8 +381,8 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     }
     
     
-    public boolean isAspect(ClassMirror klass) {
-        return Reflection.getAnnotation(klass.getAnnotations(thread), aspectAnnotClass) != null;
+    public AnnotationMirror getAspectAnnotation(ClassMirror klass) {
+        return Reflection.getAnnotation(klass.getAnnotations(thread), aspectAnnotClass);
     }
     
     public Pointcut parsePointcut(String expr) {
@@ -383,6 +391,11 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
         expr = expr.replaceAll(Pattern.quote("lock(* *)"), "lock()");
         
         return new PatternParser(expr, SourceContextImpl.UNKNOWN_SOURCE_CONTEXT).parsePointcut();
+    }
+    
+    public PerClause parsePerClause(String expr) {
+        PerClause result = new PatternParser(expr, SourceContextImpl.UNKNOWN_SOURCE_CONTEXT).maybeParsePerClause();
+        return result == null ? new PerSingleton() : result;
     }
     
     public Pointcut resolvePointcut(Member signature, Pointcut pointcut) {

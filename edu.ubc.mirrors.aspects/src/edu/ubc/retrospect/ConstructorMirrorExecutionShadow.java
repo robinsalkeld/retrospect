@@ -81,4 +81,9 @@ public class ConstructorMirrorExecutionShadow extends MirrorEventShadow {
     protected InstanceMirror getThisJoinPointStaticPart() {
         return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.CONSTRUCTOR_EXECUTION, constructor);
     }
+    
+    @Override
+    public Member getEnclosingCodeSignature() {
+        return ConstructorMirrorMember.make(world, constructor);
+    }
 }

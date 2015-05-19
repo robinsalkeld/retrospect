@@ -58,4 +58,9 @@ public class FieldMirrorGetShadow extends MirrorEventShadow {
     protected InstanceMirror getThisJoinPointStaticPart() {
         return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.FIELD_GET, event.field());
     }
+    
+    @Override
+    public Member getEnclosingCodeSignature() {
+        return null;
+    }
 }

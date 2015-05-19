@@ -75,4 +75,9 @@ public class MethodMirrorEntryShadow extends MirrorEventShadow {
     protected InstanceMirror getThisJoinPointStaticPart() {
         return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.METHOD_EXECUTION, event.method());
     }
+    
+    @Override
+    public Member getEnclosingCodeSignature() {
+        return MethodMirrorMember.make(world, event.method());
+    }
 }

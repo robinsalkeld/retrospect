@@ -236,11 +236,6 @@ public abstract class MirrorEventShadow extends Shadow {
     }
 
     @Override
-    public Member getEnclosingCodeSignature() {
-        return null;
-    }
-    
-    @Override
     public Var getThisAspectInstanceVar(ResolvedType aspectType) {
         return null;
     }

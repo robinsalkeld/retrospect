@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public aspect JDKAroundFieldSets {
+privileged aspect JDKAroundFieldSets {
 
 //    private int String.otherhash = 0;
 //    
@@ -17,8 +17,12 @@ public aspect JDKAroundFieldSets {
 //            return proceed(s);
 //        }
 //    }
-    
+//    
     void around(): set(* java.lang.Class.name) {
+        // Don't proceed(), just let it be recalculated every time
+    }
+    
+    void around(): set(* java.lang.String.hash) {
         // Don't proceed(), just let it be recalculated every time
     }
     
@@ -32,16 +36,6 @@ public aspect JDKAroundFieldSets {
     Object around(): get(static * sun.misc.FloatingDecimal.*) {
         String fieldName = thisJoinPointStaticPart.getSignature().getName();
         return floatingDecimalStatics.get(fieldName);
-    }
-    
-    // Thread locals
-    
-    private final Map<ThreadLocal<?>, Object> newThreadLocalValues = new HashMap<ThreadLocal<?>, Object>();
-    
-    private static AtomicInteger nextHashCodeForNewThreadLocals = new AtomicInteger();
-    
-    int around(): execution(int ThreadLocal.nextHashCode()) {
-        return nextHashCodeForNewThreadLocals.getAndIncrement();
     }
     
     // Standard streams
@@ -60,8 +54,4 @@ public aspect JDKAroundFieldSets {
 //        return newStderr;
 //    }
     
-//    
-//    void around(): set(* String.hash) {
-//        // Don't proceed(), just let it be recalculated every time
-//    }
 }

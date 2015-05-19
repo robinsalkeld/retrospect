@@ -1,6 +1,7 @@
 package edu.ubc.retrospect;
 
 import org.aspectj.weaver.AdviceKind;
+import org.aspectj.weaver.Member;
 import org.aspectj.weaver.MemberImpl;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
@@ -78,5 +79,10 @@ public class SynchronizedMethodMirrorExitShadow extends MirrorEventShadow {
     @Override
     protected InstanceMirror getThisJoinPointStaticPart() {
         return world.makeSynchronizationStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.SYNCHRONIZATION_UNLOCK, getThis());
+    }
+    
+    @Override
+    public Member getEnclosingCodeSignature() {
+        return MethodMirrorMember.make(world, event.method());
     }
 }

@@ -77,6 +77,11 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     }
     
     @Override
+    public Member getEnclosingCodeSignature() {
+        return MethodMirrorMember.make(world, event.method());
+    }
+    
+    @Override
     public String toString() {
         return getKind() + "(" + getSignature() + ")";
     }

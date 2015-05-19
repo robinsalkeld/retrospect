@@ -77,6 +77,11 @@ public class FieldMirrorSetHandlerShadow extends MirrorEventShadow {
     }
     
     @Override
+    public Member getEnclosingCodeSignature() {
+        return null;
+    }
+    
+    @Override
     public String toString() {
         return getKind() + "(" + getSignature() + ")";
     }
