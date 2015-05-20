@@ -35,7 +35,7 @@ public class TracingExampleTest extends TestCase {
                 EvalConstants.TracingAspectsBin, 
                 new File(EvalConstants.DataRoot, "jdi/TracingExampleTest/hologram_classes"));
         
-        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
+        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-combined-output.txt")), "UTF-8");
         assertEquals(expectedOutput, combinedOutput);
 
         //	traceClass.getStaticFieldValues().setInt(traceClass.getDeclaredField("TRACELEVEL"), 2);

@@ -52,6 +52,7 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class SanityTest extends TestCase {
 
@@ -157,8 +158,11 @@ public class SanityTest extends TestCase {
     }
     
     public void testTracingAspectTOD() throws Exception {
-        TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin,
+        String actualOutput = TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin,
                 new File(EvalConstants.DataRoot, "tod/TracingTest"));
+        
+        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
+        assertEquals(expectedOutput, actualOutput);
     }
     
 //    public void testLeakDetectorAspect() throws Exception {

@@ -47,8 +47,6 @@ public class MirrorAdvice extends Advice {
     }
 
     public Object testAndExecute(MirrorEventShadow shadow, MirrorInvocationHandler proceed, List<Object> arguments) throws MirrorInvocationTargetException {
-        world.showMessage(IMessage.DEBUG, signature.toString(), null, null);
-        
         ExposedState state = new ExposedState(signature);
         Test test = getPointcut().findResidue(shadow, state);
         MirrorEvaluator evaluator = shadow.getEvaluator(arguments);
@@ -60,6 +58,9 @@ public class MirrorAdvice extends Advice {
     }
 
     public Object execute(MirrorEventShadow shadow, ExposedState state, MirrorInvocationHandler proceed, List<Object> arguments) throws MirrorInvocationTargetException {
+        world.showMessage(IMessage.DEBUG, shadow.toString(), null, null);
+        world.showMessage(IMessage.DEBUG, signature.toString(), null, null);
+        
         MirrorEvaluator evaluator = shadow.getEvaluator(arguments);
         
         if (kind.isCflow()) {
