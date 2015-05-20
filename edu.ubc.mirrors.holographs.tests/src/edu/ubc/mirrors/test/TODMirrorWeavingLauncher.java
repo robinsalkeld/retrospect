@@ -43,7 +43,7 @@ public class TODMirrorWeavingLauncher {
         vmh.dispatch().run();
         
 //        ClassMirror guardAspect = vmh.findBootstrapClassMirror("edu.ubc.aspects.JDKAroundFieldSets");
-//        ObjectMirror newOut = guardAspect.get(guardAspect.getDeclaredField("newStdoutBaos"));
+//        ObjectMirror newOut = guardAspect.get(guardAspect.getDeclaredField("newStderrBaos"));
 //        String output = Reflection.toString(newOut, thread);
 //        System.out.print(output);
     }
