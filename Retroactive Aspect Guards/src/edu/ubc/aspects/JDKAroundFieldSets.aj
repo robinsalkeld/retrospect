@@ -32,14 +32,14 @@ privileged aspect JDKAroundFieldSets {
     private static final ByteArrayOutputStream newStdoutBaos = new ByteArrayOutputStream();
     private static final PrintStream newStdout = new PrintStream(newStdoutBaos);
     
-    PrintStream around(): get(PrintStream System.out) {
+    PrintStream around(): get(* System.out) {
         return newStdout;
     }
     
     private static final ByteArrayOutputStream newStderrBaos = new ByteArrayOutputStream();
     private static final PrintStream newStderr = new PrintStream(newStderrBaos);
     
-    PrintStream around(): get(PrintStream System.err) {
+    PrintStream around(): get(* System.err) {
         return newStderr;
     }
     
