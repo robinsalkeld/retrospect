@@ -292,7 +292,7 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     }
 
     @Override
-    public MirrorEventRequestManager eventRequestManager() {
+    public TODMirrorEventRequestManager eventRequestManager() {
         return requestManager;
     }
 

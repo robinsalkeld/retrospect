@@ -162,10 +162,10 @@ public class PointcutMirrorRequestExtractor {
                 switch (kind.bit) {
                 case (Shadow.MethodExecutionBit):
                     if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createMethodMirrorEntryRequest(), thisFilters);
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
                     }
                     if (adviceKind.isAfter() || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createMethodMirrorExitRequest(), thisFilters);
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
                     }
                     if (adviceKind == AdviceKind.Around) {
                         addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
@@ -173,10 +173,10 @@ public class PointcutMirrorRequestExtractor {
                     break;
                 case (Shadow.ConstructorExecutionBit):
                     if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createConstructorMirrorEntryRequest(), thisFilters);
+                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);
                     }
                     if (adviceKind.isAfter() || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createConstructorMirrorExitRequest(), thisFilters);
+                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);
                     }
                     if (adviceKind == AdviceKind.Around) {
                         addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);

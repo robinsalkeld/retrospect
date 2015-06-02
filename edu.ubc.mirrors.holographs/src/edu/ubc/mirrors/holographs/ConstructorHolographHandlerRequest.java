@@ -57,8 +57,8 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
 
     @Override
     public void disable() {
-        entryRequest.enable();
-        exitRequest.enable();
+        entryRequest.disable();
+        exitRequest.disable();
     }
 
     @Override

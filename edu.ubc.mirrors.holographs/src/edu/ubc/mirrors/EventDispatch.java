@@ -34,6 +34,8 @@ import edu.ubc.mirrors.holographs.IllegalSideEffectError;
 
 public class EventDispatch {
 
+    private static final boolean DEBUG = Boolean.getBoolean("edu.ubc.mirrors.holographs.debugEvents"); 
+    
     public static class EventDispatchThread extends Thread {
         
         private final EventDispatch dispatch;
@@ -62,6 +64,8 @@ public class EventDispatch {
                                    getRequestOrder(right));
         }
     };
+    
+    private Comparator<MirrorEventRequest> REVERSE_REQUEST_ORDER_COMPARATOR = Collections.reverseOrder(REQUEST_ORDER_COMPARATOR);
     
     private static final Object CALLBACKS_KEY = new Object();
     
@@ -126,6 +130,7 @@ public class EventDispatch {
     }
     
     public MirrorEvent runUntil(MirrorEventRequest endRequest) throws InterruptedException {
+        System.out.println("runUntil: " + endRequest);
         currentSet = nextEventSet();
         while (currentSet != null) {
             MirrorEvent result = null;
@@ -158,8 +163,7 @@ public class EventDispatch {
             MirrorEventRequest request = event.request();
             requests.add(request);
         }
-        Collections.sort(requests, REQUEST_ORDER_COMPARATOR);
-
+        
         Set<Callback<MirrorEvent>> callbacks = new LinkedHashSet<Callback<MirrorEvent>>();
         for (MirrorEventRequest request : requests) {
             callbacks.addAll(getCallbacks(request));
@@ -169,6 +173,17 @@ public class EventDispatch {
         if (event == null) {
             return null;
         }
+        
+        if (event instanceof ConstructorMirrorExitEvent || event instanceof MethodMirrorExitEvent) {
+            Collections.sort(requests, REVERSE_REQUEST_ORDER_COMPARATOR);
+        } else {
+            Collections.sort(requests, REQUEST_ORDER_COMPARATOR);
+        }
+
+        if (DEBUG) {
+            System.err.println(event);
+        }
+        
         for (Callback<MirrorEvent> callback : callbacks) {
             event = callback.handle(event);
             if (event == null) {

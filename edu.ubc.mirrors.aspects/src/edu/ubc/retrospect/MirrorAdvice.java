@@ -67,8 +67,9 @@ public class MirrorAdvice extends Advice {
             if (state.size() == 0) {
                 Expr fieldGet = new FieldGet(getSignature(), concreteAspect);
                 InstanceMirror counter = (InstanceMirror)evaluator.evaluateExpr(fieldGet);
-                Member method = shadow.kind() == AdviceKind.Before ? cflowCounterIncMethod : cflowCounterDecMethod;
-                evaluator.evaluateCall(counter, method, Expr.NONE);
+                evaluator.evaluateCall(counter, cflowCounterIncMethod, Expr.NONE);
+                proceed.invoke(shadow.getThread(), arguments);
+                evaluator.evaluateCall(counter, cflowCounterDecMethod, Expr.NONE);
                 return null;
             } else {
                 throw new IllegalStateException();
@@ -202,22 +203,22 @@ public class MirrorAdvice extends Advice {
         return false;
     }
     
-    @Override
-    public boolean match(Shadow shadow, World world) {
-        if (!super.match(shadow, world)) {
-            return false;
-        }
-        
-        if (kind.isCflow()) {
-            return true;
-        }
-        
-        MirrorEventShadow eventShadow = (MirrorEventShadow)shadow;
-        
-        if (kind == AdviceKind.AfterReturning && eventShadow.kind() == AdviceKind.After) {
-            return true;
-        }
-        
-        return eventShadow.kind() == kind;
-    }
+//    @Override
+//    public boolean match(Shadow shadow, World world) {
+//        if (!super.match(shadow, world)) {
+//            return false;
+//        }
+//        
+//        if (kind.isCflow()) {
+//            return true;
+//        }
+//        
+//        MirrorEventShadow eventShadow = (MirrorEventShadow)shadow;
+//        
+//        if (kind == AdviceKind.AfterReturning && eventShadow.kind() == AdviceKind.After) {
+//            return true;
+//        }
+//        
+//        return eventShadow.kind() == kind;
+//    }
 }

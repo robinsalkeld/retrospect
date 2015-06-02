@@ -55,4 +55,9 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
     public void setProceed(MirrorInvocationHandler proceed) {
         this.proceed = proceed;
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + constructor;
+    }
 }

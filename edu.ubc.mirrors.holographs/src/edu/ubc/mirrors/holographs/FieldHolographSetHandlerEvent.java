@@ -70,4 +70,9 @@ public class FieldHolographSetHandlerEvent implements FieldMirrorSetHandlerEvent
     public Object newValue() {
         return newValue;
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + field;
+    }
 }

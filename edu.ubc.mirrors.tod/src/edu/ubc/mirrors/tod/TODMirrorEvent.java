@@ -54,6 +54,6 @@ public abstract class TODMirrorEvent implements MirrorEvent {
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " on " + event;
+        return getClass().getSimpleName() + " on " + event + " (" + request + ")";
     }
 }

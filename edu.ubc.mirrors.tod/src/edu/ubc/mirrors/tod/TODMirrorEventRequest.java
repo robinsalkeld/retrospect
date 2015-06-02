@@ -21,6 +21,9 @@ public abstract class TODMirrorEventRequest implements MirrorEventRequest, Itera
     protected IEventBrowser eventBrowser;
     private ILogEvent nextEvent;
     
+    private static int nextID = 1;
+    private int id = nextID++;
+    
     public TODMirrorEventRequest(TODVirtualMachineMirror vm) {
         this.vm = vm;
         this.requestManager = (TODMirrorEventRequestManager)vm.eventRequestManager();
@@ -142,5 +145,16 @@ public abstract class TODMirrorEventRequest implements MirrorEventRequest, Itera
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " <" + id + ">";
+    }
+    
+    public void dumpEvents() {
+        while (hasNext()) {
+            System.out.println(next());
+        }
     }
 }

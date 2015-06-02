@@ -245,4 +245,14 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
     public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field) {
         throw new UnsupportedOperationException();
     }
+    
+    public void dumpEvents() {
+//        while (hasNext()) {
+//            System.out.println(next());
+//        }
+        for (TODMirrorEventRequest request : liveRequests) {
+            System.out.println(request);
+            request.dumpEvents();
+        }
+    }
 }

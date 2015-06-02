@@ -84,9 +84,9 @@ public abstract class MirrorEventShadow extends Shadow {
     
     @Override
     protected void prepareForMungers() {
-        if (kind() == AdviceKind.Before) {
-            Collections.reverse(mungers);
-        }
+//        if (kind() == AdviceKind.Before) {
+//            Collections.reverse(mungers);
+//        }
     }
     
     @Override
@@ -249,17 +249,21 @@ public abstract class MirrorEventShadow extends Shadow {
         MirrorInvocationHandler newHandler = new MirrorInvocationHandler() {
             @Override
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-                if (kind() != AdviceKind.Around) {
+                if (advice.getKind().isAfter()) {
                     handler.invoke(thread, args);
                 }
-                return advice.testAndExecute(MirrorEventShadow.this, handler, args);
+                Object result = advice.testAndExecute(MirrorEventShadow.this, handler, args);
+                if (advice.getKind() == AdviceKind.Before) {
+                    handler.invoke(thread, args);
+                }
+                return result;
             }
         };
         event.setProceed(newHandler);
     }
     
-    @Override
-    public String toString() {
-        return kind() + " " + super.toString();
-    }
+//    @Override
+//    public String toString() {
+//        return kind() + " " + super.toString();
+//    }
 }

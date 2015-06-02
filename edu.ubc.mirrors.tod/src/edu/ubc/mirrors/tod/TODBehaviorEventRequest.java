@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.commands.operations.ObjectUndoContext;
+
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.IEventPredicate;
@@ -57,5 +59,10 @@ public abstract class TODBehaviorEventRequest extends TODMirrorEventRequest {
     
     public void addClassFilter(ClassMirror klass) {
         classFilters.add(((TODClassMirror)klass).classInfo);
+    }
+    
+    @Override
+    public String toString() {
+        return super.toString() + " (" + behaviorInfo + ", " + classFilters + ", " + classNameFilters + ")";
     }
 }
