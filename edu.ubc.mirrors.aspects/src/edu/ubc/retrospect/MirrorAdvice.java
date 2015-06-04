@@ -68,9 +68,9 @@ public class MirrorAdvice extends Advice {
                 Expr fieldGet = new FieldGet(getSignature(), concreteAspect);
                 InstanceMirror counter = (InstanceMirror)evaluator.evaluateExpr(fieldGet);
                 evaluator.evaluateCall(counter, cflowCounterIncMethod, Expr.NONE);
-                proceed.invoke(shadow.getThread(), arguments);
+                Object result = proceed.invoke(shadow.getThread(), arguments);
                 evaluator.evaluateCall(counter, cflowCounterDecMethod, Expr.NONE);
-                return null;
+                return result;
             } else {
                 throw new IllegalStateException();
             }
