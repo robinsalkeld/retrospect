@@ -32,11 +32,8 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
             final ConstructorMirrorHandlerEvent handlerEvent = new ConstructorHolographHandlerEvent(ConstructorHolographHandlerRequest.this, 
                     entryEvent.thread(), entryEvent.constructor(), entryEvent.arguments(), ConstructorHolographHandlerRequest.this);
             
-            t.setProceed(new MirrorInvocationHandler() {
-                public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-                    return vm.dispatch().runCallbacks(Collections.<MirrorEvent>singleton(handlerEvent));
-                }
-            });
+            handlerEvent.setProceed(ConstructorHolographHandlerRequest.this);
+            vm.dispatch().raiseEvent(handlerEvent);
             return t;
         }
     };

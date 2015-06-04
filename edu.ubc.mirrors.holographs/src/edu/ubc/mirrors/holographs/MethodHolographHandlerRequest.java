@@ -36,11 +36,8 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
             final MethodHolographHandlerEvent handlerEvent = new MethodHolographHandlerEvent(MethodHolographHandlerRequest.this, 
                     entryEvent.thread(), entryEvent.method(), entryEvent.arguments(), MethodHolographHandlerRequest.this);
             
-            t.setProceed(new MirrorInvocationHandler() {
-                public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-                    return vm.dispatch().runCallbacks(Collections.<MirrorEvent>singleton(handlerEvent));
-                }
-            });
+            handlerEvent.setProceed(MethodHolographHandlerRequest.this);
+            vm.dispatch().raiseEvent(handlerEvent);
             return t;
         }
     };

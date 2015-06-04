@@ -25,10 +25,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import edu.ubc.mirrors.holographs.IllegalSideEffectError;
 
@@ -57,6 +59,24 @@ public class EventDispatch {
         }
     }
 
+    public static class RaisedEventSet extends HashSet<MirrorEvent> implements MirrorEventSet {
+        
+        private final ThreadMirror thread;
+        
+        public RaisedEventSet(ThreadMirror thread) {
+            this.thread = thread;
+        }
+        
+        @Override
+        public ThreadMirror thread() {
+            return thread;
+        }
+        
+        @Override
+        public void resume() {
+        }
+    }
+    
     private Comparator<MirrorEventRequest> REQUEST_ORDER_COMPARATOR = new Comparator<MirrorEventRequest>() {
         @Override
         public int compare(MirrorEventRequest left, MirrorEventRequest right) {
@@ -74,10 +94,18 @@ public class EventDispatch {
     private final Map<MirrorEventRequest, Integer> requestOrder = new HashMap<MirrorEventRequest, Integer>();
     private int nextOrder = 0;
     private MirrorEventSet currentSet = null;
+    private MirrorEventSet pendingEvents;
     private boolean started = false;
     
     public EventDispatch(VirtualMachineMirror vm) {
 	this.vm = vm;
+    }
+    
+    public void raiseEvent(MirrorEvent event) {
+        if (pendingEvents == null) {
+            pendingEvents = new RaisedEventSet(event.thread());
+        }
+        pendingEvents.add(event);
     }
     
     @SuppressWarnings("unchecked")
@@ -116,6 +144,12 @@ public class EventDispatch {
             started = true;
         }
         
+        if (pendingEvents != null) {
+            currentSet = pendingEvents;
+            pendingEvents = null;
+            return currentSet;
+        }
+        
         currentSet = vm.eventQueue().remove();
         while (currentSet != null) {
             if (!currentSet.isEmpty()) {
@@ -130,7 +164,6 @@ public class EventDispatch {
     }
     
     public MirrorEvent runUntil(MirrorEventRequest endRequest) throws InterruptedException {
-        System.out.println("runUntil: " + endRequest);
         currentSet = nextEventSet();
         while (currentSet != null) {
             MirrorEvent result = null;
@@ -174,11 +207,11 @@ public class EventDispatch {
             return null;
         }
         
-        if (event instanceof ConstructorMirrorExitEvent || event instanceof MethodMirrorExitEvent) {
-            Collections.sort(requests, REVERSE_REQUEST_ORDER_COMPARATOR);
-        } else {
+//        if (event instanceof ConstructorMirrorExitEvent || event instanceof MethodMirrorExitEvent) {
+//            Collections.sort(requests, REVERSE_REQUEST_ORDER_COMPARATOR);
+//        } else {
             Collections.sort(requests, REQUEST_ORDER_COMPARATOR);
-        }
+//        }
 
         if (DEBUG) {
             System.err.println(event);
