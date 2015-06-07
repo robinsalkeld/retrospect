@@ -249,14 +249,7 @@ public abstract class MirrorEventShadow extends Shadow {
         MirrorInvocationHandler newHandler = new MirrorInvocationHandler() {
             @Override
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-                if (advice.getKind().isAfter()) {
-                    handler.invoke(thread, args);
-                }
-                Object result = advice.testAndExecute(MirrorEventShadow.this, handler, args);
-                if (advice.getKind() == AdviceKind.Before) {
-                    handler.invoke(thread, args);
-                }
-                return result;
+                return advice.testAndExecute(MirrorEventShadow.this, handler, args);
             }
         };
         event.setProceed(newHandler);

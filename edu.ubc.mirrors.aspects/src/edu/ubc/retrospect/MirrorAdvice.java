@@ -51,9 +51,18 @@ public class MirrorAdvice extends Advice {
         Test test = getPointcut().findResidue(shadow, state);
         MirrorEvaluator evaluator = shadow.getEvaluator(arguments);
         if (evaluator.evaluateTest(test)) {
-            return execute(shadow, state, proceed, arguments);
+            if (getKind().isAfter()) {
+                Object result = proceed.invoke(shadow.getThread(), arguments);
+                execute(shadow, state, proceed, arguments);
+                return result;
+            } else if (getKind() == AdviceKind.Before) {
+                execute(shadow, state, proceed, arguments);
+                return proceed.invoke(shadow.getThread(), arguments);
+            } else {
+                return execute(shadow, state, proceed, arguments);
+            }
         } else {
-            return null;
+            return proceed.invoke(shadow.getThread(), arguments);
         }
     }
 

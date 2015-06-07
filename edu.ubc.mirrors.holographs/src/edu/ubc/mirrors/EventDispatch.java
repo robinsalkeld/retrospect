@@ -61,19 +61,20 @@ public class EventDispatch {
 
     public static class RaisedEventSet extends HashSet<MirrorEvent> implements MirrorEventSet {
         
-        private final ThreadMirror thread;
+        private final MirrorEventSet previous;
         
-        public RaisedEventSet(ThreadMirror thread) {
-            this.thread = thread;
+        public RaisedEventSet(MirrorEventSet previous) {
+            this.previous = previous;
         }
         
         @Override
         public ThreadMirror thread() {
-            return thread;
+            return previous.thread();
         }
         
         @Override
         public void resume() {
+            previous.resume();
         }
     }
     
@@ -103,7 +104,7 @@ public class EventDispatch {
     
     public void raiseEvent(MirrorEvent event) {
         if (pendingEvents == null) {
-            pendingEvents = new RaisedEventSet(event.thread());
+            pendingEvents = new RaisedEventSet(currentSet);
         }
         pendingEvents.add(event);
     }
@@ -138,16 +139,16 @@ public class EventDispatch {
     }
     
     public MirrorEventSet nextEventSet() throws InterruptedException {
-        if (started && currentSet != null) {
-            currentSet.resume();
-        } else {
-            started = true;
-        }
-        
         if (pendingEvents != null) {
             currentSet = pendingEvents;
             pendingEvents = null;
             return currentSet;
+        }
+        
+        if (started && currentSet != null) {
+            currentSet.resume();
+        } else {
+            started = true;
         }
         
         currentSet = vm.eventQueue().remove();
@@ -207,11 +208,12 @@ public class EventDispatch {
             return null;
         }
         
-//        if (event instanceof ConstructorMirrorExitEvent || event instanceof MethodMirrorExitEvent) {
-//            Collections.sort(requests, REVERSE_REQUEST_ORDER_COMPARATOR);
-//        } else {
+        // TODO-RS: Generalize
+        if (event instanceof ConstructorMirrorExitEvent || event instanceof MethodMirrorExitEvent) {
+            Collections.sort(requests, REVERSE_REQUEST_ORDER_COMPARATOR);
+        } else {
             Collections.sort(requests, REQUEST_ORDER_COMPARATOR);
-//        }
+        }
 
         if (DEBUG) {
             System.err.println(event);
