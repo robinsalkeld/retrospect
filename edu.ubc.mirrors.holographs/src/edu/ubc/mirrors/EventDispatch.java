@@ -38,6 +38,18 @@ public class EventDispatch {
 
     private static final boolean DEBUG = Boolean.getBoolean("edu.ubc.mirrors.holographs.debugEvents"); 
     
+    private int depth = 0;
+    
+    private int eventDepthOffset(MirrorEvent event) {
+        if (event instanceof MethodMirrorEntryEvent || event instanceof ConstructorMirrorEntryEvent) {
+            return 1;
+        } else if (event instanceof MethodMirrorExitEvent || event instanceof ConstructorMirrorExitEvent) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+    
     public static class EventDispatchThread extends Thread {
         
         private final EventDispatch dispatch;
@@ -216,7 +228,17 @@ public class EventDispatch {
         }
 
         if (DEBUG) {
+            int offset = eventDepthOffset(event);
+            if (offset > 0) {
+                depth += offset;
+            }
+            for (int indent = 0; indent < depth; indent++) {
+                System.err.print("  ");
+            }
             System.err.println(event);
+            if (offset <= 0) {
+                depth += offset;
+            }
         }
         
         for (Callback<MirrorEvent> callback : callbacks) {

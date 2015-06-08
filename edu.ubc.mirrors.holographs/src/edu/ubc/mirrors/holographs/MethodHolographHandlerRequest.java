@@ -48,6 +48,7 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         vm.dispatch().addCallback(entryRequest, entryCallback); 
         
         this.exitRequest = vm.eventRequestManager().createMethodMirrorExitRequest();
+        this.exitRequest.putProperty("for handler request", this);
         
     }
 
@@ -94,8 +95,13 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     @Override
     public void setMethodFilter(MethodMirror method) {
         this.methodFilter = method;
-        entryRequest.setMethodFilter(method);
-        exitRequest.setMethodFilter(method);
+        
+        MethodMirror unwrapped = method;
+        if (method instanceof MethodHolograph) {
+            unwrapped = ((MethodHolograph)method).wrapped;
+        }
+        entryRequest.setMethodFilter(unwrapped);
+        exitRequest.setMethodFilter(unwrapped);
     }
     
     public MethodMirror getMethodFilter() {
@@ -130,5 +136,10 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + (methodFilter == null ? "" : " " + methodFilter);
     }
 }

@@ -54,4 +54,9 @@ public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent {
     public void setProceed(MirrorInvocationHandler proceed) {
         this.proceed = proceed;
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + method();
+    }
 }

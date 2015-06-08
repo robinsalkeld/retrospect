@@ -39,8 +39,12 @@ public class JDIMethodMirrorEntryRequest extends JDIEventRequest implements Meth
 
     @Override
     public void addClassFilter(ClassMirror klass) {
-	JDIClassMirror declaringClass = (JDIClassMirror)klass;
-	wrapped.addClassFilter(declaringClass.refType);
+        if (klass instanceof JDIClassMirror) {
+            JDIClassMirror declaringClass = (JDIClassMirror)klass;
+            wrapped.addClassFilter(declaringClass.refType);
+        } else {
+            wrapped.addClassFilter(klass.getClassName());
+        }
     }
     
     @Override

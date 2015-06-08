@@ -19,6 +19,7 @@ import org.aspectj.apache.bcel.generic.InstructionList;
 import org.aspectj.bridge.IMessage;
 import org.aspectj.weaver.Advice;
 import org.aspectj.weaver.AdviceKind;
+import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ReferenceType;
 import org.aspectj.weaver.ResolvedMember;
 import org.aspectj.weaver.Shadow;
@@ -47,6 +48,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 import edu.ubc.mirrors.MethodMirrorExitRequest;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
@@ -154,51 +156,55 @@ public class PointcutMirrorRequestExtractor {
             throw new IllegalArgumentException("Not pointcuts that aren't under Ands not supported");
         }
     }
-    
     private void installIfNotBelowAnd(Object parent) {
         if (!(parent instanceof AndPointcut)) {
-            AdviceKind adviceKind = advice.getKind();
-            for (final Shadow.Kind kind : Shadow.toSet(kinds)) {
-                switch (kind.bit) {
-                case (Shadow.MethodExecutionBit):
-                    if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
-                    }
-                    if (adviceKind.isAfter() || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
-                    }
-                    if (adviceKind == AdviceKind.Around) {
-                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
-                    }
-                    break;
-                case (Shadow.ConstructorExecutionBit):
-                    if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);
-                    }
-                    if (adviceKind.isAfter() || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);
-                    }
-                    if (adviceKind == AdviceKind.Around) {
-                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);
-                    }
-                    break;
-                case (Shadow.FieldSetBit):
-                case (Shadow.FieldGetBit):
-                    installFieldRequests(kind);
-                    break;
-                case Shadow.SynchronizationLockBit:
-                case Shadow.SynchronizationUnlockBit:
-                    installSynchronizationRequests(kind);
-                    break;
-                case Shadow.ConstructorCallBit:
-                case Shadow.MethodCallBit:
-                case Shadow.AdviceExecutionBit:
-                case Shadow.InitializationBit:
-                case Shadow.PreInitializationBit:
-                case Shadow.ExceptionHandlerBit:
-                    world.showMessage(IMessage.WARNING, "Unsupported pointcut kind: " + kind, null, null);
-                    break;
+            installRequest();
+        }
+    }
+    
+    private void installRequest() {
+        AdviceKind adviceKind = advice.getKind();
+        for (final Shadow.Kind kind : Shadow.toSet(kinds)) {
+            switch (kind.bit) {
+            case (Shadow.MethodExecutionBit):
+//                if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
+//                    addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
+//                }
+//                if (adviceKind.isAfter() || adviceKind.isCflow()) {
+//                    addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
+//                }
+//                if (adviceKind == AdviceKind.Around) {
+//                    addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
+//                }
+                installMethodRequests();
+                break;
+            case (Shadow.ConstructorExecutionBit):
+                if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
+                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);
                 }
+                if (adviceKind.isAfter() || adviceKind.isCflow()) {
+                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);
+                }
+                if (adviceKind == AdviceKind.Around) {
+                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters);
+                }
+                break;
+            case (Shadow.FieldSetBit):
+            case (Shadow.FieldGetBit):
+                installFieldRequests(kind);
+                break;
+            case Shadow.SynchronizationLockBit:
+            case Shadow.SynchronizationUnlockBit:
+                installSynchronizationRequests(kind);
+                break;
+            case Shadow.ConstructorCallBit:
+            case Shadow.MethodCallBit:
+            case Shadow.AdviceExecutionBit:
+            case Shadow.InitializationBit:
+            case Shadow.PreInitializationBit:
+            case Shadow.ExceptionHandlerBit:
+                world.showMessage(IMessage.WARNING, "Unsupported pointcut kind: " + kind, null, null);
+                break;
             }
         }
     }
@@ -228,9 +234,11 @@ public class PointcutMirrorRequestExtractor {
         }
         
         // TODO-RS: Optimize for the exact field match case
+        
         // Copy the state to make sure the class prepare callback
         // reads the right state.
         final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
+        
         forAllWovenClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
                 ReferenceType type = (ReferenceType)world.resolve(klass);
@@ -296,23 +304,21 @@ public class PointcutMirrorRequestExtractor {
                         MethodMirrorMember member = (MethodMirrorMember)method;
                         MirrorEventRequest request;
                         MethodMirror methodMirror = (MethodMirror)member.getMethod();
-                        // TODO-RS: Cheating to account for lack of requests/events on holographic execution
-//                        if (methodMirror instanceof WrappingMethodMirror && !(((WrappingMethodMirror)methodMirror).getWrapped() instanceof JDIFieldMirror)) {
-                            if (advice.getKind() == AdviceKind.Before && kind == Shadow.SynchronizationLock) {
-                                MethodMirrorEntryRequest mmer = manager.createMethodMirrorEntryRequest();
-                                mmer.putProperty(MirrorEventShadow.SHADOW_KIND_PROPERTY_KEY, kind);
-                                mmer.setMethodFilter(methodMirror);
-                                request = mmer;
-                            } else if (advice.getKind().isAfter() && kind == Shadow.SynchronizationUnlock) {
-                                MethodMirrorExitRequest mmer = manager.createMethodMirrorExitRequest();
-                                mmer.putProperty(MirrorEventShadow.SHADOW_KIND_PROPERTY_KEY, kind);
-                                mmer.setMethodFilter(methodMirror);
-                                request = mmer;
-                            } else {
-                                throw new IllegalArgumentException("Unsupported lock()/unlock() advice kind: " + advice);
-                            }
-                            addFiltersAndInstall(request, callbackFilters);
-//                        }
+                        
+                        if (advice.getKind() == AdviceKind.Before && kind == Shadow.SynchronizationLock) {
+                            MethodMirrorEntryRequest mmer = manager.createMethodMirrorEntryRequest();
+                            mmer.putProperty(MirrorEventShadow.SHADOW_KIND_PROPERTY_KEY, kind);
+                            mmer.setMethodFilter(methodMirror);
+                            request = mmer;
+                        } else if (advice.getKind().isAfter() && kind == Shadow.SynchronizationUnlock) {
+                            MethodMirrorExitRequest mmer = manager.createMethodMirrorExitRequest();
+                            mmer.putProperty(MirrorEventShadow.SHADOW_KIND_PROPERTY_KEY, kind);
+                            mmer.setMethodFilter(methodMirror);
+                            request = mmer;
+                        } else {
+                            throw new IllegalArgumentException("Unsupported lock()/unlock() advice kind: " + advice);
+                        }
+                        addFiltersAndInstall(request, callbackFilters);
                     }
                 }
                 
@@ -367,9 +373,50 @@ public class PointcutMirrorRequestExtractor {
         for (PatternNode pattern : filters) {
             addPatternFilter(request, pattern);
         }
+        install(request);
+    }
+    
+    private void install(MirrorEventRequest request) {
         world.showMessage(IMessage.DEBUG, request.toString(), null, null);
+        
+        request.putProperty("for advice", advice);
         world.vm.dispatch().addCallback(request, world.eventCallback());
         request.enable();
+    }
+    
+    private void installMethodRequests() {
+        final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
+        forAllWovenClasses(new Callback<ClassMirror>() {
+            public ClassMirror handle(ClassMirror klass) {
+                ReferenceType referenceType = (ReferenceType)world.resolve(klass);
+                for (Member method : referenceType.getDeclaredMethods()) {
+                    boolean matches = true;
+                    for (PatternNode pattern : callbackFilters) {
+                        if (pattern instanceof SignaturePattern) {
+                            if (!(((SignaturePattern)pattern).matches(method, world, false))) {
+                                matches = false;
+                                break;
+                            }
+                        } else if (pattern instanceof TypePattern) {
+                            // TODO-RS: This would be more efficient outside the methods loop
+                            if (!((TypePattern)pattern).matchesStatically(referenceType)) {
+                                matches = false;
+                                break;
+                            }
+                        } else {
+//                            throw new IllegalStateException("Unsupported method event filter: " + pattern);
+                        }
+                    }
+                    if (matches) {
+                        MethodMirror methodMirror = ((MethodMirrorMember)method).method;
+                        MethodMirrorHandlerRequest request = world.vm.eventRequestManager().createMethodMirrorHandlerRequest();
+                        request.setMethodFilter(methodMirror);
+                        install(request);
+                    }
+                }
+                return klass;
+            }
+        });
     }
     
     private final Map<ThreadMirror, Set<InstanceMirror>> ownedMonitors = 

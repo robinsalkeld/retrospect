@@ -39,8 +39,12 @@ public class JDIMethodMirrorExitRequest extends JDIEventRequest implements Metho
 
     @Override
     public void addClassFilter(ClassMirror klass) {
-	JDIClassMirror declaringClass = (JDIClassMirror)klass;
-	wrapped.addClassFilter(declaringClass.refType);
+        if (klass instanceof JDIClassMirror) {
+            JDIClassMirror declaringClass = (JDIClassMirror)klass;
+            wrapped.addClassFilter(declaringClass.refType);
+        } else {
+            wrapped.addClassFilter(klass.getClassName());
+        }
     }
     
     @Override
@@ -53,5 +57,10 @@ public class JDIMethodMirrorExitRequest extends JDIEventRequest implements Metho
     @Override
     public void addClassFilter(String classNamePattern) {
 	wrapped.addClassFilter(classNamePattern);
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + (methodFilter == null ? "" : " (" + methodFilter + ")");
     }
 }

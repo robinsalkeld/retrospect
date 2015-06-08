@@ -25,6 +25,7 @@ import com.sun.jdi.event.MethodExitEvent;
 
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIMethodMirrorExitEvent extends JDIMirrorEvent implements MethodMirrorExitEvent {
@@ -59,10 +60,19 @@ public class JDIMethodMirrorExitEvent extends JDIMirrorEvent implements MethodMi
 	}
 	JDIMethodMirrorExitRequest mmer = (JDIMethodMirrorExitRequest)request;
 	// Apply the method filter if present, since it's not supported directly
-	if (mmer.methodFilter != null && !mmer.methodFilter.equals(result.method())) {
-	    return null;
-	}
+        if (mmer.methodFilter != null) {
+            if (!mmer.methodFilter.getName().equals(result.method().getName())) {
+                return null;
+            }
+            if (!Reflection.getMethodType(mmer.methodFilter).equals(Reflection.getMethodType(result.method()))) {
+                return null;
+            }
+        }
 	return result;
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + method();
+    }
 }

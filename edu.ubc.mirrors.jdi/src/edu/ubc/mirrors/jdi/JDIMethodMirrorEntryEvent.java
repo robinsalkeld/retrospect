@@ -27,6 +27,7 @@ import com.sun.jdi.event.MethodEntryEvent;
 
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodMirrorEntryEvent {
@@ -61,8 +62,13 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
 	JDIMethodMirrorEntryEvent result = new JDIMethodMirrorEntryEvent(vm, wrapped);
 	JDIMethodMirrorEntryRequest mmer = (JDIMethodMirrorEntryRequest)request;
 	// Apply the method filter if present, since it's not supported directly
-	if (mmer.methodFilter != null && !mmer.methodFilter.equals(result.method())) {
-	    return null;
+	if (mmer.methodFilter != null) {
+	    if (!mmer.methodFilter.getName().equals(result.method().getName())) {
+	        return null;
+	    }
+	    if (!Reflection.getMethodType(mmer.methodFilter).equals(Reflection.getMethodType(result.method()))) {
+	        return null;
+	    }
 	}
 	return result;
     }
@@ -70,5 +76,10 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
     @Override
     public void skip(Object returnValue) {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + method();
     }
 }

@@ -38,7 +38,7 @@ import edu.ubc.mirrors.holograms.MethodHologram;
 public class MethodHolograph implements MethodMirror {
 
     private final ClassHolograph klass;
-    private final MethodMirror wrapped;
+    final MethodMirror wrapped;
     private MethodMirror bytecodeMethod;
     private MethodHologram hologramMethod;
     
