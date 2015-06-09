@@ -62,14 +62,11 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
 	JDIMethodMirrorEntryEvent result = new JDIMethodMirrorEntryEvent(vm, wrapped);
 	JDIMethodMirrorEntryRequest mmer = (JDIMethodMirrorEntryRequest)request;
 	// Apply the method filter if present, since it's not supported directly
-	if (mmer.methodFilter != null) {
-	    if (!mmer.methodFilter.getName().equals(result.method().getName())) {
-	        return null;
-	    }
-	    if (!Reflection.getMethodType(mmer.methodFilter).equals(Reflection.getMethodType(result.method()))) {
-	        return null;
-	    }
-	}
+	if (mmer.nameFilter != null) {
+            if (Reflection.methodMatches(result.method(), mmer.declaringClassFilter, mmer.nameFilter, mmer.parameterTypeNamesFilter)) {
+                return null;
+            }
+        }
 	return result;
     }
     

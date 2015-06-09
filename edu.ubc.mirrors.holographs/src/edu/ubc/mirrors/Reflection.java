@@ -27,7 +27,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -1007,5 +1006,18 @@ public class Reflection {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public static boolean methodMatches(MethodMirror method, String declaringClassFilter, String nameFilter, List<String> parameterTypeNamesFilter) {
+        if (!declaringClassFilter.equals(method.getDeclaringClass().getClassName())) {
+            return false;
+        }
+        if (!nameFilter.equals(method.getName())) {
+            return false;
+        }
+        if (!parameterTypeNamesFilter.equals(method.getParameterTypeNames())) {
+            return false;
+        }
+        return true;
     }
 }

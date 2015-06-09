@@ -21,8 +21,10 @@
  ******************************************************************************/
 package edu.ubc.mirrors;
 
+import java.util.List;
+
 public interface MethodMirrorExitRequest extends MirrorEventRequest {
 
     public void addClassFilter(ClassMirror klass);
-    public void setMethodFilter(MethodMirror method);
+    public void setMethodFilter(String declaringClass, String name, List<String> paramterTypeNames);
 }

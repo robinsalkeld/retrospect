@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.List;
+
 import com.sun.jdi.request.MethodExitRequest;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -30,7 +32,9 @@ import edu.ubc.mirrors.MethodMirrorExitRequest;
 public class JDIMethodMirrorExitRequest extends JDIEventRequest implements MethodMirrorExitRequest {
 
     protected final MethodExitRequest wrapped;
-    protected MethodMirror methodFilter;
+    protected String declaringClassFilter;
+    protected String nameFilter;
+    protected List<String> parameterTypeNamesFilter;
 
     public JDIMethodMirrorExitRequest(JDIVirtualMachineMirror vm, MethodExitRequest wrapped) {
 	super(vm, wrapped);
@@ -48,10 +52,13 @@ public class JDIMethodMirrorExitRequest extends JDIEventRequest implements Metho
     }
     
     @Override
-    public void setMethodFilter(MethodMirror methodFilter) {
-	this.methodFilter = methodFilter;
-	// Not supported directly, but adding a class filter helps to reduce excess events
-	addClassFilter(methodFilter.getDeclaringClass());
+    public void setMethodFilter(String declaringClass, String name, List<String> parameterTypeNames) {
+        this.declaringClassFilter = declaringClass;
+        this.nameFilter = name;
+        this.parameterTypeNamesFilter = parameterTypeNames;
+        
+        // Not supported directly, but adding a class filter helps to reduce excess events
+	addClassFilter(declaringClass);
     }
     
     @Override
@@ -61,6 +68,6 @@ public class JDIMethodMirrorExitRequest extends JDIEventRequest implements Metho
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + (methodFilter == null ? "" : " (" + methodFilter + ")");
+        return getClass().getSimpleName() + (nameFilter == null ? "" : " (" + nameFilter + ")");
     }
 }

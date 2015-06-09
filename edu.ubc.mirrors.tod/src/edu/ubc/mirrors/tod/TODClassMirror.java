@@ -27,11 +27,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import tod.core.database.browser.IEventFilter;
-import tod.core.database.browser.IObjectInspector;
-import tod.core.database.event.ICreationEvent;
-import tod.core.database.event.ILogEvent;
-import tod.core.database.event.ITargetEvent;
 import tod.core.database.structure.BehaviorKind;
 import tod.core.database.structure.IArrayTypeInfo;
 import tod.core.database.structure.IBehaviorInfo;
@@ -221,6 +216,13 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     public MethodMirror getDeclaredMethod(String name, String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
 
+//        List<String> paramTypeNamesList = Arrays.asList(paramTypeNames);
+//        for (MethodMirror method : getDeclaredMethods(false)) {
+//            if (method.getName().equals(name) && method.getParameterTypeNames().equals(paramTypeNamesList)) {
+//                return method;
+//            }
+//        }
+//        throw new NoSuchMethodException(name);
         throw new UnsupportedOperationException();
     }
 
@@ -263,6 +265,19 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
 
     @Override
     public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
+//        if (classInfo instanceof IClassInfo) {
+//            IClassInfo ci = (IClassInfo)classInfo;
+//            List<MethodMirror> result = new ArrayList<MethodMirror>();
+//            for (IBehaviorInfo behavior : ci.getBehaviors()) {
+//                if (behavior.getBehaviourKind() == BehaviorKind.METHOD 
+//                    || behavior.getBehaviourKind() == BehaviorKind.STATIC_METHOD) {
+//                    result.add(vm.makeMethodMirror(behavior));
+//                }
+//            }
+//            return result;
+//        } else {
+//            return Collections.emptyList();
+//        }
         throw new UnsupportedOperationException();
     }
 

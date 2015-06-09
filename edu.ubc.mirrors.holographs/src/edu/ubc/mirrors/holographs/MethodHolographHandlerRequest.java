@@ -1,7 +1,6 @@
 package edu.ubc.mirrors.holographs;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +15,7 @@ import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holograms.MethodHolographHandlerEvent;
 
@@ -27,7 +27,9 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     private final MethodMirrorExitRequest exitRequest;
     private MethodMirrorExitEvent exitEvent;
     private List<String> classNamePatterns = new ArrayList<String>();
-    private MethodMirror methodFilter;
+    protected String declaringClassFilter;
+    protected String nameFilter;
+    protected List<String> parameterTypeNamesFilter;
     
     private final Callback<MirrorEvent> entryCallback = new Callback<MirrorEvent>() {
         @Override
@@ -93,19 +95,9 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     }
     
     @Override
-    public void setMethodFilter(MethodMirror method) {
-        this.methodFilter = method;
-        
-        MethodMirror unwrapped = method;
-        if (method instanceof MethodHolograph) {
-            unwrapped = ((MethodHolograph)method).wrapped;
-        }
-        entryRequest.setMethodFilter(unwrapped);
-        exitRequest.setMethodFilter(unwrapped);
-    }
-    
-    public MethodMirror getMethodFilter() {
-        return methodFilter;
+    public void setMethodFilter(String declaringClass, String name, List<String> paramterTypeNames) {
+        entryRequest.setMethodFilter(declaringClass, name, paramterTypeNames);
+        exitRequest.setMethodFilter(declaringClass, name, paramterTypeNames);
     }
     
     public boolean matches(MethodMirror method) {
@@ -115,8 +107,8 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
             }
         }
         
-        if (methodFilter != null) {
-            if (methodFilter != method) {
+        if (nameFilter != null) {
+            if (Reflection.methodMatches(method, declaringClassFilter, nameFilter, parameterTypeNamesFilter)) {
                 return false;
             }
         }
@@ -140,6 +132,6 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + (methodFilter == null ? "" : " " + methodFilter);
+        return getClass().getSimpleName() + (nameFilter == null ? "" : " " + nameFilter);
     }
 }

@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.List;
+
 import com.sun.jdi.request.MethodEntryRequest;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -30,7 +32,9 @@ import edu.ubc.mirrors.MethodMirrorEntryRequest;
 public class JDIMethodMirrorEntryRequest extends JDIEventRequest implements MethodMirrorEntryRequest {
 
     protected final MethodEntryRequest wrapped;
-    protected MethodMirror methodFilter;
+    protected String declaringClassFilter;
+    protected String nameFilter;
+    protected List<String> parameterTypeNamesFilter;
 
     public JDIMethodMirrorEntryRequest(JDIVirtualMachineMirror vm, MethodEntryRequest wrapped) {
 	super(vm, wrapped);
@@ -46,12 +50,14 @@ public class JDIMethodMirrorEntryRequest extends JDIEventRequest implements Meth
             wrapped.addClassFilter(klass.getClassName());
         }
     }
-    
     @Override
-    public void setMethodFilter(MethodMirror methodFilter) {
-	this.methodFilter = methodFilter;
-	// Not supported directly, but adding a class filter helps to reduce excess events
-	addClassFilter(methodFilter.getDeclaringClass());
+    public void setMethodFilter(String declaringClass, String name, List<String> parameterTypeNames) {
+        this.declaringClassFilter = declaringClass;
+        this.nameFilter = name;
+        this.parameterTypeNamesFilter = parameterTypeNames;
+        
+        // Not supported directly, but adding a class filter helps to reduce excess events
+	addClassFilter(declaringClass);
     }
     
     @Override

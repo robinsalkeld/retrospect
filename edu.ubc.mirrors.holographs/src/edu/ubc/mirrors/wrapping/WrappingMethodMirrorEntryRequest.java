@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.wrapping;
 
+import java.util.List;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
@@ -40,8 +42,8 @@ public class WrappingMethodMirrorEntryRequest extends WrappingMirrorEventRequest
     }
     
     @Override
-    public void setMethodFilter(MethodMirror method) {
-        wrapped.setMethodFilter(((WrappingMethodMirror)method).wrapped);
+    public void setMethodFilter(String declaringClass, String name, List<String> parameterTypeNames) {
+        wrapped.setMethodFilter(declaringClass, name, parameterTypeNames);
     }
     
 }

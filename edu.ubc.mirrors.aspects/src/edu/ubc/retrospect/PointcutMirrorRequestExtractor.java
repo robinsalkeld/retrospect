@@ -308,12 +308,14 @@ public class PointcutMirrorRequestExtractor {
                         if (advice.getKind() == AdviceKind.Before && kind == Shadow.SynchronizationLock) {
                             MethodMirrorEntryRequest mmer = manager.createMethodMirrorEntryRequest();
                             mmer.putProperty(MirrorEventShadow.SHADOW_KIND_PROPERTY_KEY, kind);
-                            mmer.setMethodFilter(methodMirror);
+                            mmer.setMethodFilter(methodMirror.getDeclaringClass().getClassName(), 
+                                    methodMirror.getName(), methodMirror.getParameterTypeNames());
                             request = mmer;
                         } else if (advice.getKind().isAfter() && kind == Shadow.SynchronizationUnlock) {
                             MethodMirrorExitRequest mmer = manager.createMethodMirrorExitRequest();
                             mmer.putProperty(MirrorEventShadow.SHADOW_KIND_PROPERTY_KEY, kind);
-                            mmer.setMethodFilter(methodMirror);
+                            mmer.setMethodFilter(methodMirror.getDeclaringClass().getClassName(),
+                                    methodMirror.getName(), methodMirror.getParameterTypeNames());
                             request = mmer;
                         } else {
                             throw new IllegalArgumentException("Unsupported lock()/unlock() advice kind: " + advice);
@@ -410,7 +412,7 @@ public class PointcutMirrorRequestExtractor {
                     if (matches) {
                         MethodMirror methodMirror = ((MethodMirrorMember)method).method;
                         MethodMirrorHandlerRequest request = world.vm.eventRequestManager().createMethodMirrorHandlerRequest();
-                        request.setMethodFilter(methodMirror);
+                        request.setMethodFilter(methodMirror.getDeclaringClass().getClassName(), methodMirror.getName(), methodMirror.getParameterTypeNames());
                         install(request);
                     }
                 }
