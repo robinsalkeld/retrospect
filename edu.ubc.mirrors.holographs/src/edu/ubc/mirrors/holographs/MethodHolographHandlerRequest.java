@@ -95,9 +95,13 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     }
     
     @Override
-    public void setMethodFilter(String declaringClass, String name, List<String> paramterTypeNames) {
-        entryRequest.setMethodFilter(declaringClass, name, paramterTypeNames);
-        exitRequest.setMethodFilter(declaringClass, name, paramterTypeNames);
+    public void setMethodFilter(String declaringClass, String name, List<String> parameterTypeNames) {
+        this.declaringClassFilter = declaringClass;
+        this.nameFilter = name;
+        this.parameterTypeNamesFilter = parameterTypeNames;
+        
+        entryRequest.setMethodFilter(declaringClass, name, parameterTypeNames);
+        exitRequest.setMethodFilter(declaringClass, name, parameterTypeNames);
     }
     
     public boolean matches(MethodMirror method) {
@@ -108,7 +112,7 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         }
         
         if (nameFilter != null) {
-            if (Reflection.methodMatches(method, declaringClassFilter, nameFilter, parameterTypeNamesFilter)) {
+            if (!Reflection.methodMatches(method, declaringClassFilter, nameFilter, parameterTypeNamesFilter)) {
                 return false;
             }
         }
