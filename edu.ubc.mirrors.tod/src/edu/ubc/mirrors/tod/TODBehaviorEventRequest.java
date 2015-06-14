@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.commands.operations.ObjectUndoContext;
-
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.IEventPredicate;
@@ -54,7 +52,6 @@ public abstract class TODBehaviorEventRequest extends TODMirrorEventRequest {
     public void addClassFilter(String classNamePattern) {
         // TODO-RS: Need to sort out precisely the mirrors API w.r.t. patterns.
         classNameFilters.add(Pattern.compile(classNamePattern));
-        
     }
     
     public void addClassFilter(ClassMirror klass) {

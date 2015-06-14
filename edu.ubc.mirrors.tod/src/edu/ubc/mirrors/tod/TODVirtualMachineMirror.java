@@ -211,8 +211,8 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         return result;
     }
     
-    public ClassMirror makeClassMirror(ITypeInfo type) {
-        return (ClassMirror)makeMirror(type);
+    public TODClassMirror makeClassMirror(ITypeInfo type) {
+        return (TODClassMirror)makeMirror(type);
     }
     
     public List<ClassMirror> makeClassMirrorList(IClassInfo[] classInfos) {
@@ -228,7 +228,7 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     @Override
-    public ClassMirror findBootstrapClassMirror(String name) {
+    public TODClassMirror findBootstrapClassMirror(String name) {
         // TODO-RS: See TODClassMirror#getLoader()
         return makeClassMirror(logBrowser.getStructureDatabase().getClass(name, false));
     }

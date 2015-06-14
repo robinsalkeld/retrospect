@@ -17,6 +17,8 @@ public abstract class TODMirrorEventRequest implements MirrorEventRequest, Itera
     protected final TODVirtualMachineMirror vm;
     private final TODMirrorEventRequestManager requestManager;
     private boolean enabled = false;
+    // Used to optimize a request that can never return any events
+    protected boolean empty = false;
     private Map<Object, Object> properties = new HashMap<Object, Object>();
     protected IEventBrowser eventBrowser;
     private ILogEvent nextEvent;
@@ -74,6 +76,9 @@ public abstract class TODMirrorEventRequest implements MirrorEventRequest, Itera
 
     public boolean hasNext() {
         checkEnabled();
+        if (empty) {
+            return false;
+        }
         if (nextEvent == null && eventBrowser.hasNext()) {
             nextEvent = eventBrowser.next();
         }
@@ -88,6 +93,9 @@ public abstract class TODMirrorEventRequest implements MirrorEventRequest, Itera
     
     void setTimestamp(long t) {
         checkEnabled();
+        if (empty) {
+            return;
+        }
         eventBrowser.setNextTimestamp(t);
     }
     

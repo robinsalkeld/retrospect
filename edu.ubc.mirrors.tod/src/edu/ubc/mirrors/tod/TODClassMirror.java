@@ -215,17 +215,21 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     @Override
     public MethodMirror getDeclaredMethod(String name, String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
-
-//        List<String> paramTypeNamesList = Arrays.asList(paramTypeNames);
-//        for (MethodMirror method : getDeclaredMethods(false)) {
-//            if (method.getName().equals(name) && method.getParameterTypeNames().equals(paramTypeNamesList)) {
-//                return method;
-//            }
-//        }
-//        throw new NoSuchMethodException(name);
         throw new UnsupportedOperationException();
     }
 
+    public MethodMirror getDeclaredMethod2(String name, String... paramTypeNames)
+            throws SecurityException, NoSuchMethodException {
+
+        List<String> paramTypeNamesList = Arrays.asList(paramTypeNames);
+        for (MethodMirror method : getDeclaredMethods2(false)) {
+            if (method.getName().equals(name) && method.getParameterTypeNames().equals(paramTypeNamesList)) {
+                return method;
+            }
+        }
+        throw new NoSuchMethodException(name);
+    }
+    
     @Override
     public MethodMirror getMethod(String name, String... paramTypeNames)
             throws SecurityException, NoSuchMethodException {
@@ -279,6 +283,22 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
 //            return Collections.emptyList();
 //        }
         throw new UnsupportedOperationException();
+    }
+    
+    public List<MethodMirror> getDeclaredMethods2(boolean publicOnly) {
+        if (classInfo instanceof IClassInfo) {
+            IClassInfo ci = (IClassInfo)classInfo;
+            List<MethodMirror> result = new ArrayList<MethodMirror>();
+            for (IBehaviorInfo behavior : ci.getBehaviors()) {
+                if (behavior.getBehaviourKind() == BehaviorKind.METHOD 
+                    || behavior.getBehaviourKind() == BehaviorKind.STATIC_METHOD) {
+                    result.add(vm.makeMethodMirror(behavior));
+                }
+            }
+            return result;
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override

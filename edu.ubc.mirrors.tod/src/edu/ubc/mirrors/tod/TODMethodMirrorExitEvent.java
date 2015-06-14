@@ -30,4 +30,9 @@ public class TODMethodMirrorExitEvent extends TODMirrorEvent implements MethodMi
     public Object returnValue() {
         return vm.wrapValue(method().getReturnType(), logEvent.getResult());
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + method() + " @ " + logEvent.getTimestamp();
+    }
 }

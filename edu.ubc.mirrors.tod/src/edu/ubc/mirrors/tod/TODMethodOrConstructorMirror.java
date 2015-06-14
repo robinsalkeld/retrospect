@@ -133,4 +133,8 @@ public class TODMethodOrConstructorMirror implements ConstructorMirror, MethodMi
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + getName();
+    }
 }

@@ -28,7 +28,7 @@ public class ThesisExamples {
         };
         
         MethodMirrorHandlerRequest request = vmm.eventRequestManager().createMethodMirrorHandlerRequest();
-        request.setMethodFilter(hashCodeMethod);
+        request.setMethodFilter(hashCodeMethod.getDeclaringClass().getClassName(), hashCodeMethod.getName(), hashCodeMethod.getParameterTypeNames());
         Callback<MirrorEvent> callback = new Callback<MirrorEvent>() {
             public MirrorEvent handle(MirrorEvent event) {
                 MethodMirrorHandlerEvent methodHandlerEvent = (MethodMirrorHandlerEvent)event;

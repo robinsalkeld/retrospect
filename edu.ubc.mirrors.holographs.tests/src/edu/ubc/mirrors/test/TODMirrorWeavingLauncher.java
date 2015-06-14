@@ -47,6 +47,8 @@ public class TODMirrorWeavingLauncher {
         MirrorWorld world = new MirrorWorld(thread, null);
         world.weave();
         
+//        todVMM.eventRequestManager().dumpEvents();
+        
         vmh.resume();
         vmh.dispatch().run();
         
