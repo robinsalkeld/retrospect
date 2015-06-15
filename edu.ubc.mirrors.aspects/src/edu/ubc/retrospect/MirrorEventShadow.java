@@ -1,6 +1,5 @@
 package edu.ubc.retrospect;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.aspectj.bridge.ISourceLocation;
@@ -21,7 +20,6 @@ import edu.ubc.mirrors.FieldMirrorGetEvent;
 import edu.ubc.mirrors.FieldMirrorGetHandlerEvent;
 import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.FieldMirrorSetHandlerEvent;
-import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;

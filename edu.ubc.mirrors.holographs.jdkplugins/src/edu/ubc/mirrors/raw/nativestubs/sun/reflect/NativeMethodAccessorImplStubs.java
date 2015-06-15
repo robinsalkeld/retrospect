@@ -49,7 +49,7 @@ public class NativeMethodAccessorImplStubs extends NativeStubs {
                 argsArray[i] = argsMirror.get(i);
             }
         }
-        Object result = methodMirror.invoke(ThreadHolograph.currentThreadMirror(), ObjectHologram.getMirror(target), argsArray);
+        Object result = methodMirror.invoke(ThreadHolograph.currentThreadMirror(), target, argsArray);
         return (ObjectMirror)result;
     }
 }

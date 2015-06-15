@@ -21,10 +21,13 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sun.jdi.event.MethodEntryEvent;
 
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.Reflection;
@@ -51,7 +54,15 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
     
     @Override
     public List<Object> arguments() {
-        return thread().getStackTrace().get(0).arguments();
+        FrameMirror frame = thread().getStackTrace().get(0);
+        List<Object> result = new ArrayList<Object>();
+        if (frame.arguments() != null) {
+            result.addAll(frame.arguments());
+        }
+        if (!wrapped.method().isStatic()) {
+            result.add(0, frame.thisObject());
+        }
+        return result;
     }
     
     public static JDIMethodMirrorEntryEvent wrap(JDIVirtualMachineMirror vm, MethodEntryEvent wrapped) {

@@ -329,6 +329,11 @@ public class PointcutMirrorRequestExtractor {
                 try {
                     Map<MethodMirror, Method> bcelMethods = null;
                     for (MethodMirror methodMirror : klass.getDeclaredMethods(false)) {
+                        if (Modifier.isNative(methodMirror.getModifiers())
+                                || Modifier.isAbstract(methodMirror.getModifiers())) {
+                            continue;
+                        }
+                        
                         byte[] bytecode;
                         try {
                             bytecode = methodMirror.getBytecode(); 
@@ -340,7 +345,7 @@ public class PointcutMirrorRequestExtractor {
                                     try {
                                         String name = method.getName();
                                         if (!name.startsWith("<")) {
-                                            MethodMirror thisMirror = Reflection.getDeclaredMethod(klass, name, Type.getMethodType(method.getDeclaredSignature()));
+                                            MethodMirror thisMirror = Reflection.getDeclaredMethod(klass, name, Type.getMethodType(method.getSignature()));
                                             bcelMethods.put(thisMirror, method);
                                         }
                                     } catch (NoSuchMethodException e1) {

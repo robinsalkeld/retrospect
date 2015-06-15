@@ -1,5 +1,7 @@
 package edu.ubc.retrospect;
 
+import java.lang.reflect.Modifier;
+
 import org.aspectj.weaver.AdviceKind;
 import org.aspectj.weaver.Member;
 import org.aspectj.weaver.ResolvedType;
@@ -39,6 +41,19 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     @Override
     public ThreadMirror getThread() {
         return event.thread();
+    }
+    
+    @Override
+    protected InstanceMirror getThis() {
+        return (InstanceMirror)event.arguments().get(0);
+    }
+    
+    @Override
+    protected Object getArgument(int i) {
+        if (!Modifier.isStatic(event.method().getModifiers())) {
+            --i;
+        }
+        return event.arguments().get(i);
     }
     
     @Override
