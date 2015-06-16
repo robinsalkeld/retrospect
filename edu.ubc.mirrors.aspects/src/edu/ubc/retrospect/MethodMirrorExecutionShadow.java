@@ -51,7 +51,7 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     @Override
     protected Object getArgument(int i) {
         if (!Modifier.isStatic(event.method().getModifiers())) {
-            --i;
+            ++i;
         }
         return event.arguments().get(i);
     }
