@@ -1,5 +1,6 @@
 package edu.ubc.mirrors.tod;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,9 @@ public class TODMethodMirrorEntryEvent extends TODMirrorEvent implements MethodM
         Object[] logArgs = logEvent.getArguments();
         for (int i = 0; i < logArgs.length; i++) {
             result.add(vm.wrapValue(argTypes.get(i), logArgs[i]));
+        }
+        if (!logEvent.getExecutedBehavior().isStatic()) {
+            result.add(0, vm.wrapValue(method().getDeclaringClass(), logEvent.getTarget()));
         }
         return result;
     }

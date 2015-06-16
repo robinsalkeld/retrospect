@@ -5,9 +5,10 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-aspect AroundThreadLocals {//perthis(execution(* ThreadLocal.*(..))) {
+aspect AroundThreadLocals {
     
-    private final Map<Thread, Object> newThreadLocalValues = new HashMap<Thread, Object>();
+    private final Map<ThreadLocal, Map<Thread, Object>> newThreadLocalValues 
+            = new HashMap<ThreadLocal, Map<Thread, Object>>();
     
     // TODO-RS: Need to distinguish old thread locals from new
     
@@ -21,16 +22,26 @@ aspect AroundThreadLocals {//perthis(execution(* ThreadLocal.*(..))) {
         }
     }
     
+    private Map<Thread, Object> threadLocalMap(ThreadLocal threadLocal) {
+        Map<Thread, Object> result = newThreadLocalValues.get(threadLocal);
+        if (result == null) {
+            result = new HashMap<Thread, Object>();
+            newThreadLocalValues.put(threadLocal, result);
+        }
+        return result;
+    }
+    
     Object around(Object tlo): execution(* ThreadLocal.get()) && this(tlo) {
         Thread t = Thread.currentThread();
         ThreadLocal<Object> tl = ((ThreadLocal<Object>)tlo);
-        if (newThreadLocalValues.containsKey(t)) {
-            return newThreadLocalValues.get(t);
+        Map<Thread, Object> map = threadLocalMap(tl); 
+        if (map.containsKey(t)) {
+            return map.get(t);
         } else {
             // Would be direct access but we don't support privileged aspects
             try {
                 Object value = initialValueMethod.invoke(tl);
-                newThreadLocalValues.put(t, value);
+                map.put(t, value);
                 return value;
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                 throw new RuntimeException(e);
@@ -40,6 +51,7 @@ aspect AroundThreadLocals {//perthis(execution(* ThreadLocal.*(..))) {
     
     void around(Object tlo, Object value): execution(void ThreadLocal.set(*)) && this(tlo) && args(value) {
         Thread t = Thread.currentThread();
-        newThreadLocalValues.put(t, value);
+        ThreadLocal<Object> tl = ((ThreadLocal<Object>)tlo);
+        threadLocalMap(tl).put(t, value);
     }
 }

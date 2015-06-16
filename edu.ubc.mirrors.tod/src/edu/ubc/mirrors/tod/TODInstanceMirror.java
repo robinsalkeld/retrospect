@@ -101,7 +101,7 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
 
     @Override
     public int identityHashCode() {
-        throw new UnsupportedOperationException();
+        return (int)inspector.getObject().getId();
     }
     
     @Override
