@@ -249,6 +249,9 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
             if (method.name().startsWith("<")) {
                 continue;
             }
+            if (method.isBridge()) {
+                continue;
+            }
             if (!publicOnly || Modifier.isPublic(method.modifiers())) {
                 result.add(new JDIMethodMirror(vm, method));
             }

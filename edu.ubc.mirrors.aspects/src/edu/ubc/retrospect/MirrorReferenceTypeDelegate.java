@@ -277,11 +277,7 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
 
     @Override
     public ResolvedType getSuperclass() {
-        ClassMirror superClassMirror = Reflection.withThread(getWorld().thread, new Callable<ClassMirror>() {
-            public ClassMirror call() throws Exception {
-                return klass.getSuperClassMirror();
-            }
-        });
+        ClassMirror superClassMirror = klass.getSuperClassMirror();
         return superClassMirror != null ? forClassMirror(superClassMirror) : null;
     }
 

@@ -459,6 +459,10 @@ public class PointcutMirrorRequestExtractor {
                     difference = monitorsBefore;
                     difference.removeAll(monitorsAfter);
                 }
+                if (difference.isEmpty()) {
+                    return event;
+                }
+                
                 if (difference.size() != 1) {
                     throw new IllegalStateException();
                 }
