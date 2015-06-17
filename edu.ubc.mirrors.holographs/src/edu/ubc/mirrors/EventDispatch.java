@@ -199,6 +199,10 @@ public class EventDispatch {
             currentSet = nextEventSet();
         }
         
+        if (endRequest != null) {
+            throw new IllegalArgumentException("Never saw requested event");
+        }
+        
         return null;
     }
     

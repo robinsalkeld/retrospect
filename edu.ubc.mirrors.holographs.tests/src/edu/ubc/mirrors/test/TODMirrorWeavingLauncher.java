@@ -52,10 +52,11 @@ public class TODMirrorWeavingLauncher {
         vmh.resume();
         vmh.dispatch().run();
         
-        return mergedOutput.toString();
-//        ClassMirror guardAspect = vmh.findBootstrapClassMirror("edu.ubc.aspects.JDKAroundFieldSets");
-//        ObjectMirror newOut = guardAspect.get(guardAspect.getDeclaredField("newStderrBaos"));
-//        String output = Reflection.toString(newOut, thread);
-//        System.out.print(output);
+//        return mergedOutput.toString();
+        ClassMirror guardAspect = vmh.findBootstrapClassMirror("edu.ubc.aspects.JDKAroundFieldSets");
+        ObjectMirror newOut = guardAspect.getStaticFieldValues().get(guardAspect.getDeclaredField("newStderrBaos"));
+        String output = Reflection.toString(newOut, thread);
+        System.out.print(output);
+        return output;
     }
 }

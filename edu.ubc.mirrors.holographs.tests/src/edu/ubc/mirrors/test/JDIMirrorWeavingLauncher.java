@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Collections;
+import java.util.concurrent.Callable;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
@@ -15,6 +16,12 @@ import com.sun.jdi.event.VMStartEvent;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.EventRequest;
 
+import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorLoader;
+import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorExitRequest;
+import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
@@ -51,6 +58,14 @@ public class JDIMirrorWeavingLauncher {
         ThreadMirror thread = (ThreadMirror)jdiVMM.makeMirror(threadRef);
         VirtualMachineMirror vm = jdiVMM; 
         
+        // Make sure the mechanisms for loading bytecode are primed so we don't hit
+        // tons of side-effects later.
+        ClassMirror mainClass = jdiVMM.makeClassMirror(cpe.referenceType());
+        ClassMirrorLoader classLoader = mainClass.getLoader();
+        ClassMirror loaderClass = jdiVMM.findBootstrapClassMirror("java.lang.ClassLoader");
+        MethodMirror getBootstrapResourceMethod = loaderClass.getDeclaredMethod("getBootstrapResource", "java.lang.String");
+        getBootstrapResourceMethod.invoke(thread, classLoader, jdiVMM.makeString("foo"));
+        
         URL urlPath = aspectPath.toURI().toURL();
         
         File guardAspects = new File(GUARD_ASPECTS_PATH);
@@ -78,8 +93,21 @@ public class JDIMirrorWeavingLauncher {
         world.weave();
         
         vm.resume();
-        vm.dispatch().run();
+        MethodMirrorExitRequest endRequest = vm.eventRequestManager().createMethodMirrorExitRequest();
+        endRequest.setMethodFilter(mainClassName, "main", Collections.singletonList("java.lang.String[]"));
+        endRequest.enable();
+        vm.dispatch().runUntil(endRequest);
         
-        return mergedOutput.toString();
+//        return mergedOutput.toString();
+        return Reflection.withThread(thread, new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                ClassMirror guardAspect = finalVM.findBootstrapClassMirror("edu.ubc.aspects.JDKAroundFieldSets");
+                ObjectMirror newOut = guardAspect.getStaticFieldValues().get(guardAspect.getDeclaredField("newStderrBaos"));
+                String output = Reflection.toString(newOut, finalThread);
+                System.out.print(output);
+                return output;
+            }
+        });
     }
 }
