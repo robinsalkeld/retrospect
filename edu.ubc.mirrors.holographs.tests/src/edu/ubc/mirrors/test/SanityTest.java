@@ -165,11 +165,11 @@ public class SanityTest extends TestCase {
         assertEquals(expectedOutput, actualOutput);
     }
     
-//    public void testLeakDetectorAspect() throws Exception {
-//        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
-//                "-cp \"" + EvalConstants.TracingExampleBin + "\"", 
-//                EvalConstants.LeakDetectorAspectBin, 
-//                new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
-////        
-//    }
+    public void testLeakDetectorAspect() throws Exception {
+        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
+                "-cp \"" + EvalConstants.TracingExampleBin + "\"", 
+                EvalConstants.LeakDetectorAspectBin, 
+                new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
+//        
+    }
 }

@@ -11,10 +11,6 @@ privileged aspect JDKAroundFieldSets {
         // Don't proceed(), just let it be recalculated every time
     }
     
-//    void around(): set(* java.lang.String.hash) {
-//        // Don't proceed(), just let it be recalculated every time
-//    }
-    
     private final Map<String, Object> floatingDecimalStatics = new HashMap<String, Object>();
     
     void around(Object value): set(static * sun.misc.FloatingDecimal.*) && args(value) {
