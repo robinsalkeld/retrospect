@@ -95,7 +95,7 @@ public class MirrorAdvice extends Advice {
 
         int baseArgCount = getBaseParameterCount();
         if (this.kind == AdviceKind.Around) {
-            args[baseArgCount - 1] = world.makeInvocationHandlerAroundClosure(proceed);
+            args[baseArgCount - 1] = world.makeInvocationHandlerAroundClosure(shadow.getThread(), proceed);
             baseArgCount--;
         }
         

@@ -167,7 +167,7 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
         return aroundClosureClass;
     }
     
-    public InstanceMirror makeInvocationHandlerAroundClosure(final MirrorInvocationHandler handler) {
+    public InstanceMirror makeInvocationHandlerAroundClosure(ThreadMirror thread, final MirrorInvocationHandler handler) {
         return Reflection.withThread(thread, new Callable<InstanceMirror>() {
             public InstanceMirror call() throws Exception {
                 InstanceMirror closure = getAroundClosureClass().newRawInstance();
