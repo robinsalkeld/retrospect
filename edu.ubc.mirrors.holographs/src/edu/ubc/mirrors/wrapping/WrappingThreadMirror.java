@@ -26,6 +26,7 @@ import java.util.List;
 
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class WrappingThreadMirror extends WrappingInstanceMirror implements ThreadMirror {
@@ -35,6 +36,7 @@ public class WrappingThreadMirror extends WrappingInstanceMirror implements Thre
     public WrappingThreadMirror(WrappingVirtualMachine vm, ThreadMirror wrappedThread) {
         super(vm, wrappedThread);
         this.wrappedThread = wrappedThread;
+        Reflection.checkNull(wrappedThread);
     }
 
     public static List<FrameMirror> getWrappedStackTrace(WrappingVirtualMachine vm, ThreadMirror wrappedThread) {

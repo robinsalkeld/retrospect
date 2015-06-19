@@ -60,6 +60,7 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     public ThreadHolograph(VirtualMachineHolograph vm, ThreadMirror wrappedThread) {
         super(vm, wrappedThread);
         this.wrappedThread = wrappedThread;
+        Reflection.checkNull(wrappedThread);
     }
 
     public synchronized void enterHologramExecution() {
@@ -159,6 +160,10 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     
     public static boolean inMetalevel() {
         return metalevel.get().intValue() != 0;
+    }
+    
+    public Thread getRunningThread() {
+        return runningThread;
     }
     
     public String toString() {

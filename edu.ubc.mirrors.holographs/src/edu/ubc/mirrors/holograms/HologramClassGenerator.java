@@ -424,10 +424,10 @@ public class HologramClassGenerator extends ClassVisitor {
         if (isGetStackTrace) {
             desc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
         }
-        if (name.equals("fillInStackTrace") && this.name.equals(hologramThrowableType.getInternalName())) {
-            // Omit this - we'll use the Throwable superclass version
-            return null;
-        }
+//        if (name.equals("fillInStackTrace") && this.name.equals(hologramThrowableType.getInternalName())) {
+//            // Omit this - we'll use the Throwable superclass version
+//            return null;
+//        }
         
         // Take off the native keyword if it's there - we're going to fill in an actual
         // method (even if it's a stub that throws an exception).

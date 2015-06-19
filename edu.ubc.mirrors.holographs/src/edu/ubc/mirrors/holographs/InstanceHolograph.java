@@ -122,8 +122,7 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         if (!VirtualMachineHolograph.UNSAFE_MODE && !(wrapped instanceof NewInstanceMirror)) {
             String message = "Illegal set to field " + 
                     field.getDeclaringClass().getClassName() + "." + field.getName();
-            System.err.println(message);
-//            throw new InternalError(message);
+            vm.illegalMutation(message);
         }
     }
 

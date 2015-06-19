@@ -21,6 +21,7 @@
  ******************************************************************************/
 package edu.ubc.mirrors.fieldmap;
 
+import java.util.Collections;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -36,7 +37,7 @@ public class FieldMapThreadMirror extends FieldMapMirror implements ThreadMirror
 
     @Override
     public List<FrameMirror> getStackTrace() {
-        return null;
+        return Collections.emptyList();
     }
     
     @Override

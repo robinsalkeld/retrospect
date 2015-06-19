@@ -238,10 +238,6 @@ public abstract class MirrorEventShadow extends Shadow {
         return null;
     }
     
-    public Var getAroundClosureVar() {
-        return null;
-    }
-    
     public void implementAdvice(final MirrorAdvice advice) {
         final MirrorInvocationHandler handler = event.getProceed();
         MirrorInvocationHandler newHandler = new MirrorInvocationHandler() {

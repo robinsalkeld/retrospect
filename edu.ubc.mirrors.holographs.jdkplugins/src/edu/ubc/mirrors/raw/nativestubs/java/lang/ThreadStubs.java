@@ -26,6 +26,8 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
@@ -49,7 +51,7 @@ public class ThreadStubs extends NativeStubs {
     @StubMethod
     public boolean isAlive(ThreadMirror thread) {
         // TODO-RS: This may need more precision in the API
-        return thread.getStackTrace() != null;
+        return !thread.getStackTrace().isEmpty();
     }
     
     @StubMethod
@@ -80,6 +82,37 @@ public class ThreadStubs extends NativeStubs {
     public boolean isInterrupted(ThreadMirror thread, boolean ClearInterrupted) {
         // TODO-RS: How to implement this for a heap dump?
         return false;
+    }
+    
+    @StubMethod
+    public void setPriority0(ThreadMirror threadMirror, int newPriority) {
+//        ThreadHolograph threadHolograph = (ThreadHolograph)threadMirror;
+//        Thread thread = threadHolograph.getRunningThread();
+//        thread.setPriority(newPriority);
+    }
+    
+    @StubMethod
+    public void start0(final ThreadMirror threadMirror) {
+        ClassMirror threadClass = getVM().findBootstrapClassMirror(Thread.class.getName());
+        final MethodMirror runMethod;
+        try {
+            runMethod = threadClass.getDeclaredMethod("run");
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    runMethod.invoke(threadMirror, threadMirror);
+                } catch (MirrorInvocationTargetException e) {
+                    throw new RuntimeException(e);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+        thread.start();
     }
     
 }

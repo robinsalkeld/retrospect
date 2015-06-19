@@ -19,6 +19,7 @@ import org.aspectj.weaver.World;
 import org.aspectj.weaver.ast.Expr;
 import org.aspectj.weaver.ast.FieldGet;
 import org.aspectj.weaver.ast.Test;
+import org.aspectj.weaver.ast.Var;
 import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.Pointcut;
 
@@ -53,6 +54,10 @@ public class MirrorAdvice extends Advice {
         if (evaluator.evaluateTest(test)) {
             if (getKind().isAfter()) {
                 Object result = proceed.invoke(shadow.getThread(), arguments);
+                if (getKind() == AdviceKind.AfterReturning) {
+                    Var returnVar = new MirrorEventVar(world.resolve(shadow.getReturnType()), result);
+                    state.set(0, returnVar);
+                }
                 execute(shadow, state, proceed, arguments);
                 return result;
             } else if (getKind() == AdviceKind.Before) {

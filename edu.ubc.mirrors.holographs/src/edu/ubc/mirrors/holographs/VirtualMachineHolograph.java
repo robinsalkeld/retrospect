@@ -857,9 +857,13 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     protected void checkForIllegalMutation(ObjectMirror mirror) {
         if (!UNSAFE_MODE) {
             String message = "Illegal set to array of type " + mirror.getClassMirror().getClassName();
-            System.err.println(message);
-//                throw new InternalError(message);
+            illegalMutation(message);
         }
+    }
+    
+    protected void illegalMutation(String message) {
+        System.err.println(message);
+//      throw new InternalError(message);
     }
     
     // TODO-RS: Temporary for evaluation
