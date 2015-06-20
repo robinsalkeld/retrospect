@@ -54,4 +54,10 @@ aspect AroundThreadLocals {
         ThreadLocal<Object> tl = ((ThreadLocal<Object>)tlo);
         threadLocalMap(tl).put(t, value);
     }
+
+    void around(Object tlo): execution(void ThreadLocal.remove()) && this(tlo) {
+        Thread t = Thread.currentThread();
+        ThreadLocal<Object> tl = ((ThreadLocal<Object>)tlo);
+        threadLocalMap(tl).remove(t);
+    }
 }
