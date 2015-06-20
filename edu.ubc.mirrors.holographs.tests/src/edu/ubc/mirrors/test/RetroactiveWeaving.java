@@ -43,12 +43,17 @@ public class RetroactiveWeaving {
         vmh.setSystemErr(teedErr);
         final ThreadMirror finalThread = (ThreadMirror)vmh.getWrappedMirror(thread);
 
+        // Avoid the side-effects of loading aspects themselves
         relocateField(vmh, "java.lang.String", "hash");
         relocateField(vmh, "java.util.zip.ZipCoder", "enc");
+        relocateField(vmh, "java.nio.charset.Charset", "cache1");
+        relocateField(vmh, "java.nio.charset.Charset", "cache2");
         relocateFieldInitializeWithDefaultConstructor(vmh, "sun.nio.cs.ThreadLocalCoders$Cache", "cache");
         relocateFieldInitializeWithDefaultConstructor(vmh, "java.lang.ThreadLocal", "nextHashCode");
+        relocateFieldInitializeWithDefaultConstructor(vmh, "java.net.URLClassLoader", "closeables");
         aroundThreadLocals(vmh);
         hardCodeHashing(vmh);
+        classLoaderLocking(vmh);
         
         vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
         vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
@@ -133,20 +138,20 @@ public class RetroactiveWeaving {
     }
     
     public static void hardCodeHashing(VirtualMachineMirror vm) {
-        MethodMirrorHandlerRequest request = vm.eventRequestManager().createMethodMirrorHandlerRequest();
-        request.setMethodFilter("sun.misc.Hashing", "randomHashSeed", Collections.singletonList(Object.class.getName()));
-        vm.dispatch().addCallback(request, new Callback<MirrorEvent>() {
-            @Override
-            public MirrorEvent handle(MirrorEvent t) {
-                t.setProceed(new MirrorInvocationHandler() {
-                    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-                        return 47;
-                    }
-                });
-                return t;
+        aroundMethod(vm, "sun.misc.Hashing", "randomHashSeed", Collections.singletonList(Object.class.getName()), new MirrorInvocationHandler() {
+            public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                return 47;
             }
         });
-        request.enable();
+    }
+    
+    private static void classLoaderLocking(VirtualMachineMirror vm) {
+        aroundMethod(vm, "java.lang.ClassLoader", "getClassLoadingLock", Collections.singletonList(String.class.getName()), new MirrorInvocationHandler() {
+            public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                // returning the ClassLoader target itself
+                return args.get(0);
+            }
+        });
     }
     
     private static final Map<Object, Map<ThreadMirror, Object>> newThreadLocalValues 

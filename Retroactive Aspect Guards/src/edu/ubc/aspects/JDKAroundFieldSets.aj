@@ -10,18 +10,18 @@ privileged aspect JDKAroundFieldSets {
     void around(): set(* java.lang.Class.name) {
         // Don't proceed(), just let it be recalculated every time
     }
-    
-    private final Map<String, Object> floatingDecimalStatics = new HashMap<String, Object>();
-    
-    void around(Object value): set(static * sun.misc.FloatingDecimal.*) && args(value) {
-        String fieldName = thisJoinPointStaticPart.getSignature().getName();
-        floatingDecimalStatics.put(fieldName, value);
-    }
-    
-    Object around(): get(static * sun.misc.FloatingDecimal.*) {
-        String fieldName = thisJoinPointStaticPart.getSignature().getName();
-        return floatingDecimalStatics.get(fieldName);
-    }
+//    
+//    private final Map<String, Object> floatingDecimalStatics = new HashMap<String, Object>();
+//    
+//    void around(Object value): set(static * sun.misc.FloatingDecimal.*) && args(value) {
+//        String fieldName = thisJoinPointStaticPart.getSignature().getName();
+//        floatingDecimalStatics.put(fieldName, value);
+//    }
+//    
+//    Object around(): get(static * sun.misc.FloatingDecimal.*) {
+//        String fieldName = thisJoinPointStaticPart.getSignature().getName();
+//        return floatingDecimalStatics.get(fieldName);
+//    }
     
     // Standard streams
     
@@ -38,5 +38,4 @@ privileged aspect JDKAroundFieldSets {
     PrintStream around(): get(* System.err) {
         return newStderr;
     }
-    
 }
