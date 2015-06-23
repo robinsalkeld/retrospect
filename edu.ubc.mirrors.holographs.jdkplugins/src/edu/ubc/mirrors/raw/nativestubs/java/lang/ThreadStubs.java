@@ -106,15 +106,17 @@ public class ThreadStubs extends NativeStubs {
             @Override
             public void run() {
                 try {
-                    runMethod.invoke(threadMirror, threadMirror);
-                    exitMethod.invoke(threadMirror, threadMirror);
-                } catch (MirrorInvocationTargetException e) {
-                    throw new RuntimeException(e);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
+                    try {
+                        runMethod.invoke(threadMirror, threadMirror);
+                        exitMethod.invoke(threadMirror, threadMirror);
+                    } catch (MirrorInvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                } finally {
+                    getVM().threadExited(threadMirror);
                 }
-                
-                getVM().threadExited(threadMirror);
             }
         };
         thread.start();
