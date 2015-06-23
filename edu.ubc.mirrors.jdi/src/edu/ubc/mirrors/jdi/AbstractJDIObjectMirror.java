@@ -24,7 +24,6 @@ package edu.ubc.mirrors.jdi;
 import com.sun.jdi.ObjectReference;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ObjectMirror;
 
 public abstract class AbstractJDIObjectMirror extends JDIMirror implements JDIObjectMirror {
 
@@ -33,6 +32,7 @@ public abstract class AbstractJDIObjectMirror extends JDIMirror implements JDIOb
     public AbstractJDIObjectMirror(JDIVirtualMachineMirror vm, ObjectReference t) {
 	super(vm, t);
         this.mirror = t;
+        this.mirror.disableCollection();
     }
 
     @Override
@@ -48,5 +48,10 @@ public abstract class AbstractJDIObjectMirror extends JDIMirror implements JDIOb
     @Override
     public ObjectReference getObjectReference() {
         return mirror;
+    }
+    
+    @Override
+    protected void finalize() throws Throwable {
+        this.mirror.enableCollection();
     }
 }
