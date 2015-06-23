@@ -23,6 +23,7 @@ package edu.ubc.mirrors.holographs;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
@@ -174,5 +175,7 @@ public class MutableInstanceMirror implements InstanceMirror {
         newValues.put(field, d);
     }
 
-    
+    public Set<FieldMirror> modifiedFields() {
+        return newValues.keySet();
+    }
 }

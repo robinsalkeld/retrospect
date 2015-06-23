@@ -36,6 +36,7 @@ import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,9 +78,13 @@ import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorExitRequest;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorInvocationHandler;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
@@ -194,6 +199,32 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         this.requestManager = new HolographEventRequestManager(this, this.wrappedVM.eventRequestManager());
         
         collectZipFiles();
+        
+        MethodMirrorHandlerRequest request = this.requestManager.createMethodMirrorHandlerRequest();
+        request.setMethodFilter("java.lang.Thread", "exit", Collections.<String>emptyList());
+        dispatch().addCallback(request, new Callback<MirrorEvent>() {
+            public MirrorEvent handle(MirrorEvent t) {
+                final MirrorInvocationHandler original = t.getProceed();
+                t.setProceed(new MirrorInvocationHandler() {
+                    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                        Object result = original.invoke(thread, args);
+                        synchronized (this) {
+                            threadExited(thread);
+                            while (!VirtualMachineHolograph.this.runningThreads.isEmpty()) {
+                                try {
+                                    wait();
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+                        return result;
+                    }
+                });
+                return t;
+            }
+        });
+        request.enable();
         
         if (HologramClassLoader.debug) {
             System.out.println("Done.");
@@ -852,6 +883,25 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     public void addBootstrapPathURL(URL url) {
         bootstrapBytecodeLoader.addURL(url);
+    }
+    
+    private final Set<ThreadMirror> runningThreads = new HashSet<ThreadMirror>();
+    
+    public void threadStarted(ThreadMirror thread) {
+        ClassMirror threadClass = findBootstrapClassMirror(Thread.class.getName());
+        FieldMirror daemonField = threadClass.getDeclaredField("daemon");
+        try {
+            if (!thread.getBoolean(daemonField)) {
+                runningThreads.add(thread);
+            }
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public synchronized void threadExited(ThreadMirror thread) {
+        runningThreads.remove(thread);
+        notify();
     }
     
     protected void checkForIllegalMutation(ObjectMirror mirror) {

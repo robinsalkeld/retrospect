@@ -1,8 +1,6 @@
 package edu.ubc.mirrors.holographs;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,18 +10,14 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.InvocableMirrorEvent;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
-import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.holograms.FieldGetProceed;
-import edu.ubc.mirrors.holograms.FieldHologramSetEvent;
 import edu.ubc.mirrors.holograms.FieldSetProceed;
 import edu.ubc.mirrors.holograms.MethodHolographHandlerEvent;
 import edu.ubc.mirrors.wrapping.WrappingMirrorEventRequestManager;

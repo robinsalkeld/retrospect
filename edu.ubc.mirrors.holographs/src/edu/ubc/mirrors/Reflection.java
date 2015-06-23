@@ -278,36 +278,11 @@ public class Reflection {
      * @return
      */
     public static Type typeForClassName(String name) {
-        if (name.equals("int")) {
-            return Type.INT_TYPE;
-        } else if (name.equals("void")) {
-            return Type.VOID_TYPE;
-        } else if (name.equals("boolean")) {
-            return Type.BOOLEAN_TYPE;
-        } else if (name.equals("byte")) {
-            return Type.BYTE_TYPE;
-        } else if (name.equals("char")) {
-            return Type.CHAR_TYPE;
-        } else if (name.equals("short")) {
-            return Type.SHORT_TYPE;
-        } else if (name.equals("double")) {
-            return Type.DOUBLE_TYPE;
-        } else if (name.equals("float")) {
-            return Type.FLOAT_TYPE;
-        } else if (name.equals("long")) {
-            return Type.LONG_TYPE;
-        } else {
-            return Type.getType(arrayClassName(name).replace('.', '/'));
-        }
+        return Type.getType(descriptorForTypeName(name));
     }
     
     public static Type typeForClassMirror(ClassMirror classMirror) {
-        String name = classMirror.getClassName();
-        if (classMirror.isPrimitive()) {
-            return typeForClassName(name);
-        } else {
-            return Type.getType(arrayClassName(name).replace('.', '/'));
-        }
+        return typeForClassName(classMirror.getClassName());
     }
     
     /**
@@ -548,10 +523,10 @@ public class Reflection {
     }
     
     /**
-     * Given a class name in the form "int[][]" or "a.b.c.D[]", returns
-     * a class name in the form "[[I" or "[La.b.c.D;"
+     * Given a type name in the form "byte", "int[][]" or "a.b.c.D[]", returns
+     * a class name in the form "B", "[[I" or "[La.b.c.D;"
      */
-    public static String arrayClassName(String name) {
+    public static String descriptorForTypeName(String name) {
         String elementName = name;
         String dimsString = "";
         while (elementName.endsWith("[]")) {
@@ -562,7 +537,9 @@ public class Reflection {
     }
     
     public static String arrayElementDescriptor(String name) {
-        if (name.equals("boolean")) {
+        if (name.equals("void")) {
+            return "V";
+        } else if (name.equals("boolean")) {
             return "Z";
         } else if (name.equals("byte")) {
             return "B";
@@ -579,7 +556,7 @@ public class Reflection {
         } else if (name.equals("double")) {
             return "D";
         } else {
-            return "L" + name + ";";
+            return "L" + name.replace('.', '/') + ";";
         }
     }
     
@@ -1019,5 +996,51 @@ public class Reflection {
             return false;
         }
         return true;
+    }
+    
+    public static String join(List<String> strings, String sep) {
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+        for (String s : strings) {
+            if (first) {
+                first = false;
+            } else {
+                result.append(sep);
+            }
+            result.append(s);
+        }
+        return result.toString();
+    }
+
+    public static void printStackTrace(ThreadMirror thread, InstanceMirror exceptionMirror) {
+        try {
+            VirtualMachineMirror vm = exceptionMirror.getClassMirror().getVM();
+            
+            InstanceMirror baos = vm.findBootstrapClassMirror(ByteArrayOutputStream.class.getName())
+                    .getConstructor().newInstance(thread);
+            InstanceMirror bapm = vm.findBootstrapClassMirror(PrintStream.class.getName())
+                    .getConstructor(OutputStream.class.getName()).newInstance(thread, baos);
+            
+            ClassMirror throwableClass = exceptionMirror.getClassMirror().getVM().findBootstrapClassMirror(Throwable.class.getName());
+            MethodMirror printStackTraceMethod = throwableClass.getDeclaredMethod("printStackTrace", PrintStream.class.getName());
+            printStackTraceMethod.invoke(thread, exceptionMirror, bapm);
+            System.err.println(toString(baos, thread));
+        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException | IllegalAccessException
+                | MirrorInvocationTargetException e) {
+            System.err.println("Couldn't print stack trace for exception mirror:");
+            e.printStackTrace();
+        }
+    }
+    
+    public static void replaceMethod(VirtualMachineMirror vm, String declaringClass, String name, List<String> paramterTypeNames, final MirrorInvocationHandler handler) {
+        MethodMirrorHandlerRequest request = vm.eventRequestManager().createMethodMirrorHandlerRequest();
+        request.setMethodFilter(declaringClass, name, paramterTypeNames);
+        vm.addCallback(request, new Callback<MirrorEvent>() {
+            public MirrorEvent handle(MirrorEvent t) {
+                t.setProceed(handler);
+                return t;
+            }
+        });
+        request.enable();
     }
 }

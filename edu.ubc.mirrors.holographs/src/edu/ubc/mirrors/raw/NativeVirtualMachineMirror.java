@@ -23,14 +23,11 @@ package edu.ubc.mirrors.raw;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-
-import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ByteArrayMirror;
@@ -38,9 +35,9 @@ import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -194,7 +191,7 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     @Override
-    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback) {
+    public void addCallback(MirrorEventRequest request, Callback<MirrorEvent> callback) {
         throw new UnsupportedOperationException();
     }
     

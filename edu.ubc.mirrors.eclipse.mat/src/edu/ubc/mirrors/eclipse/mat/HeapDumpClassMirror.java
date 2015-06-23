@@ -218,7 +218,7 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     public ClassMirror getComponentClassMirror() {
         String name = getClassName();
         if (name.endsWith("[]")) {
-            Type componentType = Type.getType(Reflection.arrayClassName(name.substring(0, name.length() - 2)).replace('.', '/'));
+            Type componentType = Reflection.typeForClassName(name.substring(0, name.length() - 2));
             if (HologramClassGenerator.isRefType(componentType)) {
                 String componentClassName = componentType.getInternalName().replace('/', '.');
                 if (loader == null) {

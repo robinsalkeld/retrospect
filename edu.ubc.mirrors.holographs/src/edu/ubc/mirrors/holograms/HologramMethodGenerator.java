@@ -195,10 +195,10 @@ public class HologramMethodGenerator extends InstructionAdapter {
 //            }
 //        }
         
-//        if (owner.equals(hologramThrowableType.getInternalName()) && name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(hologramThrowableType))) {
-//            desc = Type.getMethodDescriptor(throwableType);
-//            owner = throwableType.getInternalName();
-//        }
+        if (owner.equals(hologramThrowableType.getInternalName()) && name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(hologramThrowableType))) {
+            desc = Type.getMethodDescriptor(throwableType);
+            owner = throwableType.getInternalName();
+        }
         
         if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Hologram.class)))) {
             desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, OBJECT_TYPE);

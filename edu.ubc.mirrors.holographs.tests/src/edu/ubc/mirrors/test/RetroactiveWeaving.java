@@ -1,8 +1,12 @@
 package edu.ubc.mirrors.test;
 
+import static edu.ubc.mirrors.Reflection.replaceMethod;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,12 +52,14 @@ public class RetroactiveWeaving {
         relocateField(vmh, "java.util.zip.ZipCoder", "enc");
         relocateField(vmh, "java.nio.charset.Charset", "cache1");
         relocateField(vmh, "java.nio.charset.Charset", "cache2");
+        relocateField(vmh, "java.lang.Thread", "threadInitNumber");
         relocateFieldInitializeWithDefaultConstructor(vmh, "sun.nio.cs.ThreadLocalCoders$Cache", "cache");
         relocateFieldInitializeWithDefaultConstructor(vmh, "java.lang.ThreadLocal", "nextHashCode");
         relocateFieldInitializeWithDefaultConstructor(vmh, "java.net.URLClassLoader", "closeables");
         aroundThreadLocals(vmh);
         hardCodeHashing(vmh);
         classLoaderLocking(vmh);
+        aroundThreadGroups(vmh);
         
         vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
         vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
@@ -66,16 +72,16 @@ public class RetroactiveWeaving {
         vmh.dispatch().run();
         
 //        return mergedOutput.toString();
-        return Reflection.withThread(thread, new Callable<String>() {
-          @Override
-          public String call() throws Exception {
+//        return Reflection.withThread(thread, new Callable<String>() {
+//          @Override
+//          public String call() throws Exception {
               ClassMirror guardAspect = vmh.findBootstrapClassMirror("edu.ubc.aspects.JDKAroundFieldSets");
               ObjectMirror newOut = guardAspect.getStaticFieldValues().get(guardAspect.getDeclaredField("newStderrBaos"));
               String output = Reflection.toString(newOut, finalThread);
               System.out.print(output);
               return output;
-          }
-      });
+//          }
+//      });
     }
     
     private static void relocateField(VirtualMachineMirror vm, String className, String fieldName) {
@@ -137,8 +143,8 @@ public class RetroactiveWeaving {
         getRequest.enable();
     }
     
-    public static void hardCodeHashing(VirtualMachineMirror vm) {
-        aroundMethod(vm, "sun.misc.Hashing", "randomHashSeed", Collections.singletonList(Object.class.getName()), new MirrorInvocationHandler() {
+    private static void hardCodeHashing(VirtualMachineMirror vm) {
+        replaceMethod(vm, "sun.misc.Hashing", "randomHashSeed", Collections.singletonList(Object.class.getName()), new MirrorInvocationHandler() {
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
                 return 47;
             }
@@ -146,7 +152,7 @@ public class RetroactiveWeaving {
     }
     
     private static void classLoaderLocking(VirtualMachineMirror vm) {
-        aroundMethod(vm, "java.lang.ClassLoader", "getClassLoadingLock", Collections.singletonList(String.class.getName()), new MirrorInvocationHandler() {
+        replaceMethod(vm, "java.lang.ClassLoader", "getClassLoadingLock", Collections.singletonList(String.class.getName()), new MirrorInvocationHandler() {
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
                 // returning the ClassLoader target itself
                 return args.get(0);
@@ -166,23 +172,11 @@ public class RetroactiveWeaving {
         return result;
     }
     
-    private static void aroundMethod(VirtualMachineMirror vm, String declaringClass, String name, List<String> paramterTypeNames, final MirrorInvocationHandler handler) {
-        MethodMirrorHandlerRequest request = vm.eventRequestManager().createMethodMirrorHandlerRequest();
-        request.setMethodFilter(declaringClass, name, paramterTypeNames);
-        vm.addCallback(request, new Callback<MirrorEvent>() {
-            public MirrorEvent handle(MirrorEvent t) {
-                t.setProceed(handler);
-                return t;
-            }
-        });
-        request.enable();
-    }
-    
     private static void aroundThreadLocals(VirtualMachineMirror vm) throws Exception {
         ClassMirror threadLocalClass = vm.findBootstrapClassMirror("java.lang.ThreadLocal");
         
         final MethodMirror initialValueMethod = threadLocalClass.getDeclaredMethod("initialValue");
-        aroundMethod(vm, "java.lang.ThreadLocal", "get", Collections.<String>emptyList(), new MirrorInvocationHandler() {
+        replaceMethod(vm, "java.lang.ThreadLocal", "get", Collections.<String>emptyList(), new MirrorInvocationHandler() {
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
                 InstanceMirror threadLocal = (InstanceMirror)args.get(0);
                 Map<ThreadMirror, Object> map = threadLocalMap(threadLocal);
@@ -199,7 +193,7 @@ public class RetroactiveWeaving {
             }
         });
         
-        aroundMethod(vm, "java.lang.ThreadLocal", "set", Collections.singletonList("java.lang.Object"), new MirrorInvocationHandler() {
+        replaceMethod(vm, "java.lang.ThreadLocal", "set", Collections.singletonList("java.lang.Object"), new MirrorInvocationHandler() {
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
                 InstanceMirror threadLocal = (InstanceMirror)args.get(0);
                 Map<ThreadMirror, Object> map = threadLocalMap(threadLocal);
@@ -207,7 +201,7 @@ public class RetroactiveWeaving {
             }
         });
         
-        aroundMethod(vm, "java.lang.ThreadLocal", "remove", Collections.<String>emptyList(), new MirrorInvocationHandler() {
+        replaceMethod(vm, "java.lang.ThreadLocal", "remove", Collections.<String>emptyList(), new MirrorInvocationHandler() {
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
                 InstanceMirror threadLocal = (InstanceMirror)args.get(0);
                 Map<ThreadMirror, Object> map = threadLocalMap(threadLocal);
@@ -216,4 +210,46 @@ public class RetroactiveWeaving {
         });
     }
     
+    private static InstanceMirror newThreadGroup;
+    
+    private static void aroundThreadGroups(final VirtualMachineMirror vm) {
+        MethodMirrorHandlerRequest request = vm.eventRequestManager().createMethodMirrorHandlerRequest();
+        request.setMethodFilter("java.lang.Thread", "init", Arrays.asList(ThreadGroup.class.getName(), Runnable.class.getName(), String.class.getName(), "long"));
+        vm.addCallback(request, new Callback<MirrorEvent>() {
+            public MirrorEvent handle(MirrorEvent t) {
+                final MirrorInvocationHandler original = t.getProceed();
+                t.setProceed(new MirrorInvocationHandler() {
+                    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                        if (newThreadGroup == null) {
+                            ClassMirror threadGroupClass = vm.findBootstrapClassMirror(ThreadGroup.class.getName());
+                            try {
+                                newThreadGroup = threadGroupClass.getConstructor("java.lang.String").newInstance(thread, vm.makeString("retroactive thread group"));
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException(e);
+                            } catch (NoSuchMethodException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        
+                        List<Object> newArgs = new ArrayList<Object>(args);
+                        newArgs.set(1, newThreadGroup);
+                        return original.invoke(thread, newArgs);
+                    }
+                });
+                return t;
+            }
+        });
+        request.enable();
+    }
+    
+    private static void methodCallBreakpoint(final VirtualMachineMirror vm, String declaringClass, String name, String... paramterTypeNames) {
+        MethodMirrorHandlerRequest methodRequest = vm.eventRequestManager().createMethodMirrorHandlerRequest();
+        methodRequest.setMethodFilter(declaringClass, name, Arrays.asList(paramterTypeNames));
+        vm.addCallback(methodRequest, new Callback<MirrorEvent>() {
+            public MirrorEvent handle(MirrorEvent t) {
+                return t;
+            }
+        });
+        methodRequest.enable();
+    }
 }

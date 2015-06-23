@@ -29,7 +29,7 @@ import java.util.List;
 public interface VirtualMachineMirror {
 
     public EventDispatch dispatch();
-    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback);
+    public void addCallback(MirrorEventRequest request, Callback<MirrorEvent> callback);
     
     public ClassMirror findBootstrapClassMirror(String name);
     

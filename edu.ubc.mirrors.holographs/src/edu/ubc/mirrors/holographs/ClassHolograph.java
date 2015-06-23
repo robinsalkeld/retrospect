@@ -191,10 +191,10 @@ public class ClassHolograph extends WrappingClassMirror {
     protected ClassHolograph(VirtualMachineHolograph vm, ClassMirror wrapped) {
         super(vm, wrapped);
         this.vm = vm;
-        sychronizeWithWrapped();
+        synchronizeWithWrapped();
     }
     
-    private void sychronizeWithWrapped() {
+    private void synchronizeWithWrapped() {
         memberFieldsDelegate = new InstanceHolograph(vm, wrapped);
         staticFieldValues = (StaticFieldValuesMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
         if (!vm.canBeModified() || wrapped instanceof DefinedClassMirror) {
@@ -846,9 +846,28 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public void setWrapped(ClassMirror wrapped) {
+        // Check for illegal-side effects that shouldn't have been allowed
+        // TODO-RS: Doesn't cover all possible ways this can go wrong.
+        if (this.wrapped instanceof DefinedClassMirror) {
+            MutableStaticFieldValuesMirror staticValues = (MutableStaticFieldValuesMirror)staticFieldValues;
+            if (!staticValues.modifiedFields().isEmpty()) {
+                String message = "Illegal retroactive field sets before class " + getClassName() + " originally loaded: ";
+                boolean first = true;
+                for (FieldMirror field : staticValues.modifiedFields()) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        message += ", ";
+                    }
+                    message += field.getName();
+                }
+                vm.illegalMutation(message);
+            }
+        }
+        
         super.setWrapped(wrapped);
         this.declaredFields = null;
-        sychronizeWithWrapped();
+        synchronizeWithWrapped();
     }
     
     @Override

@@ -270,26 +270,39 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                 field.getDeclaringClass(), field.getType());
     }
     
+    private InstanceMirror makeClassNameList(List<String> classNames) {
+        List<String> fixedNames = new ArrayList<String>(classNames.size());
+        for (String className : classNames) {
+            if (className.contains("[]")) {
+                className = Reflection.descriptorForTypeName(className).replace("/", ".");
+            }
+            fixedNames.add(className);
+        }
+        return vm.makeString(Reflection.join(fixedNames, ":"));
+    }
+    
     private InstanceMirror makeConstructorSignature(ThreadMirror thread, ConstructorMirror constructor) {
         InstanceMirror factory = getAJFactory(thread, constructor.getDeclaringClass());
         
-        ClassMirror classClass = vm.findBootstrapClassMirror(Class.class.getName());
-        ClassMirror stringClass = vm.findBootstrapClassMirror(String.class.getName());
+        InstanceMirror parameterTypes = makeClassNameList(constructor.getParameterTypeNames());
         
-        ObjectArrayMirror parameterTypes = Reflection.toArray(classClass, constructor.getParameterTypes());
         // TODO-RS: Check this against LTW behaviour
-        int numParams = parameterTypes.length();
-        ObjectArrayMirror parameterNames = (ObjectArrayMirror)stringClass.newArray(numParams);
+        int numParams = constructor.getParameterTypeNames().size();
+        List<String> parameterNames = new ArrayList<String>();
         for (int i = 0; i < numParams; i++) {
-            parameterNames.set(i, vm.makeString("arg" + i));
+            parameterNames.add("arg" + i);
         }
-        ObjectArrayMirror exceptionTypes = Reflection.toArray(classClass); //constructor.getExceptionTypes());
+        InstanceMirror parameterNamesStr = vm.makeString(Reflection.join(parameterNames, ":"));
+        
+        InstanceMirror exceptionTypes = vm.makeString(""); //constructor.getExceptionTypeNames());
+        
         return (InstanceMirror)new MethodHandle() {
             protected void methodCall() throws Throwable {
-                ((Factory)null).makeConstructorSig(0, null, null, null, null);
+                ((Factory)null).makeConstructorSig("0", null, null, null, null);
             }
-        }.invoke(factory, thread, constructor.getModifiers(), constructor.getDeclaringClass(), 
-                parameterTypes, parameterNames, exceptionTypes);
+        }.invoke(factory, thread, vm.makeString(Integer.toString(constructor.getModifiers(), 16)), 
+                    vm.makeString(constructor.getDeclaringClass().getClassName()), 
+                    parameterTypes, parameterNamesStr, exceptionTypes);
     }
     
     private InstanceMirror makeMethodSignature(ThreadMirror thread, MethodMirror method) {

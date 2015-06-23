@@ -42,7 +42,6 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IBehaviorCallEvent;
-import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -59,10 +58,9 @@ import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
-import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
@@ -322,7 +320,7 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     }
 
     @Override
-    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback) {
+    public void addCallback(MirrorEventRequest request, Callback<MirrorEvent> callback) {
         dispatch.addCallback(request, callback);
     }
     

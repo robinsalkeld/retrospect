@@ -69,7 +69,6 @@ import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequest;
@@ -472,6 +471,9 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public InstanceMirror makeString(String s) {
+        if (s == null) {
+            return null;
+        }
         return (InstanceMirror)makeMirror(jdiVM.mirrorOf(s));
     }
     
@@ -487,7 +489,7 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     @Override
-    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback) {
+    public void addCallback(MirrorEventRequest request, Callback<MirrorEvent> callback) {
         dispatch.addCallback(request, callback);
     }
     

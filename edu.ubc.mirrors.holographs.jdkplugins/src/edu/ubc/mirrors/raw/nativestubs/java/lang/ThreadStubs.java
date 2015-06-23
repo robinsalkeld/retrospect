@@ -113,6 +113,7 @@ public class ThreadStubs extends NativeStubs {
             }
         };
         thread.start();
+        getVM().threadStarted(threadMirror);
     }
     
 }

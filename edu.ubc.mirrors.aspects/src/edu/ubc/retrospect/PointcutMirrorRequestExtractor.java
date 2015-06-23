@@ -31,7 +31,6 @@ import org.aspectj.weaver.patterns.NotPointcut;
 import org.aspectj.weaver.patterns.OrPointcut;
 import org.aspectj.weaver.patterns.PatternNode;
 import org.aspectj.weaver.patterns.PerClause;
-import org.aspectj.weaver.patterns.PerSingleton;
 import org.aspectj.weaver.patterns.Pointcut;
 import org.aspectj.weaver.patterns.PointcutRewriter;
 import org.aspectj.weaver.patterns.SignaturePattern;
@@ -57,8 +56,6 @@ import edu.ubc.mirrors.MirrorLocationEvent;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.raw.BytecodeClassMirror;
 
 /**
  * A visitor that installs the most specific possible event requests
@@ -118,7 +115,8 @@ public class PointcutMirrorRequestExtractor {
     
     public Object visit(KindedPointcut node, Object parent) {
         kinds &= node.couldMatchKinds();
-        if (node.getKind().bit == Shadow.FieldSetBit) {
+        if (node.getKind().bit == Shadow.FieldGetBit
+                || node.getKind().bit == Shadow.FieldSetBit) {
             targetFilters.add(node.getSignature());
         } else {
             thisFilters.add(node.getSignature());
@@ -132,6 +130,7 @@ public class PointcutMirrorRequestExtractor {
         
         kinds = Shadow.ALL_SHADOW_KINDS_BITS;
         thisFilters.clear();
+        targetFilters.clear();
         
         visit(node.getRight(), node);
 
@@ -167,16 +166,20 @@ public class PointcutMirrorRequestExtractor {
         for (final Shadow.Kind kind : Shadow.toSet(kinds)) {
             switch (kind.bit) {
             case (Shadow.MethodExecutionBit):
-//                if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
-//                    addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
-//                }
-//                if (adviceKind.isAfter() || adviceKind.isCflow()) {
-//                    addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
-//                }
-//                if (adviceKind == AdviceKind.Around) {
-//                    addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
-//                }
-                installMethodRequests();
+                // If there are no filters at all, it's much more efficient to create single request
+                if (thisFilters.isEmpty()) {
+                    if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
+                    }
+                    if (adviceKind.isAfter() || adviceKind.isCflow()) {
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
+                    }
+                    if (adviceKind == AdviceKind.Around) {
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters);
+                    }
+                } else {
+                    installMethodRequests();
+                }
                 break;
             case (Shadow.ConstructorExecutionBit):
                 if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
@@ -237,14 +240,14 @@ public class PointcutMirrorRequestExtractor {
         
         // Copy the state to make sure the class prepare callback
         // reads the right state.
-        final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
+        final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(targetFilters);
         
         forAllWovenClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
                 ReferenceType type = (ReferenceType)world.resolve(klass);
                 for (ResolvedMember field : type.getDeclaredFields()) {
                     boolean matches = true;
-                    for (PatternNode targetPattern : targetFilters) {
+                    for (PatternNode targetPattern : callbackFilters) {
                         if (targetPattern instanceof SignaturePattern) {
                             if (!(((SignaturePattern)targetPattern).matches(field, world, false))) {
                                 matches = false;

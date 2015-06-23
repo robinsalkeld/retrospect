@@ -47,9 +47,9 @@ import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.InvocableMirror;
 import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorLocation;
@@ -345,7 +345,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     }
 
     @Override
-    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback) {
+    public void addCallback(MirrorEventRequest request, Callback<MirrorEvent> callback) {
         dispatch.addCallback(request, callback);
     }
     

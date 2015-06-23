@@ -158,6 +158,8 @@ public abstract class MethodHandle {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (MirrorInvocationTargetException e) {
+            System.err.println("MirrorInvocationTargetException:");
+            Reflection.printStackTrace(thread, e.getTargetException());
             throw new RuntimeException(e);
         }
     }

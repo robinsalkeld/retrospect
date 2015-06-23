@@ -304,7 +304,7 @@ public class HologramClassLoader extends ClassLoader {
         holograms.put(hologram.getMirror(), hologram);
     }
     
-    public byte[] getBytecode(HologramClassMirror hologramClassMirror) {
+    public synchronized byte[] getBytecode(HologramClassMirror hologramClassMirror) {
         String name = hologramClassMirror.getClassName();
         String internalName = name.replace('.', '/');
         

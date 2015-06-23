@@ -51,9 +51,9 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.EventDispatch;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
@@ -62,7 +62,6 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
-import edu.ubc.mirrors.raw.PrimitiveClassMirror;
 
 public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
 
@@ -446,7 +445,7 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     }
     
     @Override
-    public void addCallback(MethodMirrorHandlerRequest request, Callback<MirrorEvent> callback) {
+    public void addCallback(MirrorEventRequest request, Callback<MirrorEvent> callback) {
         throw new UnsupportedOperationException();
     }
 }
