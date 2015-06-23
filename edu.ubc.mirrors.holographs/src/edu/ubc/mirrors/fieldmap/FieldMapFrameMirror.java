@@ -30,31 +30,34 @@ import edu.ubc.mirrors.MethodMirror;
 
 public class FieldMapFrameMirror implements FrameMirror {
 
-    public FieldMapFrameMirror(MethodMirror method, String fileName, int lineNumber) {
-        this.method = method;
+    public FieldMapFrameMirror(ClassMirror declaringClass, String methodName,
+                               String fileName, int lineNumber) {
+        this.declaringClass = declaringClass;
+        this.methodName = methodName;
         this.fileName = fileName;
         this.lineNumber = lineNumber;
     }
 
-    private final MethodMirror method;
+    private final ClassMirror declaringClass;
+    private final String methodName;
     private final String fileName;
     private final int lineNumber;
     
     @Override
     public ClassMirror declaringClass() {
-        return method.getDeclaringClass();
+        return declaringClass;
     }
 
     @Override
     public String methodName() {
-        return method.getName();
+        return methodName;
     }
 
     @Override
     public MethodMirror method() {
-        return method;
+        throw new UnsupportedOperationException();
     }
-
+    
     @Override
     public String fileName() {
         return fileName;

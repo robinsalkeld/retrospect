@@ -63,11 +63,10 @@ public class HologramMethodGenerator extends InstructionAdapter {
     private String name;
     
     private final boolean isToString;
-    private final boolean isGetStackTrace;
 
     private int access;
     
-    public HologramMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString, boolean isGetStackTrace) {
+    public HologramMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString) {
         super(Opcodes.ASM4, null);
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
         this.mv = analyzer;
@@ -76,7 +75,6 @@ public class HologramMethodGenerator extends InstructionAdapter {
         this.access = access;
         this.methodType = Type.getMethodType(desc);
         this.isToString = isToString;
-        this.isGetStackTrace = isGetStackTrace;
         
         activeMethod = name + desc;
     }
@@ -195,9 +193,15 @@ public class HologramMethodGenerator extends InstructionAdapter {
 //            }
 //        }
         
-        if (owner.equals(hologramThrowableType.getInternalName()) && name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(hologramThrowableType))) {
-            desc = Type.getMethodDescriptor(throwableType);
-            owner = throwableType.getInternalName();
+        if (owner.equals(hologramThrowableType.getInternalName())) {
+            if (name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(hologramThrowableType))) {
+                desc = Type.getMethodDescriptor(throwableType);
+                owner = throwableType.getInternalName();
+            }
+            
+            if (name.equals("getStackTrace")) {
+                name = "getStackTraceHologram";
+            }
         }
         
         if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Hologram.class)))) {
@@ -412,8 +416,6 @@ public class HologramMethodGenerator extends InstructionAdapter {
         if (opcode == Opcodes.ARETURN) {
             if (isToString) {
                 MethodHandle.OBJECT_HOLOGRAM_GET_REAL_STRING_FOR_HOLOGRAM_HANDLER.invoke(this);
-            } else if (isGetStackTrace) {
-                MethodHandle.OBJECT_HOLOGRAM_GET_REAL_STACK_TRACE_FOR_HOLOGRAM_HANDLER.invoke(this);
             }
         }
         

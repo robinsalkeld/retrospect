@@ -99,6 +99,13 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         }
     }
     
+    private static class StackInspector extends SecurityManager {
+        public Class<?>[] getClassContext() {
+            return super.getClassContext();
+        }
+    }
+    private static final StackInspector STACK_INSPECTOR = new StackInspector();
+    
     @Override
     public List<FrameMirror> getStackTrace() {
 	List<FrameMirror> originalStack = WrappingThreadMirror.getWrappedStackTrace(vm, wrappedThread);
@@ -110,28 +117,28 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         List<FrameMirror> result = new ArrayList<FrameMirror>(originalStack);
         // Need to deal with API mismatches here - we don't have the Classes on the stack for
         // arbitrary threads.
-//        for (StackTraceElement ste : runningThread.getStackTrace()) {
-//            String className = ste.getClassName();
-//            if (className.startsWith("hologram")) {
-//                String originalClassName = HologramClassGenerator.getOriginalBinaryClassName(className);
-//                
-//                // Unfortunately here we only have class names rather than actual classes
-//                // so if any are ambiguous we're hooped.
-//                List<ClassMirror> matchingClasses = vm.findAllClasses(originalClassName, false);
-//                if (matchingClasses.isEmpty()) {
-//                    // This indicates an error in the underlying VM
-//                    throw new InternalError();
-//                } else if (matchingClasses.size() > 1) {
-//                    // This is just unfortunate but could happen
-//                    throw new InternalError("Ambiguous class name on stack: " + className);
-//                }
-//                ClassMirror klass = matchingClasses.get(0);
-//                MethodMirror method = klass.getDeclaredMethod(ste.getMethodName(), paramTypes)
-//                
-//                FrameMirror holographicFrame = new FieldMapFrameMirror(method, ste.getFileName(), ste.getLineNumber());
-//                result.add(holographicFrame);
-//            }
-//        }
+        StackTraceElement[] stackTrace = runningThread.getStackTrace();
+        for (StackTraceElement ste : stackTrace) {
+            String className = ste.getClassName();
+            if (className.startsWith("hologram")) {
+                String originalClassName = HologramClassGenerator.getOriginalBinaryClassName(className);
+                
+                // Unfortunately here we only have class names rather than actual classes
+                // so if any are ambiguous we're hooped.
+                List<ClassMirror> matchingClasses = vm.findAllClasses(originalClassName, false);
+                if (matchingClasses.isEmpty()) {
+                    // This indicates an error in the underlying VM
+                    throw new InternalError();
+                } else if (matchingClasses.size() > 1) {
+                    // This is just unfortunate but could happen
+                    throw new InternalError("Ambiguous class name on stack: " + className);
+                }
+                ClassMirror klass = matchingClasses.get(0);
+                
+                FrameMirror holographicFrame = new FieldMapFrameMirror(klass, ste.getMethodName(), ste.getFileName(), ste.getLineNumber());
+                result.add(holographicFrame);
+            }
+        }
         
         return result;
     }

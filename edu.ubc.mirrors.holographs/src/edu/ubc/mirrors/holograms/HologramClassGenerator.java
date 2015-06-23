@@ -41,6 +41,7 @@ import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.ObjectArrayMirror;
@@ -51,7 +52,7 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
 
-    public static final String VERSION = "1.7";
+    public static final String VERSION = "1.8";
     
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type throwableType = Type.getType(Throwable.class);
@@ -422,7 +423,20 @@ public class HologramClassGenerator extends ClassVisitor {
         }
         boolean isGetStackTrace = this.name.equals(hologramThrowableType.getInternalName()) && name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getHologramType(Type.getType(StackTraceElement[].class)))); 
         if (isGetStackTrace) {
-            desc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
+            String hologramMethodName = "getStackTraceHologram";
+//            String nonHologramDesc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
+//
+//            MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
+//                    name, nonHologramDesc, null, null);
+//            methodVisitor.visitCode();
+//            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+//            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, this.name, hologramMethodName, desc);
+//            MethodHandle.OBJECT_HOLOGRAM_GET_REAL_STACK_TRACE_FOR_HOLOGRAM_HANDLER.invoke(methodVisitor);
+//            methodVisitor.visitInsn(Opcodes.RETURN);
+//            methodVisitor.visitMaxs(1, 1);
+//            methodVisitor.visitEnd();
+            
+            name = hologramMethodName;
         }
         if (name.equals("fillInStackTrace") && this.name.equals(hologramThrowableType.getInternalName())) {
             // Omit this - we'll use the Throwable superclass version
@@ -441,7 +455,7 @@ public class HologramClassGenerator extends ClassVisitor {
         
         boolean isNative = (Opcodes.ACC_NATIVE & access) != 0;
         boolean needsThunk = isNative;
-        if (!isNative && !name.startsWith("<")) {
+        if (!isNative && !name.startsWith("<") && !name.equals("getStackTraceHologram")) {
             if ((Opcodes.ACC_ABSTRACT & access) == 0) {
                 MethodMirror method;
                 try {
@@ -460,7 +474,7 @@ public class HologramClassGenerator extends ClassVisitor {
         
         if (needsThunk) {
             MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);
-            HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString, isGetStackTrace);
+            HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString);
             
             generator.generateThunk();
             
@@ -484,7 +498,7 @@ public class HologramClassGenerator extends ClassVisitor {
         }
         
         MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);
-        HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString, isGetStackTrace);
+        HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         

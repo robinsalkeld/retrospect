@@ -38,13 +38,14 @@ public class ClassLoaderHolograph extends InstanceHolograph implements ClassMirr
 
     protected final ClassMirrorLoader wrappedLoader;
     
-    private final Map<String, ClassHolograph> dynamicallyDefinedClasses =
+    final Map<String, ClassHolograph> dynamicallyDefinedClasses =
             new HashMap<String, ClassHolograph>();
       
     protected ClassLoaderHolograph(VirtualMachineHolograph vm, ClassMirrorLoader wrappedLoader) {
         super(vm, wrappedLoader);
         this.wrappedLoader = wrappedLoader;
         this.hologramLoader = new HologramClassLoader(vm, this);
+        this.vm.allClassLoaders.add(this);
     }
 
     private final HologramClassLoader hologramLoader;

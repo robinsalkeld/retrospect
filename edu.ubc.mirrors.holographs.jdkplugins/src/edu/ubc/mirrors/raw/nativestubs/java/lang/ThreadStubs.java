@@ -67,7 +67,7 @@ public class ThreadStubs extends NativeStubs {
             InstanceMirror element = stackTraceElementClass.newRawInstance();
             try {
                 element.set(stackTraceElementClass.getDeclaredField("declaringClass"), vm.makeString(frame.declaringClass().getClassName()));
-                element.set(stackTraceElementClass.getDeclaredField("methodName"), vm.makeString(frame.method().getName()));
+                element.set(stackTraceElementClass.getDeclaredField("methodName"), vm.makeString(frame.methodName()));
                 element.set(stackTraceElementClass.getDeclaredField("fileName"), vm.makeString(frame.fileName()));
                 element.setInt(stackTraceElementClass.getDeclaredField("lineNumber"), frame.lineNumber());
             } catch (IllegalAccessException e) {
@@ -95,8 +95,10 @@ public class ThreadStubs extends NativeStubs {
     public void start0(final ThreadMirror threadMirror) {
         ClassMirror threadClass = getVM().findBootstrapClassMirror(Thread.class.getName());
         final MethodMirror runMethod;
+        final MethodMirror exitMethod;
         try {
             runMethod = threadClass.getDeclaredMethod("run");
+            exitMethod = threadClass.getDeclaredMethod("exit");
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
@@ -105,11 +107,14 @@ public class ThreadStubs extends NativeStubs {
             public void run() {
                 try {
                     runMethod.invoke(threadMirror, threadMirror);
+                    exitMethod.invoke(threadMirror, threadMirror);
                 } catch (MirrorInvocationTargetException e) {
                     throw new RuntimeException(e);
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
+                
+                getVM().threadExited(threadMirror);
             }
         };
         thread.start();
