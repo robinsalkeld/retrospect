@@ -38,11 +38,6 @@ public class TODMethodMirrorEntryEvent extends TODMirrorEvent implements MethodM
     }
     
     @Override
-    public void skip(Object returnValue) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + method() + " @ " + logEvent.getTimestamp();
     }

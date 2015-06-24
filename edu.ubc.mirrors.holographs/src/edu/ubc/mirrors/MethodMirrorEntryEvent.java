@@ -27,6 +27,4 @@ public interface MethodMirrorEntryEvent extends MirrorEvent {
 
     public MethodMirror method();
     public List<Object> arguments();
-    
-    public void skip(Object returnValue);
 }

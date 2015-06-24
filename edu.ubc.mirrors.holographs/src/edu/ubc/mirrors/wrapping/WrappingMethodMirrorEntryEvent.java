@@ -60,9 +60,4 @@ public class WrappingMethodMirrorEntryEvent extends WrappingMirrorEvent implemen
         }
         return result;
     }
-    
-    @Override
-    public void skip(Object returnValue) {
-        wrapped.skip(vm.unwrappedValue(returnValue));
-    }
 }

@@ -82,11 +82,6 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
     }
     
     @Override
-    public void skip(Object returnValue) {
-        throw new UnsupportedOperationException();
-    }
-    
-    @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + method();
     }
