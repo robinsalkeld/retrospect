@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -530,6 +531,16 @@ public class ClassHolograph extends WrappingClassMirror {
             result = new FieldMapMirror(wrapped);
         }
         return (InstanceMirror)vm.getWrappedMirror(result);
+    }
+    
+    @Override
+    public List<ObjectMirror> getInstances() {
+        try {
+            return super.getInstances();
+        } catch (UnsupportedOperationException e) {
+            // TODO-RS: tracking holographic instances
+            return Collections.emptyList();
+        }
     }
     
     @Override

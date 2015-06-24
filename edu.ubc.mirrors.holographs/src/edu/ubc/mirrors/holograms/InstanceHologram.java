@@ -45,8 +45,19 @@ public class InstanceHologram {
         return (m == null) ? klass.getStaticFieldValues() : (InstanceMirror)m.getMirror();
     }
     
+    private static Hologram BACKTRACE = new Hologram() {
+        @Override
+        public ObjectMirror getMirror() {
+            return null;
+        }
+    };
+    
     public static Hologram getField(Hologram m, ClassMirror klass, String name) throws Throwable {
         try {
+            if (klass.getClassName().equals(Throwable.class.getName()) && name.equals("backtrace")) {
+                return BACKTRACE;
+            }
+             
             FieldMirror field = getFieldMirror(klass, name);
             InstanceMirror target = getInstanceMirror(m, klass);
             ObjectMirror result = (ObjectMirror)((ClassHolograph)klass).getVM().eventRequestManager().handleFieldGet(target, field);

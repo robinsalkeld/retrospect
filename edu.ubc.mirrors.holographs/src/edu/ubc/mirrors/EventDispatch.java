@@ -100,7 +100,7 @@ public class EventDispatch {
     
     private Comparator<MirrorEventRequest> REVERSE_REQUEST_ORDER_COMPARATOR = Collections.reverseOrder(REQUEST_ORDER_COMPARATOR);
     
-    private static final Object CALLBACKS_KEY = new Object();
+    private static final Object CALLBACKS_KEY = EventDispatch.class.getName() + ".callbacks";
     
     private final VirtualMachineMirror vm;
     

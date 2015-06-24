@@ -52,7 +52,7 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
 
-    public static final String VERSION = "1.8";
+    public static final String VERSION = "1.10";
     
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type throwableType = Type.getType(Throwable.class);
@@ -148,26 +148,6 @@ public class HologramClassGenerator extends ClassVisitor {
         }
         
         super.visit(version, hologramAccess, name, signature, this.superName, interfaces);
-        
-        if (this.name.equals(hologramThrowableType.getInternalName())) {
-            // Generate aliases for the original superclass' fillInStackTrace and getStackTrace methods,
-            // so we can call them in stubs without hitting hologram code.
-            MethodVisitor v = super.visitMethod(Opcodes.ACC_PUBLIC, "superFillInStackTrace", Type.getMethodDescriptor(Type.VOID_TYPE), null, null);
-            v.visitCode();
-            v.visitVarInsn(Opcodes.ALOAD, 0);
-            v.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(Throwable.class), "fillInStackTrace", Type.getMethodDescriptor(Type.getType(Throwable.class)));
-            v.visitInsn(Opcodes.RETURN);
-            v.visitMaxs(1, 1);
-            v.visitEnd();
-            
-            v = super.visitMethod(Opcodes.ACC_PUBLIC, "superGetStackTrace", Type.getMethodDescriptor(Type.getType(StackTraceElement[].class)), null, null);
-            v.visitCode();
-            v.visitVarInsn(Opcodes.ALOAD, 0);
-            v.visitMethodInsn(Opcodes.INVOKESPECIAL, Type.getInternalName(Throwable.class), "getStackTrace", Type.getMethodDescriptor(Type.getType(StackTraceElement[].class)));
-            v.visitInsn(Opcodes.ARETURN);
-            v.visitMaxs(1, 1);
-            v.visitEnd();
-        }
     }
 
     @Override
@@ -437,10 +417,6 @@ public class HologramClassGenerator extends ClassVisitor {
 //            methodVisitor.visitEnd();
             
             name = hologramMethodName;
-        }
-        if (name.equals("fillInStackTrace") && this.name.equals(hologramThrowableType.getInternalName())) {
-            // Omit this - we'll use the Throwable superclass version
-            return null;
         }
         
         // Take off the native keyword if it's there - we're going to fill in an actual

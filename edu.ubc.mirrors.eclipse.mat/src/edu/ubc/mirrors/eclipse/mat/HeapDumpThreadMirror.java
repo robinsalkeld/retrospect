@@ -22,6 +22,7 @@
 package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.mat.SnapshotException;
@@ -46,7 +47,7 @@ public class HeapDumpThreadMirror extends HeapDumpInstanceMirror implements Thre
         try {
             IThreadStack stack = heapDumpObject.getSnapshot().getThreadStack(heapDumpObject.getObjectId());
             if (stack == null) {
-                return null;
+                return Collections.emptyList();
             }
             
             frames = stack.getStackFrames();

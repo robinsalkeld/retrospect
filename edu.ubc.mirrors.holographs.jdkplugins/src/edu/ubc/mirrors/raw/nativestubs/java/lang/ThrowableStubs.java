@@ -21,16 +21,13 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw.nativestubs.java.lang;
 
-import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinaryClassName;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import java.lang.reflect.InvocationTargetException;
-
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -39,23 +36,17 @@ import edu.ubc.mirrors.holographs.jdkplugins.StubMethod;
 
 public class ThrowableStubs extends NativeStubs {
 
+    // TODO-RS: Would it be valid to store these in Throwable.backtrace instead?
+    private final Map<InstanceMirror, List<FrameMirror>> stackTraces =
+            new HashMap<InstanceMirror, List<FrameMirror>>();
+    
     public ThrowableStubs(ClassHolograph klass) {
 	super(klass);
     }
 
     @StubMethod
     public InstanceMirror fillInStackTrace(InstanceMirror throwable) {
-	try {
-	    // TODO-RS: The abstraction leaks a bit here since Throwable is a tricky special case.
-	    Object hologram = ObjectHologram.make(throwable);
-	    hologram.getClass().getMethod("superFillInStackTrace").invoke(hologram);
-	} catch (IllegalAccessException e) {
-	    throw new IllegalAccessError(e.getMessage());
-	} catch (InvocationTargetException e) {
-	    throw new RuntimeException(e);
-	} catch (NoSuchMethodException e) {
-	    throw new NoSuchMethodError(e.getMessage());
-	}
+	stackTraces.put(throwable, ThreadHolograph.currentThreadMirror().getStackTrace());
 	
 	// The native method has the side-effect of clearing the stackTrace field, so make sure the mirror does that too.
 	HolographInternalUtils.setField(throwable, "stackTrace", null);
@@ -69,40 +60,16 @@ public class ThrowableStubs extends NativeStubs {
 	return fillInStackTrace(throwable);
     }
     
-    private StackTraceElement[] getNativeStack(InstanceMirror throwable) {
-	try {
-	    // TODO-RS: The abstraction leaks a bit here since Throwable is a tricky special case.
-            Object hologram = ObjectHologram.make(throwable);
-	    return (StackTraceElement[])hologram.getClass().getMethod("superGetStackTrace").invoke(hologram);
-	} catch (IllegalAccessException e) {
-	    throw new IllegalAccessError(e.getMessage());
-	} catch (InvocationTargetException e) {
-	    throw new RuntimeException(e);
-	} catch (NoSuchMethodException e) {
-	    throw new NoSuchMethodError(e.getMessage());
-	}
-    }
-    
-    // TODO-RS: Pretty darn expensive, but caching this correctly is a bit tricky so leave that for later...
     @StubMethod
     public int getStackTraceDepth(InstanceMirror throwable) {
-	return getNativeStack(throwable).length;
+        List<FrameMirror> stackTrace = stackTraces.get(throwable);
+        return stackTrace == null ? 0 : stackTrace.size();
     }
     
-    // TODO-RS: Pretty darn expensive, but caching this correctly is a bit tricky so leave that for later...
     @StubMethod
     public InstanceMirror getStackTraceElement(InstanceMirror throwable, int index) {
 	VirtualMachineMirror vm = getVM();
-        ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
-        String stringClassName = String.class.getName();
-        ConstructorMirror constructor = HolographInternalUtils.getConstructor(stackTraceElementClass, stringClassName, stringClassName, stringClassName, "int");
-        
-	StackTraceElement nativeFrame = getNativeStack(throwable)[index];
-        InstanceMirror className = vm.makeString(getOriginalBinaryClassName(nativeFrame.getClassName()));
-        InstanceMirror methodName = vm.makeString(nativeFrame.getMethodName());
-        InstanceMirror fieldName = vm.makeString(nativeFrame.getFileName());
-        int lineNumber = nativeFrame.getLineNumber();
-        return HolographInternalUtils.newInstance(constructor, ThreadHolograph.currentThreadMirror(), className, methodName, fieldName, lineNumber);
+        return HolographInternalUtils.stackTraceElementForFrameMirror(vm, stackTraces.get(throwable).get(index));
     }
     
 }

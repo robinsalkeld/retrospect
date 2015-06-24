@@ -27,14 +27,11 @@ import java.util.List;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapFrameMirror;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
-import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
-import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
 
@@ -114,7 +111,7 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
             return originalStack;
         }
         
-        List<FrameMirror> result = new ArrayList<FrameMirror>(originalStack);
+        List<FrameMirror> result = new ArrayList<FrameMirror>();
         // Need to deal with API mismatches here - we don't have the Classes on the stack for
         // arbitrary threads.
         StackTraceElement[] stackTrace = runningThread.getStackTrace();
@@ -139,6 +136,8 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
                 result.add(holographicFrame);
             }
         }
+        
+        result.addAll(originalStack);
         
         return result;
     }

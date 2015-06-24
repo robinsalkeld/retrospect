@@ -28,12 +28,11 @@ import static edu.ubc.mirrors.holograms.HologramClassGenerator.getHologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalInternalClassName;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getPrimitiveArrayMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getSortName;
+import static edu.ubc.mirrors.holograms.HologramClassGenerator.hologramThrowableType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.hologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceHologramType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.instanceMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectHologramType;
-import static edu.ubc.mirrors.holograms.HologramClassGenerator.throwableType;
-import static edu.ubc.mirrors.holograms.HologramClassGenerator.hologramThrowableType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.stringType;
 
@@ -194,11 +193,6 @@ public class HologramMethodGenerator extends InstructionAdapter {
 //        }
         
         if (owner.equals(hologramThrowableType.getInternalName())) {
-            if (name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(hologramThrowableType))) {
-                desc = Type.getMethodDescriptor(throwableType);
-                owner = throwableType.getInternalName();
-            }
-            
             if (name.equals("getStackTrace")) {
                 name = "getStackTraceHologram";
             }
@@ -238,6 +232,10 @@ public class HologramMethodGenerator extends InstructionAdapter {
                          "cleanStackTraceElement",
                          Type.getMethodDescriptor(steType, steType));
         }
+        
+//        if (owner.equals(hologramThrowableType.getInternalName()) && name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(hologramThrowableType))) {
+//            checkcast(hologramThrowableType);
+//        }
     }
     
     @Override

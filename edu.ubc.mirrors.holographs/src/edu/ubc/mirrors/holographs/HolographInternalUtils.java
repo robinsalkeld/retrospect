@@ -28,9 +28,11 @@ import org.objectweb.asm.Type;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ClassMirrorLoader;
 import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
@@ -158,6 +160,20 @@ public class HolographInternalUtils {
             error.initCause(e);
             throw error;
         } catch (MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static InstanceMirror stackTraceElementForFrameMirror(VirtualMachineMirror vm, FrameMirror frame) {
+        try {
+            ClassMirror stackTraceElementClass = vm.findBootstrapClassMirror(StackTraceElement.class.getName());
+            InstanceMirror element = stackTraceElementClass.newRawInstance();
+            element.set(stackTraceElementClass.getDeclaredField("declaringClass"), vm.makeString(frame.declaringClass().getClassName()));
+            element.set(stackTraceElementClass.getDeclaredField("methodName"), vm.makeString(frame.methodName()));
+            element.set(stackTraceElementClass.getDeclaredField("fileName"), vm.makeString(frame.fileName()));
+            element.setInt(stackTraceElementClass.getDeclaredField("lineNumber"), frame.lineNumber());
+            return element;
+        } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
