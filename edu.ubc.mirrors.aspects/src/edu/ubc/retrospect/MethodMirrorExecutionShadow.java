@@ -17,8 +17,8 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     
     MethodMirrorHandlerEvent event;
     
-    public MethodMirrorExecutionShadow(MirrorWorld world, MethodMirrorHandlerEvent event, Member signature, Shadow enclosingShadow) {
-        super(world, event, Shadow.MethodExecution, signature, enclosingShadow);
+    public MethodMirrorExecutionShadow(MirrorWorld world, Shadow.Kind shadowKind, MethodMirrorHandlerEvent event, Member signature, Shadow enclosingShadow) {
+        super(world, event, shadowKind, signature, enclosingShadow);
         this.event = event;
     }
 
@@ -88,7 +88,7 @@ public class MethodMirrorExecutionShadow extends MirrorEventShadow {
     
     @Override
     protected InstanceMirror getThisJoinPointStaticPart() {
-        return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.METHOD_EXECUTION, event.method());
+        return world.makeStaticJoinPoint(getThread(), getKind().getName(), event.method());
     }
     
     @Override

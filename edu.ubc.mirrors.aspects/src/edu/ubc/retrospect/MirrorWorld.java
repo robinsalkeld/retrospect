@@ -526,8 +526,10 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     private final Callback<MirrorEvent> eventCallback = new Callback<MirrorEvent>() {
         public MirrorEvent handle(MirrorEvent event) {
             MirrorEventShadow shadow = MirrorEventShadow.make(MirrorWorld.this, event);
-            MirrorWorld.this.handle(shadow);
-            return shadow.event;
+            if (shadow != null) {
+                MirrorWorld.this.handle(shadow);
+            }
+            return event;
         };
     };
     

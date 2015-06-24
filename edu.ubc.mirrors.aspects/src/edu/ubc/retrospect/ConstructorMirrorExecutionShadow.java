@@ -18,9 +18,9 @@ public class ConstructorMirrorExecutionShadow extends MirrorEventShadow {
     private final ConstructorMirror constructor;
     private final ThreadMirror thread;
     
-    protected ConstructorMirrorExecutionShadow(MirrorWorld world, AdviceKind kind, MirrorEvent event, 
+    protected ConstructorMirrorExecutionShadow(MirrorWorld world, Shadow.Kind shadowKind, AdviceKind kind, MirrorEvent event, 
             ConstructorMirror constructor, ThreadMirror thread, Member signature, Shadow enclosingShadow) {
-        super(world, event, Shadow.ConstructorExecution, signature, enclosingShadow);
+        super(world, event, shadowKind, signature, enclosingShadow);
         this.kind = kind;
         this.constructor = constructor;
         this.thread = thread;
@@ -79,7 +79,7 @@ public class ConstructorMirrorExecutionShadow extends MirrorEventShadow {
     
     @Override
     protected InstanceMirror getThisJoinPointStaticPart() {
-        return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.CONSTRUCTOR_EXECUTION, constructor);
+        return world.makeStaticJoinPoint(getThread(), getKind().getName(), constructor);
     }
     
     @Override

@@ -34,8 +34,7 @@ public abstract class MirrorEventShadow extends Shadow {
     protected final MirrorWorld world;
     protected final MirrorEvent event;
     
-    public static final Object SHADOW_KIND_PROPERTY_KEY = new Object();
-    public static final Object IS_ENTRY_PROPERTY_KEY = new Object();
+    public static final Object SHADOW_KIND_PROPERTY_KEY = MirrorEventShadow.class.getName() + ".shadowKind";
     
     protected MirrorEventShadow(MirrorWorld world, MirrorEvent event, Shadow.Kind kind, Member signature, Shadow enclosingShadow) {
         super(kind, signature, enclosingShadow);
@@ -113,33 +112,36 @@ public abstract class MirrorEventShadow extends Shadow {
     
     public static MirrorEventShadow make(MirrorWorld world, MirrorEvent event) {
         Shadow.Kind shadowKind = (Shadow.Kind)event.request().getProperty(SHADOW_KIND_PROPERTY_KEY); 
+        if (shadowKind == null) {
+            return null;
+        }
         
         if (event instanceof ConstructorMirrorHandlerEvent) {
             ConstructorMirrorHandlerEvent cmhe = (ConstructorMirrorHandlerEvent)event;
             Member signature = ConstructorMirrorMember.make(world, cmhe.constructor());
-            return new ConstructorMirrorExecutionShadow(world, AdviceKind.Around, cmhe, cmhe.constructor(),
+            return new ConstructorMirrorExecutionShadow(world, shadowKind, AdviceKind.Around, cmhe, cmhe.constructor(),
                     cmhe.thread(), signature, null);
         } else if (event instanceof ConstructorMirrorEntryEvent) {
             ConstructorMirrorEntryEvent cmee = (ConstructorMirrorEntryEvent)event;
             Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
-            return new ConstructorMirrorExecutionShadow(world, AdviceKind.Before, cmee, cmee.constructor(),
+            return new ConstructorMirrorExecutionShadow(world, shadowKind, AdviceKind.Before, cmee, cmee.constructor(),
                     cmee.thread(), signature, null);
         } else if (event instanceof ConstructorMirrorExitEvent) {
             ConstructorMirrorExitEvent cmee = (ConstructorMirrorExitEvent)event;
             Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
-            return new ConstructorMirrorExecutionShadow(world, AdviceKind.After, cmee, cmee.constructor(),
+            return new ConstructorMirrorExecutionShadow(world, shadowKind, AdviceKind.After, cmee, cmee.constructor(),
                     cmee.thread(), signature, null);
         } else if (event instanceof MethodMirrorHandlerEvent) {
             MethodMirrorHandlerEvent mmhe = (MethodMirrorHandlerEvent)event;
             Member signature = MethodMirrorMember.make(world, mmhe.method());
-            return new MethodMirrorExecutionShadow(world, mmhe, signature, null);
+            return new MethodMirrorExecutionShadow(world, shadowKind, mmhe, signature, null);
         } else if (event instanceof MethodMirrorEntryEvent) {
             MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
             if (shadowKind == Shadow.SynchronizationLock) {
                 return new SynchronizedMethodMirrorEntryShadow(world, mmee, null);
             } else {
                 Member signature = MethodMirrorMember.make(world, mmee.method());
-                return new MethodMirrorEntryShadow(world, mmee, signature, null);
+                return new MethodMirrorEntryShadow(world, shadowKind, mmee, signature, null);
             }
         } else if (event instanceof MethodMirrorExitEvent) {
             MethodMirrorExitEvent mmee = (MethodMirrorExitEvent)event;
@@ -147,7 +149,7 @@ public abstract class MirrorEventShadow extends Shadow {
                 return new SynchronizedMethodMirrorExitShadow(world, mmee, null);
             } else {
                 Member signature = MethodMirrorMember.make(world, mmee.method());
-                return new MethodMirrorExitShadow(world, mmee, signature, null);
+                return new MethodMirrorExitShadow(world, shadowKind, mmee, signature, null);
             }
         } else if (event instanceof FieldMirrorGetEvent) {
             FieldMirrorGetEvent fmge = (FieldMirrorGetEvent)event;
