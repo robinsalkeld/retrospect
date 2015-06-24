@@ -118,11 +118,19 @@ public abstract class MirrorEventShadow extends Shadow {
         
         if (event instanceof ConstructorMirrorHandlerEvent) {
             ConstructorMirrorHandlerEvent cmhe = (ConstructorMirrorHandlerEvent)event;
+            if (shadowKind == Shadow.ConstructorCall && cmhe.isConstructorChaining()) {
+                return null;
+            }
+            
             Member signature = ConstructorMirrorMember.make(world, cmhe.constructor());
             return new ConstructorMirrorExecutionShadow(world, shadowKind, AdviceKind.Around, cmhe, cmhe.constructor(),
                     cmhe.thread(), signature, null);
         } else if (event instanceof ConstructorMirrorEntryEvent) {
             ConstructorMirrorEntryEvent cmee = (ConstructorMirrorEntryEvent)event;
+            if (shadowKind == Shadow.ConstructorCall && cmee.isConstructorChaining()) {
+                return null;
+            }
+            
             Member signature = ConstructorMirrorMember.make(world, cmee.constructor());
             return new ConstructorMirrorExecutionShadow(world, shadowKind, AdviceKind.Before, cmee, cmee.constructor(),
                     cmee.thread(), signature, null);

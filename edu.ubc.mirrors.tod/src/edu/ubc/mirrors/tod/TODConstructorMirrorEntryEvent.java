@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IConstructorChainingEvent;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
@@ -31,5 +32,10 @@ public class TODConstructorMirrorEntryEvent extends TODMirrorEvent implements Co
             result.add(vm.wrapValue(argTypes.get(i), logArgs[i]));
         }
         return result;
+    }
+    
+    @Override
+    public boolean isConstructorChaining() {
+        return logEvent instanceof IConstructorChainingEvent;
     }
 }

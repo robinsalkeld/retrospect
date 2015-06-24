@@ -28,4 +28,5 @@ public interface ConstructorMirrorEntryEvent extends MirrorEvent {
     public ConstructorMirror constructor();
     public ThreadMirror thread();
     public List<Object> arguments();
+    public boolean isConstructorChaining();
 }

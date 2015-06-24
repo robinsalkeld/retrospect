@@ -55,4 +55,9 @@ public class WrappingConstructorMirrorEntryEvent extends WrappingMirrorEvent imp
         }
         return result;
     }
+    
+    @Override
+    public boolean isConstructorChaining() {
+        return wrapped.isConstructorChaining();
+    }
 }

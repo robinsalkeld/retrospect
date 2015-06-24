@@ -15,13 +15,16 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
     private final ConstructorMirrorHandlerRequest request;
     private final ThreadMirror thread;
     private final ConstructorMirror constructor;
+    private boolean isConstructorChaining;
     private final List<Object> arguments;
     private MirrorInvocationHandler proceed;
     
-    public ConstructorHolographHandlerEvent(ConstructorMirrorHandlerRequest request, ThreadMirror thread, ConstructorMirror constructor, List<Object> arguments, MirrorInvocationHandler proceed) {
+    public ConstructorHolographHandlerEvent(ConstructorMirrorHandlerRequest request, ThreadMirror thread, ConstructorMirror constructor, 
+            boolean isConstructorChaining, List<Object> arguments, MirrorInvocationHandler proceed) {
         this.request = request;
         this.thread = thread;
         this.constructor = constructor;
+        this.isConstructorChaining = isConstructorChaining;
         this.arguments = arguments;
         this.proceed = proceed;
     }
@@ -39,6 +42,11 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
     @Override
     public ConstructorMirror constructor() {
         return constructor;
+    }
+    
+    @Override
+    public boolean isConstructorChaining() {
+        return isConstructorChaining;
     }
     
     @Override

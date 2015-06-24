@@ -28,6 +28,7 @@ import com.sun.jdi.event.MethodEntryEvent;
 
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIConstructorMirrorEntryEvent extends JDIMirrorEvent implements ConstructorMirrorEntryEvent {
@@ -67,5 +68,14 @@ public class JDIConstructorMirrorEntryEvent extends JDIMirrorEvent implements Co
     public List<Object> arguments() {
         List<Object> arguments = thread().getStackTrace().get(0).arguments();
         return arguments != null ? arguments : Collections.emptyList();
+    }
+    
+    @Override
+    public boolean isConstructorChaining() {
+        // TODO-RS: This is a very good approximation but not 100% accurate.
+        // Need to do bytecode analysis to be more precise.
+        FrameMirror thisFrame = thread().getStackTrace().get(0);
+        FrameMirror callerFrame = thread().getStackTrace().get(1);
+        return callerFrame.methodName().equals("<init>") && thisFrame.thisObject() == callerFrame.thisObject();
     }
 }

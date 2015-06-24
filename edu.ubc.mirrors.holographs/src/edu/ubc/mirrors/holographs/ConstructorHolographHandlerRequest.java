@@ -1,6 +1,5 @@
 package edu.ubc.mirrors.holographs;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
         public MirrorEvent handle(MirrorEvent t) {
             ConstructorMirrorEntryEvent entryEvent = (ConstructorMirrorEntryEvent)t;
             final ConstructorMirrorHandlerEvent handlerEvent = new ConstructorHolographHandlerEvent(ConstructorHolographHandlerRequest.this, 
-                    entryEvent.thread(), entryEvent.constructor(), entryEvent.arguments(), ConstructorHolographHandlerRequest.this);
+                    entryEvent.thread(), entryEvent.constructor(), entryEvent.isConstructorChaining(), entryEvent.arguments(), ConstructorHolographHandlerRequest.this);
             
             handlerEvent.setProceed(ConstructorHolographHandlerRequest.this);
             vm.dispatch().raiseEvent(handlerEvent);

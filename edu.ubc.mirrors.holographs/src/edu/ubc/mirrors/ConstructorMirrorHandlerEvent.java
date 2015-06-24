@@ -6,4 +6,5 @@ public interface ConstructorMirrorHandlerEvent extends InvocableMirrorEvent {
 
     public ConstructorMirror constructor();
     public List<Object> arguments();
+    public boolean isConstructorChaining();
 }
