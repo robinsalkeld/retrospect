@@ -72,10 +72,9 @@ public class JDIConstructorMirrorEntryEvent extends JDIMirrorEvent implements Co
     
     @Override
     public boolean isConstructorChaining() {
-        // TODO-RS: This is a very good approximation but not 100% accurate.
-        // Need to do bytecode analysis to be more precise.
         FrameMirror thisFrame = thread().getStackTrace().get(0);
         FrameMirror callerFrame = thread().getStackTrace().get(1);
-        return callerFrame.methodName().equals("<init>") && thisFrame.thisObject() == callerFrame.thisObject();
+        return callerFrame.methodName().equals("<init>") 
+               && thisFrame.thisObject() == callerFrame.thisObject();
     }
 }
