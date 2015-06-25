@@ -1,4 +1,4 @@
-package edu.ubc.mirrors.holograms;
+package edu.ubc.mirrors.fieldmap;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent {
+public class DirectMethodMirrorHandlerEvent implements MethodMirrorHandlerEvent {
 
     private final MethodMirrorHandlerRequest request;
     private final ThreadMirror thread;
@@ -17,7 +17,7 @@ public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent {
     private final List<Object> arguments;
     private MirrorInvocationHandler proceed;
     
-    public MethodHolographHandlerEvent(MethodMirrorHandlerRequest request, ThreadMirror thread, MethodMirror method, List<Object> arguments, MirrorInvocationHandler proceed) {
+    public DirectMethodMirrorHandlerEvent(MethodMirrorHandlerRequest request, ThreadMirror thread, MethodMirror method, List<Object> arguments, MirrorInvocationHandler proceed) {
         this.request = request;
         this.thread = thread;
         this.method = method;

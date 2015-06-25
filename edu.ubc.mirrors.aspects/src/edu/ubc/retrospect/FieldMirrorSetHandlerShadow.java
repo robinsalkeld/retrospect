@@ -32,7 +32,7 @@ public class FieldMirrorSetHandlerShadow extends MirrorEventShadow {
     }
 
     @Override
-    public AdviceKind kind() {
+    public AdviceKind adviceKind() {
         return AdviceKind.Around;
     }
 

@@ -17,7 +17,7 @@ import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.holograms.MethodHolographHandlerEvent;
+import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 
 public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest, MirrorInvocationHandler {
 
@@ -35,7 +35,7 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         @Override
         public MirrorEvent handle(MirrorEvent t) {
             MethodMirrorEntryEvent entryEvent = (MethodMirrorEntryEvent)t;
-            final MethodHolographHandlerEvent handlerEvent = new MethodHolographHandlerEvent(MethodHolographHandlerRequest.this, 
+            final DirectMethodMirrorHandlerEvent handlerEvent = new DirectMethodMirrorHandlerEvent(MethodHolographHandlerRequest.this, 
                     entryEvent.thread(), entryEvent.method(), entryEvent.arguments(), MethodHolographHandlerRequest.this);
             
             handlerEvent.setProceed(MethodHolographHandlerRequest.this);

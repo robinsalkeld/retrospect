@@ -46,12 +46,22 @@ public class ThrowableStubs extends NativeStubs {
 
     @StubMethod
     public InstanceMirror fillInStackTrace(InstanceMirror throwable) {
-	stackTraces.put(throwable, ThreadHolograph.currentThreadMirror().getStackTrace());
-	
-	// The native method has the side-effect of clearing the stackTrace field, so make sure the mirror does that too.
-	HolographInternalUtils.setField(throwable, "stackTrace", null);
-	
-	return throwable;
+        List<FrameMirror> stackTrace = ThreadHolograph.currentThreadMirror().getStackTrace();
+        int callingFrameIndex = 0;
+        FrameMirror frame = stackTrace.get(callingFrameIndex);
+        while (frame.declaringClass().getClassName().equals(Throwable.class.getName()) 
+                && frame.methodName().equals("fillInStackTrace") || frame.methodName().equals("<init>")) {
+            callingFrameIndex++;
+            frame = stackTrace.get(callingFrameIndex);
+        }
+
+        stackTrace = stackTrace.subList(callingFrameIndex, stackTrace.size());
+        stackTraces.put(throwable, stackTrace);
+
+        // The native method has the side-effect of clearing the stackTrace field, so make sure the mirror does that too.
+        HolographInternalUtils.setField(throwable, "stackTrace", null);
+
+        return throwable;
     }
     
     // Java 1.7 version

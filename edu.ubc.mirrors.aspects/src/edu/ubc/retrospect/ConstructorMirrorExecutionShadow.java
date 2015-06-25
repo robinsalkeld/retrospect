@@ -38,7 +38,7 @@ public class ConstructorMirrorExecutionShadow extends MirrorEventShadow {
     }
     
     @Override
-    public AdviceKind kind() {
+    public AdviceKind adviceKind() {
         return kind;
     }
     

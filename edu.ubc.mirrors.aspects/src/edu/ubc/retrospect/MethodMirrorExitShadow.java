@@ -32,7 +32,7 @@ public class MethodMirrorExitShadow extends MirrorEventShadow {
     }
     
     @Override
-    public AdviceKind kind() {
+    public AdviceKind adviceKind() {
         return AdviceKind.After;
     }
     

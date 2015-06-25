@@ -77,7 +77,7 @@ public abstract class MirrorEventShadow extends Shadow {
     
     protected abstract ClassMirror getDeclaringClass();
     
-    public abstract AdviceKind kind();
+    public abstract AdviceKind adviceKind();
     
     @Override
     protected void prepareForMungers() {

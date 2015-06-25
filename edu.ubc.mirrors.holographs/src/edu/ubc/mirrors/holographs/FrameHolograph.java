@@ -224,4 +224,9 @@ public class FrameHolograph extends WrappingFrameMirror {
             throw new InternalError("Can't locate method: " + declaringClass().getClassName() + "#" + methodName);
         }
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + wrapped;
+    }
 }

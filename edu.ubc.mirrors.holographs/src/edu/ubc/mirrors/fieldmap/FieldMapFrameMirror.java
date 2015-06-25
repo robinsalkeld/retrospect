@@ -27,6 +27,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.Reflection;
 
 public class FieldMapFrameMirror implements FrameMirror {
 
@@ -76,5 +77,10 @@ public class FieldMapFrameMirror implements FrameMirror {
     @Override
     public List<Object> arguments() {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + Reflection.frameToString(this);
     }
 }
