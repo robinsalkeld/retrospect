@@ -184,10 +184,10 @@ public class PointcutMirrorRequestExtractor {
                 break;
             case (Shadow.ConstructorExecutionBit):
             case (Shadow.ConstructorCallBit):
-                    if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
+                if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
                     addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
                 }
-                if (adviceKind.isAfter() || adviceKind.isCflow()) {
+                if (adviceKind.isAfter()/* || adviceKind.isCflow()*/) {
                     addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
                 }
                 if (adviceKind == AdviceKind.Around) {

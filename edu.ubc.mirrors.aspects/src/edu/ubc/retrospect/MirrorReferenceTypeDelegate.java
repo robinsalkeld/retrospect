@@ -20,6 +20,7 @@ import org.aspectj.weaver.TypeVariable;
 import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.WeaverStateInfo;
 import org.aspectj.weaver.patterns.Declare;
+import org.aspectj.weaver.patterns.PatternNode;
 import org.aspectj.weaver.patterns.PerClause;
 import org.aspectj.weaver.patterns.PerSingleton;
 import org.aspectj.weaver.patterns.Pointcut;
@@ -254,8 +255,12 @@ public class MirrorReferenceTypeDelegate extends AbstractReferenceTypeDelegate {
     public PerClause getPerClause() {
         if (perClause == null) {
             AnnotationMirror annot = getWorld().getAspectAnnotation(klass);
-            String value = (String)annot.getValue(getWorld().thread, "value");
-            perClause = getWorld().parsePerClause(value);
+            if (annot == null) {
+                perClause = new PerSingleton();
+            } else {
+                String value = (String)annot.getValue(getWorld().thread, "value");
+                perClause = getWorld().parsePerClause(value);
+            }
         }
         return perClause;
     }

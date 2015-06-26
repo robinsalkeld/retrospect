@@ -1,6 +1,6 @@
 package edu.ubc.retrospect;
 
-import java.io.IOException;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -13,12 +13,13 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
+import org.aspectj.bridge.Constants;
 import org.aspectj.bridge.IMessage;
 import org.aspectj.bridge.IMessageHandler;
+import org.aspectj.bridge.MessageUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.SourceLocation;
 import org.aspectj.runtime.internal.AroundClosure;
 import org.aspectj.runtime.reflect.Factory;
 import org.aspectj.weaver.AdviceKind;
@@ -435,13 +436,39 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
 //        System.out.println("Match: " + munger + " on " + shadow);
     }
     
-    private void parseConfiguration() throws IOException {
+    private static final String AOP_XML = Constants.AOP_AJC_XML + ";" + Constants.AOP_USER_XML;
+    
+    private void parseConfiguration() {
         definitions = new ArrayList<Definition>();
-        String definitionPath = "META-INF/aop-ajc.xml";
-        
+        String definitionPath = System.getProperty("org.aspectj.weaver.loadtime.configuration", AOP_XML);
+        for (String definitionPathPart : definitionPath.split(";")) {
+            try {
+                parseConfiguration(definitionPathPart);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    
+    private void parseConfiguration(String nextDefinition) throws Exception {
+        if (nextDefinition.startsWith("file:")) {
+            try {
+                    String fpath = new URL(nextDefinition).getFile();
+                    File configFile = new File(fpath);
+                    if (!configFile.exists()) {
+                            MessageUtil.warn(getMessageHandler(), "configuration does not exist: " + nextDefinition);
+                    } else {
+                            definitions.add(DocumentParser.parse(configFile.toURL()));
+                    }
+            } catch (MalformedURLException mue) {
+                    MessageUtil.error(getMessageHandler(), "malformed definition url: " + nextDefinition);
+            }
+            return;
+        }
+            
         InstanceMirror urlsEnumeration;
         if (loader == null) {
-            Enumeration<URL> urls = vm.findBootstrapResources(definitionPath);
+            Enumeration<URL> urls = vm.findBootstrapResources(nextDefinition);
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 try {
@@ -457,7 +484,7 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
             protected void methodCall() throws Throwable {
                 ((ClassLoader)null).getResources((String)null);
             }
-        }, vm.makeString(definitionPath));
+        }, vm.makeString(nextDefinition));
         Enumeration<ObjectMirror> urls = new EnumerationMirror(thread, urlsEnumeration);
         while (urls.hasMoreElements()) {
             InstanceMirror urlMirror = (InstanceMirror)urls.nextElement();
