@@ -63,4 +63,14 @@ public class NativeObjectMirror implements ObjectMirror {
     public ClassMirror getClassMirror() {
         return new NativeClassMirror(object.getClass());
     }
+    
+    @Override
+    public void allowCollection(boolean flag) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public boolean isCollected() {
+        throw new UnsupportedOperationException();
+    }
 }

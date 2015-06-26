@@ -4,6 +4,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.InstanceHolograph;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.jdkplugins.NativeStubs;
 import edu.ubc.mirrors.holographs.jdkplugins.StubMethod;
@@ -20,8 +21,12 @@ public class RuntimeStubs extends NativeStubs {
     }
     
     @StubMethod
-    public void gc(InstanceMirror runtime) {
+    public void gc(InstanceMirror runtime) throws Exception {
         Runtime.getRuntime().gc();
+        
+        // TODO-RS: This should be happening on a background ReferenceHandler thread
+        // as well.
+        InstanceHolograph.enqueuePhantomReferences(ThreadHolograph.currentThreadMirror());
     }
     
     @StubMethod

@@ -21,19 +21,28 @@
  ******************************************************************************/
 package edu.ubc.mirrors.holographs;
 
+import java.lang.ref.PhantomReference;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
 
 public class InstanceHolograph extends WrappingInstanceMirror {
 
     protected final VirtualMachineHolograph vm;
     private Map<FieldMirror, Object> newValues;
+    
+    private static final ReferenceQueue<ObjectMirror> phantomRefQueue = new ReferenceQueue<ObjectMirror>();
     
     public InstanceHolograph(VirtualMachineHolograph vm, InstanceMirror wrappedInstance) {
         super(vm, wrappedInstance);
@@ -46,9 +55,41 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         }
     }
     
+    private class PhantomMirrorReference extends PhantomReference<ObjectMirror> {
+
+        private InstanceHolograph mirror = InstanceHolograph.this;
+        
+        public PhantomMirrorReference(ObjectMirror referent) {
+            super(referent, phantomRefQueue);
+        }
+        
+    }
+    
+    public static void enqueuePhantomReferences(ThreadMirror thread) throws Exception {
+        VirtualMachineMirror vm = thread.getClassMirror().getVM();
+        ClassMirror referenceClass = vm.findBootstrapClassMirror(Reference.class.getName());
+        MethodMirror enqueueMethod = referenceClass.getDeclaredMethod("enqueue");
+        
+        PhantomMirrorReference ref;
+        while ((ref = (PhantomMirrorReference)phantomRefQueue.poll()) != null) {
+            enqueueMethod.invoke(thread, ref.mirror);
+        }
+    }
+    
+    private static boolean isReferenceReferentField(FieldMirror field) {
+        return (field.getDeclaringClass().getClassName().equals(Reference.class.getName()) 
+                && field.getName().equals("referent"));
+    }
+    
     public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
-            return (ObjectMirror)newValues.get(field);
+            // Special case for References
+            if (isReferenceReferentField(field)) {
+                // TODO-RS: Soft and Weak references when necessary
+                return ((PhantomMirrorReference)newValues.get(field)).get();
+            } else {
+                return (ObjectMirror)newValues.get(field);
+            }
         } else {
             return super.get(field);
         }
@@ -125,10 +166,17 @@ public class InstanceHolograph extends WrappingInstanceMirror {
             vm.illegalMutation(message);
         }
     }
-
+    
     public void set(FieldMirror field, ObjectMirror o) {
         checkForIllegalMutation(field);
-        newValues.put(field, o);
+        
+        // Special case for References
+        if (isReferenceReferentField(field)) {
+            // TODO-RS: Soft and Weak references when necessary
+            newValues.put(field, new PhantomMirrorReference(o));
+        } else {
+            newValues.put(field, o);
+        }
     }
     
     public void setBoolean(FieldMirror field, boolean b) {

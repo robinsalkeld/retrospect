@@ -107,4 +107,14 @@ public abstract class BoxingInstanceMirror implements InstanceMirror {
     public void setDouble(FieldMirror field, double d) throws IllegalAccessException {
         setBoxedValue(field, Double.valueOf(d));
     }
+    
+    @Override
+    public void allowCollection(boolean flag) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public boolean isCollected() {
+        throw new UnsupportedOperationException();
+    }
 }

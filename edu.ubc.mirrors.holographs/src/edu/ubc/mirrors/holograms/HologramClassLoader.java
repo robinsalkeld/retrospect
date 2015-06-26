@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -239,15 +240,21 @@ public class HologramClassLoader extends ClassLoader {
         }
     }
     
-    private final Map<ObjectMirror, Hologram> holograms = new WeakHashMap<ObjectMirror, Hologram>();
+    private final Map<ObjectMirror, WeakReference<Hologram>> holograms = 
+            new WeakHashMap<ObjectMirror, WeakReference<Hologram>>();
     
     public Hologram makeHologram(ObjectMirror mirror) {
         if (mirror == null) {
             return null;
         }
-        Hologram hologram = holograms.get(mirror);
-        if (hologram != null) {
-            return hologram;
+        
+        Hologram hologram;
+        WeakReference<Hologram> ref = holograms.get(mirror);
+        if (ref != null) {
+            hologram = ref.get();
+            if (hologram != null) {
+                return hologram;
+            }
         }
         
         final String signature = mirror.getClassMirror().getSignature();
@@ -301,7 +308,7 @@ public class HologramClassLoader extends ClassLoader {
     }
     
     public void registerHologram(Hologram hologram) {
-        holograms.put(hologram.getMirror(), hologram);
+        holograms.put(hologram.getMirror(), new WeakReference<Hologram>(hologram));
     }
     
     public synchronized byte[] getBytecode(HologramClassMirror hologramClassMirror) {

@@ -37,4 +37,14 @@ public abstract class BlankInstanceMirror extends BoxingInstanceMirror {
     public int identityHashCode() {
         return hashCode();
     }
+    
+    @Override
+    public void allowCollection(boolean flag) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public boolean isCollected() {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -49,9 +49,18 @@ public abstract class AbstractJDIObjectMirror extends JDIMirror implements JDIOb
     public ObjectReference getObjectReference() {
         return mirror;
     }
+
+    @Override
+    public void allowCollection(boolean flag) {
+        if (flag) {
+            mirror.enableCollection();
+        } else {
+            mirror.disableCollection();
+        }
+    }
     
     @Override
-    protected void finalize() throws Throwable {
-        this.mirror.enableCollection();
+    public boolean isCollected() {
+        return mirror.isCollected();
     }
 }

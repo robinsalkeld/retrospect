@@ -22,12 +22,14 @@
 package edu.ubc.mirrors.wrapping;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.BooleanArrayMirror;
@@ -90,24 +92,24 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return wrappedVM.findBootstrapResources(path);
     }
     
-    // It would be great to make this a WeakHashMap, but since the wrapping objects may have state they can't
-    // be soundly thrown away and recreated on demand. Would need to be smarter about permanently storing
-    // wrappers after first modifying them.
-    private final Map<ObjectMirror, ObjectMirror> wrappedMirrors = new HashMap<ObjectMirror, ObjectMirror>();
+    private final Map<ObjectMirror, WeakReference<ObjectMirror>> wrappedMirrors = 
+            new WeakHashMap<ObjectMirror, WeakReference<ObjectMirror>>();
     
     public ObjectMirror getWrappedMirror(ObjectMirror mirror) {
         if (mirror == null) {
             return null;
         }
         
-        ObjectMirror result = wrappedMirrors.get(mirror);
-        if (result != null) {
-            return result;
+        WeakReference<ObjectMirror> ref = wrappedMirrors.get(mirror);
+        if (ref != null) {
+            ObjectMirror result = ref.get();
+            if (result != null) {
+                return result;
+            }
         }
         
-        result = wrapMirror(mirror);
-        
-        wrappedMirrors.put(mirror, result);
+        ObjectMirror result = wrapMirror(mirror);
+        wrappedMirrors.put(mirror, new WeakReference<ObjectMirror>(result));
         return result;
     }
 

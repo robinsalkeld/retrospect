@@ -149,7 +149,16 @@ public class JDIArrayMirror extends BoxingArrayMirror implements JDIObjectMirror
     }
     
     @Override
-    protected void finalize() throws Throwable {
-        array.enableCollection();
+    public void allowCollection(boolean flag) {
+        if (flag) {
+            array.enableCollection();
+        } else {
+            array.disableCollection();
+        }
+    }
+    
+    @Override
+    public boolean isCollected() {
+        return array.isCollected();
     }
 }

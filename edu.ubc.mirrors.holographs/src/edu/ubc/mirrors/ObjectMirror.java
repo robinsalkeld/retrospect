@@ -25,5 +25,7 @@ public interface ObjectMirror {
     public ClassMirror getClassMirror();
     
     public int identityHashCode();
-//    public VirtualMachineMirror getVM();
+
+    public void allowCollection(boolean flag);
+    public boolean isCollected();
 }

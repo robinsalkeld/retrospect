@@ -102,4 +102,14 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
     public String toString() {
         return "HeapDumpObjectArrayMirror: " + array;
     }
+    
+    @Override
+    public void allowCollection(boolean flag) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public boolean isCollected() {
+        throw new UnsupportedOperationException();
+    }
 }

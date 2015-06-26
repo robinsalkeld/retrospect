@@ -28,6 +28,7 @@ import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
@@ -91,7 +92,7 @@ public class ThreadStubs extends NativeStubs {
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
-        Thread thread = new Thread() {
+        Thread thread = new Thread("Holographic thread (" + Reflection.getThreadName(threadMirror) + ")") {
             @Override
             public void run() {
                 try {

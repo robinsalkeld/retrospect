@@ -133,4 +133,14 @@ public abstract class BoxingArrayMirror implements
 
     @Override
     public abstract Object clone() throws CloneNotSupportedException;
+    
+    @Override
+    public void allowCollection(boolean flag) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public boolean isCollected() {
+        throw new UnsupportedOperationException();
+    }
 }

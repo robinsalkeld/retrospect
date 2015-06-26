@@ -350,4 +350,12 @@ public class ObjectHologram implements Hologram {
             throw e;
         }
     }
+    
+    public void allowCollection(boolean flag) {
+        throw new UnsupportedOperationException();
+    }
+    
+    public boolean isCollected() {
+        throw new UnsupportedOperationException();
+    }
 }

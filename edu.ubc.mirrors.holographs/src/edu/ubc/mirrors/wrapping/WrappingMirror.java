@@ -84,4 +84,14 @@ public class WrappingMirror implements ObjectMirror {
     public void setWrapped(ObjectMirror wrapped) {
         this.wrapped = wrapped;
     }
+    
+    @Override
+    public void allowCollection(boolean flag) {
+        wrapped.allowCollection(flag);
+    }
+    
+    @Override
+    public boolean isCollected() {
+        return wrapped.isCollected();
+    }
 }
