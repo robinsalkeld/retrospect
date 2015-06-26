@@ -24,6 +24,7 @@ package edu.ubc.mirrors.fieldmap;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -56,6 +57,11 @@ public class FieldMapFrameMirror implements FrameMirror {
 
     @Override
     public MethodMirror method() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ConstructorMirror constructor() {
         throw new UnsupportedOperationException();
     }
     

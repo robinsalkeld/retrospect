@@ -3,7 +3,6 @@ package edu.ubc.mirrors.test;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
-import java.net.URL;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;

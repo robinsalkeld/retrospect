@@ -22,11 +22,7 @@ public class RuntimeStubs extends NativeStubs {
     
     @StubMethod
     public void gc(InstanceMirror runtime) throws Exception {
-        Runtime.getRuntime().gc();
-        
-        // TODO-RS: This should be happening on a background ReferenceHandler thread
-        // as well.
-        InstanceHolograph.enqueuePhantomReferences(ThreadHolograph.currentThreadMirror());
+        getVM().gc();
     }
     
     @StubMethod

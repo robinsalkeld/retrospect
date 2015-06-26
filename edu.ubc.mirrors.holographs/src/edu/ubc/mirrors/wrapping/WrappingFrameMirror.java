@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -49,7 +50,13 @@ public class WrappingFrameMirror implements FrameMirror {
     }
     @Override
     public MethodMirror method() {
-	return vm.wrapMethod(wrapped.method());
+	MethodMirror method = wrapped.method();
+        return method == null ? null : vm.wrapMethod(method);
+    }
+    @Override
+    public ConstructorMirror constructor() {
+        ConstructorMirror constructor = wrapped.constructor();
+        return constructor == null ? null : vm.wrapConstructor(constructor);
     }
     @Override
     public String fileName() {

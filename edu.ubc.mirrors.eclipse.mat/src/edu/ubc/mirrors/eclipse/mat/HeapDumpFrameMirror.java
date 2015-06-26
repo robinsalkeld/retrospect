@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -77,6 +78,11 @@ public class HeapDumpFrameMirror implements FrameMirror {
     
     @Override
     public MethodMirror method() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public ConstructorMirror constructor() {
         throw new UnsupportedOperationException();
     }
 

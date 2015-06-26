@@ -103,8 +103,15 @@ public class MirrorAdvice extends Advice {
             args[i] = evaluator.evaluateExpr(state.get(i));
         }
         
+        int extraArgIndex = args.length - 1;
         if ((getExtraParameterFlags() & Advice.ThisJoinPointStaticPart) != 0) {
-            args[args.length - 1] = evaluator.evaluateExpr(shadow.getThisJoinPointStaticPartVar());
+            args[extraArgIndex--] = evaluator.evaluateExpr(shadow.getThisJoinPointStaticPartVar());
+        }
+        if ((getExtraParameterFlags() & Advice.ThisJoinPoint) != 0) {
+            args[extraArgIndex--] = evaluator.evaluateExpr(shadow.getThisJoinPointVar());
+        }
+        if ((getExtraParameterFlags() & Advice.ThisEnclosingJoinPointStaticPart) != 0) {
+            args[extraArgIndex--] = evaluator.evaluateExpr(shadow.getThisEnclosingJoinPointStaticPartVar());
         }
         
         try {

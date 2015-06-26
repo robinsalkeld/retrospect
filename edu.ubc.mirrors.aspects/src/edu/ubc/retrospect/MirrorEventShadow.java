@@ -13,6 +13,7 @@ import org.aspectj.weaver.World;
 import org.aspectj.weaver.ast.Var;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
 import edu.ubc.mirrors.ConstructorMirrorExitEvent;
 import edu.ubc.mirrors.ConstructorMirrorHandlerEvent;
@@ -20,6 +21,7 @@ import edu.ubc.mirrors.FieldMirrorGetEvent;
 import edu.ubc.mirrors.FieldMirrorGetHandlerEvent;
 import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.FieldMirrorSetHandlerEvent;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
@@ -197,7 +199,8 @@ public abstract class MirrorEventShadow extends Shadow {
 
     @Override
     public Var getThisJoinPointVar() {
-        return null;
+        ResolvedType joinPointType = world.resolve(UnresolvedType.forName(JoinPoint.class.getName()));
+        return new MirrorEventVar(joinPointType, null);
     }
 
     @Override
@@ -210,7 +213,12 @@ public abstract class MirrorEventShadow extends Shadow {
 
     @Override
     public Var getThisEnclosingJoinPointStaticPartVar() {
-        return null;
+        ResolvedType joinPointStaticPartType = world.resolve(UnresolvedType.forName(JoinPoint.StaticPart.class.getName()));
+        return new MirrorEventVar(joinPointStaticPartType, getThisEnclosingJoinPointStaticPart());
+    }
+
+    protected InstanceMirror getThisEnclosingJoinPointStaticPart() {
+        return staticPartForFrame(getThread().getStackTrace().get(1));
     }
 
     @Override
@@ -246,6 +254,15 @@ public abstract class MirrorEventShadow extends Shadow {
     @Override
     public Var getThisAspectInstanceVar(ResolvedType aspectType) {
         return null;
+    }
+    
+    protected InstanceMirror staticPartForFrame(FrameMirror frame) {
+        ConstructorMirror cons = frame.constructor();
+        if (cons != null) {
+            return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.CONSTRUCTOR_EXECUTION, cons);
+        } else {
+            return world.makeStaticJoinPoint(getThread(), org.aspectj.lang.JoinPoint.METHOD_EXECUTION, frame.method());
+        }
     }
     
     public void implementAdvice(final MirrorAdvice advice) {

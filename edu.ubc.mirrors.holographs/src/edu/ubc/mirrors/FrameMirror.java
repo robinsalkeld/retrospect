@@ -27,7 +27,11 @@ public interface FrameMirror {
 
     ClassMirror declaringClass();
     String methodName();
+    
+    // Exactly one of these will be null
+    ConstructorMirror constructor();
     MethodMirror method();
+    
     String fileName();
     int lineNumber();
     InstanceMirror thisObject();

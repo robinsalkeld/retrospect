@@ -246,7 +246,7 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     public List<MethodMirror> getDeclaredMethods(boolean publicOnly) {
         List<MethodMirror> result = new ArrayList<MethodMirror>();
         for (Method method : refType.methods()) {
-            if (method.name().startsWith("<")) {
+            if (method.name().equals("<init>")) {
                 continue;
             }
             if (method.isBridge()) {

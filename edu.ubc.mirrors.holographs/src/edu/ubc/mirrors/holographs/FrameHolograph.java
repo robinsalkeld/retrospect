@@ -44,6 +44,10 @@ public class FrameHolograph extends WrappingFrameMirror {
     
     @Override
     public MethodMirror method() {
+        if (methodName().equals("<init>")) {
+            return null;
+        }
+        
         // TODO-RS: Not quite the right check...
         if (vm.getWrappedVM().canGetBytecodes()) {
             return super.method();

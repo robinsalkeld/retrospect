@@ -29,6 +29,7 @@ import com.sun.jdi.LocalVariable;
 import com.sun.jdi.StackFrame;
 
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -55,7 +56,20 @@ public class JDIFrameMirror extends JDIMirror implements FrameMirror {
     
     @Override
     public MethodMirror method() {
-	return new JDIMethodMirror(vm, frame.location().method());
+        if (methodName().equals("<init>")) {
+            return null;
+        } else {
+            return new JDIMethodMirror(vm, frame.location().method());
+        }
+    }
+    
+    @Override
+    public ConstructorMirror constructor() {
+        if (methodName().equals("<init>")) {
+            return new JDIConstructorMirror(vm, frame.location().method());
+        } else {
+            return null;
+        }
     }
 
     @Override

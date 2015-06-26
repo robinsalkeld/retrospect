@@ -50,7 +50,7 @@ public class JDIMethodMirror extends JDIMethodOrConstructorMirror implements Met
 
     public JDIMethodMirror(JDIVirtualMachineMirror vm, Method method) {
 	super(vm, method);
-	if (method.name().startsWith("<")) {
+	if (method.name().equals("<init>")) {
 	    throw new IllegalArgumentException();
 	}
     }

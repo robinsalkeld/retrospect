@@ -61,13 +61,17 @@ public class MethodMirrorMember extends ResolvedMemberImpl {
         for (String parameterTypeName : method.getParameterTypeNames()) {
             String signature = "L" + parameterTypeName.replace('.', '/') + ";";
             if (AjcMemberMaker.TYPEX_JOINPOINT.getSignature().equals(signature)) {
-                    extraArgument |= Advice.ThisJoinPoint;
+                extraArgument |= Advice.ThisJoinPoint;
             } else if (AjcMemberMaker.TYPEX_PROCEEDINGJOINPOINT.getSignature().equals(signature)) {
-                    extraArgument |= Advice.ThisJoinPoint;
+                extraArgument |= Advice.ThisJoinPoint;
             } else if (AjcMemberMaker.TYPEX_STATICJOINPOINT.getSignature().equals(signature)) {
-                    extraArgument |= Advice.ThisJoinPointStaticPart;
-            } else if (AjcMemberMaker.TYPEX_ENCLOSINGSTATICJOINPOINT.getSignature().equals(signature)) {
+                if ((extraArgument & Advice.ThisJoinPointStaticPart) != 0) {
                     extraArgument |= Advice.ThisEnclosingJoinPointStaticPart;
+                } else {
+                    extraArgument |= Advice.ThisJoinPointStaticPart;
+                }
+            } else if (AjcMemberMaker.TYPEX_ENCLOSINGSTATICJOINPOINT.getSignature().equals(signature)) {
+                extraArgument |= Advice.ThisEnclosingJoinPointStaticPart;
             }
         }
         return extraArgument;

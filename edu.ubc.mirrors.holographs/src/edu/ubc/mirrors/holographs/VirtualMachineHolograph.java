@@ -928,6 +928,14 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 //      throw new InternalError(message);
     }
     
+    public void gc() throws Exception {
+        Runtime.getRuntime().gc();
+        
+        // TODO-RS: This should be happening on a background ReferenceHandler thread
+        // as well.
+        InstanceHolograph.enqueuePhantomReferences(ThreadHolograph.currentThreadMirror());
+    }
+    
     // TODO-RS: Temporary for evaluation
     public void reportErrors() {
         System.out.println("\n[ Missing bytecode ]");

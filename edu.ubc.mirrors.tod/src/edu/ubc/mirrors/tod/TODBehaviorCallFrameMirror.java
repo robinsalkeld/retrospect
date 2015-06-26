@@ -5,6 +5,7 @@ import java.util.List;
 
 import tod.core.database.event.IBehaviorCallEvent;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -31,9 +32,22 @@ public class TODBehaviorCallFrameMirror implements FrameMirror {
 
     @Override
     public MethodMirror method() {
-        return vm.makeMethodMirror(event.getCallingBehavior());
+        if (methodName().equals("<init>")) {
+            return null;
+        } else {
+            return vm.makeMethodMirror(event.getCallingBehavior());
+        }
     }
 
+    @Override
+    public ConstructorMirror constructor() {
+        if (methodName().equals("<init>")) {
+            return vm.makeConstructorMirror(event.getCallingBehavior());
+        } else {
+            return null;
+        }
+    }
+    
     @Override
     public String fileName() {
         // TODO Auto-generated method stub

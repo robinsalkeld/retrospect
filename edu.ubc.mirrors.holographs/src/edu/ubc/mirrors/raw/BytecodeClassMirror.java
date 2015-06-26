@@ -490,49 +490,58 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+            MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
+            MethodVisitor visitor = new BytecodeMethodVisitor(new MethodNode(access, name, desc, signature, exceptions), 
+                    classWriter, superVisitor);
             if (name.equals("<clinit>")) {
-                final MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-                final DefaultTrackingInterpreter intepreter = new DefaultTrackingInterpreter();
-                
-                MethodNode analyzer = new MethodNode(access, name, desc, null, null) {
-                    @Override
-                    public void visitEnd() {
-                        DefaultTrackingAnalyzer a = new DefaultTrackingAnalyzer(intepreter);
-                        try {
-                             a.analyze(className.replace('.', '/'), this);
-                            staticInitInfo = intepreter.staticsInfo;
-                            if (superVisitor != null) {
-                                accept(superVisitor);
-                            }
-                        } catch (Throwable e) {
-                            if (e instanceof IndexOutOfBoundsException
-                                    && maxLocals == 0 && maxStack == 0)
-                            {
-                                throw new RuntimeException("Data flow checking option requires valid, non zero maxLocals and maxStack values.");
-                            }
-//                            if (frames == null) {
-//                                frames = a.getFrames();
-//                            }
-//                            StringWriter sw = new StringWriter();
-//                            PrintWriter pw = new PrintWriter(sw, true);
-//                            printAnalyzerResult(this, frames, pw);
-//                            pw.close();
-                            throw new RuntimeException(/*sw.toString(), */e);
-                        }
-                    }
-                };
-                
+                visitor = new DefaultTrackingMethodVisitor(visitor, access, name, desc, signature, exceptions);
                 // Inline subroutines since other pieces of the pipeline can't handle them
-                return new JSRInlinerAdapter(analyzer, access, name, desc, signature, exceptions);
-            } else {
-                return new BytecodeMethodVisitor(new MethodNode(access, name, desc, signature, exceptions), classWriter, classWriter.visitMethod(access, name, desc, signature, exceptions));
+                visitor = new JSRInlinerAdapter(visitor, access, name, desc, signature, exceptions);
             }
+            return visitor;
         }
         
         @Override
         public void visitEnd() {
             for (AnnotationNode node : annotations) {
                 BytecodeClassMirror.this.annotations.add(new BytecodeAnnotationMirror(node));
+            }
+        }
+    }
+    
+    private class DefaultTrackingMethodVisitor extends MethodNode {
+        
+        private final DefaultTrackingInterpreter intepreter = new DefaultTrackingInterpreter();
+        private final MethodVisitor visitor;
+        
+        public DefaultTrackingMethodVisitor(MethodVisitor visitor, int access, String name, String desc, String signature, String[] exceptions) {
+            super(Opcodes.ASM4, access, name, desc, signature, exceptions);
+            this.visitor = visitor;
+        }
+        
+        @Override
+        public void visitEnd() {
+            DefaultTrackingAnalyzer a = new DefaultTrackingAnalyzer(intepreter);
+            try {
+                 a.analyze(className.replace('.', '/'), this);
+                staticInitInfo = intepreter.staticsInfo;
+                if (visitor != null) {
+                    accept(visitor);
+                }
+            } catch (Throwable e) {
+                if (e instanceof IndexOutOfBoundsException
+                        && maxLocals == 0 && maxStack == 0)
+                {
+                    throw new RuntimeException("Data flow checking option requires valid, non zero maxLocals and maxStack values.");
+                }
+//                if (frames == null) {
+//                    frames = a.getFrames();
+//                }
+//                StringWriter sw = new StringWriter();
+//                PrintWriter pw = new PrintWriter(sw, true);
+//                printAnalyzerResult(this, frames, pw);
+//                pw.close();
+                throw new RuntimeException(/*sw.toString(), */e);
             }
         }
     }
