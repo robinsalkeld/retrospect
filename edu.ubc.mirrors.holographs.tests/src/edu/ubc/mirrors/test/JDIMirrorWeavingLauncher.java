@@ -3,6 +3,7 @@ package edu.ubc.mirrors.test;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
+import java.net.URL;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
@@ -22,7 +23,7 @@ import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 
 public class JDIMirrorWeavingLauncher {
     
-    public static String launch(String mainClassName, String options, File aspectPath, File hologramClassPath) throws Exception {
+    public static String launch(String mainClassName, String options, String aspectPath, File hologramClassPath) throws Exception {
         ByteArrayOutputStream mergedOutput = new ByteArrayOutputStream();
         OutputStream teedOut = new TeeOutputStream(mergedOutput, System.out);
         OutputStream teedErr = new TeeOutputStream(mergedOutput, System.err);
@@ -56,6 +57,6 @@ public class JDIMirrorWeavingLauncher {
         MethodMirror getBootstrapResourceMethod = loaderClass.getDeclaredMethod("getBootstrapResource", "java.lang.String");
         getBootstrapResourceMethod.invoke(thread, classLoader, jdiVMM.makeString("foo"));
         
-        return RetroactiveWeaving.weave(vm, thread, aspectPath, hologramClassPath);
+        return RetroactiveWeaving.weave(vm, thread, aspectPath, hologramClassPath, mergedOutput);
     }
 }

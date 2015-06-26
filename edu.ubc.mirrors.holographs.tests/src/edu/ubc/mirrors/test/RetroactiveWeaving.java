@@ -5,6 +5,7 @@ import static edu.ubc.mirrors.Reflection.replaceMethod;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,8 +26,6 @@ import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -35,9 +34,11 @@ import edu.ubc.retrospect.MirrorWorld;
 
 public class RetroactiveWeaving {
 
-    public static String weave(VirtualMachineMirror vm, ThreadMirror thread, File aspectPath, File hologramClassPath) throws Exception {
+    public static String weave(VirtualMachineMirror vm, ThreadMirror thread, String aspectPath, File hologramClassPath, ByteArrayOutputStream mergedOutput) throws Exception {
         System.out.println("Booting up holographic VM...");
-        ByteArrayOutputStream mergedOutput = new ByteArrayOutputStream();
+        if (mergedOutput == null) {
+            mergedOutput = new ByteArrayOutputStream();
+        }
         OutputStream teedOut = new TeeOutputStream(mergedOutput, System.out);
         OutputStream teedErr = new TeeOutputStream(mergedOutput, System.err);
         
@@ -63,23 +64,31 @@ public class RetroactiveWeaving {
         
         vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
         vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
-        vmh.addBootstrapPathURL(aspectPath.toURI().toURL());
-        
+        for (String aspectPathPart : aspectPath.split(File.pathSeparator)) {
+            URL partURL;
+            String escaped = new File(aspectPathPart).toURI().toURL().getFile();
+            if (aspectPathPart.endsWith(".jar")) {
+                partURL = new URL("jar", null, -1, "file:" + escaped + "!/");
+            } else {
+                partURL = new URL("file", null, -1, escaped);
+            }
+            vmh.addBootstrapPathURL(partURL);
+        }
         MirrorWorld world = new MirrorWorld(finalThread, null);
         world.weave();
         
         vmh.resume();
         vmh.dispatch().run();
         
-//        return mergedOutput.toString();
+        return mergedOutput.toString();
 //        return Reflection.withThread(thread, new Callable<String>() {
 //          @Override
 //          public String call() throws Exception {
-              ClassMirror guardAspect = vmh.findBootstrapClassMirror("edu.ubc.aspects.JDKAroundFieldSets");
-              ObjectMirror newOut = guardAspect.getStaticFieldValues().get(guardAspect.getDeclaredField("newStderrBaos"));
-              String output = Reflection.toString(newOut, finalThread);
-              System.out.print(output);
-              return output;
+//              ClassMirror guardAspect = vmh.findBootstrapClassMirror("edu.ubc.aspects.JDKAroundFieldSets");
+//              ObjectMirror newOut = guardAspect.getStaticFieldValues().get(guardAspect.getDeclaredField("newStderrBaos"));
+//              String output = Reflection.toString(newOut, finalThread);
+//              System.out.print(output);
+//              return output;
 //          }
 //      });
     }

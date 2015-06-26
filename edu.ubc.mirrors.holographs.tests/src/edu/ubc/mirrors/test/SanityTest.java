@@ -24,6 +24,7 @@ package edu.ubc.mirrors.test;
 import static edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror.unhash;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,8 @@ import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
 
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.EventSet;
+import com.sun.jdi.event.VMStartEvent;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -112,7 +115,9 @@ public class SanityTest extends TestCase {
                 false, null, null);
         
         // Ignore the VMStartEvent
-        jdiVM.eventQueue().remove();
+        EventSet set = jdiVM.eventQueue().remove();
+        assert set.size() == 1;
+        assert set.iterator().next() instanceof VMStartEvent;
         LiveVersusDeadToStringEvaluation.run(jdiVM);
         jdiVM.exit(0);
     }
@@ -156,20 +161,26 @@ public class SanityTest extends TestCase {
     public void testRacerAspects() throws Exception {
         new RacerTest().testRacerExample(); 
     }
-    
-    public void testTracingAspectTOD() throws Exception {
-        String actualOutput = TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin,
-                new File(EvalConstants.DataRoot, "tod/TracingTest"));
-        
-        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
-        assertEquals(expectedOutput, actualOutput);
+//    
+//    public void testTracingAspectTOD() throws Exception {
+//        String actualOutput = TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin,
+//                new File(EvalConstants.DataRoot, "tod/TracingTest"));
+//        
+//        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
+//        assertEquals(expectedOutput, actualOutput);
+//    }
+//    
+    public void testLeakDetectorAspect() throws Exception {
+        JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", 
+                "-cp \"" + EvalConstants.TestsRoot + "\"", 
+                EvalConstants.LeakDetectorAspectBin.toString(), 
+                new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
     }
     
-    public void testLeakDetectorAspect() throws Exception {
+    public void testHeapAspect() throws Exception {
         JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
-                "-cp \"" + EvalConstants.TracingExampleBin + "\"", 
-                EvalConstants.LeakDetectorAspectBin, 
+                "-cp \"" + EvalConstants.TracingExampleBin + ":" + EvalConstants.DJProfMainJar + "\"", 
+                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
                 new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
-//        
     }
 }

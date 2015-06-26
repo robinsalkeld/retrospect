@@ -30,8 +30,8 @@ public class RacerTest extends TestCase {
 
     public void testRacerExample() throws Exception {
         String output = JDIMirrorWeavingLauncher.launch("Task", 
-                "-cp \"" + EvalConstants.RacerExampleBin + "\"", EvalConstants.RacerBin, 
-                new File(EvalConstants.EvalRoot, "jdi/RacerTest/hologram_classes"));
+                "-cp \"" + EvalConstants.RacerExampleBin + "\"", EvalConstants.RacerBin.toString(), 
+                new File(EvalConstants.DataRoot, "jdi/RacerTest/hologram_classes"));
         assertTrue(output.contains("Field 'static int Task.shared' is accessed unprotected."));
     }
 }
