@@ -25,4 +25,5 @@ public interface ConstructorMirrorExitEvent extends MirrorEvent {
 
     public ConstructorMirror constructor();
     public ThreadMirror thread();
+    public InstanceMirror returnValue();
 }

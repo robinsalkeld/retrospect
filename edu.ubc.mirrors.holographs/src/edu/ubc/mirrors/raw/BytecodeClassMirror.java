@@ -1268,6 +1268,12 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     }
     
     @Override
+    public MirrorLocation locationOfLine(int lineNumber) {
+        // TODO-RS: For now
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public FieldMirror createField(int modifiers, ClassMirror type, String name) {
         throw new UnsupportedOperationException();
     }

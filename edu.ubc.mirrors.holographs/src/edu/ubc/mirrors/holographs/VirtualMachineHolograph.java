@@ -928,8 +928,14 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 //      throw new InternalError(message);
     }
     
-    public void gc() throws Exception {
+    public void gc() {
+        // Run the garbage collector on the host JVM
+        // This should mark any objects with no retroactive references
+        // as collectable in the wrapped VM.
         Runtime.getRuntime().gc();
+        
+        // Run garbage collector on the wrapped VM
+        wrappedVM.gc();
         
         // TODO-RS: This should be happening on a background ReferenceHandler thread
         // as well.

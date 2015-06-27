@@ -448,4 +448,8 @@ public class HeapDumpVirtualMachineMirror implements VirtualMachineMirror {
     public void addCallback(MirrorEventRequest request, Callback<MirrorEvent> callback) {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public void gc() {
+    }
 }

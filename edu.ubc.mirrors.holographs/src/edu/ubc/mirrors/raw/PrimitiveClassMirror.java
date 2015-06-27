@@ -35,6 +35,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
@@ -218,5 +219,10 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
     @Override
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread) {
         return Collections.emptyList();
+    }
+    
+    @Override
+    public MirrorLocation locationOfLine(int lineNumber) {
+        return null;
     }
 }

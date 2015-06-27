@@ -4,7 +4,6 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.holographs.InstanceHolograph;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.jdkplugins.NativeStubs;
 import edu.ubc.mirrors.holographs.jdkplugins.StubMethod;
@@ -27,6 +26,8 @@ public class RuntimeStubs extends NativeStubs {
     
     @StubMethod
     public void runFinalization0() throws Exception {
+        Runtime.getRuntime().runFinalization();
+        
         ClassMirror finalizerClass = getVM().findBootstrapClassMirror("java.lang.ref.Finalizer");
         MethodMirror finalizationMethod = finalizerClass.getDeclaredMethod("runFinalization");
         finalizationMethod.invoke(ThreadHolograph.currentThreadMirror(), null);

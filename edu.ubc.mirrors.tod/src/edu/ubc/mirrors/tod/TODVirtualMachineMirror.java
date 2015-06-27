@@ -390,4 +390,9 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     public ConstructorMirror makeConstructorMirror(IBehaviorInfo behavior) {
         return new TODMethodOrConstructorMirror(this, behavior);
     }
+    
+    @Override
+    public void gc() {
+        throw new UnsupportedOperationException();
+    }
 }

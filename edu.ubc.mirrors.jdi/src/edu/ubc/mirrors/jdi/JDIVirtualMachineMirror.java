@@ -523,7 +523,12 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
             return withoutEventRequests(new Callable<Value>() {
                 @Override
                 public Value call() throws Exception {
-                    return o.invokeMethod(t, m, finalArgs, 0);
+                    if (o != null) {
+                        return o.invokeMethod(t, m, finalArgs, 0);
+                    } else {
+                        ClassType declaringClass = (ClassType)m.declaringType();
+                        return declaringClass.invokeMethod(t, m, finalArgs, 0);
+                    }
                 }
             });
         } catch (Exception e) {
@@ -583,5 +588,15 @@ public class JDIVirtualMachineMirror implements VirtualMachineMirror {
         } else { // Primitive value
             return wrapValue(value);
         }
+    }
+    
+    @Override
+    public void gc() {
+        ThreadReference thread = jdiVM.allThreads().get(0); 
+        ClassType runtimeClass = (ClassType)jdiVM.classesByName(Runtime.class.getName()).get(0);
+        Method getRuntime = runtimeClass.methodsByName("getRuntime").get(0);
+        ObjectReference runtime = (ObjectReference)safeInvoke(null, thread, getRuntime);
+        Method gc = runtimeClass.methodsByName("gc").get(0);
+        safeInvoke(runtime, thread, gc);
     }
 }

@@ -26,6 +26,8 @@ import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.MirrorLocation;
+import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -254,11 +256,21 @@ public class RetroactiveWeaving {
     private static void methodCallBreakpoint(final VirtualMachineMirror vm, String declaringClass, String name, String... paramterTypeNames) {
         MethodMirrorHandlerRequest methodRequest = vm.eventRequestManager().createMethodMirrorHandlerRequest();
         methodRequest.setMethodFilter(declaringClass, name, Arrays.asList(paramterTypeNames));
-        vm.addCallback(methodRequest, new Callback<MirrorEvent>() {
-            public MirrorEvent handle(MirrorEvent t) {
-                return t;
-            }
-        });
+        vm.addCallback(methodRequest, BREAKPOINT);
         methodRequest.enable();
     }
+    
+    private static void locationBreakpoint(final VirtualMachineMirror vm, String className, int lineNumber) {
+        ClassMirror klass = vm.findAllClasses(className, false).iterator().next();
+        MirrorLocation location = klass.locationOfLine(lineNumber);
+        MirrorLocationRequest request = vm.eventRequestManager().createLocationRequest(location);
+        vm.addCallback(request, BREAKPOINT);
+        request.enable();
+    }
+    
+    private static Callback<MirrorEvent> BREAKPOINT = new Callback<MirrorEvent>() {
+        public MirrorEvent handle(MirrorEvent t) {
+            return t;
+        }
+    };
 }

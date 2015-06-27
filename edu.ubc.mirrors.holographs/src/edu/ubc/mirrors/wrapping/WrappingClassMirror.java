@@ -34,6 +34,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -239,6 +240,12 @@ public class WrappingClassMirror extends WrappingInstanceMirror implements Class
             result.add(vm.wrapAnnotation(a));
         }
         return result;
+    }
+    
+    @Override
+    public MirrorLocation locationOfLine(int lineNumber) {
+        MirrorLocation result = wrapped.locationOfLine(lineNumber);
+        return result == null ? null : vm.wrapLocation(result);
     }
     
     @Override

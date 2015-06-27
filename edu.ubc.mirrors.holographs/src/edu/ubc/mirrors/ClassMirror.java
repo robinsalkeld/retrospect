@@ -87,6 +87,8 @@ public interface ClassMirror extends InstanceMirror {
     
     public List<AnnotationMirror> getAnnotations(ThreadMirror thread);
     
+    public MirrorLocation locationOfLine(int lineNumber);
+    
     // Mutation support
     
     public FieldMirror createField(int modifiers, ClassMirror type, String name);

@@ -202,4 +202,9 @@ public class NativeVirtualMachineMirror implements VirtualMachineMirror {
         }
         return result;
     }
+    
+    @Override
+    public void gc() {
+        Runtime.getRuntime().gc();
+    }
 }

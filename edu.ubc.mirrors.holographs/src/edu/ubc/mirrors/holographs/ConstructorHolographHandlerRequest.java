@@ -98,7 +98,7 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
         
         try {
             ConstructorMirrorExitEvent exitEvent = (ConstructorMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
-            return null;
+            return exitEvent.returnValue();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

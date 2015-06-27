@@ -61,4 +61,5 @@ public interface VirtualMachineMirror {
     public InstanceMirror makeString(String s);
     public InstanceMirror getInternedString(String s);
 
+    public void gc();
 }

@@ -29,7 +29,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.BooleanArrayMirror;
@@ -93,7 +92,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     }
     
     private final Map<ObjectMirror, WeakReference<ObjectMirror>> wrappedMirrors = 
-            new WeakHashMap<ObjectMirror, WeakReference<ObjectMirror>>();
+            new HashMap<ObjectMirror, WeakReference<ObjectMirror>>();
     
     public ObjectMirror getWrappedMirror(ObjectMirror mirror) {
         if (mirror == null) {
@@ -151,6 +150,10 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         } else {
             throw new IllegalArgumentException();
         }
+    }
+    
+    public void releaseMirror(InstanceMirror wrapped) {
+        wrappedMirrors.remove(wrapped);
     }
     
     public ObjectMirror unwrapMirror(ObjectMirror mirror) {
@@ -368,7 +371,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
     }
 
     public ThreadMirror unwrapThread(ThreadMirror thread) {
-        return ((WrappingThreadMirror)thread).wrappedThread;
+        return (ThreadMirror)unwrapMirror(thread);
     }
 
     public InvocableMirror unwrapInvocable(InvocableMirror invocable) {

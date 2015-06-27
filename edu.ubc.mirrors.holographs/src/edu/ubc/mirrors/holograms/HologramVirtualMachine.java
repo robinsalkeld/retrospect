@@ -24,7 +24,6 @@ package edu.ubc.mirrors.holograms;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.holograms.HologramClassMirror;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
 
 public class HologramVirtualMachine extends WrappingVirtualMachine {
@@ -40,5 +39,9 @@ public class HologramVirtualMachine extends WrappingVirtualMachine {
         } else {
             return super.wrapMirror(mirror);
         }
+    }
+    
+    @Override
+    public void gc() {
     }
 }

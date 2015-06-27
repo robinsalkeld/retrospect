@@ -24,30 +24,36 @@ package edu.ubc.mirrors.holographs;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
+import edu.ubc.mirrors.wrapping.WrappingMirror;
 
 public class InstanceHolograph extends WrappingInstanceMirror {
 
     protected final VirtualMachineHolograph vm;
     private Map<FieldMirror, Object> newValues;
     
-    private static final ReferenceQueue<ObjectMirror> phantomRefQueue = new ReferenceQueue<ObjectMirror>();
+    private static final Set<PhantomMirrorReference> collectable = new HashSet<PhantomMirrorReference>();
     
     public InstanceHolograph(VirtualMachineHolograph vm, InstanceMirror wrappedInstance) {
         super(vm, wrappedInstance);
         this.vm = vm;
-
+        wrappedInstance.allowCollection(false);
+        
         if (!vm.getWrappedVM().canBeModified() || wrapped instanceof NewInstanceMirror) {
             this.newValues = new HashMap<FieldMirror, Object>();
         } else {
@@ -55,24 +61,40 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         }
     }
     
-    private class PhantomMirrorReference extends PhantomReference<ObjectMirror> {
-
-        private InstanceHolograph mirror = InstanceHolograph.this;
-        
-        public PhantomMirrorReference(ObjectMirror referent) {
-            super(referent, phantomRefQueue);
-        }
-        
+    @Override
+    protected void finalize() throws Throwable {
+        vm.releaseMirror(wrapped);
+        wrapped.allowCollection(true);
     }
     
-    public static void enqueuePhantomReferences(ThreadMirror thread) throws Exception {
-        VirtualMachineMirror vm = thread.getClassMirror().getVM();
-        ClassMirror referenceClass = vm.findBootstrapClassMirror(Reference.class.getName());
-        MethodMirror enqueueMethod = referenceClass.getDeclaredMethod("enqueue");
+    private class PhantomMirrorReference extends WeakReference<ObjectMirror> {
+
+        private InstanceHolograph refMirror = InstanceHolograph.this;
+        private ObjectMirror wrapped;
         
-        PhantomMirrorReference ref;
-        while ((ref = (PhantomMirrorReference)phantomRefQueue.poll()) != null) {
-            enqueueMethod.invoke(thread, ref.mirror);
+        public PhantomMirrorReference(ObjectMirror referent) {
+            super(referent);
+            if (referent instanceof WrappingMirror) {
+                wrapped = ((WrappingMirror)referent).getWrapped();
+                collectable.add(this);
+            }
+        }
+    }
+    
+    public static void enqueuePhantomReferences(ThreadMirror thread) {
+        try {
+            VirtualMachineMirror vm = thread.getClassMirror().getVM();
+            ClassMirror referenceClass = vm.findBootstrapClassMirror(Reference.class.getName());
+            MethodMirror enqueueMethod = referenceClass.getDeclaredMethod("enqueue");
+            
+            for (PhantomMirrorReference ref : collectable) {
+                if (ref.wrapped.isCollected()) {
+                    enqueueMethod.invoke(thread, ref.refMirror);
+                }
+            }
+        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException | IllegalAccessException
+                | MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
     
@@ -171,7 +193,7 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         checkForIllegalMutation(field);
         
         // Special case for References
-        if (isReferenceReferentField(field)) {
+        if (isReferenceReferentField(field) && o != null) {
             // TODO-RS: Soft and Weak references when necessary
             newValues.put(field, new PhantomMirrorReference(o));
         } else {

@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.ClassNotLoadedException;
@@ -36,6 +37,7 @@ import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
@@ -50,6 +52,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
@@ -387,6 +390,17 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     public MethodMirror getEnclosingMethodMirror() {
         //TODO-RS
         return null;
+    }
+    
+    @Override
+    public MirrorLocation locationOfLine(int lineNumber) {
+        List<Location> locations;
+        try {
+            locations = refType.locationsOfLine(lineNumber);
+        } catch (AbsentInformationException e) {
+            return null;
+        }
+        return locations.isEmpty() ? null : new JDIMirrorLocation(vm, locations.get(0));
     }
     
     @Override

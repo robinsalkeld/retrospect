@@ -6,6 +6,7 @@ import java.util.List;
 import tod.core.database.event.IBehaviorExitEvent;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorExitEvent;
+import edu.ubc.mirrors.InstanceMirror;
 
 public class TODConstructorMirrorExitEvent extends TODMirrorEvent implements ConstructorMirrorExitEvent {
 
@@ -24,5 +25,10 @@ public class TODConstructorMirrorExitEvent extends TODMirrorEvent implements Con
     @Override
     public ConstructorMirror constructor() {
         return vm.makeConstructorMirror(logEvent.getOperationBehavior());
+    }
+    
+    @Override
+    public InstanceMirror returnValue() {
+        return (InstanceMirror)vm.wrapValue(constructor().getDeclaringClass(), logEvent.getResult());
     }
 }

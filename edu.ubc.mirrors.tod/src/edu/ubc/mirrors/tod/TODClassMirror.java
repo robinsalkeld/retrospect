@@ -44,6 +44,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
@@ -363,6 +364,11 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public MirrorLocation locationOfLine(int lineNumber) {
+        throw new UnsupportedOperationException();
+    }
+    
     @Override
     public FieldMirror createField(int modifiers, ClassMirror type, String name) {
         throw new UnsupportedOperationException();
