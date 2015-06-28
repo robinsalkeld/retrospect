@@ -564,6 +564,8 @@ public class ClassHolograph extends WrappingClassMirror {
                 throw new InternalError();
             } catch (NoSuchFieldException e) {
                 // Ignore - not a dynamically generated class
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
             }
             initialized = Boolean.TRUE;
         }

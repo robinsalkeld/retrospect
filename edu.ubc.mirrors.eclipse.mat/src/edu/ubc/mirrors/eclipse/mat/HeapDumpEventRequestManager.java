@@ -27,7 +27,6 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
-import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
@@ -37,7 +36,6 @@ import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorEventRequestManager;
-import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
@@ -112,7 +110,7 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror field) {
+    public FieldMirrorGetRequest createFieldMirrorGetRequest(String declaringClass, String name) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -124,7 +122,7 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror field) {
+    public FieldMirrorSetRequest createFieldMirrorSetRequest(String declaringClass, String fieldName) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -173,12 +171,12 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
     }
     
     @Override
-    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field) {
+    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(String declaringClass, String fieldName) {
         throw new UnsupportedOperationException();
     }
     
     @Override
-    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field) {
+    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(String declaringClass, String fieldName) {
         throw new UnsupportedOperationException();
     }
 }

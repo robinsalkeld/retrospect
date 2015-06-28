@@ -51,15 +51,15 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
     }
     
     @Override
-    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field) {
-        FieldHolographGetHandlerRequest request = new FieldHolographGetHandlerRequest(vm, field);
+    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(String declaringClass, String name) {
+        FieldHolographGetHandlerRequest request = new FieldHolographGetHandlerRequest(vm, declaringClass, name);
         fieldGetHandlerRequests.add(request);
         return request;
     }
     
     @Override
-    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field) {
-        FieldHolographSetHandlerRequest request = new FieldHolographSetHandlerRequest(vm, field);
+    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(String declaringClass, String name) {
+        FieldHolographSetHandlerRequest request = new FieldHolographSetHandlerRequest(vm, declaringClass, name);
         fieldSetHandlerRequests.add(request);
         return request;
     }

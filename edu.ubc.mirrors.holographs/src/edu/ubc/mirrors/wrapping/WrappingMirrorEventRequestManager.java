@@ -27,7 +27,6 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
-import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
@@ -45,7 +44,7 @@ import edu.ubc.mirrors.ThreadMirrorStartRequest;
 public class WrappingMirrorEventRequestManager implements MirrorEventRequestManager {
 
     private final WrappingVirtualMachine vm;
-    private final MirrorEventRequestManager wrapped;
+    protected final MirrorEventRequestManager wrapped;
     
     public WrappingMirrorEventRequestManager(WrappingVirtualMachine vm, MirrorEventRequestManager wrapped) {
 	this.vm = vm;
@@ -104,9 +103,9 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
 
     @Override
-    public FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror field) {
-	FieldMirror unwrappedField = vm.unwrapFieldMirror(field);
-	return new WrappingFieldMirrorGetRequest(vm, wrapped.createFieldMirrorGetRequest(unwrappedField));
+    public FieldMirrorGetRequest createFieldMirrorGetRequest(String declaringClass, String name) {
+	return new WrappingFieldMirrorGetRequest(vm, 
+	        wrapped.createFieldMirrorGetRequest(declaringClass, name));
     }
 
     @Override
@@ -115,9 +114,9 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
 
     @Override
-    public FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror field) {
-        FieldMirror unwrappedField = vm.unwrapFieldMirror(field);
-        return new WrappingFieldMirrorSetRequest(vm, wrapped.createFieldMirrorSetRequest(unwrappedField));
+    public FieldMirrorSetRequest createFieldMirrorSetRequest(String declaringClass, String name) {
+        return new WrappingFieldMirrorSetRequest(vm, 
+                wrapped.createFieldMirrorSetRequest(declaringClass, name));
     }
 
     @Override
@@ -161,14 +160,14 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     }
     
     @Override
-    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field) {
+    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(String declaringClass, String name) {
         return new WrappingFieldMirrorSetHandlerRequest(vm, 
-                wrapped.createFieldMirrorSetHandlerRequest(vm.unwrapFieldMirror(field)));
+                wrapped.createFieldMirrorSetHandlerRequest(declaringClass, name));
     }
     
     @Override
-    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field) {
+    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(String declaringClass, String name) {
         return new WrappingFieldMirrorGetHandlerRequest(vm, 
-                wrapped.createFieldMirrorGetHandlerRequest(vm.unwrapFieldMirror(field)));
+                wrapped.createFieldMirrorGetHandlerRequest(declaringClass, name));
     }
 }

@@ -167,9 +167,8 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror fieldMirror) {
-        Field f = ((JDIFieldMirror)fieldMirror).field;
-        JDIFieldMirrorGetRequest result = new JDIFieldMirrorGetRequest(vm, wrapped.createAccessWatchpointRequest(f));
+    public FieldMirrorGetRequest createFieldMirrorGetRequest(String declaringClass, String name) {
+        JDIFieldMirrorGetRequest result = new JDIFieldMirrorGetRequest(vm, declaringClass, name);
         allRequests.add(result);
         return result;
     }
@@ -184,9 +183,8 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror fieldMirror) {
-	Field f = ((JDIFieldMirror)fieldMirror).field;
-	JDIFieldMirrorSetRequest result = new JDIFieldMirrorSetRequest(vm, wrapped.createModificationWatchpointRequest(f));
+    public FieldMirrorSetRequest createFieldMirrorSetRequest(String declaringClass, String fieldName) {
+	JDIFieldMirrorSetRequest result = new JDIFieldMirrorSetRequest(vm, declaringClass, fieldName);
 	allRequests.add(result);
 	return result;
     }
@@ -244,12 +242,12 @@ public class JDIMirrorEventRequestManager implements MirrorEventRequestManager {
     }
     
     @Override
-    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field) {
+    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(String declaringClass, String fieldName) {
         throw new UnsupportedOperationException();
     }
     
     @Override
-    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field) {
+    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(String declaringClass, String fieldName) {
         throw new UnsupportedOperationException();
     }
 }

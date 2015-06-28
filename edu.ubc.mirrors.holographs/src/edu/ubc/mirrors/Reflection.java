@@ -998,6 +998,11 @@ public class Reflection {
         return true;
     }
     
+    public static boolean fieldMatches(FieldMirror field, String declaringClassFilter, String nameFilter) {
+        return field.getDeclaringClass().getClassName().equals(declaringClassFilter)
+                && field.getName().equals(nameFilter);
+    }
+    
     public static String join(List<String> strings, String sep) {
         StringBuilder result = new StringBuilder();
         boolean first = true;

@@ -112,9 +112,7 @@ public class RetroactiveWeaving {
     
     private static void relocateField(VirtualMachineMirror vm, String className, String fieldName, final Callable<Object> initializer) {
         final Map<Object, Object> relocatedValues = new HashMap<Object, Object>();
-        ClassMirror klass = vm.findBootstrapClassMirror(className);
-        FieldMirror field = klass.getDeclaredField(fieldName);
-        FieldMirrorSetHandlerRequest setRequest = vm.eventRequestManager().createFieldMirrorSetHandlerRequest(field);
+        FieldMirrorSetHandlerRequest setRequest = vm.eventRequestManager().createFieldMirrorSetHandlerRequest(className, fieldName);
         vm.dispatch().addCallback(setRequest, new Callback<MirrorEvent>() {
             @Override
             public MirrorEvent handle(MirrorEvent t) {
@@ -131,7 +129,7 @@ public class RetroactiveWeaving {
         });
         setRequest.enable();
         
-        FieldMirrorGetHandlerRequest getRequest = vm.eventRequestManager().createFieldMirrorGetHandlerRequest(field);
+        FieldMirrorGetHandlerRequest getRequest = vm.eventRequestManager().createFieldMirrorGetHandlerRequest(className, fieldName);
         vm.dispatch().addCallback(getRequest, new Callback<MirrorEvent>() {
             @Override
             public MirrorEvent handle(MirrorEvent t) {

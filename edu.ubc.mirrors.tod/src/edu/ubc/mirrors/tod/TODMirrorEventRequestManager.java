@@ -109,7 +109,7 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror field) {
+    public FieldMirrorGetRequest createFieldMirrorGetRequest(String declaringClass, String name) {
         throw new UnsupportedOperationException();
     }
 
@@ -119,7 +119,7 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
     }
 
     @Override
-    public FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror field) {
+    public FieldMirrorSetRequest createFieldMirrorSetRequest(String declaringClass, String fieldName) {
         throw new UnsupportedOperationException();
     }
 
@@ -237,12 +237,12 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
     }
     
     @Override
-    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field) {
+    public FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(String declaringClass, String fieldName) {
         throw new UnsupportedOperationException();
     }
     
     @Override
-    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field) {
+    public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(String declaringClass, String fieldName) {
         throw new UnsupportedOperationException();
     }
     

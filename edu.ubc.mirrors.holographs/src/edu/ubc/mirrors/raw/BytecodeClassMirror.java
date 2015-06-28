@@ -490,9 +490,9 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            MethodVisitor superVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-            MethodVisitor visitor = new BytecodeMethodVisitor(new MethodNode(access, name, desc, signature, exceptions), 
-                    classWriter, superVisitor);
+            MethodVisitor visitor = super.visitMethod(access, name, desc, signature, exceptions);
+            visitor = new BytecodeMethodVisitor(new MethodNode(access, name, desc, signature, exceptions), 
+                    classWriter, visitor);
             if (name.equals("<clinit>")) {
                 visitor = new DefaultTrackingMethodVisitor(visitor, access, name, desc, signature, exceptions);
                 // Inline subroutines since other pieces of the pipeline can't handle them
@@ -523,7 +523,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         public void visitEnd() {
             DefaultTrackingAnalyzer a = new DefaultTrackingAnalyzer(intepreter);
             try {
-                 a.analyze(className.replace('.', '/'), this);
+                a.analyze(className.replace('.', '/'), this);
                 staticInitInfo = intepreter.staticsInfo;
                 if (visitor != null) {
                     accept(visitor);

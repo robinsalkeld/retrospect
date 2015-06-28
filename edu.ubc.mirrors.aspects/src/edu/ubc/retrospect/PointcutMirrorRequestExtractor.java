@@ -261,15 +261,19 @@ public class PointcutMirrorRequestExtractor {
                         FieldMirror fieldMirror = member.getField();
                         if (advice.getKind() == AdviceKind.Around) {
                             if (kind.bit == Shadow.FieldSetBit) {
-                                request = manager.createFieldMirrorSetHandlerRequest(fieldMirror);
+                                request = manager.createFieldMirrorSetHandlerRequest(fieldMirror.getDeclaringClass().getClassName(),
+                                        fieldMirror.getName());
                             } else {
-                                request = manager.createFieldMirrorGetHandlerRequest(fieldMirror);
+                                request = manager.createFieldMirrorGetHandlerRequest(fieldMirror.getDeclaringClass().getClassName(),
+                                        fieldMirror.getName());
                             }
                         } else if (advice.getKind() == AdviceKind.Before) {
                             if (kind.bit == Shadow.FieldSetBit) {
-                                request = manager.createFieldMirrorSetRequest(fieldMirror);
+                                request = manager.createFieldMirrorSetRequest(fieldMirror.getDeclaringClass().getClassName(),
+                                        fieldMirror.getName());
                             } else {
-                                request = manager.createFieldMirrorGetRequest(fieldMirror);
+                                request = manager.createFieldMirrorGetRequest(fieldMirror.getDeclaringClass().getClassName(),
+                                        fieldMirror.getName());
                             }
                         } else {
                             throw new IllegalArgumentException("After advice on field get/set not supported");
@@ -347,7 +351,7 @@ public class PointcutMirrorRequestExtractor {
                                 for (Method method : bcelClass.getMethods()) {
                                     try {
                                         String name = method.getName();
-                                        if (!name.startsWith("<")) {
+                                        if (!name.equals("<init>")) {
                                             MethodMirror thisMirror = Reflection.getDeclaredMethod(klass, name, Type.getMethodType(method.getSignature()));
                                             bcelMethods.put(thisMirror, method);
                                         }

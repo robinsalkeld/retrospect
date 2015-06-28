@@ -45,11 +45,11 @@ public interface MirrorEventRequestManager {
     
     List<ConstructorMirrorExitRequest> constructorMirrorExitRequests();
 
-    FieldMirrorGetRequest createFieldMirrorGetRequest(FieldMirror field);
+    FieldMirrorGetRequest createFieldMirrorGetRequest(String declaringClass, String name);
 
     List<FieldMirrorGetRequest> fieldMirrorGetRequests();
     
-    FieldMirrorSetRequest createFieldMirrorSetRequest(FieldMirror field);
+    FieldMirrorSetRequest createFieldMirrorSetRequest(String declaringClass, String name);
     
     List<FieldMirrorSetRequest> fieldMirrorSetRequests();
     
@@ -65,9 +65,9 @@ public interface MirrorEventRequestManager {
     
     ConstructorMirrorHandlerRequest createConstructorMirrorHandlerRequest();
     
-    FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(FieldMirror field);
+    FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(String declaringClass, String name);
     
-    FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(FieldMirror field);
+    FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(String declaringClass, String name);
     
     void deleteMirrorEventRequest(MirrorEventRequest request);
 

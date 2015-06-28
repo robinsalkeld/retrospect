@@ -23,6 +23,7 @@ import edu.ubc.mirrors.FieldMirrorSetEvent;
 import edu.ubc.mirrors.FieldMirrorSetHandlerEvent;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorExitEvent;
 import edu.ubc.mirrors.MethodMirrorHandlerEvent;
@@ -143,10 +144,18 @@ public abstract class MirrorEventShadow extends Shadow {
                     cmee.thread(), signature, null);
         } else if (event instanceof MethodMirrorHandlerEvent) {
             MethodMirrorHandlerEvent mmhe = (MethodMirrorHandlerEvent)event;
+            if (isNonwovenMethod(mmhe.method())) {
+                return null;
+            }
+            
             Member signature = MethodMirrorMember.make(world, mmhe.method());
             return new MethodMirrorExecutionShadow(world, shadowKind, mmhe, signature, null);
         } else if (event instanceof MethodMirrorEntryEvent) {
             MethodMirrorEntryEvent mmee = (MethodMirrorEntryEvent)event;
+            if (isNonwovenMethod(mmee.method())) {
+                return null;
+            }
+            
             if (shadowKind == Shadow.SynchronizationLock) {
                 return new SynchronizedMethodMirrorEntryShadow(world, mmee, null);
             } else {
@@ -155,6 +164,10 @@ public abstract class MirrorEventShadow extends Shadow {
             }
         } else if (event instanceof MethodMirrorExitEvent) {
             MethodMirrorExitEvent mmee = (MethodMirrorExitEvent)event;
+            if (isNonwovenMethod(mmee.method())) {
+                return null;
+            }
+            
             if (shadowKind == Shadow.SynchronizationUnlock) {
                 return new SynchronizedMethodMirrorExitShadow(world, mmee, null);
             } else {
@@ -179,6 +192,18 @@ public abstract class MirrorEventShadow extends Shadow {
             return new FieldMirrorSetHandlerShadow(world, fmshe, signature, null);
         } else {
             throw new IllegalArgumentException();
+        }
+    }
+    
+    private static boolean isNonwovenMethod(MethodMirror method) {
+        String methodName = method.getName();
+        
+        if (methodName.equals("ajc$preClinit") 
+                || methodName.equals("ajc$postClinit")
+                || methodName.equals("<clinit>")) {
+            return true;
+        } else {
+            return false;
         }
     }
     

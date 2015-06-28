@@ -346,8 +346,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     	    	}
 	    } else if (event instanceof ClassMirrorPrepareEvent) {
 		ClassMirror zipFileClass = ((ClassMirrorPrepareEvent)event).classMirror();
-		FieldMirror nameField = zipFileClass.getDeclaredField("name");
-		FieldMirrorSetRequest request = eventRequestManager().createFieldMirrorSetRequest(nameField);
+		FieldMirrorSetRequest request = eventRequestManager().createFieldMirrorSetRequest(zipFileClass.getClassName(), "name");
 	        dispatch().addCallback(request, this);
 	        request.enable();
 	    }

@@ -1,54 +1,23 @@
 package edu.ubc.mirrors.holographs;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import edu.ubc.mirrors.AbstractMirrorEventRequest;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
+import edu.ubc.mirrors.Reflection;
 
-public class FieldHolographGetHandlerRequest implements FieldMirrorGetHandlerRequest {
+public class FieldHolographGetHandlerRequest extends AbstractMirrorEventRequest implements FieldMirrorGetHandlerRequest {
 
-    private final VirtualMachineHolograph vm;
-    private boolean enabled = false;
-    private final Map<Object, Object> properties = new HashMap<Object, Object>();
-    private final FieldMirror fieldFilter;
+    private final String declaringClass;
+    private final String fieldName;
     private final List<String> classNamePatterns = new ArrayList<String>();
     
-    public FieldHolographGetHandlerRequest(VirtualMachineHolograph vm, FieldMirror field) {
-        this.vm = vm;
-        this.fieldFilter = field;
-    }
-
-    @Override
-    public void enable() {
-        setEnabled(true);
-    }
-
-    @Override
-    public void disable() {
-        setEnabled(false);
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    @Override
-    public Object getProperty(Object key) {
-        return properties.get(key);
-    }
-
-    @Override
-    public void putProperty(Object key, Object value) {
-        properties.put(key, value);
+    public FieldHolographGetHandlerRequest(VirtualMachineHolograph vm, String declaringClass, String name) {
+        super(vm);
+        this.declaringClass = declaringClass;
+        this.fieldName = name;
     }
 
     @Override
@@ -63,12 +32,6 @@ public class FieldHolographGetHandlerRequest implements FieldMirrorGetHandlerReq
             }
         }
         
-        if (fieldFilter != null) {
-            if (fieldFilter != field) {
-                return false;
-            }
-        }
-        
-        return true;
+        return Reflection.fieldMatches(field, declaringClass, fieldName);
     }
 }
