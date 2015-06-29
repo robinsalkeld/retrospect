@@ -39,8 +39,18 @@ public class IntArrayHologram extends ArrayHologram implements IntArrayMirror {
     }
 
     @Override
+    public int[] getInts(int index, int length) throws ArrayIndexOutOfBoundsException {
+        return mirror.getInts(index, length);
+    }
+    
+    @Override
     public void setInt(int index, int b) throws ArrayIndexOutOfBoundsException {
         mirror.setInt(index, b);
+    }
+    
+    @Override
+    public void setInts(int index, int[] b) throws ArrayIndexOutOfBoundsException {
+        mirror.setInts(index, b);
     }
     
     public static int getHologram(IntArrayMirror mirror, int index) throws Throwable {

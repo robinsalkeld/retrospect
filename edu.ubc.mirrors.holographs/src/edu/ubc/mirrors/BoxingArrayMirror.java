@@ -57,9 +57,23 @@ public abstract class BoxingArrayMirror implements
     public int getInt(int index) throws ArrayIndexOutOfBoundsException {
         return ((Integer)getBoxedValue(index)).intValue();
     }
+    
+    public int[] getInts(int index, int length) throws ArrayIndexOutOfBoundsException {
+        int[] result = new int[length];
+        for (int i = 0; i < length; i++) {
+            result[i] = getInt(index + i);
+        }
+        return result;
+    }
 
     public void setInt(int index, int i) throws ArrayIndexOutOfBoundsException {
         setBoxedValue(index, Integer.valueOf(i));
+    }
+    
+    public void setInts(int index, int[] b) throws ArrayIndexOutOfBoundsException {
+        for (int i = 0; i < b.length; i++) {
+            setInt(index + i, b[i]);
+        }
     }
 
     public short getShort(int index) throws ArrayIndexOutOfBoundsException {

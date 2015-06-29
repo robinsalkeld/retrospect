@@ -25,5 +25,9 @@ public interface IntArrayMirror extends ArrayMirror {
 
     public int getInt(int index) throws ArrayIndexOutOfBoundsException;
     
+    public int[] getInts(int index, int length) throws ArrayIndexOutOfBoundsException;
+    
     public void setInt(int index, int b) throws ArrayIndexOutOfBoundsException;
+    
+    public void setInts(int index, int[] b) throws ArrayIndexOutOfBoundsException;
 }
