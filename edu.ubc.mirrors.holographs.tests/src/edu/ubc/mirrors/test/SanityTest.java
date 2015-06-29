@@ -24,7 +24,6 @@ package edu.ubc.mirrors.test;
 import static edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror.unhash;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +54,6 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery;
-import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class SanityTest extends TestCase {
 
@@ -162,31 +160,31 @@ public class SanityTest extends TestCase {
         new RacerTest().testRacerExample(); 
     }
     
-    public void testTracingAspectTOD() throws Exception {
-        String actualOutput = TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin.toString(),
-                new File(EvalConstants.DataRoot, "tod/TracingTest"));
-        
-        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
-        assertEquals(expectedOutput, actualOutput);
-    }
+//    public void testTracingAspectTOD() throws Exception {
+//        String actualOutput = TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin.toString(),
+//                new File(EvalConstants.DataRoot, "tod/TracingTest"));
+//        
+//        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
+//        assertEquals(expectedOutput, actualOutput);
+//    }
     
     public void testLeakDetectorAspect() throws Exception {
-        JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", 
+        JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", "",
                 "-cp \"" + EvalConstants.TestsRoot + "\"", 
                 EvalConstants.LeakDetectorAspectBin.toString(), 
                 new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
     }
     
     public void testHeapAspect() throws Exception {
-        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
+        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", "",
                 "-cp \"" + EvalConstants.TracingExampleBin + ":" + EvalConstants.DJProfMainJar + "\"", 
                 EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
                 new File(EvalConstants.DataRoot, "jdi/HeapAspectTest/hologram_classes"));
     }
     
-    public void testHeapAspectTOD() throws Exception {
-        TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
-                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
-                new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
-    }
+//    public void testHeapAspectTOD() throws Exception {
+//        TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
+//                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
+//                new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
+//    }
 }

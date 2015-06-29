@@ -58,6 +58,10 @@ public class JDIUtils {
         ((StringArgument)connectorArgs.get("main")).setValue(mainAndArgs);
         ((StringArgument)connectorArgs.get("options")).setValue(vmArgs);
         ((BooleanArgument)connectorArgs.get("suspend")).setValue(suspend);
+        String vmexec = ((StringArgument)connectorArgs.get("vmexec")).value();
+        
+        System.out.println("Launching via JDI: " + vmexec + " " + vmArgs + "\n" + mainAndArgs);
+        
         try {
             final VirtualMachine vm = c.launch(connectorArgs);
             Runtime.getRuntime().addShutdownHook(new Thread() {

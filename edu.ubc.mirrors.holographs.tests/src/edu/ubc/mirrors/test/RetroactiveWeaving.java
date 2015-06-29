@@ -28,6 +28,7 @@ import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -95,6 +96,34 @@ public class RetroactiveWeaving {
 //      });
     }
     
+    private static void cflowCounterBreakpoint(VirtualMachineHolograph vmh) {
+        FieldMirrorSetHandlerRequest setRequest = vmh.eventRequestManager().createFieldMirrorSetHandlerRequest(
+                "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl$Counter", "value");
+        vmh.addCallback(setRequest, new Callback<MirrorEvent>() {
+            public MirrorEvent handle(MirrorEvent t) {
+                System.out.println(t.arguments());
+                if (((Integer)t.arguments().get(1)).intValue() == 0) {
+                    return t;
+                }
+                return t;
+            }
+        });
+        setRequest.enable();
+        
+        FieldMirrorGetHandlerRequest getRequest = vmh.eventRequestManager().createFieldMirrorGetHandlerRequest(
+                "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl$Counter", "value");
+        vmh.addCallback(getRequest, new Callback<MirrorEvent>() {
+            public MirrorEvent handle(MirrorEvent t) {
+                System.out.println(t.arguments());
+                return t;
+            }
+        });
+        getRequest.enable();
+        
+        methodCallBreakpoint(vmh, "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl", "isNotZero"
+                );
+    }
+
     private static void relocateField(VirtualMachineMirror vm, String className, String fieldName) {
         relocateField(vm, className, fieldName, null);
     }
@@ -119,8 +148,8 @@ public class RetroactiveWeaving {
                 t.setProceed(new MirrorInvocationHandler() {
                     public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
                         Object target = args.get(0);
-                        Object encoder = args.get(1);
-                        relocatedValues.put(target, encoder);
+                        Object newValue = args.get(1);
+                        relocatedValues.put(target, newValue);
                         return null;
                     }
                 });

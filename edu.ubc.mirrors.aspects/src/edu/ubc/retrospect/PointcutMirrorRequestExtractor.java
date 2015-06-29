@@ -215,16 +215,11 @@ public class PointcutMirrorRequestExtractor {
     private void forAllWovenClasses(final Callback<ClassMirror> callback) {
         world.vm.dispatch().forAllClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
-//                if (klass.getLoader() == null) {
-//                    return null;
-//                }
-//                
-//                 // TODO-RS: Cheating to account for lack of requests/events on holographic execution
-//                if (klass instanceof ClassHolograph && ((ClassHolograph)klass).getWrapped() instanceof BytecodeClassMirror) {
-//                    return null;
-//                }
-                    
-                return callback.handle(klass);
+                if (!MirrorWorld.weaveClass(klass.getClassName())) {
+                    return klass;
+                } else {
+                    return callback.handle(klass);
+                }
             }
         });
     }

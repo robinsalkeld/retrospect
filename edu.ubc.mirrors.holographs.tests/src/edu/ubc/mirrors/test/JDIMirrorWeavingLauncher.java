@@ -22,12 +22,12 @@ import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 
 public class JDIMirrorWeavingLauncher {
     
-    public static String launch(String mainClassName, String options, String aspectPath, File hologramClassPath) throws Exception {
+    public static String launch(String mainClassName, String programArgs, String vmArgs, String aspectPath, File hologramClassPath) throws Exception {
         ByteArrayOutputStream mergedOutput = new ByteArrayOutputStream();
         OutputStream teedOut = new TeeOutputStream(mergedOutput, System.out);
         OutputStream teedErr = new TeeOutputStream(mergedOutput, System.err);
         
-        VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName, options, true, teedOut, teedErr);
+        VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName + " " + programArgs, vmArgs, true, teedOut, teedErr);
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
         r.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
