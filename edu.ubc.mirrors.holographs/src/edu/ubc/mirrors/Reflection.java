@@ -690,6 +690,15 @@ public class Reflection {
             return;
         }
         
+        if (signature.equals("[I")) {
+            if (!dest.getClassMirror().getSignature().equals("[I")) {
+                throw new ArrayStoreException();
+            }
+            int[] values = ((IntArrayMirror)src).getInts(srcPos, length);
+            ((IntArrayMirror)dest).setInts(destPos, values);
+            return;
+        }
+        
         for (int off = 0; off < length; off++) {
             setArrayElement(dest, destPos + off, getArrayElement(src, srcPos + off));
         }

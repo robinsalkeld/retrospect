@@ -21,6 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors.holographs;
 
+import java.util.Arrays;
+import java.util.BitSet;
+
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.wrapping.WrappingIntArrayMirror;
 
@@ -28,7 +31,12 @@ public class MutableIntArrayMirror extends WrappingIntArrayMirror {
 
     private final VirtualMachineHolograph vm;
     private final IntArrayMirror immutableMirror;
-    private int[] values;
+    
+    private int[] cached;
+    private long mark = -1;
+    
+    private int[] newValues;
+    private final BitSet overwritten = new BitSet();
     
     public MutableIntArrayMirror(VirtualMachineHolograph vm, IntArrayMirror immutableMirror) {
         super(vm, immutableMirror);
@@ -37,21 +45,69 @@ public class MutableIntArrayMirror extends WrappingIntArrayMirror {
         
     }
 
+    private void checkCache() {
+        long currentMark = vm.eventQueue().getEventsCount();
+        if (mark != currentMark){
+            cached = immutableMirror.getInts(0, immutableMirror.length());
+            mark = currentMark;
+        }     
+    }
+    
     @Override
     public int getInt(int index) throws ArrayIndexOutOfBoundsException {
-         return values != null ? values[index] : immutableMirror.getInt(index);
+        if (overwritten.get(index)) {
+            return newValues[index];
+        }
+        
+        checkCache();
+        return cached[index];
     }
 
     @Override
-    public void setInt(int index, int value) throws ArrayIndexOutOfBoundsException {
+    public int[] getInts(int index, int length) throws ArrayIndexOutOfBoundsException {
+        if (length == 0) {
+             return new int[0];
+        }
+        
+        int end = index + length;
+        
+        // All overwritten
+        if (overwritten.nextClearBit(index) >= end) {
+            return Arrays.copyOfRange(newValues, index, end);
+        }
+                
+        // Nothing overwritten
+        int firstOverwritten = overwritten.nextSetBit(index);
+        if (firstOverwritten >= end || firstOverwritten == -1) {
+            checkCache();
+            return Arrays.copyOfRange(cached, index, end);
+        }
+        
+        // General case - some overwritten
+        return super.getInts(index, length);
+    }
+    
+    private void initNewValues() {
+        if (newValues == null) {
+            this.newValues = new int[length()];
+        }
+    }
+    
+    @Override
+    public void setInt(int index, int b) throws ArrayIndexOutOfBoundsException {
         vm.checkForIllegalMutation(wrapped);
         
-        if (values == null) {
-            this.values = new int[immutableMirror.length()];
-            for (int i = 0; i < values.length; i++) {
-                values[i] = immutableMirror.getInt(i);
-            }
-        }
-        values[index] = value;
+        initNewValues();
+        newValues[index] = b;
+        overwritten.set(index);
+    }
+
+    @Override
+    public void setInts(int index, int[] b) throws ArrayIndexOutOfBoundsException {
+        vm.checkForIllegalMutation(wrapped);
+        
+        initNewValues();
+        System.arraycopy(b, 0, newValues, index, b.length);
+        overwritten.set(index, index + b.length);
     }
 }

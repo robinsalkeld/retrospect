@@ -42,8 +42,17 @@ public class WrappingIntArrayMirror extends WrappingMirror implements IntArrayMi
         return wrappedArray.getInt(index);
     }
 
+    public int[] getInts(int index, int length) {
+        return wrappedArray.getInts(index, length);
+    }
+    
     @Override
     public void setInt(int index, int i) throws ArrayIndexOutOfBoundsException {
         wrappedArray.setInt(index, i);
+    }
+    
+    @Override
+    public void setInts(int index, int[] b) throws ArrayIndexOutOfBoundsException {
+        wrappedArray.setInts(index, b);
     }
 }

@@ -52,7 +52,6 @@ public class MutableByteArrayMirror extends WrappingByteArrayMirror {
         }     
     }
     
-    
     @Override
     public byte getByte(int index) throws ArrayIndexOutOfBoundsException {
         if (overwritten.get(index)) {

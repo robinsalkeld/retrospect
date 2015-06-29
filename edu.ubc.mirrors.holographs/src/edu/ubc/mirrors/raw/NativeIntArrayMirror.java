@@ -21,6 +21,8 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw;
 
+import java.util.Arrays;
+
 import edu.ubc.mirrors.IntArrayMirror;
 
 public class NativeIntArrayMirror extends NativeObjectMirror implements IntArrayMirror {
@@ -40,8 +42,17 @@ public class NativeIntArrayMirror extends NativeObjectMirror implements IntArray
         return array[index];
     }
 
+    @Override
+    public int[] getInts(int index, int length) throws ArrayIndexOutOfBoundsException {
+        return Arrays.copyOfRange(array, index, index + length);
+    }
+    
     public void setInt(int index, int i) throws ArrayIndexOutOfBoundsException {
         array[index] = i;
     }
-
+    
+    @Override
+    public void setInts(int index, int[] b) throws ArrayIndexOutOfBoundsException {
+        System.arraycopy(b, 0, array, index, b.length);
+    }
 }
