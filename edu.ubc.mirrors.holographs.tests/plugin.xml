@@ -110,4 +110,16 @@
          </run>
       </application>
    </extension>
+   <extension
+         id="edu.ubc.mirrors.holographs.tests.RetroactiveWeavingEval"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="edu.ubc.mirrors.test.RetroactiveWeavingEval">
+         </run>
+      </application>
+   </extension>
 </plugin>

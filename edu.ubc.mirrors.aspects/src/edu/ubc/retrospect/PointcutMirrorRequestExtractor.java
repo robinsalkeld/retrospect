@@ -56,8 +56,6 @@ import edu.ubc.mirrors.MirrorLocationEvent;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.holographs.ClassHolograph;
-import edu.ubc.mirrors.raw.BytecodeClassMirror;
 
 /**
  * A visitor that installs the most specific possible event requests
@@ -222,16 +220,11 @@ public class PointcutMirrorRequestExtractor {
     private void forAllWovenClasses(final Callback<ClassMirror> callback) {
         world.vm.dispatch().forAllClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
-//                if (klass.getLoader() == null) {
-//                    return null;
-//                }
-//                
-//                // TODO-RS: Cheating to account for lack of requests/events on holographic execution
-//                if (klass instanceof ClassHolograph && ((ClassHolograph)klass).getWrapped() instanceof BytecodeClassMirror) {
-//                    return null;
-//                }
-                    
-                return callback.handle(klass);
+                if (!MirrorWorld.weaveClass(klass.getClassName())) {
+                    return klass;
+                } else {
+                    return callback.handle(klass);
+                }
             }
         });
     }

@@ -171,14 +171,14 @@ public class SanityTest extends TestCase {
     }
     
     public void testLeakDetectorAspect() throws Exception {
-        JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", 
+        JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", "",
                 "-cp \"" + EvalConstants.TestsRoot + "\"", 
                 EvalConstants.LeakDetectorAspectBin.toString(), 
                 new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
     }
     
     public void testHeapAspect() throws Exception {
-        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", 
+        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", "",
                 "-cp \"" + EvalConstants.TracingExampleBin + ":" + EvalConstants.DJProfMainJar + "\"", 
                 EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
                 new File(EvalConstants.DataRoot, "jdi/HeapAspectTest/hologram_classes"));

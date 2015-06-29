@@ -104,9 +104,12 @@ public class InstanceHologram {
            throw new IllegalAccessError(e.getMessage());
        }
     }
-    public static int getIntField(Hologram m, ClassMirror klass, String name) {
+    public static int getIntField(Hologram m, ClassMirror klass, String name) throws Throwable {
         try {
-           return getInstanceMirror(m, klass).getInt(getFieldMirror(klass, name));
+            FieldMirror field = getFieldMirror(klass, name);
+            InstanceMirror target = getInstanceMirror(m, klass);
+            Integer result = (Integer)((ClassHolograph)klass).getVM().eventRequestManager().handleFieldGet(target, field);
+            return result == null ? 0 : result;
        } catch (IllegalAccessException e) {
            throw new IllegalAccessError(e.getMessage());
        }

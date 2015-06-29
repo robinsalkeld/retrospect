@@ -28,6 +28,7 @@ import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
@@ -52,23 +53,29 @@ public class RetroactiveWeaving {
 
         if (!VirtualMachineHolograph.UNSAFE_MODE) {
             // Avoid the side-effects of loading aspects themselves
-            relocateField(vmh, "java.lang.String", "hash");
-            relocateField(vmh, "java.util.zip.ZipCoder", "enc");
-            relocateField(vmh, "java.nio.charset.Charset", "cache1");
-            relocateField(vmh, "java.nio.charset.Charset", "cache2");
-            relocateField(vmh, "java.lang.Thread", "threadInitNumber");
-            relocateFieldInitializeWithDefaultConstructor(vmh, "sun.nio.cs.ThreadLocalCoders$Cache", "cache");
-            relocateFieldInitializeWithDefaultConstructor(vmh, "java.lang.ThreadLocal", "nextHashCode");
-            relocateFieldInitializeWithDefaultConstructor(vmh, "java.net.URLClassLoader", "closeables");
-            aroundThreadLocals(vmh);
-            hardCodeHashing(vmh);
-            classLoaderLocking(vmh);
-            aroundThreadGroups(vmh);
+            Reflection.withThread(finalThread, new Callable<Void>() {
+                public Void call() throws Exception {
+                    relocateField(vmh, "java.lang.String", "hash");
+                    relocateField(vmh, "java.util.zip.ZipCoder", "enc");
+                    relocateField(vmh, "java.nio.charset.Charset", "cache1");
+                    relocateField(vmh, "java.nio.charset.Charset", "cache2");
+                    relocateField(vmh, "java.lang.Thread", "threadInitNumber");
+                    relocateFieldInitializeWithDefaultConstructor(vmh, "sun.nio.cs.ThreadLocalCoders$Cache", "cache");
+                    relocateFieldInitializeWithDefaultConstructor(vmh, "java.lang.ThreadLocal", "nextHashCode");
+                    relocateFieldInitializeWithDefaultConstructor(vmh, "java.net.URLClassLoader", "closeables");
+                    aroundThreadLocals(vmh);
+                    hardCodeHashing(vmh);
+                    classLoaderLocking(vmh);
+                    aroundThreadGroups(vmh);
+                    return null;
+                }
+            });
         
             vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
         }
         
-        methodCallBreakpoint(vmh, "ca.mcgill.sable.racer.Racer", "aspectOf");
+//        cflowCounterBreakpoint(vmh);
+//        methodCallBreakpoint(vmh, "ca.mcgill.sable.racer.Racer", "aspectOf");
         
         vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
         for (String aspectPathPart : aspectPath.split(File.pathSeparator)) {
@@ -100,6 +107,34 @@ public class RetroactiveWeaving {
 //      });
     }
     
+    private static void cflowCounterBreakpoint(VirtualMachineHolograph vmh) {
+        FieldMirrorSetHandlerRequest setRequest = vmh.eventRequestManager().createFieldMirrorSetHandlerRequest(
+                "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl$Counter", "value");
+        vmh.addCallback(setRequest, new Callback<MirrorEvent>() {
+            public MirrorEvent handle(MirrorEvent t) {
+                System.out.println(t.arguments());
+                if (((Integer)t.arguments().get(1)).intValue() == 0) {
+                    return t;
+                }
+                return t;
+            }
+        });
+        setRequest.enable();
+        
+        FieldMirrorGetHandlerRequest getRequest = vmh.eventRequestManager().createFieldMirrorGetHandlerRequest(
+                "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl$Counter", "value");
+        vmh.addCallback(getRequest, new Callback<MirrorEvent>() {
+            public MirrorEvent handle(MirrorEvent t) {
+                System.out.println(t.arguments());
+                return t;
+            }
+        });
+        getRequest.enable();
+        
+        methodCallBreakpoint(vmh, "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl", "isNotZero"
+                );
+    }
+
     private static void relocateField(VirtualMachineMirror vm, String className, String fieldName) {
         relocateField(vm, className, fieldName, null);
     }
@@ -124,8 +159,8 @@ public class RetroactiveWeaving {
                 t.setProceed(new MirrorInvocationHandler() {
                     public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
                         Object target = args.get(0);
-                        Object encoder = args.get(1);
-                        relocatedValues.put(target, encoder);
+                        Object newValue = args.get(1);
+                        relocatedValues.put(target, newValue);
                         return null;
                     }
                 });

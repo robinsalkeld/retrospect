@@ -53,7 +53,6 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MethodMirrorInvoker;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -63,7 +62,6 @@ import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
-import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 import edu.ubc.mirrors.fieldmap.FieldMapClassMirrorLoader;
 import edu.ubc.mirrors.fieldmap.FieldMapFieldMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapMirror;
@@ -464,6 +462,9 @@ public class ClassHolograph extends WrappingClassMirror {
 
     @Override
     public byte[] getBytecode() {
+        if (isPrimitive()) {
+            return null;
+        }
         if (hasBytecode()) {
             return super.getBytecode();
         } else {

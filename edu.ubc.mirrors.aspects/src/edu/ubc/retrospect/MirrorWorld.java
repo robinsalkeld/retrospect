@@ -564,20 +564,27 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
         return eventCallback;
     }
     
-    @Override
-    public MirrorEventShadow handle(MirrorEventShadow shadow) {
-        // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)
-        // See also: http://www.eclipse.org/aspectj/doc/released/devguide/ltw-specialcases.html
-        if (!Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses")) {
+    private static final boolean WEAVE_CORE_CLASSES = Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses");
+    
+    public static boolean weaveClass(String className) {
+        if (WEAVE_CORE_CLASSES) {
+            return true;
+        } else {
+            // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)
+            // See also: http://www.eclipse.org/aspectj/doc/released/devguide/ltw-specialcases.html
             // TODO-RS: This is specified in the documentation for loadtime weaving,
             // so this check is probably already coded somewhere in the weaving library...
-            String declaringClassName = shadow.getDeclaringClass().getClassName();
-            if (declaringClassName.startsWith("org.aspectj.") || 
-                declaringClassName.startsWith("java.") || 
-                declaringClassName.startsWith("javax.") ||
-                declaringClassName.startsWith("sun.reflect.")) {
-                return null;
-            }
+            return !(className.startsWith("org.aspectj.") || 
+                     className.startsWith("java.") || 
+                     className.startsWith("javax.") ||
+                     className.startsWith("sun.reflect."));
+        }
+    }
+    
+    @Override
+    public MirrorEventShadow handle(MirrorEventShadow shadow) {
+        if (!weaveClass(shadow.getDeclaringClass().getClassName())) {
+            return null;
         }
     
         for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
