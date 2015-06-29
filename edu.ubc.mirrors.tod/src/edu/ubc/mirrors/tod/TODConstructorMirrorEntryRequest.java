@@ -20,6 +20,11 @@ public class TODConstructorMirrorEntryRequest extends TODBehaviorEventRequest im
     }
     
     @Override
+    public ConstructorMirror getConstructorFilter() {
+        return vm.makeConstructorMirror(behaviorInfo);
+    }
+    
+    @Override
     public void setConstructorFilter(ConstructorMirror constructor) {
         this.behaviorInfo = ((TODMethodOrConstructorMirror)constructor).behaviourInfo;
     }

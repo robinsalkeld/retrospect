@@ -243,7 +243,9 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     public static String originalMethodName(String declaringClassName, String name) {
-        return declaringClassName.replace('.', '_').replace('$', '_') + "_" + name + "_original";
+        String cleanedClassName = declaringClassName.replace('.', '_').replace('$', '_');
+        String cleanedName = name.replace('<', '_').replace('>', '_');
+        return cleanedClassName + "_" + cleanedName + "_original";
     }
     
     public MirrorInvocationHandler getOriginalMethodHandler(MethodMirror method) {

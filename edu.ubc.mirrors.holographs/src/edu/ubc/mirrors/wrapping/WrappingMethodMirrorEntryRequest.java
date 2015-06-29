@@ -24,7 +24,6 @@ package edu.ubc.mirrors.wrapping;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
 
 public class WrappingMethodMirrorEntryRequest extends WrappingMirrorEventRequest implements MethodMirrorEntryRequest {

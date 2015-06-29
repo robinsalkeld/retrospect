@@ -81,6 +81,20 @@ public abstract class MethodHandle {
         }
     };
     
+    public static MethodHandle OBJECT_HOLOGRAM_HANDLE_CONSTRUCTOR_ENTRY = new MethodHandle() {
+        @Override
+        public void methodCall() throws Throwable {
+            ObjectHologram.handleConstructorEntry(null, null, null, null);
+        }
+    };
+    
+    public static MethodHandle OBJECT_HOLOGRAM_HANDLE_CONSTRUCTOR_EXIT = new MethodHandle() {
+        @Override
+        public void methodCall() throws Throwable {
+            ObjectHologram.handleConstructorExit(null, null, null, null);
+        }
+    };
+    
     public static MethodHandle OBJECT_HOLOGRAM_GET_REAL_STRING_FOR_HOLOGRAM_HANDLER = new MethodHandle() {
         @Override
         public void methodCall() throws Throwable {

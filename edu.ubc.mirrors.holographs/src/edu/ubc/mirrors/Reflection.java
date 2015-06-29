@@ -820,6 +820,20 @@ public class Reflection {
         return klass.getDeclaredMethod(methodName, paramClassNames);
     }
     
+    public static ConstructorMirror getDeclaredConstructor(ClassMirror klass, Type methodType) throws SecurityException, NoSuchMethodException {
+        Type[] argumentTypes = methodType.getArgumentTypes();
+        List<String> paramClassNames = new ArrayList<String>(argumentTypes.length);
+        for (int i = 0; i < argumentTypes.length; i++) {
+            paramClassNames.add(argumentTypes[i].getClassName());
+        }
+        for (ConstructorMirror constructor : klass.getDeclaredConstructors(false)) {
+            if (constructor.getParameterTypeNames().equals(paramClassNames)) {
+                return constructor;
+            }
+        }
+        throw new NoSuchMethodException();
+    }
+    
     public static String getClassNameFromBytecode(byte[] bytecode) {
         BytecodeExtractor visitor = new BytecodeExtractor();
         new ClassReader(bytecode).accept(visitor, 0);
@@ -1001,6 +1015,16 @@ public class Reflection {
     public static boolean fieldMatches(FieldMirror field, String declaringClassFilter, String nameFilter) {
         return field.getDeclaringClass().getClassName().equals(declaringClassFilter)
                 && field.getName().equals(nameFilter);
+    }
+    
+    public static boolean constructorMatches(ConstructorMirror constructor, String declaringClassFilter, List<String> parameterTypeNamesFilter) {
+        if (!declaringClassFilter.equals(constructor.getDeclaringClass().getClassName())) {
+            return false;
+        }
+        if (!parameterTypeNamesFilter.equals(constructor.getParameterTypeNames())) {
+            return false;
+        }
+        return true;
     }
     
     public static String join(List<String> strings, String sep) {

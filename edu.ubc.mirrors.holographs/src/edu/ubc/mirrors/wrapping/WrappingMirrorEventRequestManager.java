@@ -21,6 +21,7 @@
  ******************************************************************************/
 package edu.ubc.mirrors.wrapping;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
@@ -89,7 +90,11 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
 
     @Override
     public List<ConstructorMirrorEntryRequest> constructorMirrorEntryRequests() {
-	throw new UnsupportedOperationException();
+        List<ConstructorMirrorEntryRequest> result = new ArrayList<ConstructorMirrorEntryRequest>();
+        for (ConstructorMirrorEntryRequest r : wrapped.constructorMirrorEntryRequests()) {
+            result.add((ConstructorMirrorEntryRequest)r.getProperty(WrappingMirrorEventRequest.WRAPPER));
+        }
+        return result;
     }
 
     @Override
@@ -99,7 +104,11 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
 
     @Override
     public List<ConstructorMirrorExitRequest> constructorMirrorExitRequests() {
-	throw new UnsupportedOperationException();
+        List<ConstructorMirrorExitRequest> result = new ArrayList<ConstructorMirrorExitRequest>();
+        for (ConstructorMirrorExitRequest r : wrapped.constructorMirrorExitRequests()) {
+            result.add((ConstructorMirrorExitRequest)r.getProperty(WrappingMirrorEventRequest.WRAPPER));
+        }
+        return result;
     }
 
     @Override

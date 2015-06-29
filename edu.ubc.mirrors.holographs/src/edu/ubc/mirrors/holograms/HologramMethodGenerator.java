@@ -62,10 +62,12 @@ public class HologramMethodGenerator extends InstructionAdapter {
     private String name;
     
     private final boolean isToString;
+    private final boolean needsThunk;
 
     private int access;
     
-    public HologramMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString) {
+    public HologramMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, 
+            boolean isToString, boolean needsThunk) {
         super(Opcodes.ASM4, null);
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
         this.mv = analyzer;
@@ -74,6 +76,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
         this.access = access;
         this.methodType = Type.getMethodType(desc);
         this.isToString = isToString;
+        this.needsThunk = needsThunk;
         
         activeMethod = name + desc;
     }
@@ -94,6 +97,10 @@ public class HologramMethodGenerator extends InstructionAdapter {
     
     @Override
     public void visitEnd() {
+        if (name.equals("<init>") && needsThunk) {
+            generateConstructorThunk(false);
+        }
+        
         super.visitEnd();
         
         activeMethod = null;
@@ -202,6 +209,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
             desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, OBJECT_TYPE);
         }
         
+        boolean isConstructorChaining = false;
         if (name.equals("<init>") && !owner.equals(Type.getInternalName(Throwable.class))) {
             int argsSize = Type.getArgumentsAndReturnSizes(desc) >> 2;
             desc = HologramClassGenerator.addMirrorParam(desc);
@@ -210,6 +218,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
             if (targetType.equals(Opcodes.UNINITIALIZED_THIS)) {
                 // If the target is an uninitialized this (i.e. we're calling super(...)
                 // or this(...)), pass along the extra mirror argument
+                isConstructorChaining = true;
                 load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
             } else if (targetType instanceof Label) {
                 // If the target is just uninitialized (i.e. we're calling <init> after
@@ -225,6 +234,10 @@ public class HologramMethodGenerator extends InstructionAdapter {
         }
         
         super.visitMethodInsn(opcode, owner, name, desc);
+        
+        if (isConstructorChaining) {
+            generateConstructorThunk(true);
+        }
         
         if (owner.equals(Type.getInternalName(Throwable.class)) && name.equals("getStackTraceElement")) {
             Type steType = Type.getType(StackTraceElement.class);
@@ -636,6 +649,40 @@ public class HologramMethodGenerator extends InstructionAdapter {
         areturn(returnType);
         visitMaxs(Math.max(2, var + 1), Math.max(2, var + 1));
         visitEnd();
+    }
+    
+    private void generateConstructorThunk(boolean isEntry) {
+        getClassMirror(owner);
+        Type originalMethodType = HologramClassGenerator.getOriginalType(methodType);
+        Type methodTypeWithoutExtraArg = HologramClassGenerator.removeMirrorParam(originalMethodType);
+        aconst(methodTypeWithoutExtraArg.getDescriptor());
+        
+        Type[] parameterTypes = methodTypeWithoutExtraArg.getArgumentTypes();
+        int var = 0;
+        load(var, owner);
+        MethodHandle.OBJECT_HOLOGRAM_GET_MIRROR.invoke(this);
+        var++;
+        aconst(parameterTypes.length);
+        newarray(OBJECT_TYPE);
+     
+        for (int param = 0; param < parameterTypes.length; param++) {
+            Type paramType = parameterTypes[param];
+            dup();
+            aconst(param);
+            load(var, paramType);
+            boxIfNeeded(paramType);
+            if (HologramClassGenerator.isRefType(paramType)) {
+                MethodHandle.OBJECT_HOLOGRAM_GET_MIRROR.invoke(this);
+            }
+            astore(OBJECT_TYPE);
+            var += paramType.getSize();
+        }
+        
+        if (isEntry) {
+            MethodHandle.OBJECT_HOLOGRAM_HANDLE_CONSTRUCTOR_ENTRY.invoke(this);
+        } else {
+            MethodHandle.OBJECT_HOLOGRAM_HANDLE_CONSTRUCTOR_EXIT.invoke(this);
+        }
     }
 }
 

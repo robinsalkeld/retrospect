@@ -351,6 +351,42 @@ public class ObjectHologram implements Hologram {
         }
     }
     
+    public static void handleConstructorEntry(ClassMirror klass, String desc, InstanceMirror object, Object[] args) throws Throwable {
+        Type methodType = Type.getMethodType(desc);
+        ClassHolograph classHolograph = (ClassHolograph)klass;
+        // TODO-RS: Caching! This is quite slow.
+        ConstructorMirror constructor = Reflection.getDeclaredConstructor(klass, methodType);
+        
+        List<Object> handlerArgs = new ArrayList<Object>(Arrays.asList(args));
+        handlerArgs.add(0, object);
+        
+        try {
+            classHolograph.getVM().eventRequestManager().handleConstructorEntry(constructor, handlerArgs, false);
+        } catch (MirrorInvocationTargetException e) {
+            throw (Throwable)ObjectHologram.make(e.getTargetException());
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+    
+    public static void handleConstructorExit(ClassMirror klass, String desc, InstanceMirror object, Object[] args) throws Throwable {
+        Type methodType = Type.getMethodType(desc);
+        ClassHolograph classHolograph = (ClassHolograph)klass;
+        // TODO-RS: Caching! This is quite slow.
+        ConstructorMirror constructor = Reflection.getDeclaredConstructor(klass, methodType);
+        
+        List<Object> handlerArgs = new ArrayList<Object>(Arrays.asList(args));
+        handlerArgs.add(0, object);
+        
+        try {
+            classHolograph.getVM().eventRequestManager().handleConstructorExit(constructor, handlerArgs, object);
+        } catch (MirrorInvocationTargetException e) {
+            throw (Throwable)ObjectHologram.make(e.getTargetException());
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+    
     public void allowCollection(boolean flag) {
         throw new UnsupportedOperationException();
     }

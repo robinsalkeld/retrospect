@@ -40,6 +40,12 @@ public class WrappingConstructorMirrorExitRequest extends WrappingMirrorEventReq
     }
     
     @Override
+    public ConstructorMirror getConstructorFilter() {
+        ConstructorMirror constructorFilter = wrapped.getConstructorFilter();
+        return constructorFilter == null ? null : vm.wrapConstructor(constructorFilter);
+    }
+    
+    @Override
     public void setConstructorFilter(ConstructorMirror method) {
         wrapped.setConstructorFilter(((WrappingConstructorMirror)method).wrapped);
     }

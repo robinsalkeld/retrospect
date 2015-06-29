@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
+import edu.ubc.mirrors.ConstructorMirrorExitRequest;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
@@ -17,6 +20,8 @@ import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.fieldmap.DirectConstructorMirrorEntryEvent;
+import edu.ubc.mirrors.fieldmap.DirectConstructorMirrorExitEvent;
 import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 import edu.ubc.mirrors.holograms.FieldGetProceed;
 import edu.ubc.mirrors.holograms.FieldSetProceed;
@@ -86,6 +91,46 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
             }
         }
         return false;
+    }
+    
+    public boolean constructorRequested(ConstructorMirror constructor) {
+        for (ConstructorMirrorEntryRequest request : constructorMirrorEntryRequests()) {
+            if (request.getConstructorFilter() == null || constructor.equals(request.getConstructorFilter())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public void handleConstructorEntry(ConstructorMirror constructor, List<Object> arguments, boolean isConstructorChaining) throws MirrorInvocationTargetException {
+        if (constructor.getDeclaringClass().getClassName().equals("ca.mcgill.sable.racer.Racer")) {
+            int bp = 4;
+            bp++;
+        }
+        
+        Set<MirrorEvent> events = new HashSet<MirrorEvent>();
+        for (ConstructorMirrorEntryRequest request : constructorMirrorEntryRequests()) {
+            if (request.getConstructorFilter() == null || constructor.equals(request.getConstructorFilter())) {
+                events.add(new DirectConstructorMirrorEntryEvent(request, ThreadHolograph.currentThreadMirror(), constructor, arguments, MirrorInvocationHandler.NONE, isConstructorChaining));
+            }
+        }
+        
+        if (!events.isEmpty()) {
+            vm.dispatch().runCallbacks(events);
+        }
+    }
+    
+    public void handleConstructorExit(ConstructorMirror constructor, List<Object> arguments, InstanceMirror result) throws MirrorInvocationTargetException {
+        Set<MirrorEvent> events = new HashSet<MirrorEvent>();
+        for (ConstructorMirrorExitRequest request : constructorMirrorExitRequests()) {
+            if (request.getConstructorFilter() == null || constructor.equals(request.getConstructorFilter())) {
+                events.add(new DirectConstructorMirrorExitEvent(request, ThreadHolograph.currentThreadMirror(), constructor, arguments, MirrorInvocationHandler.NONE, result));
+            }
+        }
+        
+        if (!events.isEmpty()) {
+            vm.dispatch().runCallbacks(events);
+        }
     }
     
     public void handleFieldSet(final InstanceMirror target, final FieldMirror field, final Object newValue) throws IllegalAccessException, MirrorInvocationTargetException {

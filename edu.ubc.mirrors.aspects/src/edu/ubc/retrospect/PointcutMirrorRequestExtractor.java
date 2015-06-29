@@ -56,6 +56,8 @@ import edu.ubc.mirrors.MirrorLocationEvent;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.raw.BytecodeClassMirror;
 
 /**
  * A visitor that installs the most specific possible event requests
@@ -167,7 +169,7 @@ public class PointcutMirrorRequestExtractor {
             switch (kind.bit) {
             case (Shadow.MethodExecutionBit):
             case (Shadow.MethodCallBit):
-                    // If there are no filters at all, it's much more efficient to create single request
+                // If there are no filters at all, it's much more efficient to create single request
                 if (thisFilters.isEmpty()) {
                     if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
                         addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters, kind);
@@ -184,14 +186,19 @@ public class PointcutMirrorRequestExtractor {
                 break;
             case (Shadow.ConstructorExecutionBit):
             case (Shadow.ConstructorCallBit):
-                if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
-                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
-                }
-                if (adviceKind.isAfter()/* || adviceKind.isCflow()*/) {
-                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
-                }
-                if (adviceKind == AdviceKind.Around) {
-                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
+                if (adviceKind.isCflow()) {
+                    addFiltersAndInstall(manager.createConstructorMirrorEntryRequest(), thisFilters, kind);
+                    addFiltersAndInstall(manager.createConstructorMirrorExitRequest(), thisFilters, kind);
+                } else {
+                    if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
+                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
+                    }
+                    if (adviceKind.isAfter()) {
+                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
+                    }
+                    if (adviceKind == AdviceKind.Around) {
+                        addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
+                    }
                 }
                 break;
             case (Shadow.FieldSetBit):
@@ -219,7 +226,7 @@ public class PointcutMirrorRequestExtractor {
 //                    return null;
 //                }
 //                
-//                 // TODO-RS: Cheating to account for lack of requests/events on holographic execution
+//                // TODO-RS: Cheating to account for lack of requests/events on holographic execution
 //                if (klass instanceof ClassHolograph && ((ClassHolograph)klass).getWrapped() instanceof BytecodeClassMirror) {
 //                    return null;
 //                }
@@ -232,6 +239,7 @@ public class PointcutMirrorRequestExtractor {
     private void installFieldRequests(final Shadow.Kind kind) {
         // No point in tracking cflow state in these, since get()/set() joinpoints
         // never contain any other joinpoints.
+        // TODO-RS: Not completely true if other advice adds more computation...
         if (advice.getKind().isCflow()) {
             return;
         }

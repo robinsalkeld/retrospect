@@ -81,10 +81,16 @@ public class MirrorAdvice extends Advice {
             if (state.size() == 0) {
                 Expr fieldGet = new FieldGet(getSignature(), concreteAspect);
                 InstanceMirror counter = (InstanceMirror)evaluator.evaluateExpr(fieldGet);
-                evaluator.evaluateCall(counter, cflowCounterIncMethod, Expr.NONE);
-                Object result = proceed.invoke(shadow.getThread(), arguments);
-                evaluator.evaluateCall(counter, cflowCounterDecMethod, Expr.NONE);
-                return result;
+                if (shadow instanceof ConstructorMirrorExecutionShadow && shadow.adviceKind() != AdviceKind.Around) {
+                    Member method = shadow.adviceKind().isAfter() ? cflowCounterDecMethod : cflowCounterIncMethod;
+                    evaluator.evaluateCall(counter, method, Expr.NONE);
+                    return null;
+                } else {
+                    evaluator.evaluateCall(counter, cflowCounterIncMethod, Expr.NONE);
+                    Object result = proceed.invoke(shadow.getThread(), arguments);
+                    evaluator.evaluateCall(counter, cflowCounterDecMethod, Expr.NONE);
+                    return result;
+                }
             } else {
                 throw new IllegalStateException();
             }

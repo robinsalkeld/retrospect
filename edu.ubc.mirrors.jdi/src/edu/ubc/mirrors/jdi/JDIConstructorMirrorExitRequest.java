@@ -44,6 +44,11 @@ public class JDIConstructorMirrorExitRequest extends JDIEventRequest implements 
     }
     
     @Override
+    public ConstructorMirror getConstructorFilter() {
+        return constructorFilter;
+    }
+    
+    @Override
     public void setConstructorFilter(ConstructorMirror constructorFilter) {
 	this.constructorFilter = constructorFilter;
 	// Not supported directly, but adding a class filter helps to reduce excess events

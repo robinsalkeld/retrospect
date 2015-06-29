@@ -39,9 +39,9 @@ import org.objectweb.asm.commons.Remapper;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.ObjectArrayMirror;
@@ -52,7 +52,7 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
 
-    public static final String VERSION = "1.10";
+    public static final String VERSION = "1.11";
     
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type throwableType = Type.getType(Throwable.class);
@@ -373,6 +373,13 @@ public class HologramClassGenerator extends ClassVisitor {
         return Type.getMethodDescriptor(type.getReturnType(), newArgTypes);
     }
     
+    public static Type removeMirrorParam(Type type) {
+        Type argTypes[] = type.getArgumentTypes();
+        Type newArgTypes[] = new Type[argTypes.length - 1];
+        System.arraycopy(argTypes, 0, newArgTypes, 0, newArgTypes.length);
+        return Type.getMethodType(type.getReturnType(), newArgTypes);
+    }
+    
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
             String signature, String[] exceptions) {
@@ -384,11 +391,6 @@ public class HologramClassGenerator extends ClassVisitor {
 	// TODO-RS: Remove me - avoiding a race condition in ZipFileInflaterInputStream...
         if (name.equals("finalize")) {
             return null;
-        }
-        
-        if (name.equals("<init>")) {
-            // Add the implicit mirror argument
-            desc = addMirrorParam(desc);
         }
         
         // toString() is a special case - it's defined in java.lang.Object, which this class must ultimately
@@ -431,26 +433,42 @@ public class HologramClassGenerator extends ClassVisitor {
         
         boolean isNative = (Opcodes.ACC_NATIVE & access) != 0;
         boolean needsThunk = isNative;
-        if (!isNative && !name.startsWith("<") && !name.equals("getStackTraceHologram")) {
+        if (!isNative && !name.equals("getStackTraceHologram")) {
             if ((Opcodes.ACC_ABSTRACT & access) == 0) {
-                MethodMirror method;
-                try {
-                    method = Reflection.getDeclaredMethod(classMirror, name, getOriginalType(Type.getMethodType(desc)));
-                } catch (NoSuchMethodException e) {
-                    throw new RuntimeException(e);
+                if (name.equals("<init>")) {
+                    ConstructorMirror constructor;
+                    try {
+                        constructor = Reflection.getDeclaredConstructor(classMirror, getOriginalType(Type.getMethodType(desc)));
+                    } catch (NoSuchMethodException e) {
+                        throw new RuntimeException(e);
+                    }
+                    
+                    needsThunk |= ((ClassHolograph)classMirror).getVM().eventRequestManager().constructorRequested(constructor);
+                } else {
+                    MethodMirror method;
+                    try {
+                        method = Reflection.getDeclaredMethod(classMirror, name, getOriginalType(Type.getMethodType(desc)));
+                    } catch (NoSuchMethodException e) {
+                        throw new RuntimeException(e);
+                    }
+                    MirrorInvocationHandler handler = ((ClassHolograph)classMirror).getMethodHandler(method);
+                    if (handler != null) {
+                        needsThunk = true;
+                    }
+                    
+                    needsThunk |= ((ClassHolograph)classMirror).getVM().eventRequestManager().methodRequested(method);
                 }
-                MirrorInvocationHandler handler = ((ClassHolograph)classMirror).getMethodHandler(method);
-                if (handler != null) {
-                    needsThunk = true;
-                }
-                
-                needsThunk |= ((ClassHolograph)classMirror).getVM().eventRequestManager().methodRequested(method);
             }
         }
         
-        if (needsThunk) {
+        if (name.equals("<init>")) {
+            // Add the implicit mirror argument
+            desc = addMirrorParam(desc);
+        }
+        
+        if (needsThunk && !name.equals("<init>")) {
             MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);
-            HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString);
+            HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString, true);
             
             generator.generateThunk();
             
@@ -474,7 +492,8 @@ public class HologramClassGenerator extends ClassVisitor {
         }
         
         MethodVisitor superVisitor = super.visitMethod(hologramAccess, name, desc, signature, exceptions);
-        HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, isToString);
+        HologramMethodGenerator generator = new HologramMethodGenerator(this.name, hologramAccess, name, desc, superVisitor, 
+                isToString, needsThunk);
         LocalVariablesSorter lvs = new LocalVariablesSorter(access, desc, generator);
         generator.setLocalVariablesSorter(lvs);
         
@@ -484,8 +503,6 @@ public class HologramClassGenerator extends ClassVisitor {
     public static Type getMirrorTypeForHologramType(Type hologramType) {
         return getMirrorType(getOriginalType(hologramType));
     }
-    
-    
     
     @Override
     public FieldVisitor visitField(int access, String name, String desc,
