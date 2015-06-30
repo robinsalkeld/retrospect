@@ -97,10 +97,6 @@ public class HologramMethodGenerator extends InstructionAdapter {
     
     @Override
     public void visitEnd() {
-        if (name.equals("<init>") && needsThunk) {
-            generateConstructorThunk(false);
-        }
-        
         super.visitEnd();
         
         activeMethod = null;
@@ -430,13 +426,19 @@ public class HologramMethodGenerator extends InstructionAdapter {
             }
         }
         
-        if (opcode == Opcodes.RETURN && owner.equals(hologramThrowableType) && name.equals("<init>")) {
-            load(0, owner);
-            new MethodHandle() {
-                protected void methodCall() throws Throwable {
-                    ObjectHologram.register(null);;
-                }
-            }.invoke(this);
+        if (opcode == Opcodes.RETURN && name.equals("<init>")) {
+            if (owner.equals(hologramThrowableType)) {
+                load(0, owner);
+                new MethodHandle() {
+                    protected void methodCall() throws Throwable {
+                        ObjectHologram.register(null);;
+                    }
+                }.invoke(this);
+            }
+            
+            if (needsThunk) {
+                generateConstructorThunk(false);
+            }
         }
         
         super.visitInsn(opcode);

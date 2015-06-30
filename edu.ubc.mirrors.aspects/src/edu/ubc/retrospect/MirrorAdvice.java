@@ -26,7 +26,6 @@ import org.aspectj.weaver.patterns.Pointcut;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 
 public class MirrorAdvice extends Advice {
@@ -87,9 +86,11 @@ public class MirrorAdvice extends Advice {
                     return null;
                 } else {
                     evaluator.evaluateCall(counter, cflowCounterIncMethod, Expr.NONE);
-                    Object result = proceed.invoke(shadow.getThread(), arguments);
-                    evaluator.evaluateCall(counter, cflowCounterDecMethod, Expr.NONE);
-                    return result;
+                    try {
+                        return proceed.invoke(shadow.getThread(), arguments);
+                    } finally {
+                        evaluator.evaluateCall(counter, cflowCounterDecMethod, Expr.NONE);
+                    }
                 }
             } else {
                 throw new IllegalStateException();

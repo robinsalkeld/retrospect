@@ -45,7 +45,6 @@ public class JDIArrayMirror extends BoxingArrayMirror implements JDIObjectMirror
     public JDIArrayMirror(JDIVirtualMachineMirror vm, ArrayReference array) {
         this.vm = vm;
         this.array = array;
-        this.array.disableCollection();
     }
     
     @Override
