@@ -20,6 +20,7 @@ import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
+import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
@@ -51,6 +52,9 @@ public class RetroactiveWeaving {
         vmh.setSystemErr(teedErr);
         final ThreadMirror finalThread = (ThreadMirror)vmh.getWrappedMirror(thread);
 
+//        cflowCounterBreakpoint(vmh);
+//        methodCallBreakpoint(vmh, "ca.mcgill.sable.racer.Racer", "aspectOf");
+        
         if (!VirtualMachineHolograph.UNSAFE_MODE) {
             // Avoid the side-effects of loading aspects themselves
             Reflection.withThread(finalThread, new Callable<Void>() {
@@ -73,9 +77,6 @@ public class RetroactiveWeaving {
         
             vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
         }
-        
-//        cflowCounterBreakpoint(vmh);
-//        methodCallBreakpoint(vmh, "ca.mcgill.sable.racer.Racer", "aspectOf");
         
         vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
         for (String aspectPathPart : aspectPath.split(File.pathSeparator)) {
@@ -112,27 +113,81 @@ public class RetroactiveWeaving {
                 "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl$Counter", "value");
         vmh.addCallback(setRequest, new Callback<MirrorEvent>() {
             public MirrorEvent handle(MirrorEvent t) {
-                System.out.println(t.arguments());
-                if (((Integer)t.arguments().get(1)).intValue() == 0) {
-                    return t;
+                String matched = null;
+                for (FrameMirror f : t.thread().getStackTrace()) {
+                    if (f.methodName().equals("inc") || f.methodName().equals("dec")) {
+                        matched = f.methodName();
+                        continue;
+                    }
+                    if (matched != null) {
+                        int newValue = ((Integer)t.arguments().get(1)).intValue();
+                        int indent = matched.equals("dec") ? newValue + 1 : newValue;
+                        for (int i = 0; i < indent; i++) {
+                            System.out.print("  ");
+                        }
+                        System.out.println(t.arguments().get(0).hashCode() + ", " + newValue + " : " + Reflection.frameToString(f));
+                        break;
+                    }
                 }
                 return t;
             }
         });
         setRequest.enable();
         
-        FieldMirrorGetHandlerRequest getRequest = vmh.eventRequestManager().createFieldMirrorGetHandlerRequest(
-                "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl$Counter", "value");
-        vmh.addCallback(getRequest, new Callback<MirrorEvent>() {
+//        FieldMirrorGetHandlerRequest getRequest = vmh.eventRequestManager().createFieldMirrorGetHandlerRequest(
+//                "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl$Counter", "value");
+//        vmh.addCallback(getRequest, new Callback<MirrorEvent>() {
+//            public MirrorEvent handle(MirrorEvent t) {
+//                System.out.println(t.arguments());
+//                return t;
+//            }
+//        });
+//        getRequest.enable();
+//        
+//        MethodMirrorHandlerRequest request = vmh.eventRequestManager().createMethodMirrorHandlerRequest();
+//        request.setMethodFilter("org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl", "isNotZero", Collections.<String>emptyList());
+//        vmh.addCallback(request, new Callback<MirrorEvent>() {
+//            public MirrorEvent handle(MirrorEvent t) {
+//                final MirrorInvocationHandler original = t.getProceed();
+//                t.setProceed(new MirrorInvocationHandler() {
+//                    @Override
+//                    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+//                        Object result = original.invoke(thread, args);
+//                        System.out.println("isNotZero: " + args.get(0) + ": " + result);
+//                        Reflection.printThreadState(thread);
+//                        return result;
+//                    }
+//                });
+//                
+//                return t;
+//            }
+//        });
+//        request.enable();
+        
+        MethodMirrorHandlerRequest methodRequest = vmh.eventRequestManager().createMethodMirrorHandlerRequest();
+        methodRequest.setMethodFilter("ca.mcgill.sable.racer.Racer", "<clinit>", Collections.<String>emptyList());
+        vmh.addCallback(methodRequest, new Callback<MirrorEvent>() {
             public MirrorEvent handle(MirrorEvent t) {
-                System.out.println(t.arguments());
+                final MirrorInvocationHandler original = t.getProceed();
+                t.setProceed(new MirrorInvocationHandler() {
+                    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                        return original.invoke(thread, args);
+                    }
+                });
                 return t;
             }
         });
-        getRequest.enable();
+        methodRequest.enable();
         
-        methodCallBreakpoint(vmh, "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl", "isNotZero"
-                );
+//        request = vmh.eventRequestManager().createMethodMirrorHandlerRequest();
+//        request.setMethodFilter("org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl", "removeThreadCounter", Collections.<String>emptyList());
+//        vmh.addCallback(request, new Callback<MirrorEvent>() {
+//            public MirrorEvent handle(MirrorEvent t) {
+//                System.out.println("removeThreadCounter: " + t.arguments().get(0) + " " + t.thread());
+//                return t;
+//            }
+//        });
+//        request.enable();
     }
 
     private static void relocateField(VirtualMachineMirror vm, String className, String fieldName) {
@@ -311,4 +366,10 @@ public class RetroactiveWeaving {
             return t;
         }
     };
+    
+    private static void setProperty(final VirtualMachineMirror vm, ThreadMirror thread, String property, String value) throws Exception {
+        ClassMirror systemClass = vm.findBootstrapClassMirror(System.class.getName());
+        MethodMirror setPropertyMethod = systemClass.getDeclaredMethod("setProperty", String.class.getName(), String.class.getName());
+        setPropertyMethod.invoke(thread, null, vm.makeString(property), vm.makeString(value));
+    }
 }
