@@ -25,6 +25,8 @@ import static edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror.unhash;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -54,6 +56,7 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery;
+import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class SanityTest extends TestCase {
 
@@ -160,13 +163,15 @@ public class SanityTest extends TestCase {
         new RacerTest().testRacerExample(); 
     }
     
-//    public void testTracingAspectTOD() throws Exception {
-//        String actualOutput = TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin.toString(),
-//                new File(EvalConstants.DataRoot, "tod/TracingTest"));
-//        
-//        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
-//        assertEquals(expectedOutput, actualOutput);
-//    }
+    public void testTracingAspectTOD() throws Exception {
+        String actualOutput = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
+                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
+                EvalConstants.TracingAspectsBin.toString(),
+                new File(EvalConstants.DataRoot, "tod/TracingTest/hologram_classes"));
+        
+        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
+        assertEquals(expectedOutput, actualOutput);
+    }
     
     public void testLeakDetectorAspect() throws Exception {
         String output = JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", "",

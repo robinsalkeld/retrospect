@@ -98,39 +98,7 @@ public class JDIUtils {
     
     private static VirtualMachine fixTimeoutAndHandleStreams(VirtualMachine vm, OutputStream out, OutputStream err) {
         ((org.eclipse.jdi.VirtualMachine)vm).setRequestTimeout(6000000);
-        if (out != null) {
-            new StreamSiphon(vm.process().getInputStream(), out).start();
-        }
-        if (err != null) {
-            new StreamSiphon(vm.process().getErrorStream(), err).start();
-        }
-        
+        ProcessUtils.handleStreams(vm.process(), out, err);
         return vm;
-    }
-    
-    private static class StreamSiphon extends Thread {
-        
-        public StreamSiphon(InputStream in, OutputStream out) {
-            super("StreamSiphon for " + in);
-            this.in = in;
-            this.out = out;
-        }
-
-        private final InputStream in;
-        private final OutputStream out;
-        
-        @Override
-        public void run() {
-            byte[] buffer = new byte[10];
-            int read;
-            try {
-                while ((read = in.read(buffer)) > 0) {
-                    out.write(buffer, 0, read);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        
     }
 }

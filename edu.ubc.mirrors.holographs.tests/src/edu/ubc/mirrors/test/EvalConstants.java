@@ -1,7 +1,9 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EvalConstants {
@@ -45,6 +47,26 @@ public class EvalConstants {
     public static Map<String, String> casestudyAspectPaths = new HashMap<String, String>();
     static {
         casestudyAspectPaths.put("tracing", TracingExampleBin + ":" + TracingSpecJVMAspectsBin);
+    }
+    
+    public static File TODRoot = new File("/Users/robinsalkeld/Documents/UBC/Code/tod/git/tod");
+    public static File TODdbgrid = new File(TODRoot, "dbgrid");
+    public static File TODdbgridBin = new File(TODdbgrid, "bin");
+    public static File TODagent = new File(TODRoot, "agent");
+    public static File TODagentBin = new File(TODagent, "bin");
+    
+    public static File BoostDynLibPath = new File("/Users/robinsalkeld/Documents/UBC/Code/boost_1_58_0_libs/lib");
+    
+    public static List<String> todVMArgs(String clientName) {
+        return Arrays.asList("-Xbootclasspath/p:" + TODagentBin,
+                             "-noverify",
+                             "-agentpath:" + TODagent + "/libtod-agent15.dylib",
+                             "-Dcollector-host=localhost",
+                             "-Dcollector-port=8058",
+                             "-Dclient-name=" + clientName,
+                             "-Dagent-cache-path=/Users/robinsalkeld/tmp/tod",
+                             "-Dagent-verbose=1",
+                             "-Dcapture-at-start=true");
     }
     
 }
