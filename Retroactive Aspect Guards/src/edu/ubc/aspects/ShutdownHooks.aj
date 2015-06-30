@@ -14,7 +14,6 @@ public aspect ShutdownHooks {
         moreHooks.put(hook, hook);
     }
     
-    // When hooks is read, merge in moreHooks as well
     after(): execution(void Shutdown.runHooks()) {
         // Copy of ApplicationShutdownHooks.runHooks()
         Collection<Thread> threads;
