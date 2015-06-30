@@ -26,6 +26,7 @@ import java.util.List;
 
 import com.sun.jdi.Field;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.ModificationWatchpointRequest;
 
@@ -59,6 +60,13 @@ public class JDIFieldMirrorSetRequest extends AbstractMirrorEventRequest impleme
         }
     }
 
+    @Override
+    public void setEnabled(boolean enabled) {
+        for (ModificationWatchpointRequest wrapped : wrappedRequests) {
+            wrapped.setEnabled(enabled);
+        }
+    }
+    
     @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + declaringClass + "." + fieldName;

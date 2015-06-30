@@ -60,6 +60,13 @@ public class JDIFieldMirrorGetRequest extends AbstractMirrorEventRequest impleme
     }
     
     @Override
+    public void setEnabled(boolean enabled) {
+        for (AccessWatchpointRequest wrapped : wrappedRequests) {
+            wrapped.setEnabled(enabled);
+        }
+    }
+    
+    @Override
     public String toString() {
         return getClass().getSimpleName() + " on " + declaringClass + "." + fieldName;
     }
