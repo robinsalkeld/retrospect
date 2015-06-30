@@ -36,9 +36,13 @@ import edu.ubc.mirrors.FieldMirrorGetRequest;
 public class JDIFieldMirrorGetRequest extends AbstractMirrorEventRequest implements FieldMirrorGetRequest {
 
     protected final List<AccessWatchpointRequest> wrappedRequests = new ArrayList<AccessWatchpointRequest>();
+    private final String declaringClass;
+    private final String fieldName;
     
     public JDIFieldMirrorGetRequest(JDIVirtualMachineMirror vm, String declaringClass, String fieldName) {
 	super(vm);
+	this.declaringClass = declaringClass;
+	this.fieldName = fieldName;
 	
 	EventRequestManager requestManager = vm.jdiVM.eventRequestManager();
 	for (ReferenceType refType : vm.jdiVM.classesByName(declaringClass)) {
@@ -54,5 +58,17 @@ public class JDIFieldMirrorGetRequest extends AbstractMirrorEventRequest impleme
 	for (AccessWatchpointRequest wrapped : wrappedRequests) {
             wrapped.addClassFilter(classNamePattern);
 	}
+    }
+    
+    @Override
+    public void setEnabled(boolean enabled) {
+        for (AccessWatchpointRequest wrapped : wrappedRequests) {
+            wrapped.setEnabled(enabled);
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + declaringClass + "." + fieldName;
     }
 }
