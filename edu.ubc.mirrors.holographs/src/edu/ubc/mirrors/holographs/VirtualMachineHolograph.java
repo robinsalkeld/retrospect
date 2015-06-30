@@ -923,7 +923,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     protected void illegalMutation(String message) {
-        System.err.println(message);
+//        System.err.println(message);
 //      throw new InternalError(message);
     }
     

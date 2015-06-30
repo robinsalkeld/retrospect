@@ -19,6 +19,7 @@ import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
+import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -52,7 +53,6 @@ public class RetroactiveWeaving {
         vmh.setSystemErr(teedErr);
         final ThreadMirror finalThread = (ThreadMirror)vmh.getWrappedMirror(thread);
 
-//        cflowCounterBreakpoint(vmh);
 //        methodCallBreakpoint(vmh, "ca.mcgill.sable.racer.Racer", "aspectOf");
         
         if (!VirtualMachineHolograph.UNSAFE_MODE) {
@@ -77,6 +77,8 @@ public class RetroactiveWeaving {
         
             vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
         }
+        
+        cflowCounterBreakpoint(vmh);
         
         vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
         for (String aspectPathPart : aspectPath.split(File.pathSeparator)) {
@@ -109,29 +111,10 @@ public class RetroactiveWeaving {
     }
     
     private static void cflowCounterBreakpoint(VirtualMachineHolograph vmh) {
-        FieldMirrorSetHandlerRequest setRequest = vmh.eventRequestManager().createFieldMirrorSetHandlerRequest(
-                "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl$Counter", "value");
-        vmh.addCallback(setRequest, new Callback<MirrorEvent>() {
-            public MirrorEvent handle(MirrorEvent t) {
-                String matched = null;
-                for (FrameMirror f : t.thread().getStackTrace()) {
-                    if (f.methodName().equals("inc") || f.methodName().equals("dec")) {
-                        matched = f.methodName();
-                        continue;
-                    }
-                    if (matched != null) {
-                        int newValue = ((Integer)t.arguments().get(1)).intValue();
-                        int indent = matched.equals("dec") ? newValue + 1 : newValue;
-                        for (int i = 0; i < indent; i++) {
-                            System.out.print("  ");
-                        }
-                        System.out.println(t.arguments().get(0).hashCode() + ", " + newValue + " : " + Reflection.frameToString(f));
-                        break;
-                    }
-                }
-                return t;
-            }
-        });
+//        methodCallBreakpoint(vmh, "Task", "run");
+        
+        FieldMirrorGetRequest setRequest = vmh.eventRequestManager().createFieldMirrorGetRequest("Task", "shared");
+        vmh.addCallback(setRequest, BREAKPOINT);
         setRequest.enable();
         
 //        FieldMirrorGetHandlerRequest getRequest = vmh.eventRequestManager().createFieldMirrorGetHandlerRequest(
@@ -163,21 +146,6 @@ public class RetroactiveWeaving {
 //            }
 //        });
 //        request.enable();
-        
-        MethodMirrorHandlerRequest methodRequest = vmh.eventRequestManager().createMethodMirrorHandlerRequest();
-        methodRequest.setMethodFilter("ca.mcgill.sable.racer.Racer", "<clinit>", Collections.<String>emptyList());
-        vmh.addCallback(methodRequest, new Callback<MirrorEvent>() {
-            public MirrorEvent handle(MirrorEvent t) {
-                final MirrorInvocationHandler original = t.getProceed();
-                t.setProceed(new MirrorInvocationHandler() {
-                    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-                        return original.invoke(thread, args);
-                    }
-                });
-                return t;
-            }
-        });
-        methodRequest.enable();
         
 //        request = vmh.eventRequestManager().createMethodMirrorHandlerRequest();
 //        request.setMethodFilter("org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl", "removeThreadCounter", Collections.<String>emptyList());

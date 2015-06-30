@@ -232,7 +232,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
         super.visitMethodInsn(opcode, owner, name, desc);
         
         if (isConstructorChaining) {
-            generateConstructorThunk(true);
+//            generateConstructorThunk(true);
         }
         
         if (owner.equals(Type.getInternalName(Throwable.class)) && name.equals("getStackTraceElement")) {
@@ -437,7 +437,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
             }
             
             if (needsThunk) {
-                generateConstructorThunk(false);
+//                generateConstructorThunk(false);
             }
         }
         
@@ -654,6 +654,8 @@ public class HologramMethodGenerator extends InstructionAdapter {
     }
     
     private void generateConstructorThunk(boolean isEntry) {
+        // TODO-RS: This isn't correct yet.
+        
         getClassMirror(owner);
         Type originalMethodType = HologramClassGenerator.getOriginalType(methodType);
         Type methodTypeWithoutExtraArg = HologramClassGenerator.removeMirrorParam(originalMethodType);
