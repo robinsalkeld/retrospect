@@ -51,22 +51,28 @@ public class RetroactiveWeaving {
         vmh.setSystemErr(teedErr);
         final ThreadMirror finalThread = (ThreadMirror)vmh.getWrappedMirror(thread);
 
-        // Avoid the side-effects of loading aspects themselves
-        relocateField(vmh, "java.lang.String", "hash");
-        relocateField(vmh, "java.util.zip.ZipCoder", "enc");
-        relocateField(vmh, "java.nio.charset.Charset", "cache1");
-        relocateField(vmh, "java.nio.charset.Charset", "cache2");
-        relocateField(vmh, "java.lang.Thread", "threadInitNumber");
-        relocateFieldInitializeWithDefaultConstructor(vmh, "sun.nio.cs.ThreadLocalCoders$Cache", "cache");
-        relocateFieldInitializeWithDefaultConstructor(vmh, "java.lang.ThreadLocal", "nextHashCode");
-        relocateFieldInitializeWithDefaultConstructor(vmh, "java.net.URLClassLoader", "closeables");
-        aroundThreadLocals(vmh);
-        hardCodeHashing(vmh);
-        classLoaderLocking(vmh);
-        aroundThreadGroups(vmh);
+        Reflection.withThread(finalThread, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+             // Avoid the side-effects of loading aspects themselves
+                relocateField(vmh, "java.lang.String", "hash");
+                relocateField(vmh, "java.util.zip.ZipCoder", "enc");
+                relocateField(vmh, "java.nio.charset.Charset", "cache1");
+                relocateField(vmh, "java.nio.charset.Charset", "cache2");
+                relocateField(vmh, "java.lang.Thread", "threadInitNumber");
+                relocateFieldInitializeWithDefaultConstructor(vmh, "sun.nio.cs.ThreadLocalCoders$Cache", "cache");
+                relocateFieldInitializeWithDefaultConstructor(vmh, "java.lang.ThreadLocal", "nextHashCode");
+                relocateFieldInitializeWithDefaultConstructor(vmh, "java.net.URLClassLoader", "closeables");
+                aroundThreadLocals(vmh);
+                hardCodeHashing(vmh);
+                classLoaderLocking(vmh);
+                aroundThreadGroups(vmh);
+                return null;
+            }
+        });
         
-        vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
         vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
+        vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
         for (String aspectPathPart : aspectPath.split(File.pathSeparator)) {
             URL partURL;
             String escaped = new File(aspectPathPart).toURI().toURL().getFile();
