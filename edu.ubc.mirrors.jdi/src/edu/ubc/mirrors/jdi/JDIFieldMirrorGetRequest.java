@@ -40,17 +40,19 @@ public class JDIFieldMirrorGetRequest extends AbstractMirrorEventRequest impleme
     private final String fieldName;
     
     public JDIFieldMirrorGetRequest(JDIVirtualMachineMirror vm, String declaringClass, String fieldName) {
-	super(vm);
-	this.declaringClass = declaringClass;
-	this.fieldName = fieldName;
-	
-	EventRequestManager requestManager = vm.jdiVM.eventRequestManager();
-	for (ReferenceType refType : vm.jdiVM.classesByName(declaringClass)) {
-	    Field field = refType.fieldByName(fieldName);
-	    AccessWatchpointRequest wrapped = requestManager.createAccessWatchpointRequest(field);
-	    wrapped.putProperty(JDIEventRequest.MIRROR_WRAPPER, this);
-	    wrappedRequests.add(wrapped);
-	}
+        super(vm);
+        this.declaringClass = declaringClass;
+        this.fieldName = fieldName;
+
+        EventRequestManager requestManager = vm.jdiVM.eventRequestManager();
+        for (ReferenceType refType : vm.jdiVM.classesByName(declaringClass)) {
+            Field field = refType.fieldByName(fieldName);
+            if (field != null) {
+                AccessWatchpointRequest wrapped = requestManager.createAccessWatchpointRequest(field);
+                wrapped.putProperty(JDIEventRequest.MIRROR_WRAPPER, this);
+                wrappedRequests.add(wrapped);
+            }
+        }
     }
     
     @Override

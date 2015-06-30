@@ -47,9 +47,11 @@ public class JDIFieldMirrorSetRequest extends AbstractMirrorEventRequest impleme
 	EventRequestManager requestManager = vm.jdiVM.eventRequestManager();
         for (ReferenceType refType : vm.jdiVM.classesByName(declaringClass)) {
             Field field = refType.fieldByName(fieldName);
-            ModificationWatchpointRequest wrapped = requestManager.createModificationWatchpointRequest(field);
-            wrapped.putProperty(JDIEventRequest.MIRROR_WRAPPER, this);
-            wrappedRequests.add(wrapped);
+            if (field != null) {
+                ModificationWatchpointRequest wrapped = requestManager.createModificationWatchpointRequest(field);
+                wrapped.putProperty(JDIEventRequest.MIRROR_WRAPPER, this);
+                wrappedRequests.add(wrapped);
+            }
         }
     }
 
