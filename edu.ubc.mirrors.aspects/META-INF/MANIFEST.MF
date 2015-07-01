@@ -6,6 +6,7 @@ Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: edu.ubc.retrospect
 Import-Package: edu.ubc.mirrors,
+ edu.ubc.mirrors.fieldmap,
  edu.ubc.mirrors.holographs,
  edu.ubc.mirrors.jdi,
  edu.ubc.mirrors.raw,

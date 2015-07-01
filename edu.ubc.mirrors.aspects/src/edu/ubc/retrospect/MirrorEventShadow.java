@@ -37,8 +37,6 @@ public abstract class MirrorEventShadow extends Shadow {
     protected final MirrorWorld world;
     protected final MirrorEvent event;
     
-    public static final Object SHADOW_KIND_PROPERTY_KEY = MirrorEventShadow.class.getName() + ".shadowKind";
-    
     protected MirrorEventShadow(MirrorWorld world, MirrorEvent event, Shadow.Kind kind, Member signature, Shadow enclosingShadow) {
         super(kind, signature, enclosingShadow);
         this.world = world;
@@ -113,12 +111,7 @@ public abstract class MirrorEventShadow extends Shadow {
         return world.resolve(UnresolvedType.forName(JoinPoint.class.getName()));
     }
     
-    public static MirrorEventShadow make(MirrorWorld world, MirrorEvent event) {
-        Shadow.Kind shadowKind = (Shadow.Kind)event.request().getProperty(SHADOW_KIND_PROPERTY_KEY); 
-        if (shadowKind == null) {
-            return null;
-        }
-        
+    public static MirrorEventShadow make(MirrorWorld world, MirrorEvent event, Shadow.Kind shadowKind) {
         if (event instanceof ConstructorMirrorHandlerEvent) {
             ConstructorMirrorHandlerEvent cmhe = (ConstructorMirrorHandlerEvent)event;
             if (shadowKind == Shadow.ConstructorCall && cmhe.isConstructorChaining()) {

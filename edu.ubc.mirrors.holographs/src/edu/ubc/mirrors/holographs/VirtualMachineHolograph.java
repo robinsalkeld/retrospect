@@ -294,9 +294,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 
     private void collectZipFiles() {
         try {
-            Reflection.withThread(getThreads().get(0), new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
+//            Reflection.withThread(getThreads().get(0), new Callable<Object>() {
+//                @Override
+//                public Object call() throws Exception {
                     ClassMirror zipFileClass = findBootstrapClassMirror(ZipFile.class.getName());
                     for (ClassMirror zipFileSubclass : findAllClasses(ZipFile.class.getName(), true)) {
                         for (ObjectMirror zipFileObjectMirror : zipFileSubclass.getInstances()) {
@@ -322,9 +322,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                         dispatch().addCallback(request, ZIP_FILE_CREATED_CALLBACK);
                         request.enable();
                     }
-                    return null;
-                }
-            });
+//                    return null;
+//                }
+//            });
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -358,6 +358,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         ZipFile hostZipFile = zipFilesByAddress.get(jzfile);
         if (hostZipFile == null) {
             File path = zipPathsByAddress.get(jzfile);
+            if (path == null) {
+                // Seems to pick up some extra files sometimes for some reason
+                collectZipFiles();
+                path = zipPathsByAddress.get(jzfile);
+            }
             if (path == null) {
                 throw new InternalError();
             }
@@ -682,12 +687,12 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     @Override
     public List<ClassMirror> findAllClasses() {
-        List<ClassMirror> result = new ArrayList<ClassMirror>(super.findAllClasses());
+        Set<ClassMirror> result = new HashSet<ClassMirror>(super.findAllClasses());
         result.addAll(dynamicallyDefinedClasses.values());
         for (ClassLoaderHolograph loader : allClassLoaders) {
             result.addAll(loader.dynamicallyDefinedClasses.values());
         }
-        return result;
+        return new ArrayList<ClassMirror>(result);
     }
     
     @Override
@@ -697,7 +702,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 //            throw new UnsupportedOperationException();
         }
         
-        List<ClassMirror> result = new ArrayList<ClassMirror>(super.findAllClasses(name, includeSubclasses));
+        Set<ClassMirror> result = new HashSet<ClassMirror>(super.findAllClasses(name, includeSubclasses));
         ClassMirror bootstrapClass = dynamicallyDefinedClasses.get(name);
         if (bootstrapClass != null) {
             result.add(bootstrapClass);
@@ -709,7 +714,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 result.add(klass);
             }
         }
-        return result;
+        return new ArrayList<ClassMirror>(result);
     }
     
     @Override

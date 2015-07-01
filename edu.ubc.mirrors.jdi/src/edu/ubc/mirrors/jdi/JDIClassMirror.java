@@ -102,6 +102,9 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
     private ClassMirrorLoader loader;
     private boolean loaderFetched = false;
     
+    private ClassMirror superClass;
+    private boolean superClassFetched;
+    
     private boolean initialized = false;
     
     public JDIClassMirror(JDIVirtualMachineMirror vm, ClassObjectReference t) {
@@ -174,15 +177,19 @@ public class JDIClassMirror extends JDIInstanceMirror implements ClassMirror {
 
     @Override
     public ClassMirror getSuperClassMirror() {
-        if (refType instanceof ClassType) {
-            return vm.makeClassMirror(((ClassType)refType).superclass());
-        } else if (refType instanceof InterfaceType) {
-            return null;
-        } else if (refType instanceof ArrayType) {
-            return vm.findBootstrapClassMirror(Object.class.getName());
-        } else {
-            throw new IllegalStateException("Unrecognized ReferenceType class: " + refType);
+        if (!superClassFetched) {
+            if (refType instanceof ClassType) {
+                superClass = vm.makeClassMirror(((ClassType)refType).superclass());
+            } else if (refType instanceof InterfaceType) {
+                superClass = null;
+            } else if (refType instanceof ArrayType) {
+                superClass = vm.findBootstrapClassMirror(Object.class.getName());
+            } else {
+                throw new IllegalStateException("Unrecognized ReferenceType class: " + refType);
+            }
+            superClassFetched = true;
         }
+        return superClass;
     }
 
     @Override

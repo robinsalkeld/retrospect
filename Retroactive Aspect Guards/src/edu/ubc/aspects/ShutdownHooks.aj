@@ -15,7 +15,8 @@ public aspect ShutdownHooks {
     }
     
     after(): execution(void Shutdown.runHooks()) {
-        // Copy of ApplicationShutdownHooks.runHooks()
+        // Copy of ApplicationShutdownHooks.runHooks(),
+        // but referring to moreHooks instead.
         Collection<Thread> threads;
         synchronized(ShutdownHooks.class) {
             threads = moreHooks.keySet();

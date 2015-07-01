@@ -2,6 +2,7 @@ package edu.ubc.retrospect;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,37 +69,53 @@ import edu.ubc.mirrors.ThreadMirror;
  */
 public class PointcutMirrorRequestExtractor {
 
-    int kinds = Shadow.ALL_SHADOW_KINDS_BITS;
-    final List<PatternNode> thisFilters = new ArrayList<PatternNode>();
-    final List<PatternNode> targetFilters = new ArrayList<PatternNode>();
-     
+    private static class RequestContext {
+        int kinds = Shadow.ALL_SHADOW_KINDS_BITS;
+        final List<PatternNode> thisFilters = new ArrayList<PatternNode>();
+        final List<PatternNode> targetFilters = new ArrayList<PatternNode>();
+        private Member cflowCounterGuard = null;
+    }
+    
+    public static final Object SHADOW_KIND_PROPERTY_KEY = PointcutMirrorRequestExtractor.class.getName() + ".shadowKind";
+    
     private final Advice advice;
     private final MirrorWorld world;
-    private final Callback<MirrorEventShadow> callback;
+    private final Callback<MirrorEvent> callback;
     private final MirrorEventRequestManager manager;
     
-    public PointcutMirrorRequestExtractor(MirrorWorld world, Advice advice, Callback<MirrorEventShadow> callback) {
+    private static final Map<Member, List<MirrorEventRequest>> cflowGuardedRequests = 
+            new HashMap<Member, List<MirrorEventRequest>>();
+    
+    public static void updateCflowGuardedRequestEnablement(Member cflowCounterMember, boolean enable) {
+        for (MirrorEventRequest request : cflowGuardedRequests.get(cflowCounterMember)) {
+            request.setEnabled(enable);
+        }
+    }
+    
+    public PointcutMirrorRequestExtractor(final MirrorWorld world, Advice advice) {
         this.advice = advice;
         this.world = world;
-        this.callback = callback;
+        this.callback = world.eventCallback();
         this.manager = world.vm.eventRequestManager();
     }
     
-    public Object visit(Pointcut node, Object parent) {
+    public Object visit(Pointcut node, Object parent, RequestContext context) {
         if (node instanceof AndPointcut) {
-            return visit((AndPointcut)node, parent);
+            return visit((AndPointcut)node, parent, context);
         } else if (node instanceof OrPointcut) {
-            return visit((OrPointcut)node, parent);
+            return visit((OrPointcut)node, parent, context);
         } else if (node instanceof NotPointcut) {
-            return visit((NotPointcut)node, parent);
+            return visit((NotPointcut)node, parent, context);
         } else if (node instanceof WithinPointcut) {
-            return visit((WithinPointcut)node, parent);
+            return visit((WithinPointcut)node, parent, context);
         } else if (node instanceof KindedPointcut) {
-            return visit((KindedPointcut)node, parent);
+            return visit((KindedPointcut)node, parent, context);
+        } else if (node instanceof ConcreteCflowPointcut) {
+            return visit((ConcreteCflowPointcut)node, parent, context);
         } else if (node instanceof ThisOrTargetPointcut || node instanceof ArgsPointcut) {
             // Could possibly add filters to match the type pattern...
             return null;
-        } else if (node instanceof PerClause || node instanceof ConcreteCflowPointcut) {
+        } else if (node instanceof PerClause) {
             // Ignore pointcuts with no scope
             return null;
         } else {
@@ -106,46 +123,47 @@ public class PointcutMirrorRequestExtractor {
         }
     }
     
-    public Object visit(WithinPointcut node, Object parent) {
-        kinds &= node.couldMatchKinds();
-        thisFilters.add(node.getTypePattern());
-        installIfNotBelowAnd(parent);
+    public Object visit(WithinPointcut node, Object parent, RequestContext context) {
+        context.kinds &= node.couldMatchKinds();
+        context.thisFilters.add(node.getTypePattern());
+        installIfNotBelowAnd(parent, context);
         return null;
     }
     
-    public Object visit(KindedPointcut node, Object parent) {
-        kinds &= node.couldMatchKinds();
+    public Object visit(KindedPointcut node, Object parent, RequestContext context) {
+        context.kinds &= node.couldMatchKinds();
         if (node.getKind().bit == Shadow.FieldGetBit
                 || node.getKind().bit == Shadow.FieldSetBit) {
-            targetFilters.add(node.getSignature());
+            context.targetFilters.add(node.getSignature());
         } else {
-            thisFilters.add(node.getSignature());
+            context.thisFilters.add(node.getSignature());
         }
-        installIfNotBelowAnd(parent);
+        installIfNotBelowAnd(parent, context);
         return null;
     }
     
-    public Object visit(OrPointcut node, Object parent) {
-        visit(node.getLeft(), node);
-        
-        kinds = Shadow.ALL_SHADOW_KINDS_BITS;
-        thisFilters.clear();
-        targetFilters.clear();
-        
-        visit(node.getRight(), node);
+    public Object visit(OrPointcut node, Object parent, RequestContext context) {
+        visit(node.getLeft(), node, context);
+        context = new RequestContext();
+        visit(node.getRight(), node, context);
 
         return null;
     }
     
-    public Object visit(AndPointcut node, Object parent) {
-        visit(node.getLeft(), node);
-        visit(node.getRight(), node);
-        installIfNotBelowAnd(parent);
+    public Object visit(AndPointcut node, Object parent, RequestContext context) {
+        visit(node.getLeft(), node, context);
+        visit(node.getRight(), node, context);
+        installIfNotBelowAnd(parent, context);
         return null;
     }
     
-    public Object visit(NotPointcut node, Object parent) {
+    public Object visit(NotPointcut node, Object parent, RequestContext context) {
         if (parent instanceof AndPointcut) {
+            if (node.getNegatedPointcut() instanceof ConcreteCflowPointcut) {
+                ConcreteCflowPointcut negated = (ConcreteCflowPointcut)node.getNegatedPointcut();
+                visit(negated, node, context);
+            }
+            
             // Safe to just drop any nots underneath ands since the requests will
             // still cover a superset of the correct events.
             return null;
@@ -155,52 +173,80 @@ public class PointcutMirrorRequestExtractor {
             throw new IllegalArgumentException("Not pointcuts that aren't under Ands not supported");
         }
     }
-    private void installIfNotBelowAnd(Object parent) {
+    
+    private static final Field cflowFieldField;
+    static {
+        try {
+            cflowFieldField = ConcreteCflowPointcut.class.getDeclaredField("cflowField");
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+        cflowFieldField.setAccessible(true);
+    }
+    
+    public Object visit(ConcreteCflowPointcut node, Object parent, RequestContext context) {
+        if (parent instanceof NotPointcut) {
+            if (context.cflowCounterGuard != null) {
+                throw new IllegalArgumentException("More than one cflow per pointcut is not supported");
+            }
+            
+            // Cheating to extract the counter field since it's not exposed :(
+            try {
+                context.cflowCounterGuard = (Member)cflowFieldField.get(node);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        
+        return null;
+    }
+    
+    private void installIfNotBelowAnd(Object parent, RequestContext context) {
         if (!(parent instanceof AndPointcut)) {
-            installRequest();
+            installRequest(context);
         }
     }
     
-    private void installRequest() {
+    private void installRequest(RequestContext context) {
         AdviceKind adviceKind = advice.getKind();
-        for (final Shadow.Kind kind : Shadow.toSet(kinds)) {
+        for (final Shadow.Kind kind : Shadow.toSet(context.kinds)) {
             switch (kind.bit) {
             case (Shadow.MethodExecutionBit):
             case (Shadow.MethodCallBit):
-                    // If there are no filters at all, it's much more efficient to create single request
-                if (thisFilters.isEmpty()) {
+                // If there are no filters at all, it's much more efficient to create single request
+                if (context.thisFilters.isEmpty()) {
                     if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters, kind);
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), context.thisFilters, kind, context);
                     }
                     if (adviceKind.isAfter() || adviceKind.isCflow()) {
-                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters, kind);
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), context.thisFilters, kind, context);
                     }
                     if (adviceKind == AdviceKind.Around) {
-                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), thisFilters, kind);
+                        addFiltersAndInstall(manager.createMethodMirrorHandlerRequest(), context.thisFilters, kind, context);
                     }
                 } else {
-                    installMethodRequests(kind);
+                    installMethodRequests(kind, context);
                 }
                 break;
             case (Shadow.ConstructorExecutionBit):
             case (Shadow.ConstructorCallBit):
                 if (adviceKind == AdviceKind.Before || adviceKind.isCflow()) {
-                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
+                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), context.thisFilters, kind, context);
                 }
                 if (adviceKind.isAfter()/* || adviceKind.isCflow()*/) {
-                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
+                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), context.thisFilters, kind, context);
                 }
                 if (adviceKind == AdviceKind.Around) {
-                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), thisFilters, kind);
+                    addFiltersAndInstall(manager.createConstructorMirrorHandlerRequest(), context.thisFilters, kind, context);
                 }
                 break;
             case (Shadow.FieldSetBit):
             case (Shadow.FieldGetBit):
-                installFieldRequests(kind);
+                installFieldRequests(kind, context);
                 break;
             case Shadow.SynchronizationLockBit:
             case Shadow.SynchronizationUnlockBit:
-                installSynchronizationRequests(kind);
+                installSynchronizationRequests(kind, context);
                 break;
             case Shadow.AdviceExecutionBit:
             case Shadow.InitializationBit:
@@ -224,7 +270,7 @@ public class PointcutMirrorRequestExtractor {
         });
     }
     
-    private void installFieldRequests(final Shadow.Kind kind) {
+    private void installFieldRequests(final Shadow.Kind kind, final RequestContext context) {
         // No point in tracking cflow state in these, since get()/set() joinpoints
         // never contain any other joinpoints.
         if (advice.getKind().isCflow()) {
@@ -235,14 +281,12 @@ public class PointcutMirrorRequestExtractor {
         
         // Copy the state to make sure the class prepare callback
         // reads the right state.
-        final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(targetFilters);
-        
         forAllWovenClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
                 ReferenceType type = (ReferenceType)world.resolve(klass);
                 for (ResolvedMember field : type.getDeclaredFields()) {
                     boolean matches = true;
-                    for (PatternNode targetPattern : callbackFilters) {
+                    for (PatternNode targetPattern : context.targetFilters) {
                         if (targetPattern instanceof SignaturePattern) {
                             if (!(((SignaturePattern)targetPattern).matches(field, world, false))) {
                                 matches = false;
@@ -273,7 +317,7 @@ public class PointcutMirrorRequestExtractor {
                         } else {
                             throw new IllegalArgumentException("After advice on field get/set not supported");
                         }
-                        addFiltersAndInstall(request, callbackFilters, kind);
+                        addFiltersAndInstall(request, context.targetFilters, kind, context);
                     }
                 }
                 
@@ -282,7 +326,7 @@ public class PointcutMirrorRequestExtractor {
         });
     }
     
-    private void installSynchronizationRequests(final Shadow.Kind kind) {
+    private void installSynchronizationRequests(final Shadow.Kind kind, final RequestContext context) {
         // No point in tracking cflow state in these, since lock()/unlock() joinpoints
         // never contain any other joinpoints.
         if (advice.getKind().isCflow()) {
@@ -293,7 +337,6 @@ public class PointcutMirrorRequestExtractor {
         // TODO-RS: This isn't perfect, since I'm only supporting execution() shadows
         // at the moment, which implies that only after: lock() and before: unlock() work.
         // Realistically it doesn't matter unless the code queries the thread state in very specific ways.
-        final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
         forAllWovenClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
                 ReferenceType type = (ReferenceType)world.resolve(klass);
@@ -320,7 +363,7 @@ public class PointcutMirrorRequestExtractor {
                         } else {
                             throw new IllegalArgumentException("Unsupported lock()/unlock() advice kind: " + advice);
                         }
-                        addFiltersAndInstall(request, callbackFilters, kind);
+                        addFiltersAndInstall(request, context.thisFilters, kind, context);
                     }
                 }
                 
@@ -378,30 +421,43 @@ public class PointcutMirrorRequestExtractor {
         });
     }
     
-    private void addFiltersAndInstall(MirrorEventRequest request, List<PatternNode> filters, Shadow.Kind kind) {
+    private void addFiltersAndInstall(MirrorEventRequest request, List<PatternNode> filters, Shadow.Kind kind, RequestContext context) {
         for (PatternNode pattern : filters) {
             addPatternFilter(request, pattern);
         }
-        install(request, kind);
+        install(request, kind, context);
     }
     
-    private void install(MirrorEventRequest request, Shadow.Kind kind) {
+    private void install(MirrorEventRequest request, Shadow.Kind kind, RequestContext context) {
         world.showMessage(IMessage.DEBUG, request.toString(), null, null);
         
         request.putProperty("for advice", advice);
-        request.putProperty(MirrorEventShadow.SHADOW_KIND_PROPERTY_KEY, kind);
-        world.vm.dispatch().addCallback(request, world.eventCallback());
-        request.enable();
+        request.putProperty(SHADOW_KIND_PROPERTY_KEY, kind);
+        world.vm.dispatch().addCallback(request, callback);
+
+        if (context.cflowCounterGuard != null) {
+            // If guarded by a !cflow(...) pointcut, register this request so that the
+            // cflowEntry advice will enable and disable it as the cflow pointcut is entered and left.
+            List<MirrorEventRequest> guardedRequests = cflowGuardedRequests.get(context.cflowCounterGuard);
+            if (guardedRequests == null) {
+                guardedRequests = new ArrayList<MirrorEventRequest>();
+                cflowGuardedRequests.put(context.cflowCounterGuard, guardedRequests);
+            }
+            
+            guardedRequests.add(request);
+        } else {
+            // Otherwise enable it unconditionally
+            request.enable();
+        }
     }
     
-    private void installMethodRequests(final Shadow.Kind kind) {
-        final List<PatternNode> callbackFilters = new ArrayList<PatternNode>(thisFilters);
+    private void installMethodRequests(final Shadow.Kind kind, final RequestContext context) {
         forAllWovenClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
                 ReferenceType referenceType = (ReferenceType)world.resolve(klass);
                 for (Member method : referenceType.getDeclaredMethods()) {
                     boolean matches = true;
-                    for (PatternNode pattern : callbackFilters) {
+                    for (PatternNode pattern : context.thisFilters) {
                         if (pattern instanceof SignaturePattern) {
                             if (!(((SignaturePattern)pattern).matches(method, world, false))) {
                                 matches = false;
@@ -421,7 +477,7 @@ public class PointcutMirrorRequestExtractor {
                         MethodMirror methodMirror = ((MethodMirrorMember)method).method;
                         MethodMirrorHandlerRequest request = world.vm.eventRequestManager().createMethodMirrorHandlerRequest();
                         request.setMethodFilter(methodMirror.getDeclaringClass().getClassName(), methodMirror.getName(), methodMirror.getParameterTypeNames());
-                        install(request, kind);
+                        install(request, kind, context);
                     }
                 }
                 return klass;
@@ -429,7 +485,7 @@ public class PointcutMirrorRequestExtractor {
         });
     }
     
-    private final Map<ThreadMirror, Set<InstanceMirror>> ownedMonitors = 
+    private static final Map<ThreadMirror, Set<InstanceMirror>> ownedMonitors = 
             new HashMap<ThreadMirror, Set<InstanceMirror>>();
     
     private void installMonitorRequests(final Shadow.Kind kind, MethodMirror methodMirror, int offset) {
@@ -486,7 +542,7 @@ public class PointcutMirrorRequestExtractor {
                 } else {
                     shadow = new MirrorMonitorExitShadow(world, locationEvent, monitor, !advice.getKind().isAfter(), null);
                 }
-                callback.handle(shadow);
+                world.handle(shadow);
                 return event;
             }
         });
@@ -502,9 +558,11 @@ public class PointcutMirrorRequestExtractor {
         // Ignore any other patterns
     }
     
-    public static void installCallback(MirrorWorld world, Advice advice, Callback<MirrorEventShadow> callback) {
-        PointcutMirrorRequestExtractor extractor = new PointcutMirrorRequestExtractor(world, advice, callback);
+    public static void installCallback(MirrorWorld world, Advice advice) {
+        PointcutMirrorRequestExtractor extractor = new PointcutMirrorRequestExtractor(world, advice);
         Pointcut dnf = new PointcutRewriter().rewrite(advice.getPointcut());
-        extractor.visit(dnf, null);
+        extractor.visit(dnf, null, new RequestContext());
     }
+    
+    
 }

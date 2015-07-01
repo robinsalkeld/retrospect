@@ -535,7 +535,7 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                 for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
                     MirrorAdvice advice = (MirrorAdvice)munger;
                     showMessage(IMessage.DEBUG, "Installing event requests for advice: " + advice, null, null);
-                    PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice, MirrorWorld.this);
+                    PointcutMirrorRequestExtractor.installCallback(MirrorWorld.this, advice);
                 }
                 
                 for (ConcreteTypeMunger munger : getCrosscuttingMembersSet().getTypeMungers()) {
@@ -552,9 +552,12 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     
     private final Callback<MirrorEvent> eventCallback = new Callback<MirrorEvent>() {
         public MirrorEvent handle(MirrorEvent event) {
-            MirrorEventShadow shadow = MirrorEventShadow.make(MirrorWorld.this, event);
-            if (shadow != null) {
-                MirrorWorld.this.handle(shadow);
+            Shadow.Kind shadowKind = (Shadow.Kind)event.request().getProperty(PointcutMirrorRequestExtractor.SHADOW_KIND_PROPERTY_KEY);
+            if (shadowKind != null) {
+                MirrorEventShadow shadow = MirrorEventShadow.make(MirrorWorld.this, event, shadowKind);
+                if (shadow != null) {
+                    MirrorWorld.this.handle(shadow);
+                }
             }
             return event;
         };

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.Callable;
 
 import edu.ubc.mirrors.holographs.IllegalSideEffectError;
 
@@ -276,9 +277,15 @@ public class EventDispatch {
         }
         ClassMirrorPrepareRequest request = vm.eventRequestManager().createClassMirrorPrepareRequest();
         addCallback(request, new Callback<MirrorEvent>() {
-            public MirrorEvent handle(MirrorEvent t) {
-                ClassMirrorPrepareEvent event = (ClassMirrorPrepareEvent)t;
-                callback.handle(event.classMirror());
+            public MirrorEvent handle(final MirrorEvent t) {
+                final ClassMirrorPrepareEvent event = (ClassMirrorPrepareEvent)t;
+                Reflection.withThread(t.thread(), new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        callback.handle(event.classMirror());
+                        return null;
+                    }
+                });
                 return t;
             }
         });

@@ -24,16 +24,20 @@ import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.Pointcut;
 
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 
 public class MirrorAdvice extends Advice {
     private static final Member cflowCounterIncMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
             UnresolvedType.VOID, "inc", UnresolvedType.NONE);
     private static final Member cflowCounterDecMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
             UnresolvedType.VOID, "dec", UnresolvedType.NONE);
+    private static final Member cflowCounterIsValidMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
+            UnresolvedType.BOOLEAN, "isValid", UnresolvedType.NONE);
 
     private final MirrorWorld world;
     
@@ -52,7 +56,7 @@ public class MirrorAdvice extends Advice {
         Test test = getPointcut().findResidue(shadow, state);
         MirrorEvaluator evaluator = shadow.getEvaluator(arguments);
         if (evaluator.evaluateTest(test)) {
-            if (getKind().isAfter()) {
+            if (kind.isAfter()) {
                 Object result = proceed.invoke(shadow.getThread(), arguments);
                 if (getKind() == AdviceKind.AfterReturning) {
                     Var returnVar = new MirrorEventVar(world.resolve(shadow.getReturnType()), result);
@@ -71,24 +75,55 @@ public class MirrorAdvice extends Advice {
         }
     }
 
+    private void cflowCounterEntry(MirrorEvaluator evaluator) {
+        InstanceMirror counter = (InstanceMirror)evaluator.evaluateField(signature);
+        evaluator.evaluateCall(counter, cflowCounterIncMethod, Expr.NONE);
+        
+        boolean isValid = (Boolean)evaluator.evaluateCall(counter, cflowCounterIsValidMethod, Expr.NONE);
+        PointcutMirrorRequestExtractor.updateCflowGuardedRequestEnablement(signature, !isValid);
+    }
+    
+    private void cflowCounterExit(MirrorEvaluator evaluator) {
+        InstanceMirror counter = (InstanceMirror)evaluator.evaluateField(signature);
+        evaluator.evaluateCall(counter, cflowCounterDecMethod, Expr.NONE);
+        
+        boolean isValid = (Boolean)evaluator.evaluateCall(counter, cflowCounterIsValidMethod, Expr.NONE);
+        PointcutMirrorRequestExtractor.updateCflowGuardedRequestEnablement(signature, !isValid);
+    }
+    
+    public Object executeCflow(MirrorEventShadow shadow, ExposedState state, MirrorInvocationHandler proceed, List<Object> arguments) throws MirrorInvocationTargetException {
+        if (state.size() != 0) {
+            throw new IllegalStateException("cflow with state not supported");
+        }
+        
+        MirrorEvaluator evaluator = shadow.getEvaluator(arguments);
+        AdviceKind adviceKind = shadow.adviceKind();
+        if (adviceKind == AdviceKind.Around) {
+            cflowCounterEntry(evaluator);
+            try {
+                return proceed.invoke(shadow.getThread(), arguments);
+            } finally {
+                cflowCounterExit(evaluator);
+            }
+        } else {
+            if (adviceKind.isAfter()) {
+                cflowCounterExit(evaluator);
+            } else {
+                cflowCounterEntry(evaluator);
+            }
+            return null;
+        }
+    }
+    
     public Object execute(MirrorEventShadow shadow, ExposedState state, MirrorInvocationHandler proceed, List<Object> arguments) throws MirrorInvocationTargetException {
         world.showMessage(IMessage.DEBUG, shadow.toString(), null, null);
         world.showMessage(IMessage.DEBUG, signature.toString(), null, null);
         
-        MirrorEvaluator evaluator = shadow.getEvaluator(arguments);
-        
         if (kind.isCflow()) {
-            if (state.size() == 0) {
-                Expr fieldGet = new FieldGet(getSignature(), concreteAspect);
-                InstanceMirror counter = (InstanceMirror)evaluator.evaluateExpr(fieldGet);
-                evaluator.evaluateCall(counter, cflowCounterIncMethod, Expr.NONE);
-                Object result = proceed.invoke(shadow.getThread(), arguments);
-                evaluator.evaluateCall(counter, cflowCounterDecMethod, Expr.NONE);
-                return result;
-            } else {
-                throw new IllegalStateException();
-            }
+            return executeCflow(shadow, state, proceed, arguments);
         }
+        
+        MirrorEvaluator evaluator = shadow.getEvaluator(arguments);
         
         InstanceMirror aspectInstance = (InstanceMirror)evaluator.evaluateExpr(state.getAspectInstance());
         Object[] args = new Object[state.size()];
@@ -114,9 +149,13 @@ public class MirrorAdvice extends Advice {
             args[extraArgIndex--] = evaluator.evaluateExpr(shadow.getThisEnclosingJoinPointStaticPartVar());
         }
         
+        // Entering adviceexecution()
+        
         try {
             MethodMirrorMember member = (MethodMirrorMember)signature;
             Object result = member.method.invoke(shadow.getThread(), aspectInstance, args);
+            
+            // Leaving adviceexecution()
             
             // Autounboxing
             if (world.resolve(shadow.getReturnType()).isPrimitiveType() && (result instanceof InstanceMirror)) {
