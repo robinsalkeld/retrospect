@@ -23,6 +23,7 @@ package edu.ubc.mirrors.eclipse.mat;
 
 import java.util.List;
 
+import edu.ubc.mirrors.AdviceMirrorHandlerRequest;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
@@ -177,6 +178,11 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
     
     @Override
     public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(String declaringClass, String fieldName) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public AdviceMirrorHandlerRequest createAdviceMirrorHandlerRequest() {
         throw new UnsupportedOperationException();
     }
 }

@@ -30,7 +30,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.concurrent.Callable;
 
 import edu.ubc.mirrors.holographs.IllegalSideEffectError;
@@ -206,7 +205,6 @@ public class EventDispatch {
         
         return null;
     }
-    
     
     public Object runCallbacks(Set<MirrorEvent> events) throws MirrorInvocationTargetException {
         List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();

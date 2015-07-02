@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import edu.ubc.mirrors.AdviceMirrorHandlerRequest;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
@@ -17,6 +18,8 @@ import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.fieldmap.DirectAdviceMirrorHandlerRequest;
 import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 import edu.ubc.mirrors.holograms.FieldGetProceed;
 import edu.ubc.mirrors.holograms.FieldSetProceed;
@@ -32,6 +35,8 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
             new ArrayList<FieldHolographSetHandlerRequest>();
     private final List<MethodHolographHandlerRequest> methodHandlerRequests =
             new ArrayList<MethodHolographHandlerRequest>();
+    private final List<AdviceMirrorHandlerRequest> adviceHandlerRequests =
+            new ArrayList<AdviceMirrorHandlerRequest>();
     
     public HolographEventRequestManager(VirtualMachineHolograph vm, MirrorEventRequestManager wrapped) {
         super(vm, wrapped);
@@ -67,7 +72,7 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
     public Object handleMethodInvocation(MirrorInvocationHandler original, MethodMirror method, List<Object> arguments) throws MirrorInvocationTargetException {
         Set<MirrorEvent> events = new HashSet<MirrorEvent>();
         for (MethodHolographHandlerRequest request : methodHandlerRequests) {
-            if (request.matches(method)) {
+            if (request.isEnabled() && request.matches(method)) {
                 events.add(new DirectMethodMirrorHandlerEvent(request, ThreadHolograph.currentThreadMirror(), method, arguments, original));
             }
         }
@@ -92,7 +97,7 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
         MirrorInvocationHandler original = new FieldSetProceed(field);
         Set<MirrorEvent> events = new HashSet<MirrorEvent>();
         for (FieldHolographSetHandlerRequest request : fieldSetHandlerRequests) {
-            if (request.matches(field)) {
+            if (request.isEnabled() && request.matches(field)) {
                 events.add(new FieldHolographSetHandlerEvent(request, ThreadHolograph.currentThreadMirror(), target, field, newValue, original));
             }
         }
@@ -108,13 +113,35 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
         MirrorInvocationHandler original = new FieldGetProceed(field);
         Set<MirrorEvent> events = new HashSet<MirrorEvent>();
         for (FieldHolographGetHandlerRequest request : fieldGetHandlerRequests) {
-            if (request.matches(field)) {
+            if (request.isEnabled() && request.matches(field)) {
                 events.add(new FieldHolographGetHandlerEvent(request, ThreadHolograph.currentThreadMirror(), target, field, original));
             }
         }
         
         if (events.isEmpty()) {
             return Reflection.getBoxedValue(target, field);
+        } else {
+            return vm.dispatch().runCallbacks(events);
+        }
+    }
+    
+    @Override
+    public AdviceMirrorHandlerRequest createAdviceMirrorHandlerRequest() {
+        DirectAdviceMirrorHandlerRequest request = new DirectAdviceMirrorHandlerRequest(vm);
+        adviceHandlerRequests.add(request);
+        return request;
+    }
+    
+    public Object handleAdvice(ThreadMirror thread, MethodMirror method, MirrorInvocationHandler original, List<Object> arguments) throws MirrorInvocationTargetException {
+        Set<MirrorEvent> events = new HashSet<MirrorEvent>();
+        for (AdviceMirrorHandlerRequest request : adviceHandlerRequests) {
+            if (request.isEnabled()) {
+                events.add(new DirectMethodMirrorHandlerEvent(request, thread, method, arguments, original));
+            }
+        }
+        
+        if (events.isEmpty()) {
+            return original.invoke(thread, arguments);
         } else {
             return vm.dispatch().runCallbacks(events);
         }

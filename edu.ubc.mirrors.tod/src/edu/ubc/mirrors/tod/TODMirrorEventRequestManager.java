@@ -8,6 +8,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import tod.core.database.event.ILogEvent;
+import edu.ubc.mirrors.AdviceMirrorHandlerRequest;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
@@ -243,6 +244,11 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
     
     @Override
     public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(String declaringClass, String fieldName) {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public AdviceMirrorHandlerRequest createAdviceMirrorHandlerRequest() {
         throw new UnsupportedOperationException();
     }
     

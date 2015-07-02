@@ -69,6 +69,8 @@ public interface MirrorEventRequestManager {
     
     FieldMirrorSetHandlerRequest createFieldMirrorSetHandlerRequest(String declaringClass, String name);
 
+    AdviceMirrorHandlerRequest createAdviceMirrorHandlerRequest();
+    
     void deleteMirrorEventRequest(MirrorEventRequest request);
 
 

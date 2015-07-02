@@ -1,7 +1,5 @@
 package edu.ubc.mirrors.test;
 
-import static edu.ubc.mirrors.Reflection.replaceMethod;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
@@ -14,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.aspectj.runtime.internal.CFlowCounter;
+
+import edu.ubc.mirrors.AdviceMirrorHandlerRequest;
 import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
@@ -24,6 +25,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.MirrorLocation;
@@ -37,6 +39,17 @@ import edu.ubc.retrospect.MirrorWorld;
 
 public class RetroactiveWeaving {
 
+    private static final CFlowCounter adviceexecutionCounter = new CFlowCounter();
+    
+    private static List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();
+    
+    private static void updateAdviceRequests() {
+        boolean enabled = adviceexecutionCounter.isValid();
+        for (MirrorEventRequest request : requests) {
+            request.setEnabled(enabled);
+        }
+    }
+    
     public static String weave(VirtualMachineMirror vm, ThreadMirror thread, String aspectPath, File hologramClassPath, ByteArrayOutputStream mergedOutput) throws Exception {
         System.out.println("Booting up holographic VM...");
         if (mergedOutput == null) {
@@ -54,7 +67,27 @@ public class RetroactiveWeaving {
         Reflection.withThread(finalThread, new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-             // Avoid the side-effects of loading aspects themselves
+//                // Avoid the side-effects of loading aspects themselves
+                AdviceMirrorHandlerRequest adviceRequest = vmh.eventRequestManager().createAdviceMirrorHandlerRequest();
+                vmh.addCallback(adviceRequest, new Callback<MirrorEvent>() {
+                    public MirrorEvent handle(MirrorEvent t) {
+                        final MirrorInvocationHandler original = t.getProceed();
+                        t.setProceed(new MirrorInvocationHandler() {
+                            public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                                adviceexecutionCounter.inc();
+                                updateAdviceRequests();
+                                try {
+                                    return original.invoke(finalThread, args);
+                                } finally {
+                                    adviceexecutionCounter.dec();
+                                    updateAdviceRequests();
+                                }
+                            }
+                        });
+                        return t;
+                    }
+                });
+                
                 relocateField(vmh, "java.lang.String", "hash");
                 relocateField(vmh, "java.util.zip.ZipCoder", "enc");
                 relocateField(vmh, "java.nio.charset.Charset", "cache1");
@@ -114,7 +147,7 @@ public class RetroactiveWeaving {
                 return t;
             }
         });
-        setRequest.enable();
+        requests.add(setRequest);
         
         FieldMirrorGetHandlerRequest getRequest = vmh.eventRequestManager().createFieldMirrorGetHandlerRequest(
                 "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl$Counter", "value");
@@ -124,10 +157,9 @@ public class RetroactiveWeaving {
                 return t;
             }
         });
-        getRequest.enable();
+        requests.add(getRequest);
         
-        methodCallBreakpoint(vmh, "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl", "isNotZero"
-                );
+        methodCallBreakpoint(vmh, "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl", "isNotZero");
     }
 
     private static void relocateField(VirtualMachineMirror vm, String className, String fieldName) {
@@ -162,7 +194,7 @@ public class RetroactiveWeaving {
                 return t;
             }
         });
-        setRequest.enable();
+        requests.add(setRequest);
         
         FieldMirrorGetHandlerRequest getRequest = vm.eventRequestManager().createFieldMirrorGetHandlerRequest(className, fieldName);
         vm.dispatch().addCallback(getRequest, new Callback<MirrorEvent>() {
@@ -184,7 +216,7 @@ public class RetroactiveWeaving {
                 return t;
             }
         });
-        getRequest.enable();
+        requests.add(getRequest);
     }
     
     private static void hardCodeHashing(VirtualMachineMirror vm) {
@@ -283,7 +315,19 @@ public class RetroactiveWeaving {
                 return t;
             }
         });
-        request.enable();
+        requests.add(request);
+    }
+    
+    public static void replaceMethod(VirtualMachineMirror vm, String declaringClass, String name, List<String> paramterTypeNames, final MirrorInvocationHandler handler) {
+        MethodMirrorHandlerRequest request = vm.eventRequestManager().createMethodMirrorHandlerRequest();
+        request.setMethodFilter(declaringClass, name, paramterTypeNames);
+        vm.addCallback(request, new Callback<MirrorEvent>() {
+            public MirrorEvent handle(MirrorEvent t) {
+                t.setProceed(handler);
+                return t;
+            }
+        });
+        requests.add(request);
     }
     
     private static void methodCallBreakpoint(final VirtualMachineMirror vm, String declaringClass, String name, String... paramterTypeNames) {

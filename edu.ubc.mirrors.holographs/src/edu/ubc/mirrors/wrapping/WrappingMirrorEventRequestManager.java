@@ -23,6 +23,7 @@ package edu.ubc.mirrors.wrapping;
 
 import java.util.List;
 
+import edu.ubc.mirrors.AdviceMirrorHandlerRequest;
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
 import edu.ubc.mirrors.ConstructorMirrorExitRequest;
@@ -169,5 +170,10 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     public FieldMirrorGetHandlerRequest createFieldMirrorGetHandlerRequest(String declaringClass, String name) {
         return new WrappingFieldMirrorGetHandlerRequest(vm, 
                 wrapped.createFieldMirrorGetHandlerRequest(declaringClass, name));
+    }
+    
+    @Override
+    public AdviceMirrorHandlerRequest createAdviceMirrorHandlerRequest() {
+        throw new UnsupportedOperationException();
     }
 }

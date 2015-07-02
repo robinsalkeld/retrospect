@@ -11,13 +11,13 @@ import edu.ubc.mirrors.ThreadMirror;
 
 public class DirectMethodMirrorHandlerEvent implements MethodMirrorHandlerEvent {
 
-    private final MethodMirrorHandlerRequest request;
+    private final MirrorEventRequest request;
     private final ThreadMirror thread;
     private final MethodMirror method;
     private final List<Object> arguments;
     private MirrorInvocationHandler proceed;
     
-    public DirectMethodMirrorHandlerEvent(MethodMirrorHandlerRequest request, ThreadMirror thread, MethodMirror method, List<Object> arguments, MirrorInvocationHandler proceed) {
+    public DirectMethodMirrorHandlerEvent(MirrorEventRequest request, ThreadMirror thread, MethodMirror method, List<Object> arguments, MirrorInvocationHandler proceed) {
         this.request = request;
         this.thread = thread;
         this.method = method;

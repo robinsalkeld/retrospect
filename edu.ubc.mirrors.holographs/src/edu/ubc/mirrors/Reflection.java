@@ -1045,16 +1045,4 @@ public class Reflection {
             e.printStackTrace();
         }
     }
-    
-    public static void replaceMethod(VirtualMachineMirror vm, String declaringClass, String name, List<String> paramterTypeNames, final MirrorInvocationHandler handler) {
-        MethodMirrorHandlerRequest request = vm.eventRequestManager().createMethodMirrorHandlerRequest();
-        request.setMethodFilter(declaringClass, name, paramterTypeNames);
-        vm.addCallback(request, new Callback<MirrorEvent>() {
-            public MirrorEvent handle(MirrorEvent t) {
-                t.setProceed(handler);
-                return t;
-            }
-        });
-        request.enable();
-    }
 }

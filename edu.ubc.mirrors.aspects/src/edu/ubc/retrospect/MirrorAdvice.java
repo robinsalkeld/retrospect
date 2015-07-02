@@ -17,19 +17,15 @@ import org.aspectj.weaver.ShadowMunger;
 import org.aspectj.weaver.UnresolvedType;
 import org.aspectj.weaver.World;
 import org.aspectj.weaver.ast.Expr;
-import org.aspectj.weaver.ast.FieldGet;
 import org.aspectj.weaver.ast.Test;
 import org.aspectj.weaver.ast.Var;
 import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.Pointcut;
 
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
-import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 
 public class MirrorAdvice extends Advice {
     private static final Member cflowCounterIncMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
