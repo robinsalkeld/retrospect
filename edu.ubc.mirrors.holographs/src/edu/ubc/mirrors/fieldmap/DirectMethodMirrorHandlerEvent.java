@@ -7,6 +7,7 @@ import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class DirectMethodMirrorHandlerEvent implements MethodMirrorHandlerEvent {
@@ -57,6 +58,6 @@ public class DirectMethodMirrorHandlerEvent implements MethodMirrorHandlerEvent 
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " on " + method();
+        return getClass().getSimpleName() + " for " + Reflection.methodName(method);
     }
 }

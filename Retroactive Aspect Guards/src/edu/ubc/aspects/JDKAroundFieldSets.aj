@@ -1,6 +1,7 @@
 package edu.ubc.aspects;
 
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,17 +26,17 @@ privileged aspect JDKAroundFieldSets {
     
     // Standard streams
     
-//    private static final ByteArrayOutputStream newStdoutBaos = new ByteArrayOutputStream();
-//    private static final PrintStream newStdout = new PrintStream(newStdoutBaos);
-//    
-//    PrintStream around(): get(* System.out) {
-//        return newStdout;
-//    }
-//    
-//    private static final ByteArrayOutputStream newStderrBaos = new ByteArrayOutputStream();
-//    private static final PrintStream newStderr = new PrintStream(newStderrBaos);
-//    
-//    PrintStream around(): get(* System.err) {
-//        return newStderr;
-//    }
+    private static final OutputStream stdoutWormhole = new WormholeStream(1);
+    private static final PrintStream newStdout = new PrintStream(stdoutWormhole);
+    
+    PrintStream around(): get(* System.out) {
+        return newStdout;
+    }
+    
+    private static final OutputStream stderrWormhole = new WormholeStream(2);
+    private static final PrintStream newStderr = new PrintStream(stderrWormhole);
+    
+    PrintStream around(): get(* System.err) {
+        return newStderr;
+    }
 }

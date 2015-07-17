@@ -45,4 +45,9 @@ public class JDIClassMirrorPrepareEvent extends JDIMirrorEvent implements ClassM
     public ThreadMirror thread() {
         return (ThreadMirror)vm.makeMirror(wrapped.thread());
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " for " + wrapped.referenceType().name();
+    }
 }

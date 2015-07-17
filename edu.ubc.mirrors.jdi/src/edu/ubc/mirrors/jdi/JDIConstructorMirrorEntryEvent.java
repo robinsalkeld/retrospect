@@ -29,6 +29,7 @@ import com.sun.jdi.event.MethodEntryEvent;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
 import edu.ubc.mirrors.FrameMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIConstructorMirrorEntryEvent extends JDIMirrorEvent implements ConstructorMirrorEntryEvent {
@@ -76,5 +77,10 @@ public class JDIConstructorMirrorEntryEvent extends JDIMirrorEvent implements Co
         FrameMirror callerFrame = thread().getStackTrace().get(1);
         return callerFrame.methodName().equals("<init>") 
                && thisFrame.thisObject() == callerFrame.thisObject();
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " for " + Reflection.constructorName(constructor());
     }
 }

@@ -136,6 +136,6 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + (nameFilter == null ? "" : " " + nameFilter);
+        return getClass().getSimpleName() + (nameFilter == null ? "" : " for " + nameFilter);
     }
 }

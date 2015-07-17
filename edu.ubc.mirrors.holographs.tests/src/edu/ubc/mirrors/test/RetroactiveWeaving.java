@@ -3,6 +3,7 @@ package edu.ubc.mirrors.test;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,9 +31,11 @@ import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
+import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
+import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.retrospect.MirrorWorld;
@@ -51,6 +54,9 @@ public class RetroactiveWeaving {
     }
     
     public static String weave(VirtualMachineMirror vm, ThreadMirror thread, String aspectPath, File hologramClassPath, ByteArrayOutputStream mergedOutput) throws Exception {
+        Stopwatch s = new Stopwatch();
+        s.start();
+        
         System.out.println("Booting up holographic VM...");
         if (mergedOutput == null) {
             mergedOutput = new ByteArrayOutputStream();
@@ -64,47 +70,8 @@ public class RetroactiveWeaving {
         vmh.setSystemErr(teedErr);
         final ThreadMirror finalThread = (ThreadMirror)vmh.getWrappedMirror(thread);
 
-        Reflection.withThread(finalThread, new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-//                // Avoid the side-effects of loading aspects themselves
-                AdviceMirrorHandlerRequest adviceRequest = vmh.eventRequestManager().createAdviceMirrorHandlerRequest();
-                vmh.addCallback(adviceRequest, new Callback<MirrorEvent>() {
-                    public MirrorEvent handle(MirrorEvent t) {
-                        final MirrorInvocationHandler original = t.getProceed();
-                        t.setProceed(new MirrorInvocationHandler() {
-                            public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-                                adviceexecutionCounter.inc();
-                                updateAdviceRequests();
-                                try {
-                                    return original.invoke(finalThread, args);
-                                } finally {
-                                    adviceexecutionCounter.dec();
-                                    updateAdviceRequests();
-                                }
-                            }
-                        });
-                        return t;
-                    }
-                });
-                
-                relocateField(vmh, "java.lang.String", "hash");
-                relocateField(vmh, "java.util.zip.ZipCoder", "enc");
-                relocateField(vmh, "java.nio.charset.Charset", "cache1");
-                relocateField(vmh, "java.nio.charset.Charset", "cache2");
-                relocateField(vmh, "java.lang.Thread", "threadInitNumber");
-                relocateFieldInitializeWithDefaultConstructor(vmh, "sun.nio.cs.ThreadLocalCoders$Cache", "cache");
-                relocateFieldInitializeWithDefaultConstructor(vmh, "java.lang.ThreadLocal", "nextHashCode");
-                relocateFieldInitializeWithDefaultConstructor(vmh, "java.net.URLClassLoader", "closeables");
-                aroundThreadLocals(vmh);
-                hardCodeHashing(vmh);
-                classLoaderLocking(vmh);
-                aroundThreadGroups(vmh);
-                return null;
-            }
-        });
+        avoidBootstrapSideEffects(vmh, finalThread);
         
-        vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
         vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
         for (String aspectPathPart : aspectPath.split(File.pathSeparator)) {
             URL partURL;
@@ -122,17 +89,54 @@ public class RetroactiveWeaving {
         vmh.resume();
         vmh.dispatch().run();
         
+        System.out.println("Retroactive weaving finished in " + ((float)s.stop() / 1000) + " seconds"); 
+        
         return mergedOutput.toString();
-//        return Reflection.withThread(thread, new Callable<String>() {
-//          @Override
-//          public String call() throws Exception {
-//              ClassMirror guardAspect = vmh.findBootstrapClassMirror("edu.ubc.aspects.JDKAroundFieldSets");
-//              ObjectMirror newOut = guardAspect.getStaticFieldValues().get(guardAspect.getDeclaredField("newStderrBaos"));
-//              String output = Reflection.toString(newOut, finalThread);
-//              System.out.print(output);
-//              return output;
-//          }
-//      });
+    }
+    
+    private static void avoidBootstrapSideEffects(final VirtualMachineHolograph vmh, final ThreadMirror thread) throws MalformedURLException {
+        Reflection.withThread(thread, new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                // Avoid the side-effects of loading aspects themselves
+                AdviceMirrorHandlerRequest adviceRequest = vmh.eventRequestManager().createAdviceMirrorHandlerRequest();
+                vmh.addCallback(adviceRequest, new Callback<MirrorEvent>() {
+                    public MirrorEvent handle(MirrorEvent t) {
+                        final MirrorInvocationHandler original = t.getProceed();
+                        t.setProceed(new MirrorInvocationHandler() {
+                            public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                                adviceexecutionCounter.inc();
+                                updateAdviceRequests();
+                                try {
+                                    return original.invoke(thread, args);
+                                } finally {
+                                    adviceexecutionCounter.dec();
+                                    updateAdviceRequests();
+                                }
+                            }
+                        });
+                        return t;
+                    }
+                });
+                adviceRequest.enable();
+                
+//                relocateField(vmh, "java.lang.String", "hash");
+//                relocateField(vmh, "java.util.zip.ZipCoder", "enc");
+//                relocateField(vmh, "java.util.zip.ZipCoder", "dec");
+//                relocateField(vmh, "java.nio.charset.Charset", "cache1");
+//                relocateField(vmh, "java.nio.charset.Charset", "cache2");
+//                relocateField(vmh, "java.lang.Thread", "threadInitNumber");
+//                relocateFieldInitializeWithDefaultConstructor(vmh, "sun.nio.cs.ThreadLocalCoders$Cache", "cache");
+//                relocateFieldInitializeWithDefaultConstructor(vmh, "java.net.URLClassLoader", "closeables");
+                aroundThreadLocals(vmh);
+//                hardCodeHashing(vmh);
+//                classLoaderLocking(vmh);
+//                aroundThreadGroups(vmh);
+                return null;
+            }
+        });
+        
+//        vmh.addBootstrapPathURL(EvalConstants.GuardAspectsBin.toURI().toURL());
     }
     
     private static void cflowCounterBreakpoint(VirtualMachineHolograph vmh) {
@@ -249,6 +253,8 @@ public class RetroactiveWeaving {
     }
     
     private static void aroundThreadLocals(VirtualMachineMirror vm) throws Exception {
+        relocateFieldInitializeWithDefaultConstructor(vm, "java.lang.ThreadLocal", "nextHashCode");
+        
         ClassMirror threadLocalClass = vm.findBootstrapClassMirror("java.lang.ThreadLocal");
         
         final MethodMirror initialValueMethod = threadLocalClass.getDeclaredMethod("initialValue");

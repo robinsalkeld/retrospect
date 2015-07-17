@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.beans.finder.ConstructorFinder;
+
 import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryEvent;
@@ -15,12 +17,14 @@ import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class ConstructorHolographHandlerRequest implements ConstructorMirrorHandlerRequest, MirrorInvocationHandler {
 
     private final VirtualMachineHolograph vm;
     private final Map<Object, Object> properties = new HashMap<Object, Object>();
+    private ConstructorMirror contructorFilter;
     private final ConstructorMirrorEntryRequest entryRequest;
     private final ConstructorMirrorExitRequest exitRequest;
     
@@ -85,9 +89,10 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
     }
     
     @Override
-    public void setConstructorFilter(ConstructorMirror method) {
-        entryRequest.setConstructorFilter(method);
-        exitRequest.setConstructorFilter(method);
+    public void setConstructorFilter(ConstructorMirror contructorFilter) {
+        this.contructorFilter = contructorFilter;
+        entryRequest.setConstructorFilter(contructorFilter);
+        exitRequest.setConstructorFilter(contructorFilter);
     }
 
     @Override
@@ -102,5 +107,10 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " for " + Reflection.constructorName(contructorFilter);
     }
 }

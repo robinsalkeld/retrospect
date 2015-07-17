@@ -8,6 +8,7 @@ import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.InvocableMirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandlerEvent {
@@ -66,6 +67,6 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " on " + constructor;
+        return getClass().getSimpleName() + " on " + Reflection.constructorName(constructor);
     }
 }

@@ -590,6 +590,8 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
             return null;
         }
     
+        showMessage(IMessage.DEBUG, shadow.toString(), null, null);
+        
         for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
             if (munger.match(shadow, MirrorWorld.this)) {
                 shadow.addMunger(munger);

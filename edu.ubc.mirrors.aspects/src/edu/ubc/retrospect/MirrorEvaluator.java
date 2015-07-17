@@ -42,6 +42,10 @@ public class MirrorEvaluator implements ITestVisitor {
         this.arguments = arguments;
     }
 
+    public ThreadMirror getThread() {
+        return thread;
+    }
+    
     public boolean evaluateTest(Test t) {
         ThreadHolograph.raiseMetalevel();
         t.accept(this);

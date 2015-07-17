@@ -1045,4 +1045,17 @@ public class Reflection {
             e.printStackTrace();
         }
     }
+
+    public static String constructorName(ConstructorMirror constructor) {
+        if (constructor == null) {
+            return "(null)";
+        }
+        return constructor.getDeclaringClass().getClassName() + "(" 
+                + join(constructor.getParameterTypeNames(), ", ") + ")";
+    }
+
+    public static String methodName(MethodMirror method) {
+        return method.getDeclaringClass().getClassName() + "." + method.getName() + "("
+                + join(method.getParameterTypeNames(), ", ") + ")";
+    }
 }

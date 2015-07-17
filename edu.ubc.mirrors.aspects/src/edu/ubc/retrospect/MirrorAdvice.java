@@ -23,9 +23,12 @@ import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.Pointcut;
 
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.holographs.HolographInternalUtils;
 
 public class MirrorAdvice extends Advice {
     private static final Member cflowCounterIncMethod = MemberImpl.method(NameMangler.CFLOW_COUNTER_UNRESOLVEDTYPE, 0,
@@ -71,12 +74,26 @@ public class MirrorAdvice extends Advice {
         }
     }
 
+    private int getCflowCounterHeight(InstanceMirror counter, ThreadMirror thread) {
+        InstanceMirror threadCounter = (InstanceMirror)HolographInternalUtils.getField(counter, "flowHeightHandler");
+        InstanceMirror c = (InstanceMirror)new MethodHandle() {
+            protected void methodCall() throws Throwable {
+                ((ThreadLocal<?>)null).get();
+            }
+        }.invoke(threadCounter, thread);
+        return HolographInternalUtils.getIntField(c, "value");
+    }
+    
     private void cflowCounterEntry(MirrorEvaluator evaluator) {
         InstanceMirror counter = (InstanceMirror)evaluator.evaluateField(signature);
         evaluator.evaluateCall(counter, cflowCounterIncMethod, Expr.NONE);
         
         boolean isValid = (Boolean)evaluator.evaluateCall(counter, cflowCounterIsValidMethod, Expr.NONE);
         PointcutMirrorRequestExtractor.updateCflowGuardedRequestEnablement(signature, !isValid);
+        
+        int height = getCflowCounterHeight(counter, evaluator.getThread());
+        
+        world.showMessage(IMessage.DEBUG, "cflowCounterEntry, height == " + height, null, null);
     }
     
     private void cflowCounterExit(MirrorEvaluator evaluator) {
@@ -85,6 +102,10 @@ public class MirrorAdvice extends Advice {
         
         boolean isValid = (Boolean)evaluator.evaluateCall(counter, cflowCounterIsValidMethod, Expr.NONE);
         PointcutMirrorRequestExtractor.updateCflowGuardedRequestEnablement(signature, !isValid);
+        
+        int height = getCflowCounterHeight(counter, evaluator.getThread());
+        
+        world.showMessage(IMessage.DEBUG, "cflowCounterExit, height == " + height, null, null);
     }
     
     public Object executeCflow(MirrorEventShadow shadow, ExposedState state, MirrorInvocationHandler proceed, List<Object> arguments) throws MirrorInvocationTargetException {
@@ -112,8 +133,7 @@ public class MirrorAdvice extends Advice {
     }
     
     public Object execute(MirrorEventShadow shadow, ExposedState state, MirrorInvocationHandler proceed, List<Object> arguments) throws MirrorInvocationTargetException {
-        world.showMessage(IMessage.DEBUG, shadow.toString(), null, null);
-        world.showMessage(IMessage.DEBUG, signature.toString(), null, null);
+        world.showMessage(IMessage.DEBUG, "--> " + signature.toString(), null, null);
         
         if (kind.isCflow()) {
             return executeCflow(shadow, state, proceed, arguments);
@@ -145,13 +165,11 @@ public class MirrorAdvice extends Advice {
             args[extraArgIndex--] = evaluator.evaluateExpr(shadow.getThisEnclosingJoinPointStaticPartVar());
         }
         
-        // Entering adviceexecution()
-        
         try {
             MethodMirrorMember member = (MethodMirrorMember)signature;
             Object result = member.method.invoke(shadow.getThread(), aspectInstance, args);
             
-            // Leaving adviceexecution()
+            world.showMessage(IMessage.DEBUG, "<-- " + signature.toString(), null, null);
             
             // Autounboxing
             if (world.resolve(shadow.getReturnType()).isPrimitiveType() && (result instanceof InstanceMirror)) {

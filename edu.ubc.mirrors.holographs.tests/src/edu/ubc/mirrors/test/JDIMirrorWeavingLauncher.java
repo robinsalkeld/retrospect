@@ -30,7 +30,7 @@ public class JDIMirrorWeavingLauncher {
         VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName + " " + programArgs, vmArgs, true, teedOut, teedErr);
 //        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
         ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
-        r.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
+//        r.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
         r.addClassFilter(mainClassName);
         r.enable();
         jdiVM.resume();

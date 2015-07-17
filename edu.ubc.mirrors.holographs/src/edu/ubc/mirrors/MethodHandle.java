@@ -159,6 +159,8 @@ public abstract class MethodHandle {
             throw new RuntimeException(e);
         } catch (MirrorInvocationTargetException e) {
             System.err.println("MirrorInvocationTargetException:");
+            e.printStackTrace();
+            System.err.println("Caused by exception mirror:");
             Reflection.printStackTrace(thread, e.getTargetException());
             throw new RuntimeException(e);
         }

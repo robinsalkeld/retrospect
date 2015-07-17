@@ -70,6 +70,6 @@ public class JDIMethodMirrorExitEvent extends JDIMirrorEvent implements MethodMi
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " on " + method();
+        return getClass().getSimpleName() + " for " + Reflection.methodName(method());
     }
 }

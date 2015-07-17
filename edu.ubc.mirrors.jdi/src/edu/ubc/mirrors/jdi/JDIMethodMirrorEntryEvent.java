@@ -83,6 +83,6 @@ public class JDIMethodMirrorEntryEvent extends JDIMirrorEvent implements MethodM
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " on " + method();
+        return getClass().getSimpleName() + " for " + Reflection.methodName(method());
     }
 }

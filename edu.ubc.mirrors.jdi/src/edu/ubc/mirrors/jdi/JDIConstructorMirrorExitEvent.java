@@ -26,6 +26,7 @@ import com.sun.jdi.event.MethodExitEvent;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorExitEvent;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
 public class JDIConstructorMirrorExitEvent extends JDIMirrorEvent implements ConstructorMirrorExitEvent {
@@ -64,5 +65,10 @@ public class JDIConstructorMirrorExitEvent extends JDIMirrorEvent implements Con
     @Override
     public InstanceMirror returnValue() {
         return thread().getStackTrace().get(0).thisObject();
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " for " + Reflection.constructorName(constructor());
     }
 }
