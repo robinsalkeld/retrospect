@@ -223,6 +223,27 @@ public class RetroactiveWeaving {
         requests.add(getRequest);
     }
     
+    private static void traceFieldSets(VirtualMachineMirror vm, final String className, final String fieldName) {
+        FieldMirrorSetHandlerRequest setRequest = vm.eventRequestManager().createFieldMirrorSetHandlerRequest(className, fieldName);
+        vm.dispatch().addCallback(setRequest, new Callback<MirrorEvent>() {
+            @Override
+            public MirrorEvent handle(MirrorEvent t) {
+                final MirrorInvocationHandler original = t.getProceed();
+                t.setProceed(new MirrorInvocationHandler() {
+                    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                        Object target = args.get(0);
+                        Object newValue = args.get(1);
+                        System.out.println("field set on " + target + ": " + className + "." + fieldName + " = " + newValue);
+                        Reflection.printThreadState(thread);
+                        return original.invoke(thread, args);
+                    }
+                });
+                return t;
+            }
+        });
+        requests.add(setRequest);
+    }
+    
     private static void hardCodeHashing(VirtualMachineMirror vm) {
         replaceMethod(vm, "sun.misc.Hashing", "randomHashSeed", Collections.singletonList(Object.class.getName()), new MirrorInvocationHandler() {
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
