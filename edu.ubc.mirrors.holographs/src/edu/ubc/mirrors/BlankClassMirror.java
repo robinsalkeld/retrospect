@@ -38,6 +38,11 @@ public abstract class BlankClassMirror extends BlankInstanceMirror implements Cl
         public ClassMirror forClassMirror() {
             return BlankClassMirror.this;
         }
+        
+        @Override
+        public boolean canLock() {
+            return true;
+        }
     }
     
     @Override

@@ -378,4 +378,9 @@ public class TODClassMirror extends BlankInstanceMirror implements ClassMirror {
     public String toString() {
         return getClass().getSimpleName() + " on " + classInfo;
     }
+    
+    @Override
+    public boolean canLock() {
+        return false;
+    }
 }

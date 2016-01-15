@@ -373,4 +373,9 @@ public class HeapDumpClassMirror extends BoxingInstanceMirror implements ClassMi
     public FieldMirror createField(int modifiers, ClassMirror type, String name) {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public boolean canLock() {
+        return true;
+    }
 }

@@ -46,6 +46,7 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 
 /**
@@ -357,5 +358,28 @@ public class ObjectHologram implements Hologram {
     
     public boolean isCollected() {
         throw new UnsupportedOperationException();
+    }
+    
+    public boolean canLock() {
+        return mirror.canLock();
+    }
+    
+    public static void checkMonitorEnter(Hologram hologram) {
+        ObjectMirror mirror = hologram.getMirror();
+        VirtualMachineHolograph vm = (VirtualMachineHolograph)mirror.getClassMirror().getVM();
+        
+        if (VirtualMachineHolograph.UNSAFE_MODE) {
+            return;
+        }
+        
+        // TODO: Debatable encapsulation here, but difficult to define the
+        // right abstraction since Java doesn't actually support monitor operations
+        // individually. A better approach might be to use manual locks from
+        // java.util.concurrent to implement individual monitorEnter() and monitorExit()
+        // operations on ObjectMirrors.
+        if (!mirror.canLock()) {
+            String message = "Illegal monitor enter on object " + mirror;
+            vm.illegalMutation(message);
+        }
     }
 }

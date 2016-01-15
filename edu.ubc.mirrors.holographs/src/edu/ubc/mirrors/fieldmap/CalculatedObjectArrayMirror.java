@@ -72,4 +72,9 @@ public abstract class CalculatedObjectArrayMirror implements ObjectArrayMirror {
     public boolean isCollected() {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public boolean canLock() {
+        return true;
+    }
 }

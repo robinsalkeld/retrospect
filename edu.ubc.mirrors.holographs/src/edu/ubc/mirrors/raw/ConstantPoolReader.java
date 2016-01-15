@@ -83,4 +83,9 @@ public class ConstantPoolReader extends BlankInstanceMirror implements InstanceM
     public ClassMirror getClassMirror() {
         return klass.getVM().findBootstrapClassMirror(Object.class.getName());
     }
+    
+    @Override
+    public boolean canLock() {
+        return true;
+    }
 }

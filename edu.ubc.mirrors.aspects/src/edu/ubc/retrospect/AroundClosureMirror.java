@@ -23,4 +23,9 @@ public class AroundClosureMirror extends BlankInstanceMirror {
     public ClassMirror getClassMirror() {
         return vm.findBootstrapClassMirror(Object.class.getName());
     }
+    
+    @Override
+    public boolean canLock() {
+        return true;
+    }
 }

@@ -244,6 +244,25 @@ public class RetroactiveWeaving {
         requests.add(setRequest);
     }
     
+    private static void traceMethodCalls(VirtualMachineMirror vm, final String declaringClass, final String name, String... paramterTypeNames) {
+        MethodMirrorHandlerRequest methodRequest = vm.eventRequestManager().createMethodMirrorHandlerRequest();
+        methodRequest.setMethodFilter(declaringClass, name, Arrays.asList(paramterTypeNames));
+        vm.dispatch().addCallback(methodRequest, new Callback<MirrorEvent>() {
+            @Override
+            public MirrorEvent handle(MirrorEvent t) {
+                final MirrorInvocationHandler original = t.getProceed();
+                t.setProceed(new MirrorInvocationHandler() {
+                    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                        System.out.print("[" + declaringClass + "." + name + "]");
+                        return original.invoke(thread, args);
+                    }
+                });
+                return t;
+            }
+        });
+        requests.add(methodRequest);
+    }
+    
     private static void hardCodeHashing(VirtualMachineMirror vm) {
         replaceMethod(vm, "sun.misc.Hashing", "randomHashSeed", Collections.singletonList(Object.class.getName()), new MirrorInvocationHandler() {
             public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {

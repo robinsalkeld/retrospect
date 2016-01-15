@@ -109,4 +109,8 @@ public class TODInstanceMirror extends BoxingInstanceMirror implements ObjectMir
         return getClass().getSimpleName() + " on " + inspector.getObject() + " : " + inspector.getType();
     }
 
+    @Override
+    public boolean canLock() {
+        return false;
+    }
 }

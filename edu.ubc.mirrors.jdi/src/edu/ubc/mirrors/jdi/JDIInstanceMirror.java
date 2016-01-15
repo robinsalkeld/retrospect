@@ -156,5 +156,9 @@ public class JDIInstanceMirror extends AbstractJDIObjectMirror implements Instan
     public void setDouble(FieldMirror field, double d) throws IllegalAccessException {
         setValue(field, vm.jdiVM.mirrorOf(d));
     }
-
+    
+    @Override
+    public boolean canLock() {
+        return false;
+    }
 }

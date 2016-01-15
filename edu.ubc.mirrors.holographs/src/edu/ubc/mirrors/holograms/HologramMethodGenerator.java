@@ -426,6 +426,15 @@ public class HologramMethodGenerator extends InstructionAdapter {
             }.invoke(this);
         }
         
+        if (opcode == Opcodes.MONITORENTER) {
+            dup();
+            new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ObjectHologram.checkMonitorEnter(null);
+                }
+            }.invoke(this);
+        }
+        
         super.visitInsn(opcode);
     }
     

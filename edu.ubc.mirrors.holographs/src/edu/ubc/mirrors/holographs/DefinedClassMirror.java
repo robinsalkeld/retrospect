@@ -111,4 +111,9 @@ public class DefinedClassMirror extends BytecodeClassMirror implements NewInstan
     public FieldMirror createField(int modifiers, ClassMirror type, String name) {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public boolean canLock() {
+        return true;
+    }
 }

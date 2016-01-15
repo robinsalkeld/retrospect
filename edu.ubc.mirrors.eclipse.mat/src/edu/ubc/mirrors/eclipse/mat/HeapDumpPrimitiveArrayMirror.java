@@ -159,4 +159,9 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements H
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }
+    
+    @Override
+    public boolean canLock() {
+        return true;
+    }
 }

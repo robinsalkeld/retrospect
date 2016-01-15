@@ -94,4 +94,9 @@ public class WrappingMirror implements ObjectMirror {
     public boolean isCollected() {
         return wrapped.isCollected();
     }
+    
+    @Override
+    public boolean canLock() {
+        return wrapped.canLock();
+    }
 }

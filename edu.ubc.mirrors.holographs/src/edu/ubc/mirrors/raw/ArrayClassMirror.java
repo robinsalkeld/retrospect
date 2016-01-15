@@ -268,4 +268,9 @@ public class ArrayClassMirror extends BlankClassMirror {
     public MirrorLocation locationOfLine(int lineNumber) {
         return null;
     }
+    
+    @Override
+    public boolean canLock() {
+        return true;
+    }
 }

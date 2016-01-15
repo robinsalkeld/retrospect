@@ -28,4 +28,6 @@ public interface ObjectMirror {
 
     public void allowCollection(boolean flag);
     public boolean isCollected();
+
+    public boolean canLock();
 }

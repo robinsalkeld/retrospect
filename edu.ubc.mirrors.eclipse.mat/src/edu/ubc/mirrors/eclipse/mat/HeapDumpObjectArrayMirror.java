@@ -112,4 +112,9 @@ public class HeapDumpObjectArrayMirror implements ObjectArrayMirror, HeapDumpObj
     public boolean isCollected() {
         throw new UnsupportedOperationException();
     }
+    
+    @Override
+    public boolean canLock() {
+        return true;
+    }
 }

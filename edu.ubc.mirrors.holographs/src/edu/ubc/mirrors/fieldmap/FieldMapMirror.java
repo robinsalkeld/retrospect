@@ -46,4 +46,9 @@ public class FieldMapMirror extends BlankInstanceMirror implements NewInstanceMi
     public String toString() {
         return getClass().getSimpleName() + " : " + getClassMirror();
     }
+    
+    @Override
+    public boolean canLock() {
+        return true;
+    }
 }

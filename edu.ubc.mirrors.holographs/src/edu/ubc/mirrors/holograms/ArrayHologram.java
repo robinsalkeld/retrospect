@@ -40,4 +40,8 @@ public class ArrayHologram extends ObjectHologram {
     public ArrayMirror clone() throws CloneNotSupportedException {
         return (ArrayMirror)ObjectHologram.clone(this);
     }
+    
+    public boolean canLock() {
+        return false;
+    }
 }
