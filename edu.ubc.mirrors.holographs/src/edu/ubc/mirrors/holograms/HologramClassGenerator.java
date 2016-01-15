@@ -429,23 +429,15 @@ public class HologramClassGenerator extends ClassVisitor {
             hologramAccess = forcePublic(hologramAccess);
         }
         
-        boolean isNative = (Opcodes.ACC_NATIVE & access) != 0;
-        boolean needsThunk = isNative;
-        if (!isNative && !name.startsWith("<") && !name.equals("getStackTraceHologram")) {
-            if ((Opcodes.ACC_ABSTRACT & access) == 0) {
-                MethodMirror method;
-                try {
-                    method = Reflection.getDeclaredMethod(classMirror, name, getOriginalType(Type.getMethodType(desc)));
-                } catch (NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
-                MirrorInvocationHandler handler = ((ClassHolograph)classMirror).getMethodHandler(method);
-                if (handler != null) {
-                    needsThunk = true;
-                }
-                
-                needsThunk |= ((ClassHolograph)classMirror).getVM().eventRequestManager().methodRequested(method);
+        boolean needsThunk = false;
+        if (!name.startsWith("<") && !name.equals("getStackTraceHologram")) {
+            MethodMirror method;
+            try {
+                method = Reflection.getDeclaredMethod(classMirror, name, getOriginalType(Type.getMethodType(desc)));
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
             }
+            needsThunk = HologramMethodGenerator.needsThunk(method);
         }
         
         if (needsThunk) {
@@ -454,7 +446,7 @@ public class HologramClassGenerator extends ClassVisitor {
             
             generator.generateThunk();
             
-            if (isNative) {
+            if ((Opcodes.ACC_NATIVE & access) != 0) {
                 return null;
             }
             

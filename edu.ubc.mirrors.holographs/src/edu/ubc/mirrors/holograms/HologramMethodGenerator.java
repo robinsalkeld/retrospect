@@ -36,6 +36,9 @@ import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectHologramTyp
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.stringType;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -47,9 +50,12 @@ import org.objectweb.asm.commons.LocalVariablesSorter;
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodHandle;
+import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.holographs.ClassHolograph;
 
 public class HologramMethodGenerator extends InstructionAdapter {
 
@@ -591,6 +597,26 @@ public class HologramMethodGenerator extends InstructionAdapter {
         if (boxingType != null) {
             invokestatic(Type.getInternalName(boxingType), "valueOf", Type.getMethodType(Type.getType(boxingType), type).getDescriptor());
         }
+    }
+    
+    public static boolean needsThunk(MethodMirror method) {
+        int access = method.getModifiers();
+        if ((Opcodes.ACC_NATIVE & access) != 0) {
+            return true;
+        }
+        
+        ClassMirror classMirror = method.getDeclaringClass();
+        
+        if ((Opcodes.ACC_ABSTRACT & access) == 0) {
+            MirrorInvocationHandler handler = ((ClassHolograph)classMirror).getMethodHandler(method);
+            if (handler != null) {
+                return true;
+            }
+            
+            return ((ClassHolograph)classMirror).getVM().eventRequestManager().methodRequested(method);
+        }
+        
+        return false;
     }
     
     public void generateThunk() {
