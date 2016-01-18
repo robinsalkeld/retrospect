@@ -69,7 +69,9 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.ClassLoaderHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
+import edu.ubc.mirrors.holographs.MethodHolographHandlerRequest;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.NativeClassMirror;
@@ -99,9 +101,12 @@ public class HologramClassLoader extends ClassLoader {
     
     final VirtualMachineHolograph vm;
     // May be null
-    final ClassMirrorLoader originalLoader;
+    final ClassLoaderHolograph originalLoader;
     
     private final Set<String> inFlightClasses = new HashSet<String>();
+    
+    // Tracks all generated classes
+    private final Set<Class<?>> hologramClasses = new HashSet<Class<?>>();
     
     final HologramClassLoaderMirror hologramClassMirrorLoader;
     
@@ -113,7 +118,7 @@ public class HologramClassLoader extends ClassLoader {
         return originalLoader;
     }
     
-    public HologramClassLoader(VirtualMachineHolograph vm, ClassMirrorLoader originalLoader) {
+    public HologramClassLoader(VirtualMachineHolograph vm, ClassLoaderHolograph originalLoader) {
         super(HologramClassLoader.class.getClassLoader());
         this.vm = vm;
         this.originalLoader = originalLoader;
@@ -209,13 +214,24 @@ public class HologramClassLoader extends ClassLoader {
             throw new RuntimeException("Error caught while generating bytecode for " + target, e);
         }
         try {
-//            if (hologramMirror.isUnsafe()) {
-//                return (Class<?>)defineClassMethod.invoke(null, name, b, 0, b.length, this);
-//            } else {
-                return defineClass(name, b, 0, b.length);    
-//            }
+            Class<?> hologramClass = defineClass(name, b, 0, b.length);
+            hologramClasses.add(hologramClass);
+            return hologramClass;
         } catch (Throwable e) {
             throw new RuntimeException("Error caught while defining class " + name, e);
+        }
+    }
+    
+    public Set<Class<?>> allDefinedHologramClasses() {
+        return hologramClasses;
+    }
+    
+    public ClassMirror getClassMirrorForHologramClass(Class<?> hologramClass) {
+        String originalClassName = HologramClassGenerator.getOriginalBinaryClassName(hologramClass.getName());
+        if (originalLoader == null) {
+            return vm.findBootstrapClassMirror(originalClassName);
+        } else {
+            return originalLoader.findLoadedClassMirror(originalClassName);
         }
     }
     
@@ -569,5 +585,20 @@ public class HologramClassLoader extends ClassLoader {
             return false;
         }
         return versionString.equals(HologramClassGenerator.VERSION);
+    }
+    
+    public void checkAlreadyDefinedClassForRequest(MethodHolographHandlerRequest request) {
+        for (Class<?> hologramClass : allDefinedHologramClasses()) {
+            ClassMirror classMirror = getClassMirrorForHologramClass(hologramClass);
+            // Will be null for generated array classes
+            if (classMirror != null) {
+                for (MethodMirror method : classMirror.getDeclaredMethods(false)) {
+                    if (request.matches(method)) {
+                        throw new IllegalStateException("Can't enable method request: " +
+                                classMirror.getClassName() + " class already defined");
+                    }
+                }
+            }
+        }
     }
 }

@@ -932,6 +932,13 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 //      throw new InternalError(message);
     }
     
+    protected void checkAlreadyDefinedClassesForRequest(MethodHolographHandlerRequest request) {
+        hologramBootstrapLoader.checkAlreadyDefinedClassForRequest(request);
+        for (ClassLoaderHolograph loader : allClassLoaders) {
+            loader.getHologramClassLoader().checkAlreadyDefinedClassForRequest(request);
+        }
+    }
+    
     public void gc() {
         // Run the garbage collector on the host JVM
         // This should mark any objects with no retroactive references
