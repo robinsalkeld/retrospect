@@ -36,9 +36,6 @@ import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectHologramTyp
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.stringType;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

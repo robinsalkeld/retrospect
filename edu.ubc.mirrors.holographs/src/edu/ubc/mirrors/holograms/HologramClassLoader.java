@@ -22,12 +22,14 @@
 package edu.ubc.mirrors.holograms;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -40,6 +42,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 
 import org.objectweb.asm.ClassReader;
@@ -59,8 +62,10 @@ import edu.ubc.mirrors.FloatArrayMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
+import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
@@ -324,7 +329,8 @@ public class HologramClassLoader extends ClassLoader {
         String originalInternalName = HologramClassGenerator.getOriginalInternalClassName(classMirrorForCacheKey.getClassName().replace('.', '/'));
         int cacheIndex = 0;
         if (vm.getBytecodeCacheDir() != null) {
-            cacheIndex = findCacheIndex(originalInternalName, originalBytecode);
+            TreeSet<String> thunkedMethods = getThunkedMethods(hologramClassMirror);
+            cacheIndex = findCacheIndex(originalInternalName, originalBytecode, thunkedMethods);
             byte[] result = readFromBytecodeCache(cacheIndex, internalName);
             if (result != null) {
                 return result;
@@ -379,20 +385,46 @@ public class HologramClassLoader extends ClassLoader {
         }
     }
     
-    private int findCacheIndex(String className, byte[] bytecode) {
+    private TreeSet<String> getThunkedMethods(HologramClassMirror classMirror) {
+        TreeSet<String> result = new TreeSet<String>();
+        for (MethodMirror method : classMirror.getOriginal().getDeclaredMethods(false)) {
+            if (HologramMethodGenerator.needsThunk(method)) {
+                String signature = method.getName() + Reflection.getMethodType(method).getDescriptor();
+                result.add(signature);
+            }
+        }
+        return result;
+    }
+    
+    private int findCacheIndex(String className, byte[] bytecode, TreeSet<String> thunkedMethods) {
         int cacheIndex = 0;
         if (bytecode == null) {
             return cacheIndex;
         }
         byte[] cacheKey = null;
+        
+        String thunkedMethodsKeyName = "thunked_methods/" + className;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(thunkedMethods);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        byte[] thunkedMethodsKey = baos.toByteArray();
+        
         while ((cacheKey = readFromBytecodeCache(cacheIndex, className)) != null) {
             if (Arrays.equals(bytecode, cacheKey)) {
-                break;
+                byte[] thunkedMethodsBytes = readFromBytecodeCache(cacheIndex, thunkedMethodsKeyName);
+                if (Arrays.equals(thunkedMethodsBytes, thunkedMethodsKey)) {
+                    break;
+                }
             }
             cacheIndex++;
         }
         if (cacheKey == null) {
             writeToBytecodeCache(cacheIndex, className, bytecode);
+            writeToBytecodeCache(cacheIndex, thunkedMethodsKeyName, thunkedMethodsKey);
         }
         return cacheIndex;
     }
