@@ -73,22 +73,15 @@ public class Reflection {
      */
     
     public static <T> T withThread(ThreadMirror t, Callable<T> c) {
-        if (t instanceof ThreadHolograph) {
-            ThreadHolograph threadHolograph = (ThreadHolograph)t;
-            threadHolograph.enterHologramExecution();
-            try {
+        try {
+            if (t instanceof ThreadHolograph) {
+                ThreadHolograph threadHolograph = (ThreadHolograph)t;
+                return threadHolograph.withHologramExecution(c);
+            } else {
                 return c.call();
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            } finally {
-                threadHolograph.exitHologramExecution();
             }
-        } else {
-            try {
-                return c.call();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
     

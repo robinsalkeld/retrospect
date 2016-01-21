@@ -25,6 +25,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -97,23 +98,26 @@ public class MethodHolograph implements MethodMirror {
     }
     
     @Override
-    public Object invoke(ThreadMirror thread, ObjectMirror obj, Object ... args) throws IllegalAccessException, MirrorInvocationTargetException {
-        if (thread == null) {
-            throw new NullPointerException();
-        }
-        
-        ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
-        threadHolograph.enterHologramExecution();
+    public Object invoke(ThreadMirror thread, final ObjectMirror obj, final Object ... args) throws IllegalAccessException, MirrorInvocationTargetException {
+        final ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
         try {
-            resolveMethod();
-            
-            List<Object> combinedArgs = new ArrayList<Object>(Arrays.asList(args));
-            if ((getModifiers() & Modifier.STATIC) == 0) {
-                combinedArgs.add(0, obj);
-            }
-            return klass.getVM().eventRequestManager().handleAdvice(threadHolograph, this, hologramMethod, combinedArgs);
-        } finally {
-            threadHolograph.exitHologramExecution();
+            return threadHolograph.withHologramExecution(new Callable<Object>() {
+                public Object call() throws Exception {
+                    resolveMethod();
+                    
+                    List<Object> combinedArgs = new ArrayList<Object>(Arrays.asList(args));
+                    if ((getModifiers() & Modifier.STATIC) == 0) {
+                        combinedArgs.add(0, obj);
+                    }
+                    return klass.getVM().eventRequestManager().handleAdvice(threadHolograph, MethodHolograph.this, hologramMethod, combinedArgs);
+                }
+            });
+        } catch (IllegalAccessException e) {
+            throw e;
+        } catch (MirrorInvocationTargetException e) {
+            throw e;
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
     

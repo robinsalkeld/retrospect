@@ -23,6 +23,7 @@ package edu.ubc.mirrors.holographs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
@@ -60,7 +61,19 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         Reflection.checkNull(wrappedThread);
     }
 
-    public synchronized void enterHologramExecution() {
+    public <T> T withHologramExecution(final Callable<T> c) throws Exception {
+        enterHologramExecution();
+        try {
+            // TODO: call ObjectHologram.withMonitor for all holograms
+            // owned by the wrapped thread
+            
+            return c.call();
+        } finally {
+            exitHologramExecution();
+        }
+    }
+    
+    private synchronized void enterHologramExecution() {
         if (runningThread != null && runningThread != Thread.currentThread()) {
             throw new IllegalStateException();
         }
@@ -86,7 +99,7 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         return result;
     }
     
-    public synchronized void exitHologramExecution() {
+    private synchronized void exitHologramExecution() {
 	if (runningThreadCount <= 0 || runningThread != Thread.currentThread()) {
             throw new IllegalStateException();
         }
@@ -149,6 +162,7 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     
     @Override
     public List<InstanceMirror> getOwnedMonitors() {
+        // TODO: must include hologram monitors owned via holographic execution!
         List<InstanceMirror> result = new ArrayList<InstanceMirror>();
         for (InstanceMirror monitor : wrappedThread.getOwnedMonitors()) {
             result.add((InstanceMirror)vm.getWrappedMirror(monitor));
