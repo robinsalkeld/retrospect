@@ -32,6 +32,7 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapFrameMirror;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
 
 public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
@@ -61,11 +62,24 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         Reflection.checkNull(wrappedThread);
     }
 
-    public <T> T withHologramExecution(final Callable<T> c) throws Exception {
+    public <T> Callable<T> withMonitor(final Object obj, final Callable<T> callable) {
+        return new Callable<T>() {
+            public T call() throws Exception {
+                synchronized(obj) {
+                    return callable.call();
+                }
+            }
+        };
+    }
+    
+    
+    
+    public <T> T withHologramExecution(Callable<T> c) throws Exception {
         enterHologramExecution();
         try {
-            // TODO: call ObjectHologram.withMonitor for all holograms
-            // owned by the wrapped thread
+            for (InstanceMirror monitor : wrappedThread.getOwnedMonitors()) {
+                c = withMonitor(monitor, c);
+            }
             
             return c.call();
         } finally {

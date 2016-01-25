@@ -225,9 +225,4 @@ public class PrimitiveClassMirror extends BlankClassMirror implements ClassMirro
     public MirrorLocation locationOfLine(int lineNumber) {
         return null;
     }
-    
-    @Override
-    public boolean canLock() {
-        return true;
-    }
 }

@@ -147,9 +147,4 @@ public class DirectArrayMirror extends BoxingArrayMirror implements ObjectArrayM
     public boolean isCollected() {
         throw new UnsupportedOperationException();
     }
-    
-    @Override
-    public boolean canLock() {
-        return true;
-    }
 }

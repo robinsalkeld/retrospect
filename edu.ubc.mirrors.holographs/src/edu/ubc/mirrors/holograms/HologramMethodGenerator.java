@@ -227,6 +227,23 @@ public class HologramMethodGenerator extends InstructionAdapter {
             }
         }
         
+        // Synchronization methods on Object.class
+        
+        if (name.equals("wait") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE, Type.LONG_TYPE))) {
+            owner = Type.getInternalName(ObjectHologram.class);
+            name = "waitHologram";
+        }
+        
+        if (name.equals("notify") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE))) {
+            owner = Type.getInternalName(ObjectHologram.class);
+            name = "notifyHologram";
+        }
+        
+        if (name.equals("notifyAll") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE))) {
+            owner = Type.getInternalName(ObjectHologram.class);
+            name = "notifyAllHologram";
+        }
+        
         super.visitMethodInsn(opcode, owner, name, desc);
         
         if (owner.equals(Type.getInternalName(Throwable.class)) && name.equals("getStackTraceElement")) {
@@ -430,12 +447,23 @@ public class HologramMethodGenerator extends InstructionAdapter {
         }
         
         if (opcode == Opcodes.MONITORENTER) {
-            dup();
+            checkcast(objectHologramType);
             new MethodHandle() {
                 protected void methodCall() throws Throwable {
-                    ObjectHologram.checkMonitorEnter(null);
+                    ((ObjectHologram)null).monitorEnter();
                 }
             }.invoke(this);
+            return;
+        }
+        
+        if (opcode == Opcodes.MONITOREXIT) {
+            checkcast(objectHologramType);
+            new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ((ObjectHologram)null).monitorExit();
+                }
+            }.invoke(this);
+            return;
         }
         
         super.visitInsn(opcode);

@@ -78,9 +78,4 @@ public class HeapDumpClassStaticValues extends BoxingInstanceMirror implements S
     public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
         throw new UnsupportedOperationException();
     }
-    
-    @Override
-    public boolean canLock() {
-        return false;
-    }
 }

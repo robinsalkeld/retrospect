@@ -175,11 +175,6 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         public void setBoxedValue(FieldMirror field, Object o) throws IllegalAccessException {
             throw new UnsupportedOperationException();
         }
-        
-        @Override
-        public boolean canLock() {
-            return true;
-        }
     }
     
     private Object convertAnnotationValue(Object value) {
@@ -1281,10 +1276,5 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
     @Override
     public FieldMirror createField(int modifiers, ClassMirror type, String name) {
         throw new UnsupportedOperationException();
-    }
-    
-    @Override
-    public boolean canLock() {
-        return true;
     }
 }

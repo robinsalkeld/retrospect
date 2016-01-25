@@ -25,19 +25,9 @@ import java.lang.ref.WeakReference;
 import java.util.Arrays;
 
 import org.eclipse.mat.snapshot.model.IObject;
-import org.eclipse.mat.snapshot.model.IObjectArray;
 import org.eclipse.mat.snapshot.model.IPrimitiveArray;
 
-import edu.ubc.mirrors.BooleanArrayMirror;
 import edu.ubc.mirrors.BoxingArrayMirror;
-import edu.ubc.mirrors.ByteArrayMirror;
-import edu.ubc.mirrors.CharArrayMirror;
-import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.DoubleArrayMirror;
-import edu.ubc.mirrors.FloatArrayMirror;
-import edu.ubc.mirrors.IntArrayMirror;
-import edu.ubc.mirrors.LongArrayMirror;
-import edu.ubc.mirrors.ShortArrayMirror;
 
 public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements HeapDumpObjectMirror {
     
@@ -158,10 +148,5 @@ public class HeapDumpPrimitiveArrayMirror extends BoxingArrayMirror implements H
     @Override
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
-    }
-    
-    @Override
-    public boolean canLock() {
-        return true;
     }
 }

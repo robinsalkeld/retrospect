@@ -177,9 +177,4 @@ public class JDIArrayMirror extends BoxingArrayMirror implements JDIObjectMirror
     public boolean isCollected() {
         return array.isCollected();
     }
-    
-    @Override
-    public boolean canLock() {
-        return false;
-    }
 }

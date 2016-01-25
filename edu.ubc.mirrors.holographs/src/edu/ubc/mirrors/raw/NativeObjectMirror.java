@@ -73,9 +73,4 @@ public class NativeObjectMirror implements ObjectMirror {
     public boolean isCollected() {
         throw new UnsupportedOperationException();
     }
-    
-    @Override
-    public boolean canLock() {
-        return false;
-    }
 }

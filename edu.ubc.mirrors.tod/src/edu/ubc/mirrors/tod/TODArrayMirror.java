@@ -96,9 +96,4 @@ public class TODArrayMirror extends BoxingArrayMirror implements ObjectArrayMirr
     public String toString() {
         return getClass().getSimpleName() + " on " + inspector.getObject() + " : " + inspector.getType();
     };
-    
-    @Override
-    public boolean canLock() {
-        return false;
-    }
 }

@@ -188,9 +188,4 @@ public class MutableInstanceMirror implements InstanceMirror {
     public boolean isCollected() {
         throw new UnsupportedOperationException();
     }
-    
-    @Override
-    public boolean canLock() {
-        return wrapped.canLock();
-    }
 }

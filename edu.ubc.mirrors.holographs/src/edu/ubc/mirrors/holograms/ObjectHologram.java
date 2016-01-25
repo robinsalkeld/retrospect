@@ -23,10 +23,15 @@ package edu.ubc.mirrors.holograms;
 
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinaryClassName;
 
+import java.lang.Character.UnicodeScript;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -46,7 +51,6 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
-import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.NativeClassGenerator;
 
 /**
@@ -58,6 +62,13 @@ import edu.ubc.mirrors.raw.NativeClassGenerator;
 public class ObjectHologram implements Hologram {
     public ObjectMirror mirror;
     
+    // Lock for synchronized methods and blocks 
+    // (a.k.a. MONITORENTER and MONITOREXIT instructions)
+    private Lock synchronizedLock;
+    
+    // Condition for wait()/notify()/notifyAll()
+    private Condition monitorCondition;
+    
     /**
      * Constructor for calls to make() - the mirror instance is passed up the constructor chain.
      */
@@ -67,6 +78,9 @@ public class ObjectHologram implements Hologram {
         }
         
         this.mirror = (ObjectMirror)mirror;
+        this.synchronizedLock = new ReentrantLock();
+        this.monitorCondition = this.synchronizedLock.newCondition();
+        
         register(this);
     }
     
@@ -360,26 +374,27 @@ public class ObjectHologram implements Hologram {
         throw new UnsupportedOperationException();
     }
     
-    public boolean canLock() {
-        return mirror.canLock();
+    /////////////////////////////
+    // Synchronization methods
+    /////////////////////////////
+    
+    public void monitorEnter() {
+        this.synchronizedLock.lock();
     }
     
-    public static void checkMonitorEnter(Hologram hologram) {
-        ObjectMirror mirror = hologram.getMirror();
-        VirtualMachineHolograph vm = (VirtualMachineHolograph)mirror.getClassMirror().getVM();
-        
-        if (VirtualMachineHolograph.UNSAFE_MODE) {
-            return;
-        }
-        
-        // TODO: Debatable encapsulation here, but difficult to define the
-        // right abstraction since Java doesn't actually support monitor operations
-        // individually. A better approach might be to use manual locks from
-        // java.util.concurrent to implement individual monitorEnter() and monitorExit()
-        // operations on ObjectMirrors.
-        if (!mirror.canLock()) {
-            String message = "Illegal monitor enter on object " + mirror;
-            vm.illegalMutation(message);
-        }
+    public void monitorExit() {
+        this.synchronizedLock.unlock();
+    }
+    
+    public void waitHologram(long timeout) throws InterruptedException {
+        this.monitorCondition.await(timeout, TimeUnit.MILLISECONDS);
+    }
+    
+    public void notifyHologram() {
+        this.monitorCondition.signal();
+    }
+    
+    public void notifyAllHologram() {
+        this.monitorCondition.signalAll();
     }
 }
