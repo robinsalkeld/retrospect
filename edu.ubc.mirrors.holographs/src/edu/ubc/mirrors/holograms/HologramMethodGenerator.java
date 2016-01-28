@@ -65,7 +65,10 @@ public class HologramMethodGenerator extends InstructionAdapter {
     private String name;
     
     private final boolean isToString;
-
+    private final boolean wasSynchronized;
+    private Label startLabel;
+    private Label unlockHandlerLabel;
+    
     private int access;
     
     public HologramMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString) {
@@ -74,9 +77,13 @@ public class HologramMethodGenerator extends InstructionAdapter {
         this.mv = analyzer;
         this.name = name;
         this.owner = Type.getObjectType(owner);
-        this.access = access;
         this.methodType = Type.getMethodType(desc);
         this.isToString = isToString;
+        this.wasSynchronized = (Opcodes.ACC_SYNCHRONIZED & access) != 0;
+        this.access = (~Opcodes.ACC_SYNCHRONIZED & access);
+        if (this.wasSynchronized) {
+            this.unlockHandlerLabel = new Label();
+        }
         
         activeMethod = name + desc;
     }
@@ -97,6 +104,17 @@ public class HologramMethodGenerator extends InstructionAdapter {
     
     @Override
     public void visitEnd() {
+        if (this.wasSynchronized) {
+            // Add the catch all exception handler to release the monitor
+            mark(unlockHandlerLabel);
+            loadSynchronizedHologram();
+            MethodHandle.OBJECT_HOLOGRAM_MONITOR_EXIT.invoke(this);
+            Label catchEndLabel = new Label();
+            mark(catchEndLabel);
+            athrow();
+            visitTryCatchBlock(unlockHandlerLabel, catchEndLabel, unlockHandlerLabel, null);
+        }
+        
         super.visitEnd();
         
         activeMethod = null;
@@ -446,23 +464,29 @@ public class HologramMethodGenerator extends InstructionAdapter {
             }.invoke(this);
         }
         
+        if (this.wasSynchronized && Opcodes.IRETURN <= opcode && opcode <= Opcodes.RETURN) {
+            loadSynchronizedHologram();
+            MethodHandle.OBJECT_HOLOGRAM_MONITOR_EXIT.invoke(this);
+            Label beforeReturn = new Label();
+            mark(beforeReturn);
+            
+            super.visitInsn(opcode);
+            
+            visitTryCatchBlock(this.startLabel, beforeReturn, unlockHandlerLabel, null);
+            this.startLabel = new Label();
+            mark(this.startLabel);
+            return;
+        }
+        
         if (opcode == Opcodes.MONITORENTER) {
             checkcast(objectHologramType);
-            new MethodHandle() {
-                protected void methodCall() throws Throwable {
-                    ((ObjectHologram)null).monitorEnter();
-                }
-            }.invoke(this);
+            MethodHandle.OBJECT_HOLOGRAM_MONITOR_ENTER.invoke(this);
             return;
         }
         
         if (opcode == Opcodes.MONITOREXIT) {
             checkcast(objectHologramType);
-            new MethodHandle() {
-                protected void methodCall() throws Throwable {
-                    ((ObjectHologram)null).monitorExit();
-                }
-            }.invoke(this);
+            MethodHandle.OBJECT_HOLOGRAM_MONITOR_EXIT.invoke(this);
             return;
         }
         
@@ -615,6 +639,13 @@ public class HologramMethodGenerator extends InstructionAdapter {
                 putfield(owner.getInternalName(), "mirror", Type.getDescriptor(ObjectMirror.class));
             }
         }
+        
+        if (this.wasSynchronized) {
+            loadSynchronizedHologram();
+            MethodHandle.OBJECT_HOLOGRAM_MONITOR_ENTER.invoke(this);
+            this.startLabel = new Label();
+            this.visitLabel(startLabel);
+        }
     }
     
     private void boxIfNeeded(Type type) {
@@ -696,6 +727,16 @@ public class HologramMethodGenerator extends InstructionAdapter {
         areturn(returnType);
         visitMaxs(Math.max(2, var + 1), Math.max(2, var + 1));
         visitEnd();
+    }
+    
+    private void loadSynchronizedHologram() {
+        if ((access & Opcodes.ACC_STATIC) != 0) {
+            getstatic(owner.getInternalName(), "classMirror", classMirrorType.getDescriptor());
+            MethodHandle.OBJECT_HOLOGRAM_MAKE.invoke(this);
+            checkcast(objectHologramType);
+        } else {
+            load(0, owner);
+        }
     }
 }
 

@@ -87,7 +87,9 @@ import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
+import edu.ubc.mirrors.holograms.Hologram;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
+import edu.ubc.mirrors.holograms.HologramThread;
 import edu.ubc.mirrors.holograms.HologramVirtualMachine;
 import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.holograms.Stopwatch;
@@ -109,6 +111,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     private final HologramClassLoader hologramBootstrapLoader;
     
 //    private final Thread debuggingThread;
+    
+    // TODO-RS: For now one dedicated thread just to hold locks
+    // according to the wrapped VM, to ensure deadlocks occur 
+    // correctly.
+    private final HologramThread hologramThread = new HologramThread();
     
     // TODO-RS: Move all this data that is only relevant for MNMs to
     // the plugins.
@@ -195,12 +202,31 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         
         this.eventQueue = new HolographEventQueue(this, this.wrappedVM.eventQueue());
         this.requestManager = new HolographEventRequestManager(this, this.wrappedVM.eventRequestManager());
+
+        hologramThread.start();
+        dispatch().addSetCallback(new Callback<Set<MirrorEvent>>() {
+            @Override
+            public Set<MirrorEvent> handle(Set<MirrorEvent> events) {
+                updateHologramThreadLocks();
+                return events;
+            }  
+        });
         
         collectZipFiles();
         
         if (HologramClassLoader.debug) {
             System.out.println("Done.");
         }
+    }
+    
+    private void updateHologramThreadLocks() {
+        Set<ObjectHologram> monitors = new HashSet<ObjectHologram>();
+        for (ThreadMirror thread : getThreads()) {
+            for (InstanceMirror monitor : thread.getOwnedMonitors()) {
+                monitors.add((ObjectHologram)ClassHolograph.makeHologram(thread, Hologram.class, monitor));
+            }
+        }
+        hologramThread.setMonitors(monitors);
     }
     
     public static Map<String, String> readStringMapFromFile(File path) {

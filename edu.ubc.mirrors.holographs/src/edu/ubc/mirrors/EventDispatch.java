@@ -110,6 +110,9 @@ public class EventDispatch {
     private MirrorEventSet pendingEvents;
     private boolean started = false;
     
+    private List<Callback<Set<MirrorEvent>>> eventSetCallbacks = 
+            new ArrayList<Callback<Set<MirrorEvent>>>();
+    
     public EventDispatch(VirtualMachineMirror vm) {
 	this.vm = vm;
     }
@@ -133,6 +136,10 @@ public class EventDispatch {
         if (!requestOrder.containsKey(request)) {
             requestOrder.put(request, nextOrder++);
         }
+    }
+    
+    public void addSetCallback(Callback<Set<MirrorEvent>> callback) {
+        eventSetCallbacks.add(callback);
     }
     
     @SuppressWarnings("unchecked")
@@ -207,6 +214,10 @@ public class EventDispatch {
     }
     
     public Object runCallbacks(Set<MirrorEvent> events) throws MirrorInvocationTargetException {
+        for (Callback<Set<MirrorEvent>> callback : eventSetCallbacks) {
+            callback.handle(events);
+        }
+        
         List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();
         for (MirrorEvent event : events) {
             MirrorEventRequest request = event.request();
