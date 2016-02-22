@@ -22,6 +22,7 @@
 package edu.ubc.mirrors.holograms;
 
 import edu.ubc.mirrors.ArrayMirror;
+import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holograms.ObjectHologram;
 
 public class ArrayHologram extends ObjectHologram {
@@ -41,7 +42,8 @@ public class ArrayHologram extends ObjectHologram {
         return (ArrayMirror)ObjectHologram.clone(this);
     }
     
-    public boolean canLock() {
-        return false;
+    @Override
+    public String toString() {
+        return Reflection.arrayToString(mirror);
     }
 }

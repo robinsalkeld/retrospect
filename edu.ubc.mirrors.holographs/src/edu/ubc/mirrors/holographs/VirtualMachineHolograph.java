@@ -87,7 +87,6 @@ import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
-import edu.ubc.mirrors.holograms.Hologram;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holograms.HologramThread;
 import edu.ubc.mirrors.holograms.HologramVirtualMachine;
@@ -220,11 +219,9 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     private void updateHologramThreadLocks() {
-        Set<ObjectHologram> monitors = new HashSet<ObjectHologram>();
+        Set<ObjectMirror> monitors = new HashSet<ObjectMirror>();
         for (ThreadMirror thread : getThreads()) {
-            for (InstanceMirror monitor : thread.getOwnedMonitors()) {
-                monitors.add((ObjectHologram)ClassHolograph.makeHologram(thread, Hologram.class, monitor));
-            }
+            monitors.addAll(thread.getOwnedMonitors());
         }
         hologramThread.setMonitors(monitors);
     }

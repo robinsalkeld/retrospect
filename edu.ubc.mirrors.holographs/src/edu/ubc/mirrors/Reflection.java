@@ -1051,4 +1051,16 @@ public class Reflection {
         return method.getDeclaringClass().getClassName() + "." + method.getName() + "("
                 + join(method.getParameterTypeNames(), ", ") + ")";
     }
+    
+    public static String arrayToString(ArrayMirror array) {
+        StringBuilder builder = new StringBuilder();
+        builder.append('[');
+        for (int i = 0; i < array.length(); i++) {
+            if (i > 0) {
+                builder.append(", ");
+            }
+            builder.append(getArrayElement(array, i));
+        }
+        return builder.toString();
+    }
 }
