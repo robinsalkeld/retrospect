@@ -374,27 +374,13 @@ public class ObjectHologram implements Hologram {
         throw new UnsupportedOperationException();
     }
     
-    /////////////////////////////
-    // Synchronization methods
-    /////////////////////////////
-    
-    public void monitorEnter() {
-        this.synchronizedLock.lock();
+    @Override
+    public Lock getSynchronizationLock() {
+        return synchronizedLock;
     }
     
-    public void monitorExit() {
-        this.synchronizedLock.unlock();
-    }
-    
-    public void waitHologram(long timeout) throws InterruptedException {
-        this.monitorCondition.await(timeout, TimeUnit.MILLISECONDS);
-    }
-    
-    public void notifyHologram() {
-        this.monitorCondition.signal();
-    }
-    
-    public void notifyAllHologram() {
-        this.monitorCondition.signalAll();
+    @Override
+    public Condition getNotifyCondition() {
+        return monitorCondition;
     }
 }

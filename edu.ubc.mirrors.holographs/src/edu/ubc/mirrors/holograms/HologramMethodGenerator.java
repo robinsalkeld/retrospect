@@ -36,6 +36,8 @@ import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectHologramTyp
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.objectMirrorType;
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.stringType;
 
+import java.util.concurrent.locks.Lock;
+
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -66,6 +68,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
     
     private final boolean isToString;
     private final boolean wasSynchronized;
+    // Start of the current unlock handler block
     private Label startLabel;
     private Label unlockHandlerLabel;
     
@@ -108,7 +111,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
             // Add the catch all exception handler to release the monitor
             mark(unlockHandlerLabel);
             loadSynchronizedHologram();
-            MethodHandle.OBJECT_HOLOGRAM_MONITOR_EXIT.invoke(this);
+            monitorExit();
             Label catchEndLabel = new Label();
             mark(catchEndLabel);
             athrow();
@@ -466,7 +469,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
         
         if (this.wasSynchronized && Opcodes.IRETURN <= opcode && opcode <= Opcodes.RETURN) {
             loadSynchronizedHologram();
-            MethodHandle.OBJECT_HOLOGRAM_MONITOR_EXIT.invoke(this);
+            monitorExit();
             Label beforeReturn = new Label();
             mark(beforeReturn);
             
@@ -479,14 +482,14 @@ public class HologramMethodGenerator extends InstructionAdapter {
         }
         
         if (opcode == Opcodes.MONITORENTER) {
-            checkcast(objectHologramType);
-            MethodHandle.OBJECT_HOLOGRAM_MONITOR_ENTER.invoke(this);
+            checkcast(hologramType);
+            monitorEnter();
             return;
         }
         
         if (opcode == Opcodes.MONITOREXIT) {
-            checkcast(objectHologramType);
-            MethodHandle.OBJECT_HOLOGRAM_MONITOR_EXIT.invoke(this);
+            checkcast(hologramType);
+            monitorExit();
             return;
         }
         
@@ -642,7 +645,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
         
         if (this.wasSynchronized) {
             loadSynchronizedHologram();
-            MethodHandle.OBJECT_HOLOGRAM_MONITOR_ENTER.invoke(this);
+            monitorEnter();
             this.startLabel = new Label();
             this.visitLabel(startLabel);
         }
@@ -733,10 +736,40 @@ public class HologramMethodGenerator extends InstructionAdapter {
         if ((access & Opcodes.ACC_STATIC) != 0) {
             getstatic(owner.getInternalName(), "classMirror", classMirrorType.getDescriptor());
             MethodHandle.OBJECT_HOLOGRAM_MAKE.invoke(this);
-            checkcast(objectHologramType);
         } else {
             load(0, owner);
         }
+        checkcast(hologramType);
+    }
+    
+    private static final MethodHandle HOLOGRAM_GET_LOCK = new MethodHandle() {
+        protected void methodCall() throws Throwable {
+            ((Hologram)null).getSynchronizationLock();
+        }
+    };
+    
+    private static final MethodHandle LOCK_LOCK = new MethodHandle() {
+        protected void methodCall() throws Throwable {
+            ((Lock)null).lock();
+        }
+    };
+    
+    private static final MethodHandle LOCK_UNLOCK = new MethodHandle() {
+        protected void methodCall() throws Throwable {
+            ((Lock)null).unlock();
+        }
+    };
+    
+    private void monitorEnter() {
+        // Call on the chained visitor to avoid Hologram getting renamed to Object
+        HOLOGRAM_GET_LOCK.invoke(this.mv);
+        LOCK_LOCK.invoke(this);
+    }
+    
+    private void monitorExit() {
+        // Call on the chained visitor to avoid Hologram getting renamed to Object
+        HOLOGRAM_GET_LOCK.invoke(this.mv);
+        LOCK_UNLOCK.invoke(this);
     }
 }
 

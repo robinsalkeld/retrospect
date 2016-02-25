@@ -25,6 +25,8 @@ import static edu.ubc.mirrors.Reflection.getMirrorType;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +52,7 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
 
-    public static final String VERSION = "1.14";
+    public static final String VERSION = "1.15";
     
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type throwableType = Type.getType(Throwable.class);
@@ -494,8 +496,11 @@ public class HologramClassGenerator extends ClassVisitor {
         // Generate the constructor that takes a mirror instance as an Object parameter
         String constructorDesc = Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Object.class));
         if (name.equals(getHologramType(Type.getType(Throwable.class), true).getInternalName())) {
-            // This doesn't extend ObjectHologram so we have to set the field directly
+            // This doesn't extend ObjectHologram so we have to add the mirror fields separately
+            // and initialize them directly
             super.visitField(Opcodes.ACC_PUBLIC, "mirror", objectMirrorType.getDescriptor(), null, null);
+            super.visitField(Opcodes.ACC_PUBLIC, "lock", Type.getType(Lock.class).getDescriptor(), null, null);
+            super.visitField(Opcodes.ACC_PUBLIC, "condition", Type.getType(Condition.class).getDescriptor(), null, null);
             
             MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
                              "<init>", constructorDesc, null, null);

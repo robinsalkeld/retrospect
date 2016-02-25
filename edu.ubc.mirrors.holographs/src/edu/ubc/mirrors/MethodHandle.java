@@ -58,20 +58,6 @@ public abstract class MethodHandle {
         }
     };
     
-    public static MethodHandle OBJECT_HOLOGRAM_MONITOR_ENTER = new MethodHandle() {
-        @Override 
-        public void methodCall() {
-            ((ObjectHologram)null).monitorEnter();
-        }
-    };
-    
-    public static MethodHandle OBJECT_HOLOGRAM_MONITOR_EXIT = new MethodHandle() {
-        @Override 
-        public void methodCall() {
-            ((ObjectHologram)null).monitorExit();
-        }
-    };
-    
     public static MethodHandle HOLOGRAM_CLASS_LOADER_LOAD_ORIGINAL_CLASS_MIRROR = new MethodHandle() {
         HologramClassLoader loader = null;
         @Override

@@ -21,9 +21,16 @@
  ******************************************************************************/
 package edu.ubc.mirrors.holograms;
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+
 import edu.ubc.mirrors.ObjectMirror;
 
 public interface Hologram {
 
     public ObjectMirror getMirror();
+    
+    public Lock getSynchronizationLock();
+    
+    public Condition getNotifyCondition();
 }

@@ -21,6 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors.holograms;
 
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -48,7 +51,15 @@ public class InstanceHologram {
     private static Hologram BACKTRACE = new Hologram() {
         @Override
         public ObjectMirror getMirror() {
-            return null;
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public Condition getNotifyCondition() {
+            throw new UnsupportedOperationException();
+        }
+        @Override
+        public Lock getSynchronizationLock() {
+            throw new UnsupportedOperationException();
         }
     };
     

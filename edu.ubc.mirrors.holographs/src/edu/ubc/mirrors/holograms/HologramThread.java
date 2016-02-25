@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
 public class HologramThread extends Thread {
 
@@ -25,13 +24,13 @@ public class HologramThread extends Thread {
                 for (ObjectMirror held : heldMonitors) {
                     if (!monitorsToHold.contains(held)) {
                         ObjectHologram hologram = (ObjectHologram)ObjectHologram.make(held);
-                        hologram.monitorExit();
+                        hologram.getSynchronizationLock().unlock();
                     }
                 }
                 for (ObjectMirror toHold : monitorsToHold) {
                     if (!heldMonitors.contains(toHold)) {
                         ObjectHologram hologram = (ObjectHologram)ObjectHologram.make(toHold);
-                        hologram.monitorEnter();
+                        hologram.getSynchronizationLock().lock();
                     }
                 }
                 heldMonitors = monitorsToHold;
