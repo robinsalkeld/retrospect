@@ -83,6 +83,7 @@ public class HologramClassLoader extends ClassLoader {
     public static String traceClass = null;
     public static boolean debug = Boolean.getBoolean("edu.ubc.mirrors.holograms.debug");
     public static boolean preverify = Boolean.getBoolean("edu.ubc.mirrors.holograms.preverify");
+    public static boolean clearCache = Boolean.getBoolean("edu.ubc.mirrors.holograms.clearCache");
     
     private static Stack<Stopwatch> timerStack = new Stack<Stopwatch>();
     private static Map<String, Stopwatch> timers = new HashMap<String, Stopwatch>();
@@ -558,7 +559,12 @@ public class HologramClassLoader extends ClassLoader {
             File versionFile = new File(bytecodeCacheDir, VERSION_FILE_NAME);
             if (bytecodeCacheDir.exists()) {
                 if (validVersionFile(versionFile)) {
-                    return;
+                    if (clearCache) {
+                        System.out.println("Clearing cache directory: " + bytecodeCacheDir);
+                    } else {
+                        System.out.println("Using cache directory: " + bytecodeCacheDir);
+                        return;
+                    }
                 } else {
                     System.out.println("Deleting invalid cache directory: " + bytecodeCacheDir);
                 }

@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,11 +39,13 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.InstructionAdapter;
 import org.objectweb.asm.commons.LocalVariablesSorter;
 import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.tree.MethodInsnNode;
 
 import edu.ubc.mirrors.ArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
@@ -52,7 +55,7 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
 
-    public static final String VERSION = "1.15";
+    public static final String VERSION = "1.16";
     
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type throwableType = Type.getType(Throwable.class);
@@ -74,6 +77,8 @@ public class HologramClassGenerator extends ClassVisitor {
     public static Type classType = Type.getType(Class.class);
     public static Type stackTraceElementType = Type.getType(StackTraceElement.class);
     public static Type stackTraceType = Type.getType(StackTraceElement[].class);
+    public static Type lockType = Type.getType(Lock.class);
+    public static Type conditionType = Type.getType(Condition.class);
     
     public static Remapper REMAPPER = new Remapper() {
         public String map(String typeName) {
@@ -403,20 +408,7 @@ public class HologramClassGenerator extends ClassVisitor {
         }
         boolean isGetStackTrace = this.name.equals(hologramThrowableType.getInternalName()) && name.equals("getStackTrace") && desc.equals(Type.getMethodDescriptor(getHologramType(Type.getType(StackTraceElement[].class)))); 
         if (isGetStackTrace) {
-            String hologramMethodName = "getStackTraceHologram";
-//            String nonHologramDesc = Type.getMethodDescriptor(Type.getType(StackTraceElement[].class));
-//
-//            MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
-//                    name, nonHologramDesc, null, null);
-//            methodVisitor.visitCode();
-//            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-//            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, this.name, hologramMethodName, desc);
-//            MethodHandle.OBJECT_HOLOGRAM_GET_REAL_STACK_TRACE_FOR_HOLOGRAM_HANDLER.invoke(methodVisitor);
-//            methodVisitor.visitInsn(Opcodes.RETURN);
-//            methodVisitor.visitMaxs(1, 1);
-//            methodVisitor.visitEnd();
-            
-            name = hologramMethodName;
+            name = "getStackTraceHologram";
         }
         
         // Take off the native keyword if it's there - we're going to fill in an actual
@@ -499,27 +491,75 @@ public class HologramClassGenerator extends ClassVisitor {
             // This doesn't extend ObjectHologram so we have to add the mirror fields separately
             // and initialize them directly
             super.visitField(Opcodes.ACC_PUBLIC, "mirror", objectMirrorType.getDescriptor(), null, null);
-            super.visitField(Opcodes.ACC_PUBLIC, "lock", Type.getType(Lock.class).getDescriptor(), null, null);
-            super.visitField(Opcodes.ACC_PUBLIC, "condition", Type.getType(Condition.class).getDescriptor(), null, null);
+            super.visitField(Opcodes.ACC_PUBLIC, "lock", lockType.getDescriptor(), null, null);
+            super.visitField(Opcodes.ACC_PUBLIC, "condition", conditionType.getDescriptor(), null, null);
             
             MethodVisitor methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
                              "<init>", constructorDesc, null, null);
             methodVisitor.visitCode();
+            // Invoke super()
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
             methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", Type.getMethodDescriptor(Type.VOID_TYPE));
+            
+            // this.mirror = (first argument)
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
             methodVisitor.visitTypeInsn(Opcodes.CHECKCAST, objectMirrorType.getInternalName());
             methodVisitor.visitFieldInsn(Opcodes.PUTFIELD, name, "mirror", Type.getDescriptor(ObjectMirror.class));
+            
+            initializeSynchonizationFields(name, methodVisitor);
+            
+            // return;
             methodVisitor.visitInsn(Opcodes.RETURN);
             methodVisitor.visitMaxs(2, 2);
             methodVisitor.visitEnd();
             
+            // public ObjectMirror getMirror() {
+            //     return this.mirror;
+            // }
             methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
                     "getMirror", Type.getMethodDescriptor(objectMirrorType), null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
             methodVisitor.visitFieldInsn(Opcodes.GETFIELD, name, "mirror", Type.getDescriptor(ObjectMirror.class));
+            methodVisitor.visitInsn(Opcodes.ARETURN);
+            methodVisitor.visitMaxs(1, 1);
+            methodVisitor.visitEnd();
+            
+            // public Lock getSynchronizationLock() {
+            //     return this.lock;
+            // }
+            MethodInsnNode getLockMethodNode = new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ((Hologram)null).getSynchronizationLock();
+                }
+            }.getMethod();
+            methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
+                    getLockMethodNode.name, 
+                    getLockMethodNode.desc, 
+                    null, null);
+            methodVisitor.visitCode();
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            methodVisitor.visitFieldInsn(Opcodes.GETFIELD, name, "lock", lockType.getDescriptor());
+            methodVisitor.visitInsn(Opcodes.ARETURN);
+            methodVisitor.visitMaxs(1, 1);
+            methodVisitor.visitEnd();
+            
+            // public ObjectMirror getNofifyCondition() {
+            //     return this.condition;
+            // }
+            MethodInsnNode getConditionMethodNode = new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ((Hologram)null).getNotifyCondition();
+                }
+            }.getMethod();
+            methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
+                    getConditionMethodNode.name, 
+                    getConditionMethodNode.desc, 
+                    null, null);
+            methodVisitor.visitCode();
+            methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+            methodVisitor.visitFieldInsn(Opcodes.GETFIELD, name, "condition", conditionType.getDescriptor());
             methodVisitor.visitInsn(Opcodes.ARETURN);
             methodVisitor.visitMaxs(1, 1);
             methodVisitor.visitEnd();
@@ -548,6 +588,24 @@ public class HologramClassGenerator extends ClassVisitor {
         }
         
         super.visitEnd();
+    }
+    
+    public static void initializeSynchonizationFields(String owner, MethodVisitor methodVisitor) {
+     // this.lock = new ReentrantLock();
+        Type reentrantLockType = Type.getType(ReentrantLock.class);
+        methodVisitor.visitTypeInsn(Opcodes.NEW, reentrantLockType.getInternalName());
+        methodVisitor.visitInsn(Opcodes.DUP);
+        methodVisitor.visitInsn(Opcodes.DUP);
+        methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, reentrantLockType.getInternalName(), "<init>", Type.getMethodDescriptor(Type.VOID_TYPE));
+        methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+        methodVisitor.visitInsn(Opcodes.SWAP);
+        methodVisitor.visitFieldInsn(Opcodes.PUTFIELD, owner, "lock", lockType.getDescriptor());
+        
+        // this.condition = this.lock.newCondition()
+        methodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, lockType.getInternalName(), "newCondition", Type.getMethodDescriptor(conditionType));
+        methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
+        methodVisitor.visitInsn(Opcodes.SWAP);
+        methodVisitor.visitFieldInsn(Opcodes.PUTFIELD, owner, "condition", conditionType.getDescriptor());
     }
     
     public static void generateArray(ClassVisitor visitor, HologramClassLoader loader, HologramClassMirror hologramClassMirror) {

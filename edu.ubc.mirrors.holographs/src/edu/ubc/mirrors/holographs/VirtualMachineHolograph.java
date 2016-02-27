@@ -220,8 +220,10 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     private void updateHologramThreadLocks() {
         Set<ObjectMirror> monitors = new HashSet<ObjectMirror>();
-        for (ThreadMirror thread : getThreads()) {
-            monitors.addAll(thread.getOwnedMonitors());
+        for (ThreadMirror thread : wrappedVM.getThreads()) {
+            for (ObjectMirror m : thread.getOwnedMonitors()) {
+                monitors.add(getWrappedMirror(m));
+            }
         }
         hologramThread.setMonitors(monitors);
     }

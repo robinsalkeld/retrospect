@@ -210,12 +210,6 @@ public class HologramMethodGenerator extends InstructionAdapter {
             }
         }
         
-//        if (owner.equals(getHologramType(Throwable.class).getInternalName())) {
-//            if (name.equals("<init>") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE, getHologramType(String.class)))) {
-//                desc = Type.getMethodDescriptor(Type.VOID_TYPE, objectHologramType);
-//            }
-//        }
-        
         if (owner.equals(hologramThrowableType.getInternalName())) {
             if (name.equals("getStackTrace")) {
                 name = "getStackTraceHologram";
@@ -251,18 +245,30 @@ public class HologramMethodGenerator extends InstructionAdapter {
         // Synchronization methods on Object.class
         
         if (name.equals("wait") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE, Type.LONG_TYPE))) {
-            owner = Type.getInternalName(ObjectHologram.class);
-            name = "waitHologram";
+            new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ObjectHologram.waitHologram(null, 0);
+                }
+            }.invoke(this);
+            return;
         }
         
         if (name.equals("notify") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE))) {
-            owner = Type.getInternalName(ObjectHologram.class);
-            name = "notifyHologram";
+            new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ObjectHologram.notifyHologram(null);
+                }
+            }.invoke(this);
+            return;
         }
         
         if (name.equals("notifyAll") && desc.equals(Type.getMethodDescriptor(Type.VOID_TYPE))) {
-            owner = Type.getInternalName(ObjectHologram.class);
-            name = "notifyAllHologram";
+            new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ObjectHologram.notifyAllHologram(null);
+                }
+            }.invoke(this);
+            return;
         }
         
         super.visitMethodInsn(opcode, owner, name, desc);
@@ -640,6 +646,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
                 load(0, owner);
                 load((methodType.getArgumentsAndReturnSizes() >> 2) - 1, instanceMirrorType);
                 putfield(owner.getInternalName(), "mirror", Type.getDescriptor(ObjectMirror.class));
+                HologramClassGenerator.initializeSynchonizationFields(owner.getInternalName(), this.mv);
             }
         }
         
