@@ -203,14 +203,4 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     public String toString() {
         return getClass().getSimpleName() + " (" + Reflection.getThreadName(this) + ")";
     };
-    
-    public int derp(int x) {
-        synchronized(this) {
-            if (x > 4) {
-                return x + 4;
-            } else {
-                return 7;
-            }
-        }
-    }
 }
