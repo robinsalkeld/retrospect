@@ -384,6 +384,14 @@ public class ObjectHologram implements Hologram {
         return monitorCondition;
     }
     
+    public static void monitorEnter(Hologram hologram) throws InterruptedException {
+        hologram.getSynchronizationLock().lock();
+    }
+    
+    public static void monitorExit(Hologram hologram) throws InterruptedException {
+        hologram.getSynchronizationLock().unlock();
+    }
+    
     public static void waitHologram(Hologram hologram, long timeout) throws InterruptedException {
         hologram.getNotifyCondition().await(timeout, TimeUnit.MILLISECONDS);
     }

@@ -749,34 +749,44 @@ public class HologramMethodGenerator extends InstructionAdapter {
         checkcast(hologramType);
     }
     
-    private static final MethodHandle HOLOGRAM_GET_LOCK = new MethodHandle() {
+    public static final MethodHandle HOLOGRAM_GET_LOCK = new MethodHandle() {
         protected void methodCall() throws Throwable {
             ((Hologram)null).getSynchronizationLock();
         }
     };
     
-    private static final MethodHandle LOCK_LOCK = new MethodHandle() {
+    public static final MethodHandle LOCK_LOCK = new MethodHandle() {
         protected void methodCall() throws Throwable {
             ((Lock)null).lock();
         }
     };
     
-    private static final MethodHandle LOCK_UNLOCK = new MethodHandle() {
+    public static final MethodHandle LOCK_UNLOCK = new MethodHandle() {
         protected void methodCall() throws Throwable {
             ((Lock)null).unlock();
+        }
+    };
+
+    private static final MethodHandle OBJECT_HOLOGRAM_MONITOR_ENTER = new MethodHandle() {
+        protected void methodCall() throws Throwable {
+            ObjectHologram.monitorEnter(null);
+        }
+    };
+    
+    private static final MethodHandle OBJECT_HOLOGRAM_MONITOR_EXIT = new MethodHandle() {
+        protected void methodCall() throws Throwable {
+            ObjectHologram.monitorExit(null);
         }
     };
     
     private void monitorEnter() {
         // Call on the chained visitor to avoid Hologram getting renamed to Object
-        HOLOGRAM_GET_LOCK.invoke(this.mv);
-        LOCK_LOCK.invoke(this);
+        OBJECT_HOLOGRAM_MONITOR_ENTER.invoke(this.mv);
     }
     
     private void monitorExit() {
         // Call on the chained visitor to avoid Hologram getting renamed to Object
-        HOLOGRAM_GET_LOCK.invoke(this.mv);
-        LOCK_UNLOCK.invoke(this);
+        OBJECT_HOLOGRAM_MONITOR_EXIT.invoke(this.mv);
     }
 }
 

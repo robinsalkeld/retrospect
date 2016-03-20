@@ -55,7 +55,7 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
 
-    public static final String VERSION = "1.16";
+    public static final String VERSION = "1.17";
     
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type throwableType = Type.getType(Throwable.class);
@@ -529,11 +529,7 @@ public class HologramClassGenerator extends ClassVisitor {
             // public Lock getSynchronizationLock() {
             //     return this.lock;
             // }
-            MethodInsnNode getLockMethodNode = new MethodHandle() {
-                protected void methodCall() throws Throwable {
-                    ((Hologram)null).getSynchronizationLock();
-                }
-            }.getMethod();
+            MethodInsnNode getLockMethodNode = HologramMethodGenerator.HOLOGRAM_GET_LOCK.getMethod();
             methodVisitor = super.visitMethod(Opcodes.ACC_PUBLIC, 
                     getLockMethodNode.name, 
                     getLockMethodNode.desc, 
