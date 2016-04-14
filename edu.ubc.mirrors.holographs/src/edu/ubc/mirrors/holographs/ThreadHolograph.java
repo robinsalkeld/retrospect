@@ -77,10 +77,6 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     public <T> T withHologramExecution(Callable<T> c) throws Exception {
         enterHologramExecution();
         try {
-            for (InstanceMirror monitor : wrappedThread.getOwnedMonitors()) {
-                c = withMonitor(monitor, c);
-            }
-            
             return c.call();
         } finally {
             exitHologramExecution();

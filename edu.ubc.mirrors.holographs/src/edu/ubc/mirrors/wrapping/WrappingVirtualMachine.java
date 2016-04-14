@@ -22,7 +22,6 @@
 package edu.ubc.mirrors.wrapping;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -91,24 +90,21 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return wrappedVM.findBootstrapResources(path);
     }
     
-    private final Map<ObjectMirror, WeakReference<ObjectMirror>> wrappedMirrors = 
-            new HashMap<ObjectMirror, WeakReference<ObjectMirror>>();
+    private final Map<ObjectMirror, ObjectMirror> wrappedMirrors = 
+            new HashMap<ObjectMirror, ObjectMirror>();
     
     public ObjectMirror getWrappedMirror(ObjectMirror mirror) {
         if (mirror == null) {
             return null;
         }
         
-        WeakReference<ObjectMirror> ref = wrappedMirrors.get(mirror);
-        if (ref != null) {
-            ObjectMirror result = ref.get();
-            if (result != null) {
-                return result;
-            }
+        ObjectMirror result = wrappedMirrors.get(mirror);
+        if (result != null) {
+            return result;
         }
         
-        ObjectMirror result = wrapMirror(mirror);
-        wrappedMirrors.put(mirror, new WeakReference<ObjectMirror>(result));
+        result = wrapMirror(mirror);
+        wrappedMirrors.put(mirror, result);
         return result;
     }
 
@@ -150,10 +146,6 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         } else {
             throw new IllegalArgumentException();
         }
-    }
-    
-    public void releaseMirror(InstanceMirror wrapped) {
-        wrappedMirrors.remove(wrapped);
     }
     
     public ObjectMirror unwrapMirror(ObjectMirror mirror) {

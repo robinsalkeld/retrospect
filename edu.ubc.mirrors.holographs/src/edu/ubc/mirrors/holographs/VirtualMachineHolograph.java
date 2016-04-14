@@ -114,7 +114,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     // TODO-RS: For now one dedicated thread just to hold locks
     // according to the wrapped VM, to ensure deadlocks occur 
     // correctly.
-    private final HologramThread hologramThread = new HologramThread();
+    private final HologramThread hologramThread;
     
     // TODO-RS: Move all this data that is only relevant for MNMs to
     // the plugins.
@@ -202,6 +202,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         this.eventQueue = new HolographEventQueue(this, this.wrappedVM.eventQueue());
         this.requestManager = new HolographEventRequestManager(this, this.wrappedVM.eventRequestManager());
 
+        // TODO-RS: Unfortunately necessary because constructing hologram
+        // instances in HologramThread code might load classes and hence
+        // requires a thread mirror
+        ThreadMirror firstThread = getThreads().get(0);
+        this.hologramThread = new HologramThread(firstThread);
         hologramThread.start();
         dispatch().addSetCallback(new Callback<Set<MirrorEvent>>() {
             @Override
@@ -319,37 +324,31 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 
     private void collectZipFiles() {
         try {
-//            Reflection.withThread(getThreads().get(0), new Callable<Object>() {
-//                @Override
-//                public Object call() throws Exception {
-                    ClassMirror zipFileClass = findBootstrapClassMirror(ZipFile.class.getName());
-                    for (ClassMirror zipFileSubclass : findAllClasses(ZipFile.class.getName(), true)) {
-                        for (ObjectMirror zipFileObjectMirror : zipFileSubclass.getInstances()) {
-                            InstanceMirror zipFileMirror = (InstanceMirror)zipFileObjectMirror;
-                            long address;
-                            String name;
-                            try {
-                                address = zipFileMirror.getLong(zipFileClass.getDeclaredField("jzfile"));
-                                name = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(zipFileMirror, "name"));
-                            } catch (IllegalAccessException e) {
-                                throw new RuntimeException(e);
-                            }
-                            if (name != null) {
-                                zipPathsByAddress.put(address, new File(name));
-                            }
-                        }
+            ClassMirror zipFileClass = findBootstrapClassMirror(ZipFile.class.getName());
+            for (ClassMirror zipFileSubclass : findAllClasses(ZipFile.class.getName(), true)) {
+                for (ObjectMirror zipFileObjectMirror : zipFileSubclass.getInstances()) {
+                    InstanceMirror zipFileMirror = (InstanceMirror)zipFileObjectMirror;
+                    long address;
+                    String name;
+                    try {
+                        address = zipFileMirror.getLong(zipFileClass.getDeclaredField("jzfile"));
+                        name = Reflection.getRealStringForMirror((InstanceMirror)HolographInternalUtils.getField(zipFileMirror, "name"));
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
                     }
-
-                    if (canBeModified()) {
-                        MirrorEventRequestManager erm = eventRequestManager();
-                        ClassMirrorPrepareRequest request = erm.createClassMirrorPrepareRequest();
-                        request.addClassFilter(ZipFile.class.getName());
-                        dispatch().addCallback(request, ZIP_FILE_CREATED_CALLBACK);
-                        request.enable();
+                    if (name != null) {
+                        zipPathsByAddress.put(address, new File(name));
                     }
-//                    return null;
-//                }
-//            });
+                }
+            }
+    
+            if (canBeModified()) {
+                MirrorEventRequestManager erm = eventRequestManager();
+                ClassMirrorPrepareRequest request = erm.createClassMirrorPrepareRequest();
+                request.addClassFilter(ZipFile.class.getName());
+                dispatch().addCallback(request, ZIP_FILE_CREATED_CALLBACK);
+                request.enable();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

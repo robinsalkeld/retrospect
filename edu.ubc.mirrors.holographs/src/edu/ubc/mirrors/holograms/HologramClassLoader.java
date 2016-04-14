@@ -262,21 +262,17 @@ public class HologramClassLoader extends ClassLoader {
         }
     }
     
-    private final Map<ObjectMirror, WeakReference<Hologram>> holograms = 
-            new WeakHashMap<ObjectMirror, WeakReference<Hologram>>();
+    private final Map<ObjectMirror, Hologram> holograms = 
+            new HashMap<ObjectMirror, Hologram>();
     
     public Hologram makeHologram(ObjectMirror mirror) {
         if (mirror == null) {
             return null;
         }
         
-        Hologram hologram;
-        WeakReference<Hologram> ref = holograms.get(mirror);
-        if (ref != null) {
-            hologram = ref.get();
-            if (hologram != null) {
-                return hologram;
-            }
+        Hologram hologram = holograms.get(mirror);
+        if (hologram != null) {
+            return hologram;
         }
         
         final String signature = mirror.getClassMirror().getSignature();
@@ -326,11 +322,12 @@ public class HologramClassLoader extends ClassLoader {
             }
         }
         
+        registerHologram(hologram);
         return hologram;
     }
     
     public void registerHologram(Hologram hologram) {
-        holograms.put(hologram.getMirror(), new WeakReference<Hologram>(hologram));
+        holograms.put(hologram.getMirror(), hologram);
     }
     
     public synchronized byte[] getBytecode(HologramClassMirror hologramClassMirror) {
@@ -600,8 +597,9 @@ public class HologramClassLoader extends ClassLoader {
             if (classMirror != null) {
                 for (MethodMirror method : classMirror.getDeclaredMethods(false)) {
                     if (request.matches(method)) {
-                        throw new IllegalStateException("Can't enable method request: " +
-                                classMirror.getClassName() + " class already defined");
+                        // TODO-RS: Temporarily disabling until advice is improved.
+//                        throw new IllegalStateException("Can't enable method request: " +
+//                                classMirror.getClassName() + " class already defined");
                     }
                 }
             }

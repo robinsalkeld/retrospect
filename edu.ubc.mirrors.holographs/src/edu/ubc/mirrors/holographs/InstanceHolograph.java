@@ -45,6 +45,7 @@ public class InstanceHolograph extends WrappingInstanceMirror {
     protected final VirtualMachineHolograph vm;
     private Map<FieldMirror, Object> newValues;
     
+    private WeakReference<GCCanary> canary = null;
     private static final Set<PhantomMirrorReference> collectable = new HashSet<PhantomMirrorReference>();
     
     public InstanceHolograph(VirtualMachineHolograph vm, InstanceMirror wrappedInstance) {
@@ -59,9 +60,16 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         }
     }
     
-    @Override
-    protected void finalize() throws Throwable {
-        vm.releaseMirror(wrapped);
+    public GCCanary getCanary() {
+        if (canary == null || canary.get() == null) {
+            canary = new WeakReference<GCCanary>(new GCCanary(this));
+        }
+        return canary.get();
+    }
+    
+    protected void notHolographicallyReachable() {
+        // TODO: release the wrapper as well if there is no additional state
+        // added to it.
         wrapped.allowCollection(true);
     }
     
