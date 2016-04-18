@@ -118,6 +118,10 @@ public class EventDispatch {
     }
     
     public void raiseEvent(MirrorEvent event) {
+        if (DEBUG) {
+            printIndented("Raising event: " + event);
+        }
+
         if (pendingEvents == null) {
             pendingEvents = new RaisedEventSet(currentSet);
         }
@@ -159,6 +163,10 @@ public class EventDispatch {
     
     public MirrorEventSet nextEventSet() throws InterruptedException {
         if (pendingEvents != null) {
+            if (DEBUG) {
+                printIndented("Handling raised events: " + pendingEvents);
+            }
+            
             currentSet = pendingEvents;
             pendingEvents = null;
             return currentSet;
@@ -246,10 +254,7 @@ public class EventDispatch {
             if (offset > 0) {
                 depth += offset;
             }
-            for (int indent = 0; indent < depth; indent++) {
-                System.err.print("  ");
-            }
-            System.err.println(event);
+            printIndented(event.toString());
             if (offset <= 0) {
                 depth += offset;
             }
@@ -263,6 +268,13 @@ public class EventDispatch {
         }
         
         return event.getProceed().invoke(event.thread(), event.arguments());
+    }
+    
+    private void printIndented(String msg) {
+        for (int indent = 0; indent < depth; indent++) {
+            System.err.print("  ");
+        }
+        System.err.println(msg);
     }
     
     private MirrorEvent mergeEvents(Set<MirrorEvent> events) {

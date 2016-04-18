@@ -98,7 +98,7 @@ public class JDIUtils {
     
     private static VirtualMachine fixTimeoutAndHandleStreams(VirtualMachine vm, OutputStream out, OutputStream err) {
         ((org.eclipse.jdi.VirtualMachine)vm).setRequestTimeout(6000000);
-//        ProcessUtils.handleStreams(vm.process(), out, err);
+        ProcessUtils.handleStreams(vm.process(), out, err);
         return vm;
     }
 }

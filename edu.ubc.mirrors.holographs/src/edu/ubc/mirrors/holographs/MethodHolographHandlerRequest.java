@@ -58,13 +58,11 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     public void enable() {
         vm.checkAlreadyDefinedClassesForRequest(this);
         entryRequest.enable();
-        exitRequest.enable();
     }
 
     @Override
     public void disable() {
-        entryRequest.enable();
-        exitRequest.enable();
+        entryRequest.disable();
     }
 
     @Override
@@ -75,7 +73,6 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     @Override
     public void setEnabled(boolean enabled) {
         entryRequest.setEnabled(enabled);
-        exitRequest.setEnabled(enabled);
     }
 
     @Override
@@ -128,7 +125,9 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         // TODO-RS: Track how many times this is called
         
         try {
+            exitRequest.enable();
             exitEvent = (MethodMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
+            exitRequest.disable();
             return exitEvent.returnValue();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);

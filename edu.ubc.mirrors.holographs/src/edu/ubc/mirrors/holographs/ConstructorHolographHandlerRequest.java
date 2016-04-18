@@ -52,13 +52,11 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
     @Override
     public void enable() {
         entryRequest.enable();
-        exitRequest.enable();
     }
 
     @Override
     public void disable() {
         entryRequest.disable();
-        exitRequest.disable();
     }
 
     @Override
@@ -69,7 +67,6 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
     @Override
     public void setEnabled(boolean enabled) {
         entryRequest.setEnabled(enabled);
-        exitRequest.setEnabled(enabled);
     }
 
     @Override
@@ -102,7 +99,9 @@ public class ConstructorHolographHandlerRequest implements ConstructorMirrorHand
         // TODO-RS: Track how many times this is called
         
         try {
+            exitRequest.enable();
             ConstructorMirrorExitEvent exitEvent = (ConstructorMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
+            exitRequest.disable();
             return exitEvent.returnValue();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
