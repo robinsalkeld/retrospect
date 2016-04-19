@@ -196,7 +196,7 @@ public class EventDispatch {
         while (currentSet != null) {
             MirrorEvent result = null;
             for (MirrorEvent event : currentSet) {
-                if (event.request().equals(endRequest)) {
+                if (endRequest != null && endRequest.equals(event.request())) {
                     result = event;
                 }
             }
@@ -229,7 +229,9 @@ public class EventDispatch {
         List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();
         for (MirrorEvent event : events) {
             MirrorEventRequest request = event.request();
-            requests.add(request);
+            if (request != null) {
+                requests.add(request);
+            }
         }
         
         Set<Callback<MirrorEvent>> callbacks = new LinkedHashSet<Callback<MirrorEvent>>();

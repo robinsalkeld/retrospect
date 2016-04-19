@@ -385,11 +385,13 @@ public class ObjectHologram implements Hologram {
     }
     
     public static void monitorEnter(Hologram hologram) throws InterruptedException {
-        hologram.getSynchronizationLock().lock();
+        // TODO: No-op until I'm using HologramThreads correctly
+//        hologram.getSynchronizationLock().tryLock();
     }
     
     public static void monitorExit(Hologram hologram) throws InterruptedException {
-        hologram.getSynchronizationLock().unlock();
+        // TODO: No-op until I'm using HologramThreads correctly
+//        hologram.getSynchronizationLock().unlock();
     }
     
     public static void waitHologram(Hologram hologram, long timeout) throws InterruptedException {

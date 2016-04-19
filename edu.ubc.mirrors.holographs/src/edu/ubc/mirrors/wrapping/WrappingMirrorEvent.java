@@ -45,7 +45,11 @@ public class WrappingMirrorEvent implements MirrorEvent {
 
     @Override
     public MirrorEventRequest request() {
-	return (MirrorEventRequest)wrapped.request().getProperty(WrappingMirrorEventRequest.WRAPPER);
+        MirrorEventRequest request = wrapped.request();
+        if (request == null) {
+            return null;
+        }
+        return (MirrorEventRequest)request.getProperty(WrappingMirrorEventRequest.WRAPPER);
     }
     
     @Override
