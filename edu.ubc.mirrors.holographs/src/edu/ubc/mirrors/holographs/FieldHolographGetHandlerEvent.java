@@ -62,4 +62,9 @@ public class FieldHolographGetHandlerEvent implements FieldMirrorGetHandlerEvent
     public FieldMirror field() {
         return field;
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + field;
+    }
 }

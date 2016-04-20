@@ -9,23 +9,16 @@ import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryEvent;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
-import edu.ubc.mirrors.MethodMirrorExitEvent;
-import edu.ubc.mirrors.MethodMirrorExitRequest;
 import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
-import edu.ubc.mirrors.MirrorInvocationHandler;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
-import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 
-public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest, MirrorInvocationHandler {
+public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest {
 
     private final VirtualMachineHolograph vm;
     private final Map<Object, Object> properties = new HashMap<Object, Object>();
     private final MethodMirrorEntryRequest entryRequest;
-    private final MethodMirrorExitRequest exitRequest;
-    private MethodMirrorExitEvent exitEvent;
+    private boolean entryCallbackAdded = false;
     private List<String> classNamePatterns = new ArrayList<String>();
     protected String declaringClassFilter;
     protected String nameFilter;
@@ -35,10 +28,8 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         @Override
         public MirrorEvent handle(MirrorEvent t) {
             MethodMirrorEntryEvent entryEvent = (MethodMirrorEntryEvent)t;
-            final DirectMethodMirrorHandlerEvent handlerEvent = new DirectMethodMirrorHandlerEvent(MethodHolographHandlerRequest.this, 
-                    entryEvent.thread(), entryEvent.method(), entryEvent.arguments(), MethodHolographHandlerRequest.this);
-            
-            handlerEvent.setProceed(MethodHolographHandlerRequest.this);
+            final MethodHolographHandlerEvent handlerEvent = new MethodHolographHandlerEvent(vm, MethodHolographHandlerRequest.this, 
+                    entryEvent.thread(), entryEvent.method(), entryEvent.arguments());
             vm.dispatch().raiseEvent(handlerEvent);
             return t;
         }
@@ -47,17 +38,17 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     public MethodHolographHandlerRequest(VirtualMachineHolograph vm) {
         this.vm = vm;
         this.entryRequest = vm.eventRequestManager().createMethodMirrorEntryRequest();
-        vm.dispatch().addCallback(entryRequest, entryCallback); 
-        
-        this.exitRequest = vm.eventRequestManager().createMethodMirrorExitRequest();
-        this.exitRequest.putProperty("for handler request", this);
-        
     }
 
     @Override
     public void enable() {
-        vm.checkAlreadyDefinedClassesForRequest(this);
         entryRequest.enable();
+        // Delaying the add until now for better debugging
+        if (!entryCallbackAdded) {
+            entryCallbackAdded = true;
+            vm.checkAlreadyDefinedClassesForRequest(this);
+            vm.dispatch().addCallback(entryRequest, entryCallback);
+        }
     }
 
     @Override
@@ -72,7 +63,11 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
 
     @Override
     public void setEnabled(boolean enabled) {
-        entryRequest.setEnabled(enabled);
+        if (enabled) {
+            enable();
+        } else {
+            disable();
+        }
     }
 
     @Override
@@ -89,7 +84,6 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
     public void addClassFilter(String classNamePattern) {
         classNamePatterns.add(classNamePattern);
         entryRequest.addClassFilter(classNamePattern);
-        exitRequest.addClassFilter(classNamePattern);
     }
     
     @Override
@@ -99,7 +93,6 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         this.parameterTypeNamesFilter = parameterTypeNames;
         
         entryRequest.setMethodFilter(declaringClass, name, parameterTypeNames);
-        exitRequest.setMethodFilter(declaringClass, name, parameterTypeNames);
     }
     
     public boolean matches(MethodMirror method) {
@@ -116,22 +109,6 @@ public class MethodHolographHandlerRequest implements MethodMirrorHandlerRequest
         }
         
         return true;
-    }
-    
-    @Override
-    public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
-        // TODO-RS: Check thread
-        // TODO-RS: Check arguments
-        // TODO-RS: Track how many times this is called
-        
-        try {
-            exitRequest.enable();
-            exitEvent = (MethodMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
-            exitRequest.disable();
-            return exitEvent.returnValue();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
     
     @Override

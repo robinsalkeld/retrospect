@@ -9,4 +9,9 @@ public class DirectAdviceMirrorHandlerRequest extends FieldMapMirrorEventRequest
         super(vm);
     }
 
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }

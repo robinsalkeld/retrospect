@@ -21,6 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.sun.jdi.request.ClassPrepareRequest;
 
 import edu.ubc.mirrors.ClassMirrorPrepareRequest;
@@ -28,6 +31,7 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 public class JDIClassMirrorPrepareRequest extends JDIEventRequest implements ClassMirrorPrepareRequest {
 
     protected final ClassPrepareRequest wrapped;
+    private Set<String> classNamePatterns = new HashSet<String>();
     
     public JDIClassMirrorPrepareRequest(JDIVirtualMachineMirror vm, ClassPrepareRequest wrapped) {
 	super(vm, wrapped);
@@ -37,5 +41,11 @@ public class JDIClassMirrorPrepareRequest extends JDIEventRequest implements Cla
     @Override
     public void addClassFilter(String classNamePattern) {
 	wrapped.addClassFilter(classNamePattern);
+	this.classNamePatterns.add(classNamePattern);
+    }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + classNamePatterns;
     }
 }

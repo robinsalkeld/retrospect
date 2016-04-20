@@ -2,40 +2,37 @@ package edu.ubc.mirrors.holographs;
 
 import java.util.List;
 
-import edu.ubc.mirrors.ConstructorMirror;
-import edu.ubc.mirrors.ConstructorMirrorExitEvent;
-import edu.ubc.mirrors.ConstructorMirrorExitRequest;
-import edu.ubc.mirrors.ConstructorMirrorHandlerEvent;
-import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
+import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorExitEvent;
+import edu.ubc.mirrors.MethodMirrorExitRequest;
+import edu.ubc.mirrors.MethodMirrorHandlerEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandlerEvent, MirrorInvocationHandler {
+public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent, MirrorInvocationHandler {
 
     private final VirtualMachineHolograph vm;
-    private final ConstructorMirrorHandlerRequest request;
+    private final MirrorEventRequest request;
     private final ThreadMirror thread;
-    private final ConstructorMirror constructor;
-    private boolean isConstructorChaining;
+    private final MethodMirror method;
     private final List<Object> arguments;
     private MirrorInvocationHandler proceed;
-    private final ConstructorMirrorExitRequest exitRequest;
+    private final MethodMirrorExitRequest exitRequest;
     
-    public ConstructorHolographHandlerEvent(VirtualMachineHolograph vm, ConstructorMirrorHandlerRequest request, ThreadMirror thread, ConstructorMirror constructor, 
-            boolean isConstructorChaining, List<Object> arguments) {
+    public MethodHolographHandlerEvent(VirtualMachineHolograph vm, MirrorEventRequest request, ThreadMirror thread, 
+            MethodMirror method, List<Object> arguments) {
         this.vm = vm;
         this.request = request;
         this.thread = thread;
-        this.constructor = constructor;
-        this.isConstructorChaining = isConstructorChaining;
+        this.method = method;
         this.arguments = arguments;
         this.proceed = this;
-        this.exitRequest = vm.eventRequestManager().createConstructorMirrorExitRequest();
+        this.exitRequest = vm.eventRequestManager().createMethodMirrorExitRequest();
     }
-    
+
     @Override
     public MirrorEventRequest request() {
         return request;
@@ -47,13 +44,8 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
     }
     
     @Override
-    public ConstructorMirror constructor() {
-        return constructor;
-    }
-    
-    @Override
-    public boolean isConstructorChaining() {
-        return isConstructorChaining;
+    public MethodMirror method() {
+        return method;
     }
     
     @Override
@@ -78,10 +70,9 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
         // TODO-RS: Track how many times this is called
         
         try {
-            ConstructorHolograph constructor = (ConstructorHolograph)constructor();
-            exitRequest.setConstructorFilter(constructor.getWrapped());
+            exitRequest.setMethodFilter(method.getDeclaringClass().getClassName(), method.getName(), method.getParameterTypeNames());
             exitRequest.enable();
-            ConstructorMirrorExitEvent exitEvent = (ConstructorMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
+            MethodMirrorExitEvent exitEvent = (MethodMirrorExitEvent)vm.dispatch().runUntil(exitRequest);
             exitRequest.disable();
             return exitEvent.returnValue();
         } catch (InterruptedException e) {
@@ -91,6 +82,6 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " on " + Reflection.constructorName(constructor);
+        return getClass().getSimpleName() + " for " + Reflection.methodName(method);
     }
 }

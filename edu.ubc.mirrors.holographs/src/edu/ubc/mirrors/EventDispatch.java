@@ -130,7 +130,10 @@ public class EventDispatch {
     
     @SuppressWarnings("unchecked")
     public void addCallback(MirrorEventRequest request, Callback<MirrorEvent> callback) {
-	List<Callback<MirrorEvent>> callbacks = (List<Callback<MirrorEvent>>)request.getProperty(CALLBACKS_KEY);
+	if (DEBUG) {
+	    printIndented("Adding callback for: " + request);
+	}
+        List<Callback<MirrorEvent>> callbacks = (List<Callback<MirrorEvent>>)request.getProperty(CALLBACKS_KEY);
 	if (callbacks == null) {
 	    callbacks = new ArrayList<Callback<MirrorEvent>>();
 	    request.putProperty(CALLBACKS_KEY, callbacks);
@@ -192,11 +195,20 @@ public class EventDispatch {
     }
     
     public MirrorEvent runUntil(MirrorEventRequest endRequest) throws InterruptedException {
+        if (DEBUG) {
+            String endStr = endRequest == null ? "(none)" : endRequest.toString();
+            printIndented("Running until: " + endStr);
+        }
+        
         currentSet = nextEventSet();
         while (currentSet != null) {
             MirrorEvent result = null;
             for (MirrorEvent event : currentSet) {
                 if (endRequest != null && endRequest.equals(event.request())) {
+                    if (DEBUG) {
+                        printIndented("Hit matching event: " + event);
+                    }
+                    
                     result = event;
                 }
             }
@@ -215,7 +227,7 @@ public class EventDispatch {
         }
         
         if (endRequest != null) {
-            throw new IllegalArgumentException("Never saw requested event");
+            throw new IllegalArgumentException("Never saw matching event for request: " + endRequest);
         }
         
         return null;

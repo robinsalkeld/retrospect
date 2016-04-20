@@ -54,4 +54,9 @@ public class JDIConstructorMirrorExitRequest extends JDIEventRequest implements 
     public void addClassFilter(String classNamePattern) {
 	wrapped.addClassFilter(classNamePattern);
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + (constructorFilter == null ? "" : " (" + constructorFilter + ")");
+    }
 }

@@ -28,6 +28,7 @@ import com.sun.jdi.request.MethodEntryRequest;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorEntryRequest;
+import edu.ubc.mirrors.Reflection;
 
 public class JDIMethodMirrorEntryRequest extends JDIEventRequest implements MethodMirrorEntryRequest {
 
@@ -63,5 +64,14 @@ public class JDIMethodMirrorEntryRequest extends JDIEventRequest implements Meth
     @Override
     public void addClassFilter(String classNamePattern) {
 	wrapped.addClassFilter(classNamePattern);
+    }
+    
+    @Override
+    public String toString() {
+        String suffix = "";
+        if (nameFilter != null) {
+            suffix = "(" + declaringClassFilter + "." + nameFilter + "(" + Reflection.join(parameterTypeNamesFilter, ", ") + "))";
+        }
+        return getClass().getSimpleName() + suffix;
     }
 }

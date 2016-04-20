@@ -190,4 +190,8 @@ public class ConstructorHolograph implements ConstructorMirror {
     public String getSignature() {
         return wrapped.getSignature();
     }
+    
+    public ConstructorMirror getWrapped() {
+        return wrapped;
+    }
 }

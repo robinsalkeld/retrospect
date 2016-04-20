@@ -34,4 +34,9 @@ public class FieldHolographGetHandlerRequest extends AbstractMirrorEventRequest 
         
         return Reflection.fieldMatches(field, declaringClass, fieldName);
     }
+    
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " on " + declaringClass + "." + fieldName;
+    }
 }
