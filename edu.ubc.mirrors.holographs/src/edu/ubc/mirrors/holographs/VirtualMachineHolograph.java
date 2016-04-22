@@ -36,12 +36,14 @@ import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.jar.JarFile;
@@ -945,6 +947,51 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         // TODO-RS: This should be happening on a background ReferenceHandler thread
         // as well.
         InstanceHolograph.enqueuePhantomReferences(ThreadHolograph.currentThreadMirror());
+    }
+    
+    private void markAndSweep(Collection<ObjectMirror> roots) {
+        // Simple inefficient implementation of mark-and-sweep garbage collection
+        Set<ObjectMirror> visited = new HashSet<ObjectMirror>();
+        Stack<ObjectMirror> toVisit = new Stack<ObjectMirror>();
+        toVisit.addAll(roots);
+        while (!toVisit.isEmpty()) {
+            ObjectMirror visiting = toVisit.pop();
+            visited.add(visiting);
+            
+            if (visiting instanceof InstanceMirror) {
+                InstanceMirror instanceMirror = (InstanceMirror)visiting;
+                for (FieldMirror field : Reflection.getAllFields(instanceMirror.getClassMirror())) {
+                    if (!field.getType().isPrimitive()) {
+                        ObjectMirror child;
+                        try {
+                            child = instanceMirror.get(field);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+                        if (!visited.contains(child)) {
+                            toVisit.add(child);
+                        }
+                    }
+                }
+            } else if (visiting instanceof ObjectArrayMirror) {
+                ObjectArrayMirror arrayMirror = (ObjectArrayMirror)visiting;
+                int length = arrayMirror.length();
+                for (int index = 0; index < length; index++) {
+                    ObjectMirror child = arrayMirror.get(index);
+                    if (!visited.contains(child)) {
+                        toVisit.add(child);
+                    }
+                }
+            }
+        }
+        
+        for (ObjectMirror obj : wrappedMirrors.values()) {
+            if (!visited.contains(obj)) {
+                if (obj instanceof InstanceHolograph) {
+                    ((InstanceHolograph)obj).notHolographicallyReachable();
+                }
+            }
+        }
     }
     
     // TODO-RS: Temporary for evaluation

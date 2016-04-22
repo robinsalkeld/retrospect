@@ -90,7 +90,7 @@ public abstract class WrappingVirtualMachine implements VirtualMachineMirror {
         return wrappedVM.findBootstrapResources(path);
     }
     
-    private final Map<ObjectMirror, ObjectMirror> wrappedMirrors = 
+    protected final Map<ObjectMirror, ObjectMirror> wrappedMirrors = 
             new HashMap<ObjectMirror, ObjectMirror>();
     
     public ObjectMirror getWrappedMirror(ObjectMirror mirror) {
