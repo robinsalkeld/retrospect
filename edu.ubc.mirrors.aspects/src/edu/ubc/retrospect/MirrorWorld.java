@@ -440,6 +440,7 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     
     private void parseConfiguration() {
         definitions = new ArrayList<Definition>();
+        // TODO: This should be fetching the property from inside the VMM instead 
         String definitionPath = System.getProperty("org.aspectj.weaver.loadtime.configuration", AOP_XML);
         for (String definitionPathPart : definitionPath.split(";")) {
             try {

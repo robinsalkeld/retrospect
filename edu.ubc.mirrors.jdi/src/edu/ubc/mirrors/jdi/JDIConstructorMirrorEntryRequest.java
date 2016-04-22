@@ -26,6 +26,7 @@ import com.sun.jdi.request.MethodEntryRequest;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.ConstructorMirrorEntryRequest;
+import edu.ubc.mirrors.Reflection;
 
 public class JDIConstructorMirrorEntryRequest extends JDIEventRequest implements ConstructorMirrorEntryRequest {
 
@@ -57,6 +58,6 @@ public class JDIConstructorMirrorEntryRequest extends JDIEventRequest implements
     
     @Override
     public String toString() {
-        return getClass().getSimpleName() + (constructorFilter == null ? "" : " (" + constructorFilter + ")");
+        return getClass().getSimpleName() + (constructorFilter == null ? "" : " for " + Reflection.constructorName(constructorFilter));
     }
 }

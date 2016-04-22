@@ -395,14 +395,14 @@ public class ObjectHologram implements Hologram {
     }
     
     public static void waitHologram(Hologram hologram, long timeout) throws InterruptedException {
-        hologram.getNotifyCondition().await(timeout, TimeUnit.MILLISECONDS);
+//        hologram.getNotifyCondition().await(timeout, TimeUnit.MILLISECONDS);
     }
     
     public static void notifyHologram(Hologram hologram) throws InterruptedException {
-        hologram.getNotifyCondition().signal();
+//        hologram.getNotifyCondition().signal();
     }
     
     public static void notifyAllHologram(Hologram hologram) throws InterruptedException {
-        hologram.getNotifyCondition().signalAll();
+//        hologram.getNotifyCondition().signalAll();
     }
 }

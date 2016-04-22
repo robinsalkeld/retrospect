@@ -11,6 +11,7 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.holographs.ClassHolograph;
+import edu.ubc.mirrors.holographs.ThreadHolograph;
 
 public class MethodHologram implements MirrorInvocationHandler {
 
@@ -54,7 +55,8 @@ public class MethodHologram implements MirrorInvocationHandler {
             hologramArgs[i] = ClassHolograph.makeHologram(thread, paramTypes[i], args.get(i));
         }
         try {
-            Object result = hologramMethod.invoke(hologramObj, hologramArgs);
+            ThreadHolograph threadHolograph = (ThreadHolograph)thread;
+            Object result = threadHolograph.getHologramThread().invoke(hologramObj, hologramMethod, hologramArgs);
             // Account for the fact that toString() has to return a real String here
             if (result instanceof String) {
                 return vm.makeString((String)result);

@@ -32,6 +32,7 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapFrameMirror;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
+import edu.ubc.mirrors.holograms.HologramThread;
 import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
 
@@ -39,6 +40,7 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
 
     private final ThreadMirror wrappedThread;
     private Thread runningThread = null;
+    private HologramThread hologramThread = new HologramThread(this);
     private int runningThreadCount = 0;
     public static ThreadLocal<ThreadHolograph> currentThreadMirror = new ThreadLocal<ThreadHolograph>();
     
@@ -194,6 +196,10 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     
     public Thread getRunningThread() {
         return runningThread;
+    }
+    
+    public HologramThread getHologramThread() {
+        return hologramThread;
     }
     
     public String toString() {

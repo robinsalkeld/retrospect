@@ -265,11 +265,15 @@ public class EventDispatch {
 
         if (DEBUG) {
             int offset = eventDepthOffset(event);
+            String msg = event.toString();
             if (offset > 0) {
+                msg = "->" + msg;
+            } else if (offset < 0) {
                 depth += offset;
+                msg = "<-" + msg;
             }
-            printIndented(event.toString());
-            if (offset <= 0) {
+            printIndented(msg);
+            if (offset > 0) {
                 depth += offset;
             }
         }

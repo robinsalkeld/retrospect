@@ -23,6 +23,7 @@ package edu.ubc.mirrors.holographs;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -39,6 +40,14 @@ public class ConstructorHolograph implements ConstructorMirror {
     private final ConstructorMirror wrapped;
     private ConstructorMirror bytecodeConstructor;
     private Constructor<?> hologramClassConstructor;
+    private static final Method NEW_INSTANCE_METHOD;
+    static {
+        try {
+            NEW_INSTANCE_METHOD = Constructor.class.getDeclaredMethod("newInstance", Object[].class);
+        } catch (NoSuchMethodException | SecurityException e) {
+            throw new RuntimeException(e);
+        }
+    }
     
     public ConstructorHolograph(ClassHolograph klass, ConstructorMirror wrapped) {
 	this.klass = klass;
@@ -91,7 +100,7 @@ public class ConstructorHolograph implements ConstructorMirror {
     
     @Override
     public InstanceMirror newInstance(final ThreadMirror thread, final Object ... args) throws IllegalAccessException, MirrorInvocationTargetException {
-        ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
+        final ThreadHolograph threadHolograph = ((ThreadHolograph)thread);
         try {
             return threadHolograph.withHologramExecution(new Callable<InstanceMirror>() {
                 public InstanceMirror call() throws Exception {
@@ -108,10 +117,9 @@ public class ConstructorHolograph implements ConstructorMirror {
                             hologramArgs[i] = ClassHolograph.makeHologram(thread, paramTypes[i], args[i]);
                         }
                         hologramArgs[args.length] = mirror;
-                        Object result = hologramClassConstructor.newInstance(hologramArgs);
+                        
+                        Object result = threadHolograph.getHologramThread().invoke(hologramClassConstructor, NEW_INSTANCE_METHOD, new Object[]{hologramArgs});
                         return (InstanceMirror)ClassHolograph.unwrapHologram(result);
-                    } catch (InstantiationException e) {
-                        throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
                     } catch (InvocationTargetException e) {
                         throw ClassHolograph.causeAsMirrorInvocationTargetException(e);
                     }
