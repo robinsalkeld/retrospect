@@ -28,20 +28,7 @@ public class JDIMirrorWeavingLauncher {
         OutputStream teedErr = new TeeOutputStream(mergedOutput, System.err);
         
         VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName + " " + programArgs, vmArgs, true, teedOut, teedErr);
-//        VirtualMachine jdiVM = JDIVirtualMachineMirror.connectOnPort(7777);
-        ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
-//        r.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
-        r.addClassFilter(mainClassName);
-        r.enable();
-        jdiVM.resume();
-        EventQueue q = jdiVM.eventQueue();
-        EventSet es = q.remove();
-        // Ignore the VMStartEvent
-        if (es.size() == 1 && es.iterator().next() instanceof VMStartEvent) {
-            es.resume();
-            es = q.remove();
-        }
-        ClassPrepareEvent cpe = (ClassPrepareEvent)es.eventIterator().next();
+        ClassPrepareEvent cpe = JDIUtils.waitForMainClassLoad(jdiVM, mainClassName);
         final ThreadReference threadRef = cpe.thread();
         
         final JDIVirtualMachineMirror jdiVMM = new JDIVirtualMachineMirror(jdiVM);

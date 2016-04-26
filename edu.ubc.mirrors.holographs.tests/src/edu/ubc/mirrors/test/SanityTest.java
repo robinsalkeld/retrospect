@@ -44,22 +44,57 @@ import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
 
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.VMStartEvent;
 
+import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ClassMirrorPrepareEvent;
+import edu.ubc.mirrors.ClassMirrorPrepareRequest;
+import edu.ubc.mirrors.ConstructorMirror;
+import edu.ubc.mirrors.ConstructorMirrorHandlerEvent;
+import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorHandlerEvent;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
+import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery;
+import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
+import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class SanityTest extends TestCase {
 
+    /**
+     * Regression test for a workaround for a JDI bug (see JDIMirrorEventSet#inEventsBlackHole)
+     */
+    public void testHandlerEvents() throws Exception {
+//        String mainClassName = "edu.ubc.mirrors.test.FunctionCalls";
+        String mainClassName = "tracing.ExampleMain";
+//        File classpath = EvalConstants.EvalTestsBin;
+        File classpath = EvalConstants.TracingExampleBin;
+        VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName, 
+                "-cp \"" + classpath + "\"", true, null, null);
+        JDIUtils.waitForMainClassLoad(jdiVM, mainClassName);
+        
+        VirtualMachineMirror vmm = new JDIVirtualMachineMirror(jdiVM);
+        VirtualMachineHolograph vmh = new VirtualMachineHolograph(vmm, null, Collections.singletonMap("/", "/"));
+        ConstructorMirrorHandlerRequest r = vmh.eventRequestManager().createConstructorMirrorHandlerRequest();
+        r.addClassFilter(Object.class.getName());
+        r.enable();
+        vmh.resume();
+        vmh.dispatch().run();
+        
+    }
+    
     public void testJRubyStackTrace() throws Exception {
         HeapDumpTest2.main(new String[] {"/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/jruby_irb/java_pid41658.0001.jrubyirb.hprof"});
     }

@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.eclipse.jdi.Bootstrap;
 
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.VirtualMachineManager;
@@ -41,6 +42,11 @@ import com.sun.jdi.connect.Connector.StringArgument;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
+import com.sun.jdi.event.ClassPrepareEvent;
+import com.sun.jdi.event.EventQueue;
+import com.sun.jdi.event.EventSet;
+import com.sun.jdi.event.VMStartEvent;
+import com.sun.jdi.request.ClassPrepareRequest;
 
 public class JDIUtils {
     public static VirtualMachine commandLineLaunch(String mainAndArgs, String vmArgs, boolean suspend, OutputStream out, OutputStream err) throws VMStartException, IOException {
@@ -78,6 +84,21 @@ public class JDIUtils {
         } catch (IllegalConnectorArgumentsException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public static ClassPrepareEvent waitForMainClassLoad(VirtualMachine jdiVM, String mainClassName) throws InterruptedException {
+        ClassPrepareRequest r = jdiVM.eventRequestManager().createClassPrepareRequest();
+        r.addClassFilter(mainClassName);
+        r.enable();
+        jdiVM.resume();
+        EventQueue q = jdiVM.eventQueue();
+        EventSet es = q.remove();
+        // Ignore the VMStartEvent
+        if (es.size() == 1 && es.iterator().next() instanceof VMStartEvent) {
+            es.resume();
+            es = q.remove();
+        }
+        return (ClassPrepareEvent)es.eventIterator().next();
     }
     
     public static VirtualMachine connectOnPort(int port, OutputStream out, OutputStream err) throws IOException, IllegalConnectorArgumentsException {

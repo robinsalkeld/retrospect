@@ -21,11 +21,17 @@
  ******************************************************************************/
 package edu.ubc.mirrors.jdi;
 
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.Method;
+import com.sun.jdi.StackFrame;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.event.BreakpointEvent;
@@ -66,6 +72,9 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
 	    if (!mee.method().name().startsWith("<")) {
 		return JDIMethodMirrorEntryEvent.wrap(vm, mee);
 	    } else if (mee.method().name().equals("<init>")) {
+	        if (inEventsBlackHole(mee)) {
+	            return null;
+	        }
 		return JDIConstructorMirrorEntryEvent.wrap(vm, mee);
 	    } else {
 		return null;
@@ -94,6 +103,39 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
         } else {
 	    return null;
 	}
+    }
+
+    /**
+     * Some versions of JDI fail to create method exit events for the constructor chain
+     * of PrivilegedActionException when called from the native AccessController.doPrivileged method.
+     * This test is to used to avoid broadcasting any events within that specific range to
+     * avoid unmatched entry/exit events.
+     * 
+     * @param mee
+     * @return
+     */
+    private boolean inEventsBlackHole(MethodEntryEvent mee) {
+        try {
+            List<StackFrame> frames = mee.thread().frames();
+            int size = frames.size();
+            for (int index = 0; index < size; index++) {
+                StackFrame frame = frames.get(index);
+                Method method = frame.location().method();
+                if (method.declaringType().name().equals(PrivilegedActionException.class.getName())
+                        && method.name().equals("<init>")) {
+                    StackFrame nextFrame = frames.get(index + 1);
+                    Method callingMethod = nextFrame.location().method();
+                    if (callingMethod.declaringType().name().equals(AccessController.class.getName())
+                            && callingMethod.name().equals("doPrivileged")) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        } catch (IncompatibleThreadStateException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

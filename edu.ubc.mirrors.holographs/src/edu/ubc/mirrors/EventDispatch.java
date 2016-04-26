@@ -118,9 +118,9 @@ public class EventDispatch {
     }
     
     public void raiseEvent(MirrorEvent event) {
-        if (DEBUG) {
-            printIndented("Raising event: " + event);
-        }
+//        if (DEBUG) {
+//            printIndented("Raising event: " + event);
+//        }
 
         if (pendingEvents == null) {
             pendingEvents = new RaisedEventSet(currentSet);
@@ -166,9 +166,9 @@ public class EventDispatch {
     
     public MirrorEventSet nextEventSet() throws InterruptedException {
         if (pendingEvents != null) {
-            if (DEBUG) {
-                printIndented("Handling raised events: " + pendingEvents);
-            }
+//            if (DEBUG) {
+//                printIndented("Handling raised events: " + pendingEvents);
+//            }
             
             currentSet = pendingEvents;
             pendingEvents = null;

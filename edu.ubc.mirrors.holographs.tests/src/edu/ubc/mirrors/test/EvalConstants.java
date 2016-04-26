@@ -18,6 +18,9 @@ public class EvalConstants {
     
     public static File TestsRoot = new File(Root, "edu.ubc.mirrors.holographs.tests/bin");
     
+    public static File EvalTestsRoot = new File(EvalRoot, "Test");
+    public static File EvalTestsBin = new File(EvalTestsRoot, "bin");
+    
     public static File TracingExampleRoot = new File(EvalRoot, "Tracing Example");
     public static File TracingExampleBin = new File(TracingExampleRoot, "bin");
     
