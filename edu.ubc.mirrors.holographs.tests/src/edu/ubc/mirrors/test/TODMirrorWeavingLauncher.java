@@ -40,6 +40,6 @@ public class TODMirrorWeavingLauncher {
             }
         }
         
-        return RetroactiveWeaving.weave(todVMM, thread, aspectPath, hologramClassPath, null);
+        return new RetroactiveWeaving().weave(todVMM, thread, aspectPath, hologramClassPath, null);
     }
 }

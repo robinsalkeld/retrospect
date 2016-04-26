@@ -43,6 +43,6 @@ public class JDIMirrorWeavingLauncher {
         MethodMirror getBootstrapResourceMethod = loaderClass.getDeclaredMethod("getBootstrapResource", "java.lang.String");
         getBootstrapResourceMethod.invoke(thread, classLoader, jdiVMM.makeString("foo"));
         
-        return RetroactiveWeaving.weave(vm, thread, aspectPath, hologramClassPath, mergedOutput);
+        return new RetroactiveWeaving().weave(vm, thread, aspectPath, hologramClassPath, mergedOutput);
     }
 }
