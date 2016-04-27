@@ -33,5 +33,6 @@ public class RacerTest extends TestCase {
                 "-cp \"" + EvalConstants.RacerExampleBin + "\"", EvalConstants.RacerBin.toString(), 
                 new File(EvalConstants.DataRoot, "jdi/RacerTest/hologram_classes"));
         assertTrue(output.contains("Field 'static int Task.shared' is accessed unprotected."));
+        assertFalse(output.contains("Field 'static int Task.shared_protected' is accessed unprotected."));
     }
 }

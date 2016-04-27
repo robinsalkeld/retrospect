@@ -69,6 +69,11 @@ import edu.ubc.mirrors.ThreadMirror;
  */
 public class PointcutMirrorRequestExtractor {
 
+    /**
+     * Whether to turn on dynamic request enablement based on "!cflow(...)" guards (beta)
+     */
+    private static final boolean OPTIMIZE_CFLOW = Boolean.getBoolean("edu.ubc.mirrors.aspects.optimizeCflow");
+    
     private static class RequestContext {
         int kinds = Shadow.ALL_SHADOW_KINDS_BITS;
         final List<PatternNode> thisFilters = new ArrayList<PatternNode>();
@@ -87,8 +92,10 @@ public class PointcutMirrorRequestExtractor {
             new HashMap<Member, List<MirrorEventRequest>>();
     
     public static void updateCflowGuardedRequestEnablement(Member cflowCounterMember, boolean enable) {
-        for (MirrorEventRequest request : cflowGuardedRequests.get(cflowCounterMember)) {
-            request.setEnabled(enable);
+        if (OPTIMIZE_CFLOW) {
+            for (MirrorEventRequest request : cflowGuardedRequests.get(cflowCounterMember)) {
+                request.setEnabled(enable);
+            }
         }
     }
     
@@ -435,7 +442,7 @@ public class PointcutMirrorRequestExtractor {
         request.putProperty(SHADOW_KIND_PROPERTY_KEY, kind);
         world.vm.dispatch().addCallback(request, callback);
 
-        if (context.cflowCounterGuard != null) {
+        if (OPTIMIZE_CFLOW && context.cflowCounterGuard != null) {
             // If guarded by a !cflow(...) pointcut, register this request so that the
             // cflowEntry advice will enable and disable it as the cflow pointcut is entered and left.
             List<MirrorEventRequest> guardedRequests = cflowGuardedRequests.get(context.cflowCounterGuard);
