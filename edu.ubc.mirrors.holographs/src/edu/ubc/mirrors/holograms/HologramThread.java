@@ -12,7 +12,7 @@ import edu.ubc.mirrors.ThreadMirror;
 
 public class HologramThread extends Thread {
 
-    private static boolean ENABLE = false;
+    public static boolean THREADING_ENABLED = false;
     
     private final ThreadMirror thread;
     private Set<ObjectMirror> heldMonitors = new HashSet<ObjectMirror>();
@@ -25,6 +25,7 @@ public class HologramThread extends Thread {
     private Object result;
     
     public HologramThread(ThreadMirror thread) {
+        super("HologramThread");
         this.thread = thread;
         setDaemon(true);
     }
@@ -34,6 +35,10 @@ public class HologramThread extends Thread {
         for (;;) {
             handleInvoke();
         }
+    }
+    
+    public boolean isInvoking() {
+        return this.method != null;
     }
     
     private synchronized void handleInvoke() {
@@ -48,13 +53,13 @@ public class HologramThread extends Thread {
                 for (ObjectMirror held : heldMonitors) {
                     if (!monitorsToHold.contains(held)) {
                         Hologram hologram = (Hologram)ObjectHologram.make(held);
-                        hologram.getSynchronizationLock().unlock();
+                        ObjectHologram.monitorExit(hologram);
                     }
                 }
                 for (ObjectMirror toHold : monitorsToHold) {
                     if (!heldMonitors.contains(toHold)) {
                         Hologram hologram = (Hologram)ObjectHologram.make(toHold);
-                        hologram.getSynchronizationLock().lock();
+                        ObjectHologram.monitorEnter(hologram);
                     }
                 }
                 HologramThread.this.heldMonitors = monitorsToHold;
@@ -76,9 +81,9 @@ public class HologramThread extends Thread {
         }
     }
     
-    public Object invoke(Object target, Method method, Object[] args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        if (!ENABLE || Thread.currentThread() == this) {
-            return method.invoke(target, args);
+    public Object invoke(final Object target, final Method method, final Object[] args) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if (!THREADING_ENABLED || Thread.currentThread() == this) {
+           return method.invoke(target, args);
         }
         
         synchronized(this) {

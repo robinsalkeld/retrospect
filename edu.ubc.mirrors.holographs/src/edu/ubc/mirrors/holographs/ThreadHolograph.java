@@ -33,7 +33,6 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapFrameMirror;
 import edu.ubc.mirrors.holograms.HologramClassGenerator;
 import edu.ubc.mirrors.holograms.HologramThread;
-import edu.ubc.mirrors.holograms.ObjectHologram;
 import edu.ubc.mirrors.wrapping.WrappingThreadMirror;
 
 public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
@@ -86,9 +85,6 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     }
     
     private synchronized void enterHologramExecution() {
-        if (runningThread != null && runningThread != Thread.currentThread()) {
-            throw new IllegalStateException();
-        }
         ThreadHolograph thisThreadsMirror = currentThreadMirror.get();
         if (thisThreadsMirror != null && thisThreadsMirror != this) {
             throw new IllegalStateException();
@@ -112,7 +108,7 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     }
     
     private synchronized void exitHologramExecution() {
-	if (runningThreadCount <= 0 || runningThread != Thread.currentThread()) {
+	if (runningThreadCount <= 0) {
             throw new IllegalStateException();
         }
         if (--runningThreadCount == 0) {
@@ -132,10 +128,10 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     public List<FrameMirror> getStackTrace() {
 	List<FrameMirror> originalStack = WrappingThreadMirror.getWrappedStackTrace(vm, wrappedThread);
         
-        if (runningThread == null) {
-            return originalStack;
-        }
-        
+    	if (!inHologramExecution()) {
+    	    return originalStack;
+    	}
+	
         List<FrameMirror> result = new ArrayList<FrameMirror>();
         // Need to deal with API mismatches here - we don't have the Classes on the stack for
         // arbitrary threads.
@@ -163,8 +159,15 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
         }
         
         result.addAll(originalStack);
-        
         return result;
+    }
+    
+    private boolean inHologramExecution() {
+        if (HologramThread.THREADING_ENABLED) {
+            return hologramThread.isInvoking();
+        } else {
+            return runningThread != null;
+        }
     }
 
     @Override
@@ -192,10 +195,6 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     
     public static boolean inMetalevel() {
         return metalevel.get().intValue() != 0;
-    }
-    
-    public Thread getRunningThread() {
-        return runningThread;
     }
     
     public HologramThread getHologramThread() {

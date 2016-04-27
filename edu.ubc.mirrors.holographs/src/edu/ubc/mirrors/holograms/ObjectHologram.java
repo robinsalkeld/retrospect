@@ -385,24 +385,32 @@ public class ObjectHologram implements Hologram {
     }
     
     public static void monitorEnter(Hologram hologram) throws InterruptedException {
-        // TODO: No-op until I'm using HologramThreads correctly
-//        hologram.getSynchronizationLock().tryLock();
+        if (HologramThread.THREADING_ENABLED) {
+            hologram.getSynchronizationLock().lock();
+        }
     }
     
     public static void monitorExit(Hologram hologram) throws InterruptedException {
-        // TODO: No-op until I'm using HologramThreads correctly
-//        hologram.getSynchronizationLock().unlock();
+        if (HologramThread.THREADING_ENABLED) {
+            hologram.getSynchronizationLock().unlock();
+        }
     }
     
     public static void waitHologram(Hologram hologram, long timeout) throws InterruptedException {
-//        hologram.getNotifyCondition().await(timeout, TimeUnit.MILLISECONDS);
+        if (HologramThread.THREADING_ENABLED) {
+            hologram.getNotifyCondition().await(timeout, TimeUnit.MILLISECONDS);
+        }
     }
     
     public static void notifyHologram(Hologram hologram) throws InterruptedException {
-//        hologram.getNotifyCondition().signal();
+        if (HologramThread.THREADING_ENABLED) {
+            hologram.getNotifyCondition().signal();
+        }
     }
     
     public static void notifyAllHologram(Hologram hologram) throws InterruptedException {
-//        hologram.getNotifyCondition().signalAll();
+        if (HologramThread.THREADING_ENABLED) {
+            hologram.getNotifyCondition().signalAll();
+        }
     }
 }
