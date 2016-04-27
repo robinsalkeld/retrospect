@@ -217,10 +217,11 @@ public class SanityTest extends TestCase {
     }
     
     public void testHeapAspect() throws Exception {
-        JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", "",
+        String output = JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", "",
                 "-cp \"" + EvalConstants.TracingExampleBin + ":" + EvalConstants.DJProfMainJar + "\"", 
                 EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
                 new File(EvalConstants.DataRoot, "jdi/HeapAspectTest/hologram_classes"));
+        assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
     }
     
 //    public void testHeapAspectTOD() throws Exception {
