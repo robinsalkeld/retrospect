@@ -53,7 +53,8 @@ public class RetroactiveWeaving {
         }
     }
     
-    public String weave(VirtualMachineMirror vm, ThreadMirror thread, String aspectPath, File hologramClassPath, ByteArrayOutputStream mergedOutput) throws Exception {
+    public String weave(VirtualMachineMirror vm, ThreadMirror thread, 
+            String aspectPath, boolean weaveCoreClasses, File hologramClassPath, ByteArrayOutputStream mergedOutput) throws Exception {
         Stopwatch s = new Stopwatch();
         s.start();
         
@@ -83,7 +84,7 @@ public class RetroactiveWeaving {
             }
             vmh.addBootstrapPathURL(partURL);
         }
-        MirrorWorld world = new MirrorWorld(finalThread, null);
+        MirrorWorld world = new MirrorWorld(finalThread, null, weaveCoreClasses);
         world.weave();
         
         vmh.resume();

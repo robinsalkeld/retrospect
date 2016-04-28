@@ -32,7 +32,7 @@ public class TracingExampleTest extends TestCase {
     public void testTracingAspect() throws Exception {
         String combinedOutput = JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", "",
                 "-cp \"" + EvalConstants.TracingExampleBin + "\"", 
-                EvalConstants.TracingAspectsBin.toString(), 
+                EvalConstants.TracingAspectsBin.toString(), false,
                 new File(EvalConstants.DataRoot, "jdi/TracingExampleTest/hologram_classes"));
         
         String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-combined-output.txt")), "UTF-8");

@@ -30,7 +30,7 @@ public class TODTest implements IApplication {
 
     public static void main(String[] args) throws Exception {
         try {
-            TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin.toString(), 
+            TODMirrorWeavingLauncher.launch("tod-ExampleMain", EvalConstants.TracingAspectsBin.toString(), false,
                     new File(EvalConstants.DataRoot, "/tod/TracingTest"));
         } catch (Throwable e) {
             e.printStackTrace();
