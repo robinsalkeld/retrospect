@@ -41,6 +41,7 @@ import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.event.MethodExitEvent;
 import com.sun.jdi.event.ModificationWatchpointEvent;
+import com.sun.jdi.event.VMDeathEvent;
 
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventSet;
@@ -100,6 +101,9 @@ public class JDIMirrorEventSet extends JDIMirror implements MirrorEventSet {
 	} else if (e instanceof BreakpointEvent) {
 	    BreakpointEvent be = (BreakpointEvent)e;
             return new JDIMirrorLocationEvent(vm, be);
+	} else if (e instanceof VMDeathEvent) {
+	    VMDeathEvent vmde = (VMDeathEvent)e;
+            return new JDIVMMirrorDeathEvent(vm, vmde);
         } else {
 	    return null;
 	}

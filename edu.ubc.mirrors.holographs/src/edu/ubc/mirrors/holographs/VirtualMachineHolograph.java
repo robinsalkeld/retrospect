@@ -87,8 +87,10 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ShortArrayMirror;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VMMirrorDeathRequest;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.fieldmap.DirectArrayMirror;
+import edu.ubc.mirrors.holograms.Hologram;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holograms.HologramVirtualMachine;
 import edu.ubc.mirrors.holograms.ObjectHologram;
@@ -200,8 +202,31 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 
         collectZipFiles();
         
+        VMMirrorDeathRequest request = this.wrappedVM.eventRequestManager().createVMMirrorDeathRequest();
+        request.enable();
+        dispatch().addCallback(request, VM_DEATH_CALLBACK);
+        
         if (HologramClassLoader.debug) {
             System.out.println("Done.");
+        }
+    }
+    
+    private final Callback<MirrorEvent> VM_DEATH_CALLBACK = new Callback<MirrorEvent>() {
+        public MirrorEvent handle(MirrorEvent t) {
+            // Ensure the wrapped VM isn't permitted to shut down
+            // until any non-daemon holographic threads have terminated.
+            waitForHolographicThreads();
+            return t;
+        }
+    };
+    
+    private synchronized void waitForHolographicThreads() {
+        if (!runningThreads.isEmpty()) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
     
@@ -891,7 +916,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     
     private final Set<ThreadMirror> runningThreads = new HashSet<ThreadMirror>();
     
-    public void threadStarted(ThreadMirror thread) {
+    public synchronized void threadStarted(ThreadMirror thread) {
         ClassMirror threadClass = findBootstrapClassMirror(Thread.class.getName());
         FieldMirror daemonField = threadClass.getDeclaredField("daemon");
         try {
@@ -904,16 +929,16 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     }
     
     public synchronized void threadExited(ThreadMirror thread) {
-        runningThreads.remove(thread);
-        
         // See javadoc on Thread.join(long)
-        Object hologram = ObjectHologram.make(thread);
+        Hologram hologram = ObjectHologram.make(thread);
         synchronized (hologram) {
-            hologram.notifyAll();
+            ObjectHologram.notifyAllHologram(hologram);
         }
         
-        // TODO-RS: Ensure the wrapped VM isn't permitted to shut down
-        // until any non-daemon holographic threads have terminated.
+        runningThreads.remove(thread);
+        if (runningThreads.isEmpty()) {
+            notify();
+        }
     }
     
     protected void checkForIllegalMutation(ObjectMirror mirror) {

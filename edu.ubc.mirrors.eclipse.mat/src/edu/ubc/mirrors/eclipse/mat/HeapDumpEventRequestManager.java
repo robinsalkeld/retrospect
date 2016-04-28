@@ -41,6 +41,7 @@ import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
 import edu.ubc.mirrors.ThreadMirrorStartRequest;
+import edu.ubc.mirrors.VMMirrorDeathRequest;
 
 public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
 
@@ -184,5 +185,10 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
     @Override
     public AdviceMirrorHandlerRequest createAdviceMirrorHandlerRequest() {
         throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public VMMirrorDeathRequest createVMMirrorDeathRequest() {
+        return new HeapDumpVMMirrorDeathRequest(vm);
     }
 }

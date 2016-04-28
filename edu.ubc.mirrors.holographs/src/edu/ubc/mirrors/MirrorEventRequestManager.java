@@ -71,6 +71,8 @@ public interface MirrorEventRequestManager {
 
     AdviceMirrorHandlerRequest createAdviceMirrorHandlerRequest();
     
+    VMMirrorDeathRequest createVMMirrorDeathRequest();
+    
     void deleteMirrorEventRequest(MirrorEventRequest request);
 
 

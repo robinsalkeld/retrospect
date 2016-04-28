@@ -28,6 +28,7 @@ import edu.ubc.mirrors.MirrorLocation;
 import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.ThreadMirrorDeathRequest;
 import edu.ubc.mirrors.ThreadMirrorStartRequest;
+import edu.ubc.mirrors.VMMirrorDeathRequest;
 
 public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
 
@@ -249,6 +250,11 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
     
     @Override
     public AdviceMirrorHandlerRequest createAdviceMirrorHandlerRequest() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public VMMirrorDeathRequest createVMMirrorDeathRequest() {
         throw new UnsupportedOperationException();
     }
     

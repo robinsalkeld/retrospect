@@ -23,7 +23,6 @@ package edu.ubc.mirrors.holograms;
 
 import static edu.ubc.mirrors.holograms.HologramClassGenerator.getOriginalBinaryClassName;
 
-import java.lang.Character.UnicodeScript;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -384,13 +383,13 @@ public class ObjectHologram implements Hologram {
         return monitorCondition;
     }
     
-    public static void monitorEnter(Hologram hologram) throws InterruptedException {
+    public static void monitorEnter(Hologram hologram) {
         if (HologramThread.THREADING_ENABLED) {
             hologram.getSynchronizationLock().lock();
         }
     }
     
-    public static void monitorExit(Hologram hologram) throws InterruptedException {
+    public static void monitorExit(Hologram hologram) {
         if (HologramThread.THREADING_ENABLED) {
             hologram.getSynchronizationLock().unlock();
         }
@@ -402,13 +401,13 @@ public class ObjectHologram implements Hologram {
         }
     }
     
-    public static void notifyHologram(Hologram hologram) throws InterruptedException {
+    public static void notifyHologram(Hologram hologram) {
         if (HologramThread.THREADING_ENABLED) {
             hologram.getNotifyCondition().signal();
         }
     }
     
-    public static void notifyAllHologram(Hologram hologram) throws InterruptedException {
+    public static void notifyAllHologram(Hologram hologram) {
         if (HologramThread.THREADING_ENABLED) {
             hologram.getNotifyCondition().signalAll();
         }

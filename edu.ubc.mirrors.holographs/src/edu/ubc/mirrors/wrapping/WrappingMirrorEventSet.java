@@ -37,6 +37,7 @@ import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventSet;
 import edu.ubc.mirrors.MirrorLocationEvent;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.VMMirrorDeathEvent;
 
 public class WrappingMirrorEventSet implements MirrorEventSet {
 
@@ -74,6 +75,8 @@ public class WrappingMirrorEventSet implements MirrorEventSet {
 	    return new WrappingClassMirrorPrepareEvent(vm, (ClassMirrorPrepareEvent)e);
         } else if (e instanceof MirrorLocationEvent) {
             return new WrappingMirrorLocationEvent(vm, (MirrorLocationEvent)e);
+        } else if (e instanceof VMMirrorDeathEvent) {
+            return new WrappingVMMirrorDeathEvent(vm, (VMMirrorDeathEvent)e);
         } else {
 	    throw new IllegalArgumentException("Unrecognized event type: " + e);
 	}
