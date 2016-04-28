@@ -42,11 +42,7 @@ public class JDIMirrorEventQueue extends JDIMirror implements MirrorEventQueue {
     public MirrorEventSet remove() throws InterruptedException {
         try {
             EventSet eventSet = wrapped.remove();
-            if (eventSet.size() == 1 && eventSet.iterator().next() instanceof VMDeathEvent) {
-                return null;
-            } else {
-                return new JDIMirrorEventSet(vm, eventSet);
-            }
+            return new JDIMirrorEventSet(vm, eventSet);
         } catch (VMDisconnectedException e) {
             return null;
         }

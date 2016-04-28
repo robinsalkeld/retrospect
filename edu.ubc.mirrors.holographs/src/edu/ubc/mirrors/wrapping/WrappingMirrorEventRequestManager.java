@@ -180,6 +180,7 @@ public class WrappingMirrorEventRequestManager implements MirrorEventRequestMana
     
     @Override
     public VMMirrorDeathRequest createVMMirrorDeathRequest() {
-        throw new UnsupportedOperationException();
+        return new WrappingVMMirrorDeathRequest(vm, 
+                wrapped.createVMMirrorDeathRequest());
     }
 }

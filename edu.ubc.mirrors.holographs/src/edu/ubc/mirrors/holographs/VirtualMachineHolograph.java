@@ -202,7 +202,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 
         collectZipFiles();
         
-        VMMirrorDeathRequest request = this.wrappedVM.eventRequestManager().createVMMirrorDeathRequest();
+        VMMirrorDeathRequest request = this.eventRequestManager().createVMMirrorDeathRequest();
         request.enable();
         dispatch().addCallback(request, VM_DEATH_CALLBACK);
         
