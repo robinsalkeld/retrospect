@@ -129,7 +129,12 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     }
     
     public MirrorWorld(ThreadMirror thread, final ClassMirrorLoader loader) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+        this(thread, loader, DEFAULT_WEAVE_CORE_CLASSES);
+    }
+ 
+    public MirrorWorld(ThreadMirror thread, final ClassMirrorLoader loader, boolean weaveCoreClasses) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = thread.getClassMirror().getVM();
+        this.weaveCoreClasses = weaveCoreClasses;
         
         if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
             setMessageHandler(IMessageHandler.SYSTEM_ERR);
@@ -568,10 +573,12 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
         return eventCallback;
     }
     
-    private static final boolean WEAVE_CORE_CLASSES = Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses");
+    private static final boolean DEFAULT_WEAVE_CORE_CLASSES = Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses");
     
-    public static boolean weaveClass(String className) {
-        if (WEAVE_CORE_CLASSES) {
+    private final boolean weaveCoreClasses;
+    
+    public boolean weaveClass(String className) {
+        if (weaveCoreClasses) {
             return true;
         } else {
             // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)

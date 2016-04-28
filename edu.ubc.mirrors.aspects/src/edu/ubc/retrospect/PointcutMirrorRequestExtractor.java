@@ -268,7 +268,7 @@ public class PointcutMirrorRequestExtractor {
     private void forAllWovenClasses(final Callback<ClassMirror> callback) {
         world.vm.dispatch().forAllClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
-                if (!MirrorWorld.weaveClass(klass.getClassName())) {
+                if (!world.weaveClass(klass.getClassName())) {
                     return klass;
                 } else {
                     return callback.handle(klass);
