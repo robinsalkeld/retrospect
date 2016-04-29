@@ -46,7 +46,6 @@ public class InstanceHolograph extends WrappingInstanceMirror {
     private Map<FieldMirror, Object> newValues;
     
     private WeakReference<GCCanary> canary = null;
-    private static final Set<PhantomMirrorReference> collectable = new HashSet<PhantomMirrorReference>();
     
     public InstanceHolograph(VirtualMachineHolograph vm, InstanceMirror wrappedInstance) {
         super(vm, wrappedInstance);
@@ -71,37 +70,6 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         // TODO: release the wrapper as well if there is no additional state
         // added to it.
         wrapped.allowCollection(true);
-    }
-    
-    private class PhantomMirrorReference extends WeakReference<ObjectMirror> {
-
-        private InstanceHolograph refMirror = InstanceHolograph.this;
-        private ObjectMirror wrapped;
-        
-        public PhantomMirrorReference(ObjectMirror referent) {
-            super(referent);
-            if (referent instanceof WrappingMirror) {
-                wrapped = ((WrappingMirror)referent).getWrapped();
-                collectable.add(this);
-            }
-        }
-    }
-    
-    public static void enqueuePhantomReferences(ThreadMirror thread) {
-        try {
-            VirtualMachineMirror vm = thread.getClassMirror().getVM();
-            ClassMirror referenceClass = vm.findBootstrapClassMirror(Reference.class.getName());
-            MethodMirror enqueueMethod = referenceClass.getDeclaredMethod("enqueue");
-            
-            for (PhantomMirrorReference ref : collectable) {
-                if (ref.wrapped.isCollected()) {
-                    enqueueMethod.invoke(thread, ref.refMirror);
-                }
-            }
-        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException | IllegalAccessException
-                | MirrorInvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
     }
     
     private static boolean isReferenceReferentField(FieldMirror field) {
@@ -201,7 +169,7 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         // Special case for References
         if (isReferenceReferentField(field) && o != null) {
             // TODO-RS: Soft and Weak references when necessary
-            newValues.put(field, new PhantomMirrorReference(o));
+            newValues.put(field, new PhantomMirrorReference(vm, this, o));
         } else {
             newValues.put(field, o);
         }

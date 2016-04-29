@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
+import java.lang.ref.Reference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -81,6 +82,7 @@ import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequestManager;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
@@ -964,6 +966,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
     }
     
+    final Set<PhantomMirrorReference> collectable = new HashSet<PhantomMirrorReference>();
+    
     public void gc() {
         // Run the garbage collector on the host JVM
         // This should mark any objects with no retroactive references
@@ -971,11 +975,28 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         Runtime.getRuntime().gc();
         
         // Run garbage collector on the wrapped VM
-        wrappedVM.gc();
+//        wrappedVM.gc();
         
         // TODO-RS: This should be happening on a background ReferenceHandler thread
         // as well.
-        InstanceHolograph.enqueuePhantomReferences(ThreadHolograph.currentThreadMirror());
+        enqueuePhantomReferences(ThreadHolograph.currentThreadMirror());
+    }
+    
+    public void enqueuePhantomReferences(ThreadMirror thread) {
+        try {
+            VirtualMachineMirror vm = thread.getClassMirror().getVM();
+            ClassMirror referenceClass = vm.findBootstrapClassMirror(Reference.class.getName());
+            MethodMirror enqueueMethod = referenceClass.getDeclaredMethod("enqueue");
+            
+            for (PhantomMirrorReference ref : collectable) {
+                if (ref.wrapped.isCollected()) {
+                    enqueueMethod.invoke(thread, ref.refMirror);
+                }
+            }
+        } catch (SecurityException | NoSuchMethodException | IllegalArgumentException | IllegalAccessException
+                | MirrorInvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     private void markAndSweep(Collection<ObjectMirror> roots) {
