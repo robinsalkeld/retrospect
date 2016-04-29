@@ -434,7 +434,8 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         ClassMirrorLoader thisLoader = getLoader();
         ClassMirrorLoader otherLoader = other.getLoader();
         return className.equals(other.className) && 
-                (thisLoader == null ? otherLoader == null : thisLoader.equals(otherLoader));
+                (thisLoader == null ? otherLoader == null : thisLoader.equals(otherLoader)) &&
+                getVM().equals(other.getVM());
     }
     
     @Override
