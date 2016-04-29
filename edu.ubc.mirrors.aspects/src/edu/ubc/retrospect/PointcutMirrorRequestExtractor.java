@@ -266,12 +266,14 @@ public class PointcutMirrorRequestExtractor {
     }
     
     private void forAllWovenClasses(final Callback<ClassMirror> callback) {
+        // TODO: reuse ShadowMunger.match() by faking a shadow
+        final TypePattern scoped = world.getAspectScope(advice.getDeclaringType());
         world.vm.dispatch().forAllClasses(new Callback<ClassMirror>() {
             public ClassMirror handle(ClassMirror klass) {
-                if (!world.weaveClass(klass.getClassName())) {
-                    return klass;
-                } else {
+                if (scoped == null || scoped.matches(world.resolve(klass), TypePattern.STATIC).alwaysTrue()) {
                     return callback.handle(klass);
+                } else {
+                    return klass;
                 }
             }
         });

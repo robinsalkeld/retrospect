@@ -221,12 +221,16 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     };
     
     private synchronized void waitForHolographicThreads() {
-        if (!runningThreads.isEmpty()) {
+        if (runningThreads.isEmpty()) {
+            System.err.println("No holographic threads running");
+        } else {
+            System.err.println("Waiting for holographic threads");
             try {
                 wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+            System.err.println("Holographic threads finished");
         }
     }
     

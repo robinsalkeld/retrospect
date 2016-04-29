@@ -23,7 +23,7 @@ import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
 public class JDIMirrorWeavingLauncher {
     
     public static String launch(String mainClassName, String programArgs, String vmArgs, 
-            String aspectPath, boolean weaveCoreClasses, File hologramClassPath) throws Exception {
+            String aspectPath, File hologramClassPath) throws Exception {
         
         ByteArrayOutputStream mergedOutput = new ByteArrayOutputStream();
         OutputStream teedOut = new TeeOutputStream(mergedOutput, System.out);
@@ -45,6 +45,6 @@ public class JDIMirrorWeavingLauncher {
         MethodMirror getBootstrapResourceMethod = loaderClass.getDeclaredMethod("getBootstrapResource", "java.lang.String");
         getBootstrapResourceMethod.invoke(thread, classLoader, jdiVMM.makeString("foo"));
         
-        return new RetroactiveWeaving().weave(vm, thread, aspectPath, weaveCoreClasses, hologramClassPath, mergedOutput);
+        return new RetroactiveWeaving().weave(vm, thread, aspectPath, hologramClassPath, mergedOutput);
     }
 }

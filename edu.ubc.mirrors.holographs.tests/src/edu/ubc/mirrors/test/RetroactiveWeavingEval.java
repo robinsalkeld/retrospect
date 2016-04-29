@@ -25,7 +25,7 @@ public class RetroactiveWeavingEval implements IApplication {
             VirtualMachine vm = JDIUtils.commandLineLaunch(mainClass + " " + programArgs, vmArgs, false, System.out, System.err);
             while (vm.eventQueue().remove() != null) {}
         } else {
-            JDIMirrorWeavingLauncher.launch(mainClass, programArgs, vmArgs, aspectPath, false, hologramClassPath);
+            JDIMirrorWeavingLauncher.launch(mainClass, programArgs, vmArgs, aspectPath, hologramClassPath);
         }
     }
 

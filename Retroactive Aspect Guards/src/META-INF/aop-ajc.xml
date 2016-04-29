@@ -1,0 +1,11 @@
+<aspectj>
+<aspects>
+<aspect name="edu.ubc.aspects.AroundThreadLocals2"/>
+<aspect name="edu.ubc.aspects.ShutdownHooks"/>
+<aspect name="edu.ubc.aspects.JDKAroundFieldSets"/>
+<aspect name="edu.ubc.aspects.AroundThreadLocals"/>
+<aspect name="edu.ubc.aspects.AroundHashingRandomSeed"/>
+</aspects>
+<weaver options="-XweaveCoreClasses"/>
+</aspectj>
+

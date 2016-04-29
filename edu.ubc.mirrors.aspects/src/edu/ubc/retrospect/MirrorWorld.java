@@ -41,10 +41,13 @@ import org.aspectj.weaver.loadtime.definition.Definition;
 import org.aspectj.weaver.loadtime.definition.DocumentParser;
 import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.FormalBinding;
+import org.aspectj.weaver.patterns.NotTypePattern;
+import org.aspectj.weaver.patterns.OrTypePattern;
 import org.aspectj.weaver.patterns.PatternParser;
 import org.aspectj.weaver.patterns.PerClause;
 import org.aspectj.weaver.patterns.PerSingleton;
 import org.aspectj.weaver.patterns.Pointcut;
+import org.aspectj.weaver.patterns.TypePattern;
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.AnnotationMirror;
@@ -116,6 +119,8 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     // Mild hack - allows loading and weaving aspects in stages to carefully control side-effects in the bootstraping stage
     private Set<ResolvedType> wovenAspects = new HashSet<ResolvedType>();
     
+    private Set<ResolvedType> coreClassWeavingAspects = new HashSet<ResolvedType>();
+    
     public static ClassMirrorLoader makeClassLoaderMirror(VirtualMachineMirror vm, ThreadMirror thread, URL...aspectPaths) {
 //        showMessage(IMessage.DEBUG, "Creating class loader for aspects...", null, null);
         URL[] paths = new URL[aspectPaths.length + 1];
@@ -129,12 +134,7 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     }
     
     public MirrorWorld(ThreadMirror thread, final ClassMirrorLoader loader) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
-        this(thread, loader, DEFAULT_WEAVE_CORE_CLASSES);
-    }
- 
-    public MirrorWorld(ThreadMirror thread, final ClassMirrorLoader loader, boolean weaveCoreClasses) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
         this.vm = thread.getClassMirror().getVM();
-        this.weaveCoreClasses = weaveCoreClasses;
         
         if (Boolean.getBoolean("edu.ubc.mirrors.aspects.debugWeaving")) {
             setMessageHandler(IMessageHandler.SYSTEM_ERR);
@@ -519,6 +519,9 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                 
                 showMessage(IMessage.DEBUG, "Loading aspects...", null, null);
                 for (Definition definition : definitions) {
+                    // TODO: Actual options parsing.
+                    boolean weaveCoreClasses = definition.getWeaverOptions().trim().equals("-XweaveCoreClasses");
+                    
                     for (String aspectClassName : definition.getAspectClassNames()) {
                         showMessage(IMessage.DEBUG, "Loading aspect: " + aspectClassName, null, null);
                         ResolvedType aspectType = resolve(aspectClassName);
@@ -531,6 +534,9 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
                         }
                         
                         if (!aspectType.isAbstract()) {
+                            if (weaveCoreClasses) {
+                                coreClassWeavingAspects.add(aspectType);
+                            }
                             getCrosscuttingMembersSet().addOrReplaceAspect((ReferenceType)aspectType);
                             wovenAspects.add(aspectType);
                         }
@@ -573,31 +579,31 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
         return eventCallback;
     }
     
-    private static final boolean DEFAULT_WEAVE_CORE_CLASSES = Boolean.getBoolean("edu.ubc.mirrors.aspects.weaveCoreClasses");
+    public boolean isCoreClass(String className) {
+        return (className.startsWith("org.aspectj.") || 
+                className.startsWith("java.") || 
+                className.startsWith("javax.") ||
+                className.startsWith("sun.reflect."));
+    }
     
-    private final boolean weaveCoreClasses;
+    private static final String NON_CORE_CLASSES = "!(org.aspectj..* || java..* || javax..* || sun.reflect..*)";
+    private static final TypePattern NON_CORE_CLASSES_PATTERN = new PatternParser(NON_CORE_CLASSES).parseTypePattern();
     
-    public boolean weaveClass(String className) {
-        if (weaveCoreClasses) {
-            return true;
+    @Override
+    public TypePattern getAspectScope(ResolvedType declaringType) {
+     // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)
+        // See also: http://www.eclipse.org/aspectj/doc/released/devguide/ltw-specialcases.html
+        // TODO-RS: This is specified in the documentation for loadtime weaving,
+        // so this check is probably already coded somewhere in the weaving library...
+        if (coreClassWeavingAspects.contains(declaringType)) {
+            return null;
         } else {
-            // For consistency with other forms of weaving, skip shadows from bootstrap classes (by default)
-            // See also: http://www.eclipse.org/aspectj/doc/released/devguide/ltw-specialcases.html
-            // TODO-RS: This is specified in the documentation for loadtime weaving,
-            // so this check is probably already coded somewhere in the weaving library...
-            return !(className.startsWith("org.aspectj.") || 
-                     className.startsWith("java.") || 
-                     className.startsWith("javax.") ||
-                     className.startsWith("sun.reflect."));
+            return NON_CORE_CLASSES_PATTERN;
         }
     }
     
     @Override
     public MirrorEventShadow handle(MirrorEventShadow shadow) {
-        if (!weaveClass(shadow.getDeclaringClass().getClassName())) {
-            return null;
-        }
-    
         showMessage(IMessage.DEBUG, shadow.toString(), null, null);
         
         for (ShadowMunger munger : getCrosscuttingMembersSet().getShadowMungers()) {
