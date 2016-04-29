@@ -214,6 +214,9 @@ public class SanityTest extends TestCase {
                 EvalConstants.LeakDetectorAspectBin.toString(),
                 new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
         assertTrue(output.contains("   =>java.lang.String.<init>(String.java:602)"));
+        // If the holographic GC is not working correctly all 100 string instances
+        // in LeakSample.myVector will show up as leaks.
+        assertFalse(output.contains("Number of occurrences: 100"));
     }
     
     public void testHeapAspect() throws Exception {

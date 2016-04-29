@@ -28,7 +28,7 @@ import edu.ubc.mirrors.wrapping.WrappingObjectArrayMirror;
 public class MutableObjectArrayMirror extends WrappingObjectArrayMirror {
 
     private final VirtualMachineHolograph vm;
-    private ObjectMirror[] mutableValues;
+    private HolographicReference[] mutableValues;
     private final ObjectArrayMirror immutableMirror;
     
     public MutableObjectArrayMirror(VirtualMachineHolograph vm, ObjectArrayMirror immutableMirror) {
@@ -40,7 +40,12 @@ public class MutableObjectArrayMirror extends WrappingObjectArrayMirror {
     
     @Override
     public ObjectMirror get(int index) throws ArrayIndexOutOfBoundsException {
-        return mutableValues != null ? mutableValues[index] : vm.getWrappedMirror(immutableMirror.get(index));
+        if (mutableValues != null) {
+            HolographicReference result = mutableValues[index];
+            return result == null ? null : result.getReferent();
+        } else {
+            return vm.getWrappedMirror(immutableMirror.get(index));
+        }
     }
 
     @Override
@@ -48,12 +53,13 @@ public class MutableObjectArrayMirror extends WrappingObjectArrayMirror {
         vm.checkForIllegalMutation(wrapped);
         
         if (mutableValues == null) {
-            this.mutableValues = new ObjectMirror[immutableMirror.length()];
+            this.mutableValues = new HolographicReference[immutableMirror.length()];
             for (int index = 0; index < mutableValues.length; index++) {
-                mutableValues[index] = vm.getWrappedMirror(immutableMirror.get(index));
+                ObjectMirror value = vm.getWrappedMirror(immutableMirror.get(index));
+                mutableValues[index] = vm.getHolographicReference(value);
             }
         }
-        mutableValues[i] = o;
+        mutableValues[i] = vm.getHolographicReference(o);
     }
     
     @Override

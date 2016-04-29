@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
 import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -966,6 +967,29 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
     }
     
+    private final Map<ObjectMirror, WeakReference<HolographicReference>> holographicReferences = 
+            new HashMap<ObjectMirror, WeakReference<HolographicReference>>();
+    
+    HolographicReference getHolographicReference(ObjectMirror obj) {
+        if (obj == null) {
+            return null;
+        }
+        
+        HolographicReference result = null;
+        WeakReference<HolographicReference> ref = holographicReferences.get(obj);
+        if (ref != null) {
+            result = ref.get();
+            if (result != null) {
+                return result;
+            }
+        }
+        
+        result = new HolographicReference(obj);
+        holographicReferences.put(obj, new WeakReference<HolographicReference>(result));
+        return result;
+    }
+    
+    
     final Set<PhantomMirrorReference> collectable = new HashSet<PhantomMirrorReference>();
     
     public void gc() {
@@ -975,7 +999,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         Runtime.getRuntime().gc();
         
         // Run garbage collector on the wrapped VM
-//        wrappedVM.gc();
+        wrappedVM.gc();
         
         // TODO-RS: This should be happening on a background ReferenceHandler thread
         // as well.

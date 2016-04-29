@@ -25,27 +25,19 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectMirror;
-import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.wrapping.WrappingInstanceMirror;
-import edu.ubc.mirrors.wrapping.WrappingMirror;
 
 public class InstanceHolograph extends WrappingInstanceMirror {
 
     protected final VirtualMachineHolograph vm;
     private Map<FieldMirror, Object> newValues;
     
-    private WeakReference<GCCanary> canary = null;
+    private WeakReference<HolographicReference> canary = null;
     
     public InstanceHolograph(VirtualMachineHolograph vm, InstanceMirror wrappedInstance) {
         super(vm, wrappedInstance);
@@ -59,9 +51,9 @@ public class InstanceHolograph extends WrappingInstanceMirror {
         }
     }
     
-    public GCCanary getCanary() {
+    public HolographicReference getCanary() {
         if (canary == null || canary.get() == null) {
-            canary = new WeakReference<GCCanary>(new GCCanary(this));
+            canary = new WeakReference<HolographicReference>(new HolographicReference(this));
         }
         return canary.get();
     }
@@ -80,12 +72,14 @@ public class InstanceHolograph extends WrappingInstanceMirror {
     public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
         if (newValues.containsKey(field)) {
             // Special case for References
+            HolographicReference ref;
             if (isReferenceReferentField(field)) {
                 // TODO-RS: Soft and Weak references when necessary
-                return ((PhantomMirrorReference)newValues.get(field)).get();
+                ref = ((PhantomMirrorReference)newValues.get(field)).get();
             } else {
-                return (ObjectMirror)newValues.get(field);
+                ref = (HolographicReference)newValues.get(field);
             }
+            return ref == null ? null : ref.getReferent();
         } else {
             return super.get(field);
         }
@@ -166,12 +160,14 @@ public class InstanceHolograph extends WrappingInstanceMirror {
     public void set(FieldMirror field, ObjectMirror o) {
         checkForIllegalMutation(field);
         
+        HolographicReference ref = vm.getHolographicReference(o);
+        
         // Special case for References
         if (isReferenceReferentField(field) && o != null) {
             // TODO-RS: Soft and Weak references when necessary
-            newValues.put(field, new PhantomMirrorReference(vm, this, o));
+            newValues.put(field, new PhantomMirrorReference(vm, this, ref));
         } else {
-            newValues.put(field, o);
+            newValues.put(field, ref);
         }
     }
     
