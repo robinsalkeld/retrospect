@@ -1005,16 +1005,16 @@ public class Reflection {
                 && field.getName().equals(nameFilter);
     }
     
-    public static String join(List<String> strings, String sep) {
+    public static String join(Collection<?> objects, String sep) {
         StringBuilder result = new StringBuilder();
         boolean first = true;
-        for (String s : strings) {
+        for (Object o : objects) {
             if (first) {
                 first = false;
             } else {
                 result.append(sep);
             }
-            result.append(s);
+            result.append(o);
         }
         return result.toString();
     }

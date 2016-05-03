@@ -198,16 +198,6 @@ public class SanityTest extends TestCase {
         new RacerTest().testRacerExample(); 
     }
     
-//    public void testTracingAspectTOD() throws Exception {
-//        String actualOutput = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
-//                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
-//                EvalConstants.TracingAspectsBin.toString(), false, 
-//                new File(EvalConstants.DataRoot, "tod/TracingTest/hologram_classes"));
-//        
-//        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
-//        assertEquals(expectedOutput, actualOutput);
-//    }
-    
     public void testLeakDetectorAspect() throws Exception {
         String output = JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", "",
                 "-cp \"" + EvalConstants.TestsRoot + "\"", 
@@ -227,8 +217,19 @@ public class SanityTest extends TestCase {
         assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
     }
     
+    public void testTracingAspectTOD() throws Exception {
+        String actualOutput = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
+                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
+                EvalConstants.TracingAspectsBin.toString(), 
+                new File(EvalConstants.DataRoot, "tod/TracingTest/hologram_classes"));
+        
+        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
+        assertEquals(expectedOutput, actualOutput);
+    }
+    
 //    public void testHeapAspectTOD() throws Exception {
-//        TODMirrorWeavingLauncher.launch("tod-ExampleMain", 
+//        TODMirrorWeavingLauncher.recordAndWeave("tod-ExampleMain", Collections.<String>emptyList(),
+//                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
 //                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
 //                new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
 //    }

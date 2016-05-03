@@ -52,11 +52,21 @@ public class EvalConstants {
         casestudyAspectPaths.put("tracing", TracingExampleBin + ":" + TracingSpecJVMAspectsBin);
     }
     
-    public static File TODRoot = new File("/Users/robinsalkeld/Documents/UBC/Code/tod/git/tod");
+    public static File TODGitRoot = new File("/Users/robinsalkeld/Documents/UBC/Code/tod/git");
+    
+    public static File TODRoot = new File(TODGitRoot, "tod");
     public static File TODdbgrid = new File(TODRoot, "dbgrid");
     public static File TODdbgridBin = new File(TODdbgrid, "bin");
     public static File TODagent = new File(TODRoot, "agent");
     public static File TODagentBin = new File(TODagent, "bin");
+    public static File TODcore = new File(TODRoot, "core");
+    public static File TODcoreBin = new File(TODcore, "bin");
+    public static File TODcoreLib = new File(TODcore, "lib");
+    public static File TODevdbng = new File(TODRoot, "evdbng");
+    public static File TODevdbngBin = new File(TODevdbng, "bin");
+    
+    public static File zzutils = new File(TODGitRoot, "zz.utils");
+    public static File zzutilsBin = new File(zzutils, "bin");
     
     public static File BoostDynLibPath = new File("/Users/robinsalkeld/Documents/UBC/Code/boost_1_58_0_libs/lib");
     
@@ -72,4 +82,11 @@ public class EvalConstants {
                              "-Dcapture-at-start=true");
     }
     
+    public static List<File> TODGridMasterClasspathEntries = 
+            Arrays.asList(TODdbgridBin,
+                          TODagentBin,
+                          TODcoreBin,
+                          TODevdbngBin,
+                          zzutilsBin,
+                          new File(TODcoreLib, "asm-all-3.2-svn.jar"));
 }
