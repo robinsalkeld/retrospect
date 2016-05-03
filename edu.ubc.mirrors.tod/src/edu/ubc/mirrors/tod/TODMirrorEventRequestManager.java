@@ -255,7 +255,7 @@ public class TODMirrorEventRequestManager implements MirrorEventRequestManager {
     
     @Override
     public VMMirrorDeathRequest createVMMirrorDeathRequest() {
-        throw new UnsupportedOperationException();
+        return new TODVMMirrorDeathRequest(vm);
     }
     
     public void dumpEvents() {

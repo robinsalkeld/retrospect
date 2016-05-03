@@ -85,7 +85,7 @@ public abstract class TODMirrorEventRequest implements MirrorEventRequest, Itera
         return nextEvent != null;
     }
     
-    private void checkEnabled() {
+    protected void checkEnabled() {
         if (!enabled) {
             throw new IllegalStateException();
         }
@@ -145,6 +145,8 @@ public abstract class TODMirrorEventRequest implements MirrorEventRequest, Itera
             } else {
                 return null;
             }
+        } else if (event instanceof VMDeathEvent) {
+            return new TODVMMirrorDeathEvent(vm, this, (VMDeathEvent)event);
         } else {
             return null;
         }
