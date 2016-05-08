@@ -194,12 +194,11 @@ public class ClassHolograph extends WrappingClassMirror {
     }
     
     private void synchronizeWithWrapped() {
+        staticFieldValues = null;
         memberFieldsDelegate = new InstanceHolograph(vm, wrapped);
-        staticFieldValues = (StaticFieldValuesMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
         if (!vm.canBeModified() || wrapped instanceof DefinedClassMirror) {
             // Allow mutations on existing objects only if the underlying VM can't be resumed
             memberFieldsDelegate = new MutableInstanceMirror(memberFieldsDelegate);
-            staticFieldValues = new MutableStaticFieldValuesMirror(staticFieldValues);
         }
     }
     
@@ -662,19 +661,18 @@ public class ClassHolograph extends WrappingClassMirror {
         
         // Examine all the static fields in the class.
         InstanceMirror bytecodeValues = bytecodeClassMirror.getStaticFieldValues();
-        InstanceMirror wrappedValues = getStaticFieldValues();
+        InstanceMirror wrappedValues = wrapped.getStaticFieldValues();
         for (FieldMirror bytecodeField : bytecodeClassMirror.getDeclaredFields()) {
             if (Modifier.isStatic(bytecodeField.getModifiers())) {
                 try {
-                    // Be sure to call the super version of getStaticField, because otherwise
-                    // we will end up in infinite recursion!
-                    FieldMirror wrappedField = super.getDeclaredField(bytecodeField.getName());
+                    FieldMirror fieldHolograph = getDeclaredField(bytecodeField.getName());
+                    FieldMirror wrappedField = wrapped.getDeclaredField(bytecodeField.getName());
 
-                    if (!hasDefaultValue(wrappedValues, wrappedField)) {
+                    if (!hasDefaultValue(wrappedValues, wrappedField, fieldHolograph.getType())) {
                         // If there are any static, non-constant fields with non-null values,
                         // then initialization must have occurred since it has to before
                         // any static fields can be set.
-                        if (hasDefaultValue(bytecodeValues, bytecodeField)) {
+                        if (hasDefaultValue(bytecodeValues, bytecodeField, bytecodeField.getType())) {
                             return true;
                         }
                     } else {
@@ -728,8 +726,8 @@ public class ClassHolograph extends WrappingClassMirror {
      * @return
      * @throws IllegalAccessException
      */
-    private static boolean hasDefaultValue(InstanceMirror obj, FieldMirror field) throws IllegalAccessException {
-        Type type = Reflection.typeForClassMirror(field.getType());
+    private static boolean hasDefaultValue(InstanceMirror obj, FieldMirror field, ClassMirror fieldType) throws IllegalAccessException {
+        Type type = Reflection.typeForClassMirror(fieldType);
         switch (type.getSort()) {
         case Type.BOOLEAN:      return obj.getBoolean(field) == false;
         case Type.BYTE:         return obj.getByte(field) == 0;
@@ -741,15 +739,6 @@ public class ClassHolograph extends WrappingClassMirror {
         case Type.DOUBLE:       return obj.getDouble(field) == 0;
         default:                return obj.get(field) == null;
         }
-    }
-    
-    @Override
-    public FieldMirror getDeclaredField(String name) {
-        // Force initialization just as the VM would, in case there is
-        // a <clinit> method that needs to be run.
-        ensureInitialized();
-
-        return super.getDeclaredField(name);
     }
     
     private List<FieldMirror> declaredFields;
@@ -856,6 +845,9 @@ public class ClassHolograph extends WrappingClassMirror {
     
     @Override
     public StaticFieldValuesMirror getStaticFieldValues() {
+        if (staticFieldValues == null) {
+            staticFieldValues = (StaticFieldValuesMirror)vm.getWrappedMirror(wrapped.getStaticFieldValues());
+        }
         return staticFieldValues;
     }
     
@@ -863,7 +855,7 @@ public class ClassHolograph extends WrappingClassMirror {
         // Check for illegal-side effects that shouldn't have been allowed
         // TODO-RS: Doesn't cover all possible ways this can go wrong.
         if (this.wrapped instanceof DefinedClassMirror) {
-            MutableStaticFieldValuesMirror staticValues = (MutableStaticFieldValuesMirror)staticFieldValues;
+            StaticFieldValuesHolograph staticValues = (StaticFieldValuesHolograph)getStaticFieldValues();
             if (!staticValues.modifiedFields().isEmpty()) {
                 String message = "Illegal retroactive field sets before class " + getClassName() + " originally loaded: ";
                 boolean first = true;

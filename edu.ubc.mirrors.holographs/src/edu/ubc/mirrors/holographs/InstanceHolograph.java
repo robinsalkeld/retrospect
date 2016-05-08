@@ -26,6 +26,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.InstanceMirror;
@@ -209,6 +210,10 @@ public class InstanceHolograph extends WrappingInstanceMirror {
     public void setDouble(FieldMirror field, double d) {
         checkForIllegalMutation(field);
         newValues.put(field, d);
+    }
+    
+    public Set<FieldMirror> modifiedFields() {
+        return newValues.keySet();
     }
     
     @Override
