@@ -27,7 +27,7 @@ public class TODBehaviorCallFrameMirror implements FrameMirror {
 
     @Override
     public String methodName() {
-        return event.getCallingBehavior().getName();
+        return event.getExecutedBehavior().getName();
     }
 
     @Override
@@ -35,14 +35,14 @@ public class TODBehaviorCallFrameMirror implements FrameMirror {
         if (methodName().equals("<init>")) {
             return null;
         } else {
-            return vm.makeMethodMirror(event.getCallingBehavior());
+            return vm.makeMethodMirror(event.getExecutedBehavior());
         }
     }
 
     @Override
     public ConstructorMirror constructor() {
         if (methodName().equals("<init>")) {
-            return vm.makeConstructorMirror(event.getCallingBehavior());
+            return vm.makeConstructorMirror(event.getExecutedBehavior());
         } else {
             return null;
         }

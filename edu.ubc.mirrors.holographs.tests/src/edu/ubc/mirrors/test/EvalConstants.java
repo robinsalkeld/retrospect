@@ -16,6 +16,14 @@ public class EvalConstants {
     public static File SpecJVMJar = new File(SpecJVMRoot, "SPECjvm2008.jar");
     public static File SpecJVMLib = new File(SpecJVMRoot, "lib");
     
+    public static File LeapRoot = new File(EvalRoot, "Leap");
+    public static File LeapTransformerJar = new File(LeapRoot, "leap-transformer-0.2.jar");
+    public static File LeapRecorderJar = new File(LeapRoot, "leap-recorder-0.2.jar");
+    public static File LeapReplayerJar = new File(LeapRoot, "leap-replayer-0.2.jar");
+    
+    public static File LeapExampleRoot = new File(EvalRoot, "Leap Example");
+    public static File LeapExampleBin = new File(LeapExampleRoot, "bin");
+    
     public static File TestsRoot = new File(Root, "edu.ubc.mirrors.holographs.tests/bin");
     
     public static File EvalTestsRoot = new File(EvalRoot, "Test");
@@ -37,6 +45,8 @@ public class EvalConstants {
     public static File RacerBin = new File(RacerRoot, "bin");
     
     public static File LeakDetectorAspectBin = new File(new File(EvalRoot, "Leak Detection Aspect"), "bin");
+    
+    public static File ContractValidationAspectBin = new File(new File(EvalRoot, "Contract Validation"), "bin");
     
     public static File DJProf = new File(EvalRoot, "djprof-v1.0.2");
     public static File DJProfLib = new File(DJProf, "lib");

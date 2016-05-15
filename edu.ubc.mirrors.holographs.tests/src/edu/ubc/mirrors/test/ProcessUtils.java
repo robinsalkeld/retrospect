@@ -1,22 +1,76 @@
 package edu.ubc.mirrors.test;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.ubc.mirrors.holograms.Stopwatch;
+import edu.ubc.retrospect.MirrorWorld;
+
 public class ProcessUtils {
 
+    public static Process launchLoadTimeWeaving(String mainClassName, List<String> programArgs, List<String> vmArgs, 
+            String aspectPath) throws IOException {
+        
+        List<String> vmArgsForWeaving = new ArrayList<String>(vmArgs);
+        vmArgsForWeaving.add(" -javaagent:" + MirrorWorld.aspectRuntimeJar);
+        
+        return launchJava(mainClassName, programArgs, vmArgsForWeaving, null, null);
+    }
+    
+    public static long timeJava(String mainClassName, List<String> programArgs, List<String> vmArgs, List<String> env) throws IOException {
+        Stopwatch s = new Stopwatch();
+        Process p = launchJava(mainClassName, programArgs, vmArgs, env, null);
+        waitForSuccessWithEcho(p);
+        long time = s.stop();
+        System.out.println("Java run time: " + time / 1000.0);
+        return time;
+    }
+    
     public static Process launchJava(String mainClassName, List<String> programArgs, List<String> vmArgs, List<String> env) throws IOException {
+        return launchJava(mainClassName, programArgs, vmArgs, env, null);
+    }
+    
+    public static Process launchJava(String mainClassName, List<String> programArgs, List<String> vmArgs, List<String> env, File currentDir) throws IOException {
         List<String> commandList = new ArrayList<String>();
         commandList.add("java");
         commandList.addAll(vmArgs);
         commandList.add(mainClassName);
         commandList.addAll(programArgs);
         System.out.println("Launching via exec: " + commandList);
+        System.out.println("Current dir: " + currentDir);
+        return Runtime.getRuntime().exec(commandList.toArray(new String[commandList.size()]), 
+                                         env.toArray(new String[env.size()]),
+                                         currentDir);
+    }
+    
+    public static Process launchJavac(File javaFileName, List<String> programArgs, List<String> env) throws IOException {
+        List<String> commandList = new ArrayList<String>();
+        commandList.add("javac");
+        commandList.addAll(programArgs);
+        commandList.add(javaFileName.toString());
+        System.out.println("Launching via exec: " + commandList);
         return Runtime.getRuntime().exec(commandList.toArray(new String[commandList.size()]), 
                                          env.toArray(new String[env.size()]));
+    }
+    
+    public static void waitForSuccessWithEcho(Process p) {
+        int result = waitForWithEcho(p);
+        if (result != 0) {
+            throw new RuntimeException("Process returned non-zero exit code: " + result);
+        }
+    }
+    
+    public static int waitForWithEcho(Process p) {
+        handleStreams(p, System.out, System.err);
+        try {
+            return p.waitFor();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
     
     public static void handleStreams(Process process, OutputStream out, OutputStream err) {

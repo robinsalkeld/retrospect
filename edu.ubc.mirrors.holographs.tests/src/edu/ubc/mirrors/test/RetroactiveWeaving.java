@@ -73,7 +73,7 @@ public class RetroactiveWeaving {
 
         avoidBootstrapSideEffects(vmh, finalThread);
         
-        vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJar);
+        vmh.addBootstrapPathURL(MirrorWorld.aspectRuntimeJarPath);
         for (String aspectPathPart : aspectPath.split(File.pathSeparator)) {
             URL partURL;
             String escaped = new File(aspectPathPart).toURI().toURL().getFile();

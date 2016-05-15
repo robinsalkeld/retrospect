@@ -82,11 +82,12 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
 
     public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After, AdviceKind.AfterReturning, AdviceKind.Around };
     
-    public static URL aspectRuntimeJar;
+    public static File aspectRuntimeJar = new File("/Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.aspects/lib/aspectjrt-1.7.3.jar");
+    public static URL aspectRuntimeJarPath;
     static {
     	try {
     	    // TODO-RS: Automatically determine this
-    	    aspectRuntimeJar = new URL("jar:file:///Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.aspects/lib/aspectjrt-1.7.3.jar!/");
+    	    aspectRuntimeJarPath = new URL("jar:file://" + aspectRuntimeJar + "!/");
     	} catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
@@ -125,7 +126,7 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
 //        showMessage(IMessage.DEBUG, "Creating class loader for aspects...", null, null);
         URL[] paths = new URL[aspectPaths.length + 1];
         System.arraycopy(aspectPaths, 0, paths, 0, aspectPaths.length);
-        paths[paths.length - 1] = MirrorWorld.aspectRuntimeJar;
+        paths[paths.length - 1] = MirrorWorld.aspectRuntimeJarPath;
         return Reflection.newURLClassLoader(vm, thread, null, paths);
     }
     

@@ -9,6 +9,7 @@ import java.util.List;
 
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.tod.TODVirtualMachineMirror;
 
 public class TODMirrorWeavingLauncher {
@@ -31,10 +32,14 @@ public class TODMirrorWeavingLauncher {
             }
             
             System.out.println("Recording base program");
+            Stopwatch s = new Stopwatch();
+            
             String clientName = "tod-" + mainClassName;
             List<String> vmArgsWithTOD = new ArrayList<String>(vmArgs);
             vmArgsWithTOD.addAll(EvalConstants.todVMArgs(clientName));
             List<String> env = Arrays.asList("DYLD_LIBRARY_PATH=" + EvalConstants.BoostDynLibPath);
+            
+            s.start();
             Process baseProgram = ProcessUtils.launchJava(mainClassName, programArgs, vmArgsWithTOD, env);
             ProcessUtils.handleStreams(baseProgram, System.out, System.err);
             
@@ -42,9 +47,14 @@ public class TODMirrorWeavingLauncher {
             if (baseResult != 0) {
                 throw new RuntimeException("Base program returned non-zero exit code: " + baseResult);
             }
+            long recordTime = s.lap();
             
             System.out.println("Weaving aspects");
-            return launch(clientName, aspectPath, hologramClassPath);
+            s.lap();
+            String result = launch(clientName, aspectPath, hologramClassPath);
+            long weaveTime = s.lap();
+            System.out.println("Record: " + recordTime / 1000.0 + "s, weave: " + weaveTime / 1000.0 + "s");
+            return result;
         } finally {
             System.out.println("Destroying GridMaster process");
             dbgridProcess.destroy();

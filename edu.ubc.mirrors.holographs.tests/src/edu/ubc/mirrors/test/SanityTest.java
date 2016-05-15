@@ -190,6 +190,14 @@ public class SanityTest extends TestCase {
 //        ToStringer.main(new String[] {"/Users/robinsalkeld/snapshots/3780.hprof"});
 //    }
     
+    public void testContractValidationAspect() throws Exception {
+        String output = JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.MyCloseable", "",
+                "-cp \"" + EvalConstants.EvalTestsBin + "\"", 
+                EvalConstants.ContractValidationAspectBin.toString(),
+                new File(EvalConstants.DataRoot, "jdi/ContractValidationAspectTest/hologram_classes"));
+        assertTrue(output.contains("Unclosed closables: [edu.ubc.mirrors.test.MyCloseable"));
+    }
+    
     public void testTracingAspect() throws Exception {
         new TracingExampleTest().testTracingAspect();
     }
@@ -227,10 +235,12 @@ public class SanityTest extends TestCase {
         assertEquals(expectedOutput, actualOutput);
     }
     
-//    public void testHeapAspectTOD() throws Exception {
-//        TODMirrorWeavingLauncher.recordAndWeave("tod-ExampleMain", Collections.<String>emptyList(),
-//                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
-//                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
-//                new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
-//    }
+    public void testHeapAspectTOD() throws Exception {
+        String output = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
+                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
+                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
+                new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
+        //TODO: Doesn't actually work since TOD can't record the call to Runtime.runHooks()
+//        assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
+    }
 }

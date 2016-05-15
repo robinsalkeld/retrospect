@@ -15,7 +15,7 @@ public class RetroactiveWeavingEval implements IApplication {
         String casestudy = (args.length > 2 ? args[2] : null);
         
         String mainClass = "spec.harness.Launch";
-        String programArgs = "-ikv -ict -ops 1 " + benchmark;
+        String programArgs = "-ikv -ict -wt 5 -ops 1 " + benchmark;
         String classPath = EvalConstants.SpecJVMJar + ":" + EvalConstants.SpecJVMLib + "/*' ";
         String vmArgs = "-cp '" + classPath + " -Dspecjvm.home.dir=" + EvalConstants.SpecJVMRoot;
         String aspectPath = EvalConstants.casestudyAspectPaths.get(casestudy);

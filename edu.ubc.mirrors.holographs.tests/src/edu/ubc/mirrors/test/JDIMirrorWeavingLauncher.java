@@ -39,11 +39,11 @@ public class JDIMirrorWeavingLauncher {
         
         // Make sure the mechanisms for loading bytecode are primed so we don't hit
         // tons of side-effects later.
-        ClassMirror mainClass = jdiVMM.makeClassMirror(cpe.referenceType());
-        ClassMirrorLoader classLoader = mainClass.getLoader();
-        ClassMirror loaderClass = jdiVMM.findBootstrapClassMirror("java.lang.ClassLoader");
-        MethodMirror getBootstrapResourceMethod = loaderClass.getDeclaredMethod("getBootstrapResource", "java.lang.String");
-        getBootstrapResourceMethod.invoke(thread, classLoader, jdiVMM.makeString("foo"));
+//        ClassMirror mainClass = jdiVMM.makeClassMirror(cpe.referenceType());
+//        ClassMirrorLoader classLoader = mainClass.getLoader();
+//        ClassMirror loaderClass = jdiVMM.findBootstrapClassMirror("java.lang.ClassLoader");
+//        MethodMirror getBootstrapResourceMethod = loaderClass.getDeclaredMethod("getBootstrapResource", "java.lang.String");
+//        getBootstrapResourceMethod.invoke(thread, classLoader, jdiVMM.makeString("foo"));
         
         return new RetroactiveWeaving().weave(vm, thread, aspectPath, hologramClassPath, mergedOutput);
     }
