@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
+import edu.ubc.mirrors.holograms.Stopwatch;
+
 public class LeapUtils {
 
     private static final String LEAP_MAIN_CLASS = "edu.hkust.leap.Main";
@@ -45,14 +47,23 @@ public class LeapUtils {
         Runtime.getRuntime().exec("rm -rf tmp/*/edu", new String[0], outputDir);
     }
     
-    public static void record(String mainClassName, File outputDir) throws IOException {
+    public static void record(String mainClassName, String classPath, File outputDir) throws IOException {
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+            transform(mainClassName, classPath, outputDir);
+        }
+        
         File runtimeClassPath = new File(outputDir, RUNTIME_CLASS_DIR.toString());
+        Stopwatch s = new Stopwatch();
+        s.start();
         Process p = ProcessUtils.launchJava(LEAP_MAIN_CLASS, 
                                 Arrays.asList("1", mainClassName), 
                                 Arrays.asList("-cp", runtimeClassPath + ":" + EvalConstants.LeapRecorderJar), 
                                 Collections.<String>emptyList(),
                                 outputDir);
         ProcessUtils.waitForSuccessWithEcho(p);
+        long time = s.stop();
+        System.out.println("Leap record time: " + time / 1000.0);
     }
     
     public static void forceRecord(String mainClassName, File outputDir) throws IOException {

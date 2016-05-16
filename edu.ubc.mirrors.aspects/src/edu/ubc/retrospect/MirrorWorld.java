@@ -82,6 +82,7 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
 
     public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After, AdviceKind.AfterReturning, AdviceKind.Around };
     
+    public static File aspectWeaverJar = new File("/Applications/eclipse/plugins/org.aspectj.weaver_1.7.3.20130613144500-a.jar");
     public static File aspectRuntimeJar = new File("/Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.aspects/lib/aspectjrt-1.7.3.jar");
     public static URL aspectRuntimeJarPath;
     static {

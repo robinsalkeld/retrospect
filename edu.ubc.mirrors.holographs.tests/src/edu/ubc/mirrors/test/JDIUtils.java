@@ -49,7 +49,7 @@ import com.sun.jdi.event.VMStartEvent;
 import com.sun.jdi.request.ClassPrepareRequest;
 
 public class JDIUtils {
-    public static VirtualMachine commandLineLaunch(String mainAndArgs, String vmArgs, boolean suspend, OutputStream out, OutputStream err) throws VMStartException, IOException {
+    public static VirtualMachine commandLineLaunch(String mainAndArgs, String classPath, boolean suspend, OutputStream out, OutputStream err) throws VMStartException, IOException {
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List<Connector> connectors = vmm.allConnectors();
         LaunchingConnector c = null;
@@ -59,6 +59,8 @@ public class JDIUtils {
                 break;
             }
         }
+        
+        String vmArgs = "-cp \"" + classPath + "\"";
         
         Map<String, ? extends Argument> connectorArgs = c.defaultArguments();
         ((StringArgument)connectorArgs.get("main")).setValue(mainAndArgs);

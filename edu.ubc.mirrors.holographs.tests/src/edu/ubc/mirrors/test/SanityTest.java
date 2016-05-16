@@ -24,6 +24,7 @@ package edu.ubc.mirrors.test;
 import static edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror.unhash;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -192,7 +193,7 @@ public class SanityTest extends TestCase {
     
     public void testContractValidationAspect() throws Exception {
         String output = JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.MyCloseable", "",
-                "-cp \"" + EvalConstants.EvalTestsBin + "\"", 
+                EvalConstants.EvalTestsBin.toString(), 
                 EvalConstants.ContractValidationAspectBin.toString(),
                 new File(EvalConstants.DataRoot, "jdi/ContractValidationAspectTest/hologram_classes"));
         assertTrue(output.contains("Unclosed closables: [edu.ubc.mirrors.test.MyCloseable"));
@@ -208,7 +209,7 @@ public class SanityTest extends TestCase {
     
     public void testLeakDetectorAspect() throws Exception {
         String output = JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", "",
-                "-cp \"" + EvalConstants.TestsRoot + "\"", 
+                EvalConstants.TestsRoot.toString(), 
                 EvalConstants.LeakDetectorAspectBin.toString(),
                 new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
         assertTrue(output.contains("   =>java.lang.String.<init>(String.java:602)"));
@@ -219,7 +220,7 @@ public class SanityTest extends TestCase {
     
     public void testHeapAspect() throws Exception {
         String output = JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", "",
-                "-cp \"" + EvalConstants.TracingExampleBin + ":" + EvalConstants.DJProfMainJar + "\"", 
+                EvalConstants.TracingExampleBin + ":" + EvalConstants.DJProfMainJar + "\"", 
                 EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap,
                 new File(EvalConstants.DataRoot, "jdi/HeapAspectTest/hologram_classes"));
         assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
@@ -242,5 +243,46 @@ public class SanityTest extends TestCase {
                 new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
         //TODO: Doesn't actually work since TOD can't record the call to Runtime.runHooks()
 //        assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
+    }
+    
+    public void testEvaluation() throws Exception {
+//        testCaseStudyEvaluation("TracingAspectTest",
+//                "tracing.ExampleMain",
+//                EvalConstants.TracingExampleBin.toString(),
+//                EvalConstants.TracingAspectsBin.toString());
+//        testCaseStudyEvaluation("HeapAspectTest",
+//                "tracing.ExampleMain",
+//                EvalConstants.TracingExampleBin.toString(),
+//                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap);
+        testCaseStudyEvaluation("ContractValidationAspectTest",
+                "edu.ubc.mirrors.test.MyCloseable",
+                EvalConstants.EvalTestsBin.toString(), 
+                EvalConstants.ContractValidationAspectBin.toString());
+//        testCaseStudyEvaluation("LeakDetectorAspectTest",
+//                "edu.ubc.mirrors.test.LeakSample",
+//                EvalConstants.TestsRoot.toString(), 
+//                EvalConstants.LeakDetectorAspectBin.toString());
+//        testCaseStudyEvaluation("RacerTest",
+//                "Task",
+//                EvalConstants.RacerExampleBin.toString(), 
+//                EvalConstants.RacerBin.toString());
+    }
+    
+    public void testCaseStudyEvaluation(String caseName, String mainClassName, String classPath, String aspectPath) throws Exception {
+        List<String> vmArgs = Arrays.asList("-cp", classPath);
+        List<String> programArgs = Collections.emptyList();
+        List<String> env = Collections.emptyList();
+        
+        ProcessUtils.timeJava(mainClassName, programArgs, vmArgs, env);
+        ProcessUtils.timeLoadTimeWeaving(mainClassName, classPath, aspectPath);
+        
+//        File leapClassDir = new File(EvalConstants.DataRoot, "leap/" + caseName);
+//        LeapUtils.record(mainClassName, classPath, leapClassDir);
+        
+        File jdiHologramClassesPath = new File(EvalConstants.DataRoot, "jdi/" + caseName + "/hologram_classes");
+        JDIMirrorWeavingLauncher.launch(mainClassName, "", classPath, aspectPath, jdiHologramClassesPath);
+//        
+//        File todHologramClassesPath = new File(EvalConstants.DataRoot, "tod/" + caseName + "/hologram_classes");
+//        TODMirrorWeavingLauncher.recordAndWeave(mainClassName, programArgs, vmArgs, aspectPath, todHologramClassesPath);
     }
 }

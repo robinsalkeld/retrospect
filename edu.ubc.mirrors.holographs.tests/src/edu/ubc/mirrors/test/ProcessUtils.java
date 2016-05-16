@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import edu.ubc.mirrors.holograms.Stopwatch;
@@ -12,17 +13,34 @@ import edu.ubc.retrospect.MirrorWorld;
 
 public class ProcessUtils {
 
-    public static Process launchLoadTimeWeaving(String mainClassName, List<String> programArgs, List<String> vmArgs, 
+    public static long timeLoadTimeWeaving(String mainClassName, String classPath, String aspectPath) throws IOException {
+        Stopwatch s = new Stopwatch();
+        s.start();
+        Process p = launchLoadTimeWeaving(mainClassName, classPath, aspectPath);
+        waitForSuccessWithEcho(p);
+        long time = s.stop();
+        System.out.println("LTW run time: " + time / 1000.0);
+        return time;
+    }
+    
+    public static Process launchLoadTimeWeaving(String mainClassName, String classPath, 
             String aspectPath) throws IOException {
         
-        List<String> vmArgsForWeaving = new ArrayList<String>(vmArgs);
-        vmArgsForWeaving.add(" -javaagent:" + MirrorWorld.aspectRuntimeJar);
+        List<String> programArgs = Collections.emptyList();
         
-        return launchJava(mainClassName, programArgs, vmArgsForWeaving, null, null);
+        List<String> vmArgs = new ArrayList<String>();
+        vmArgs.add("-cp");
+        vmArgs.add(classPath + ":" + aspectPath + ":" + MirrorWorld.aspectRuntimeJar);
+        vmArgs.add("-javaagent:" + MirrorWorld.aspectWeaverJar);
+        
+        List<String> env = Collections.<String>emptyList();
+        
+        return launchJava(mainClassName, programArgs, vmArgs, env, null);
     }
     
     public static long timeJava(String mainClassName, List<String> programArgs, List<String> vmArgs, List<String> env) throws IOException {
         Stopwatch s = new Stopwatch();
+        s.start();
         Process p = launchJava(mainClassName, programArgs, vmArgs, env, null);
         waitForSuccessWithEcho(p);
         long time = s.stop();
