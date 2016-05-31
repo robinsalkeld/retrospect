@@ -51,7 +51,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
     private Type thisType = null;
     
     public FrameAnalyzerAdaptor(VirtualMachineMirror vm, ClassMirrorLoader loader, ClassVisitor cv, boolean insertFrames, boolean holograms) {
-        super(Opcodes.ASM4, cv);
+        super(Opcodes.ASM5, cv);
         this.vm = vm;
         this.loader = loader;
         this.insertFrames = insertFrames;
@@ -118,7 +118,7 @@ public class FrameAnalyzerAdaptor extends ClassVisitor {
         final Map<Label, LabelNode> labelNodes = new HashMap<Label, LabelNode>();
         final FrameVerifier verifier = new FrameVerifier(vm, loader, holograms);
         
-        MethodNode analyzer = new MethodNode(access, name, desc, null, null) {
+        MethodNode analyzer = new MethodNode(Opcodes.ASM5, access, name, desc, null, null) {
             @Override
             public void visitEnd() {
                 FrameAnalyzer a = new FrameAnalyzer(verifier);

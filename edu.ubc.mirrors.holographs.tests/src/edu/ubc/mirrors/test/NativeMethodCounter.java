@@ -40,7 +40,7 @@ import org.objectweb.asm.tree.MethodNode;
 public class NativeMethodCounter extends ClassVisitor {
 
     public NativeMethodCounter() {
-        super(Opcodes.ASM4);
+        super(Opcodes.ASM5);
     }
 
     int nativeMethodCount = 0;

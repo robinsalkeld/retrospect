@@ -75,7 +75,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
     private int access;
     
     public HologramMethodGenerator(String owner, int access, String name, String desc, MethodVisitor superVisitor, boolean isToString) {
-        super(Opcodes.ASM4, null);
+        super(Opcodes.ASM5, null);
         this.analyzer = new AnalyzerAdapter(owner, access, name, desc, superVisitor);
         this.mv = analyzer;
         this.name = name;

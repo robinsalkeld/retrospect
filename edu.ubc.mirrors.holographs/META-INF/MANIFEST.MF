@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Retrospect
 Bundle-SymbolicName: edu.ubc.mirrors.holographs;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-ClassPath: lib/asm-debug-all-4.0.jar,
+Bundle-ClassPath: lib/asm-debug-all-5.1.jar,
  bin/,
  lib/abc.jar,
  lib/polyglot.jar,
@@ -21,8 +21,8 @@ Export-Package: edu.ubc.mirrors,
  edu.ubc.mirrors.raw,
  edu.ubc.mirrors.test,
  edu.ubc.mirrors.wrapping,
- org.objectweb.asm;version="4.0.0",
- org.objectweb.asm.commons;version="4.0.0",
- org.objectweb.asm.tree;version="4.0.0",
- org.objectweb.asm.util;version="4.0.0"
+ org.objectweb.asm;version="5.1.0",
+ org.objectweb.asm.commons;version="5.1.0",
+ org.objectweb.asm.tree;version="5.1.0",
+ org.objectweb.asm.util;version="5.1.0"
 Import-Package: org.eclipse.core.runtime;version="3.4.0"

@@ -7,7 +7,7 @@ import org.objectweb.asm.Opcodes;
 public class FrameRemover extends ClassVisitor {
 
     public FrameRemover(ClassVisitor cv) {
-        super(Opcodes.ASM4, cv);
+        super(Opcodes.ASM5, cv);
     }
 
     @Override
@@ -18,7 +18,7 @@ public class FrameRemover extends ClassVisitor {
     private static class MethodFrameRemover extends MethodVisitor {
 
         public MethodFrameRemover(MethodVisitor mv) {
-            super(Opcodes.ASM4, mv);
+            super(Opcodes.ASM5, mv);
         }
         
         @Override

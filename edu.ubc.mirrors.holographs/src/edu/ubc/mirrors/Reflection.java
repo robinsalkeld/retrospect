@@ -831,7 +831,7 @@ public class Reflection {
     private static class BytecodeExtractor extends ClassVisitor {
         
         public BytecodeExtractor() {
-            super(Opcodes.ASM4);
+            super(Opcodes.ASM5);
         }
 
         private String className = null;

@@ -37,7 +37,7 @@ public class RawMethodAnnotationsWriter extends MethodVisitor {
     private ThreadMirror thread;
     
     public RawMethodAnnotationsWriter(ThreadMirror thread, int parameters, ClassVisitor classWriter, MethodVisitor writer) {
-        super(Opcodes.ASM4);
+        super(Opcodes.ASM5);
         this.cw = (ClassWriter)classWriter;
         this.writer = (MethodWriter)writer; 
         this.panns = new AnnotationWriter[parameters];

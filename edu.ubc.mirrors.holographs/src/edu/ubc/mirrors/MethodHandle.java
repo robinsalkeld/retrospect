@@ -102,7 +102,7 @@ public abstract class MethodHandle {
     private class MyClassVisitor extends ClassVisitor {
         
         public MyClassVisitor() {
-            super(Opcodes.ASM4);
+            super(Opcodes.ASM5);
         }
         
         @Override
@@ -119,15 +119,15 @@ public abstract class MethodHandle {
     private class MyMethodVisitor extends MethodVisitor {
 
         public MyMethodVisitor() {
-            super(Opcodes.ASM4);
+            super(Opcodes.ASM5);
         }
         
         @Override
-        public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+        public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
             if (method != null) {
                 throw new IllegalStateException("Found more than one method call");
             }
-            method = new MethodInsnNode(opcode, owner, name, desc);
+            method = new MethodInsnNode(opcode, owner, name, desc, itf);
         }
     }
     

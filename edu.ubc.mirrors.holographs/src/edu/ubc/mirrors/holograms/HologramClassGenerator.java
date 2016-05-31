@@ -121,7 +121,7 @@ public class HologramClassGenerator extends ClassVisitor {
     private boolean hasClinit = false;
     
     public HologramClassGenerator(ClassMirror classMirror, ClassVisitor output) {
-        super(Opcodes.ASM4, output);
+        super(Opcodes.ASM5, output);
         this.classMirror = classMirror;
     }
     

@@ -37,7 +37,7 @@ public class RawAnnotationsWriter extends ClassVisitor {
     private ThreadMirror thread;
     
     public RawAnnotationsWriter(ThreadMirror thread, ClassWriter writer) {
-        super(Opcodes.ASM4);
+        super(Opcodes.ASM5);
         // The writer is provided so the constant pool will be pre-populated
         this.writer = writer; 
         this.thread = thread;

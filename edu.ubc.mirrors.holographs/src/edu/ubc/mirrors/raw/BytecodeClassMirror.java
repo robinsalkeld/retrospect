@@ -454,8 +454,8 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         private List<AnnotationNode> annotations;
         
         public BytecodeClassVisitor(ClassReader reader) {
-            super(Opcodes.ASM4);
-            this.classWriter = new ClassWriter(reader, Opcodes.ASM4);
+            super(Opcodes.ASM5);
+            this.classWriter = new ClassWriter(reader, Opcodes.ASM5);
             this.annotations = new ArrayList<AnnotationNode>();
         }
         
@@ -516,7 +516,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         private final MethodVisitor visitor;
         
         public DefaultTrackingMethodVisitor(MethodVisitor visitor, int access, String name, String desc, String signature, String[] exceptions) {
-            super(Opcodes.ASM4, access, name, desc, signature, exceptions);
+            super(Opcodes.ASM5, access, name, desc, signature, exceptions);
             this.visitor = visitor;
         }
         
@@ -555,11 +555,11 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         private AnnotationNode defaultAnnotationNode;
         
         public BytecodeMethodVisitor(MethodNode method, ClassVisitor classWriter, MethodVisitor methodWriter) {
-            super(Opcodes.ASM4);
+            super(Opcodes.ASM5);
             this.method = method;
             this.annotationNodes = new ArrayList<AnnotationNode>();
             this.parameterAnnotationNodes = new ArrayList<List<AnnotationNode>>();
-            this.defaultAnnotationNode = new AnnotationNode(Opcodes.ASM4, null);
+            this.defaultAnnotationNode = new AnnotationNode(Opcodes.ASM5, null);
             
             int numParams = Type.getArgumentTypes(method.desc).length;
             for (int i = 0; i < numParams; i++) {
@@ -665,7 +665,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         private StaticsInfo staticsInfo;
         
         public DefaultTrackingInterpreter() {
-            super(Opcodes.ASM4);
+            super(Opcodes.ASM5);
             betterVerifier = new BasicVerifier();
         }
 

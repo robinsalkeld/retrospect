@@ -38,7 +38,7 @@ import edu.ubc.mirrors.holograms.ObjectHologram;
 public class MainEntryAdaptor extends ClassVisitor {
 
     public MainEntryAdaptor(ClassVisitor output) {
-        super(Opcodes.ASM4, output);
+        super(Opcodes.ASM5, output);
     }
     
     private String className;

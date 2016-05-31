@@ -49,7 +49,7 @@ public class FrameVerifier extends Interpreter<FrameValue> implements Opcodes {
     private Frame<FrameValue> currentFrame;
     
     public FrameVerifier(VirtualMachineMirror vm, ClassMirrorLoader loader, boolean holograms) {
-        super(ASM4);
+        super(ASM5);
         simplerVerifier = holograms ? 
                 new HologramVerifier((VirtualMachineHolograph)vm, (ClassLoaderHolograph)loader) : 
                 new BetterVerifier(vm, loader);

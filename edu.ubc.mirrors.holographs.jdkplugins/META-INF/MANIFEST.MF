@@ -9,6 +9,6 @@ Import-Package: edu.ubc.mirrors,
  edu.ubc.mirrors.holographs,
  edu.ubc.mirrors.raw,
  edu.ubc.mirrors.wrapping,
- org.objectweb.asm;version="4.0.0",
- org.objectweb.asm.commons;version="4.0.0"
+ org.objectweb.asm;version="5.1.0",
+ org.objectweb.asm.commons;version="5.1.0"
 Export-Package: edu.ubc.mirrors.holographs.jdkplugins
