@@ -69,7 +69,7 @@ public class MainEntryAdaptor extends ClassVisitor {
             superVisitor.visitCode();
             superVisitor.visitLdcInsn(Type.getObjectType(className));
             superVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-            superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(ObjectHologram.class), "invokeHologramMainMethod", invokeHologramMainMethodDesc);
+            superVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(ObjectHologram.class), "invokeHologramMainMethod", invokeHologramMainMethodDesc, false);
             superVisitor.visitInsn(Opcodes.RETURN);
             superVisitor.visitMaxs(2, 1);
             superVisitor.visitEnd();

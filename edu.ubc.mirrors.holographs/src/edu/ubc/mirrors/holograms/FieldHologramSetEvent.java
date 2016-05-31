@@ -6,14 +6,10 @@ import java.util.List;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
 public class FieldHologramSetEvent implements MirrorEvent {
 

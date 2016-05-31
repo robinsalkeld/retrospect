@@ -29,14 +29,13 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.holograms.HologramClassLoader;
 
-public class NativeClassGenerator extends RemappingClassAdapter {
+public class NativeClassGenerator extends ClassRemapper {
 
     public static Remapper REMAPPER = new Remapper() {
         public String map(String typeName) {
@@ -102,7 +101,7 @@ public class NativeClassGenerator extends RemappingClassAdapter {
                              "<init>", constructorDesc, null, null);
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", constructorDesc);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", constructorDesc, false);
             methodVisitor.visitInsn(Opcodes.RETURN);
             methodVisitor.visitMaxs(1, 1);
             methodVisitor.visitEnd(); 

@@ -4,7 +4,6 @@ import java.util.List;
 
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorHandlerEvent;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.Reflection;

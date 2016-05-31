@@ -2,7 +2,6 @@ package edu.ubc.mirrors.fieldmap;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FieldMirror;
-import edu.ubc.mirrors.raw.BytecodeClassMirror;
 
 public class FieldMapFieldMirror implements FieldMirror {
 

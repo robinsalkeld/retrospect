@@ -33,7 +33,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -43,13 +42,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
-import java.util.WeakHashMap;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.RemappingClassAdapter;
+import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.util.TraceClassVisitor;
 
 import edu.ubc.mirrors.BooleanArrayMirror;
@@ -508,7 +506,7 @@ public class HologramClassLoader extends ClassLoader {
                 }
                 visitor = new TraceClassVisitor(visitor, textFileWriter);
             }
-            visitor = new RemappingClassAdapter(visitor, HologramClassGenerator.REMAPPER);
+            visitor = new ClassRemapper(visitor, HologramClassGenerator.REMAPPER);
             if (vm.getBytecodeCacheDir() != null) {
                 File txtFile = createClassFile(cacheIndex, internalName + ".afterframes.txt");
                 PrintWriter textFileWriter;

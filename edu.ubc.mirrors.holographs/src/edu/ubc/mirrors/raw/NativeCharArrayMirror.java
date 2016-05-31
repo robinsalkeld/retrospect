@@ -24,7 +24,6 @@ package edu.ubc.mirrors.raw;
 import java.util.Arrays;
 
 import edu.ubc.mirrors.CharArrayMirror;
-import edu.ubc.mirrors.ClassMirror;
 
 public class NativeCharArrayMirror extends NativeObjectMirror implements CharArrayMirror {
 

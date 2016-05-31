@@ -31,7 +31,6 @@ import com.sun.xml.internal.ws.org.objectweb.asm.Type;
 import edu.ubc.mirrors.BlankInstanceMirror;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.holographs.HolographInternalUtils;
 
 

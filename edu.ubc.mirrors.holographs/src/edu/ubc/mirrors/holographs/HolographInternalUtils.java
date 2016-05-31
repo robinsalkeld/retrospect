@@ -21,8 +21,6 @@
  ******************************************************************************/
 package edu.ubc.mirrors.holographs;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.objectweb.asm.Type;
 
 import edu.ubc.mirrors.ClassMirror;
@@ -32,7 +30,6 @@ import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;

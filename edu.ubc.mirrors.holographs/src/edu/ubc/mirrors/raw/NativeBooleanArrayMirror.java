@@ -21,10 +21,7 @@
  ******************************************************************************/
 package edu.ubc.mirrors.raw;
 
-import java.util.Arrays;
-
 import edu.ubc.mirrors.BooleanArrayMirror;
-import edu.ubc.mirrors.ClassMirror;
 
 public class NativeBooleanArrayMirror extends NativeObjectMirror implements BooleanArrayMirror {
 

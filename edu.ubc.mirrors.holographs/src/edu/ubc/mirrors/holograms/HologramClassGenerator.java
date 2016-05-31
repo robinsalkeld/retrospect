@@ -55,7 +55,7 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
 
-    public static final String VERSION = "1.17";
+    public static final String VERSION = "1.18";
     
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type throwableType = Type.getType(Throwable.class);
@@ -499,7 +499,7 @@ public class HologramClassGenerator extends ClassVisitor {
             methodVisitor.visitCode();
             // Invoke super()
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", Type.getMethodDescriptor(Type.VOID_TYPE));
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", Type.getMethodDescriptor(Type.VOID_TYPE), false);
             
             // this.mirror = (first argument)
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
@@ -565,7 +565,7 @@ public class HologramClassGenerator extends ClassVisitor {
             methodVisitor.visitCode();
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
             methodVisitor.visitVarInsn(Opcodes.ALOAD, 1);
-            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", constructorDesc);
+            methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", constructorDesc, false);
             methodVisitor.visitInsn(Opcodes.RETURN);
             methodVisitor.visitMaxs(2, 2);
             methodVisitor.visitEnd();
@@ -592,13 +592,13 @@ public class HologramClassGenerator extends ClassVisitor {
         methodVisitor.visitTypeInsn(Opcodes.NEW, reentrantLockType.getInternalName());
         methodVisitor.visitInsn(Opcodes.DUP);
         methodVisitor.visitInsn(Opcodes.DUP);
-        methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, reentrantLockType.getInternalName(), "<init>", Type.getMethodDescriptor(Type.VOID_TYPE));
+        methodVisitor.visitMethodInsn(Opcodes.INVOKESPECIAL, reentrantLockType.getInternalName(), "<init>", Type.getMethodDescriptor(Type.VOID_TYPE), false);
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         methodVisitor.visitInsn(Opcodes.SWAP);
         methodVisitor.visitFieldInsn(Opcodes.PUTFIELD, owner, "lock", lockType.getDescriptor());
         
         // this.condition = this.lock.newCondition()
-        methodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, lockType.getInternalName(), "newCondition", Type.getMethodDescriptor(conditionType));
+        methodVisitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, lockType.getInternalName(), "newCondition", Type.getMethodDescriptor(conditionType), false);
         methodVisitor.visitVarInsn(Opcodes.ALOAD, 0);
         methodVisitor.visitInsn(Opcodes.SWAP);
         methodVisitor.visitFieldInsn(Opcodes.PUTFIELD, owner, "condition", conditionType.getDescriptor());
@@ -660,7 +660,7 @@ public class HologramClassGenerator extends ClassVisitor {
             mv.visitCode();
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             mv.visitVarInsn(Opcodes.ALOAD, 1);
-            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", initDesc);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", initDesc, false);
             mv.visitInsn(Opcodes.RETURN);
             mv.visitMaxs(2, 2);
             mv.visitEnd();
@@ -670,7 +670,7 @@ public class HologramClassGenerator extends ClassVisitor {
             mv.visitCode();
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             mv.visitVarInsn(Opcodes.ILOAD, 1);
-            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", initDesc);
+            mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superName, "<init>", initDesc, false);
             mv.visitInsn(Opcodes.RETURN);
             mv.visitMaxs(2, 2);
             mv.visitEnd();

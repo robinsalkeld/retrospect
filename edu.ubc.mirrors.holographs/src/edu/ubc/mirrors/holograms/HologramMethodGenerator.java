@@ -132,7 +132,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
     }
     
     @Override
-    public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+    public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
         // Various special cases here to adjust for the fact that Object and Throwable
         // are still in the hierarchy and have some methods with incompatible types.
         
@@ -151,12 +151,13 @@ public class HologramMethodGenerator extends InstructionAdapter {
                 }
             }
             
-            super.visitMethodInsn(opcode, owner, name, desc);
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
             
             getClassMirror(this.owner);
             invokestatic(objectHologramType.getInternalName(),
                          "makeStringHologram",
-                         Type.getMethodDescriptor(hologramType, stringType, classMirrorType));
+                         Type.getMethodDescriptor(hologramType, stringType, classMirrorType),
+                         false);
             checkcast(stringHologramType);
             return;
         }
@@ -171,7 +172,8 @@ public class HologramMethodGenerator extends InstructionAdapter {
             
             invokestatic(objectHologramType.getInternalName(),
                          "make",
-                         Type.getMethodDescriptor(hologramType, objectMirrorType));
+                         Type.getMethodDescriptor(hologramType, objectMirrorType),
+                         false);
             checkcast(getHologramType(Class.class));
             return;
         }
@@ -271,13 +273,14 @@ public class HologramMethodGenerator extends InstructionAdapter {
             return;
         }
         
-        super.visitMethodInsn(opcode, owner, name, desc);
+        super.visitMethodInsn(opcode, owner, name, desc, itf);
         
         if (owner.equals(Type.getInternalName(Throwable.class)) && name.equals("getStackTraceElement")) {
             Type steType = Type.getType(StackTraceElement.class);
             invokestatic(Type.getInternalName(ObjectHologram.class),
                          "cleanStackTraceElement",
-                         Type.getMethodDescriptor(steType, steType));
+                         Type.getMethodDescriptor(steType, steType),
+                         false);
         }
         
 //        if (owner.equals(hologramThrowableType.getInternalName()) && name.equals("fillInStackTrace") && desc.equals(Type.getMethodDescriptor(hologramThrowableType))) {
@@ -346,7 +349,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
         }
         invokestatic(instanceHologramType.getInternalName(), 
                      (isSet ? "set" : "get") + suffix + "Field", 
-                     methodDesc);
+                     methodDesc, false);
         
         if (!isSet && fieldTypeForMirrorCall.equals(hologramType)) {
             checkcast(fieldType);
@@ -389,7 +392,8 @@ public class HologramMethodGenerator extends InstructionAdapter {
         
         invokespecial(hologramArrayType.getInternalName(), 
                       "<init>", 
-                      Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class)));
+                      Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class)),
+                      false);
     }
     
     
@@ -445,7 +449,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
             }
             invokestatic(hologramArrayType.getInternalName(), 
                             (isArrayStore ? "setHologram" : "getHologram"), 
-                            methodDesc);
+                            methodDesc, true);
             if (!isArrayStore && arrayElementTypeForMirrorCall.equals(hologramType)) {
                 checkcast(arrayElementType);
             }
@@ -522,7 +526,8 @@ public class HologramMethodGenerator extends InstructionAdapter {
             
             invokespecial(hologramArrayType.getInternalName(), 
                           "<init>", 
-                          Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class)));
+                          Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(ObjectArrayMirror.class)),
+                          false);
             return;
         }
         
@@ -560,7 +565,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
             
             invokestatic(objectHologramType.getInternalName(),
                     "make",
-                    Type.getMethodDescriptor(hologramType, objectMirrorType));
+                    Type.getMethodDescriptor(hologramType, objectMirrorType), false);
             checkcast(Type.getObjectType(arrayHologramType));
             
             return;
@@ -578,14 +583,16 @@ public class HologramMethodGenerator extends InstructionAdapter {
             getClassMirror(this.owner);
             invokestatic(objectHologramType.getInternalName(),
                          "makeStringHologram",
-                         Type.getMethodDescriptor(hologramType, stringType, classMirrorType));
+                         Type.getMethodDescriptor(hologramType, stringType, classMirrorType),
+                         false);
             checkcast(hologramStringType);
         } else if (cst instanceof Type) {
             Type hologramClassType = getHologramType(classType);
             getClassMirror(this.owner);
             invokestatic(objectHologramType.getInternalName(),
                          "makeClassHologram",
-                         Type.getMethodDescriptor(hologramType, classType, classMirrorType));
+                         Type.getMethodDescriptor(hologramType, classType, classMirrorType),
+                         false);
             checkcast(hologramClassType);
         }
     }
@@ -661,7 +668,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
     private void boxIfNeeded(Type type) {
         Class<?> boxingType = Reflection.getBoxingType(type);
         if (boxingType != null) {
-            invokestatic(Type.getInternalName(boxingType), "valueOf", Type.getMethodType(Type.getType(boxingType), type).getDescriptor());
+            invokestatic(Type.getInternalName(boxingType), "valueOf", Type.getMethodType(Type.getType(boxingType), type).getDescriptor(), false);
         }
     }
     
@@ -724,7 +731,7 @@ public class HologramMethodGenerator extends InstructionAdapter {
             Class<?> boxingType = Reflection.getBoxingType(returnType);
             if (boxingType != null) {
                 checkcast(Type.getType(boxingType));
-                invokevirtual(Type.getInternalName(boxingType), returnType.getClassName() + "Value", Type.getMethodType(returnType).getDescriptor());
+                invokevirtual(Type.getInternalName(boxingType), returnType.getClassName() + "Value", Type.getMethodType(returnType).getDescriptor(), false);
             } else {
                 getClassMirror(owner);
                 MethodHandle.OBJECT_HOLOGRAM_MAKE_FROM_OBJECT.invoke(this);
