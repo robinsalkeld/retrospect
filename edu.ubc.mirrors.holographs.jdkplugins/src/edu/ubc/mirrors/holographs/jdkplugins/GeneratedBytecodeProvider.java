@@ -33,8 +33,8 @@ import java.util.Map;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.commons.RemappingClassAdapter;
 
 import edu.ubc.mirrors.ByteArrayMirror;
 import edu.ubc.mirrors.ClassMirror;
@@ -172,7 +172,7 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
                         ClassVisitor visitor = classWriter;
                         final String internalName = classMirror.getClassName().replace('.', '/');
                         final String generatedInternalName = newClass.getClassName().replace('.', '/');
-                        visitor = new RemappingClassAdapter(visitor, new Remapper() {
+                        visitor = new ClassRemapper(visitor, new Remapper() {
                             @Override
                             public String map(String typeName) {
                                 if (typeName.equals(generatedInternalName)) {
@@ -246,7 +246,7 @@ public class GeneratedBytecodeProvider implements ClassMirrorBytecodeProvider {
                         ClassVisitor visitor = classWriter;
                         final String internalName = classMirror.getClassName().replace('.', '/');
                         final String generatedInternalName = newClass.getClassName().replace('.', '/');
-                        visitor = new RemappingClassAdapter(visitor, new Remapper() {
+                        visitor = new ClassRemapper(visitor, new Remapper() {
                             @Override
                             public String map(String typeName) {
                                 if (typeName.equals(generatedInternalName)) {
