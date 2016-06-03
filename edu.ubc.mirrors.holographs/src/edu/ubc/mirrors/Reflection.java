@@ -1063,4 +1063,14 @@ public class Reflection {
         }
         return builder.toString();
     }
+    
+    public static boolean compareAndSwapObject(InstanceMirror o, FieldMirror field, ObjectMirror oldValue, ObjectMirror newValue) throws IllegalAccessException {
+    	ObjectMirror current = o.get(field);
+    	if (current == oldValue) {
+    		o.set(field, newValue);
+    		return true;
+    	} else {
+    		return false;
+    	}
+    }
 }

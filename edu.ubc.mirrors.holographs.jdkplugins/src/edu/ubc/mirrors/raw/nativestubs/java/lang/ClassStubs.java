@@ -117,7 +117,7 @@ public class ClassStubs extends NativeStubs {
     @StubMethod
     public ObjectArrayMirror getDeclaredConstructors0(ClassMirror classMirror, boolean publicOnly) {
         List<ConstructorMirror> constructors = classMirror.getDeclaredConstructors(publicOnly);
-        ClassMirror classClass = getVM().findBootstrapClassMirror(Class.class.getName());
+        ClassMirror classClass = getVM().findBootstrapClassMirror(java.lang.Class.class.getName());
         ClassMirror constructorClass = getVM().findBootstrapClassMirror(Constructor.class.getName());
         ObjectArrayMirror result = (ObjectArrayMirror)constructorClass.newArray(constructors.size());
         ThreadMirror thread = ThreadHolograph.currentThreadMirror();
@@ -152,7 +152,7 @@ public class ClassStubs extends NativeStubs {
     @StubMethod
     public ObjectArrayMirror getDeclaredMethods0(ClassMirror classMirror, boolean publicOnly) {
         List<MethodMirror> methods = classMirror.getDeclaredMethods(publicOnly);
-        ClassMirror classClass = getVM().findBootstrapClassMirror(Class.class.getName());
+        ClassMirror classClass = getVM().findBootstrapClassMirror(java.lang.Class.class.getName());
         ClassMirror methodClass = getVM().findBootstrapClassMirror(Method.class.getName());
         ObjectArrayMirror result = (ObjectArrayMirror)methodClass.newArray(methods.size());
         ThreadMirror thread = ThreadHolograph.currentThreadMirror();
@@ -225,7 +225,7 @@ public class ClassStubs extends NativeStubs {
         VirtualMachineMirror vm = getVM();
         
         List<ClassMirror> interfaces = classMirror.getInterfaceMirrors();
-        return  Reflection.toArray(vm.findBootstrapClassMirror(Class.class.getName()), interfaces);
+        return  Reflection.toArray(vm.findBootstrapClassMirror(java.lang.Class.class.getName()), interfaces);
     }
     
     @StubMethod
