@@ -45,6 +45,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.analysis.Analyzer;
@@ -977,7 +978,9 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
                 }
                 break;
             case Opcodes.INVOKEDYNAMIC:
-                throw new UnsupportedOperationException("TODO");
+            	// TODO: Touch the class of the bootstrap method.
+            	statics.mayHaveSideEffects = true;
+            	break;
             case Opcodes.RETURN:
                 if (trackingInterpreter.staticsInfo == null) {
                     trackingInterpreter.staticsInfo = new StaticsInfo(statics);
