@@ -57,21 +57,7 @@ public class HeapDumpTest2 implements IApplication {
     
   public static void printJRubyThreadsFromSnapshot(ISnapshot snapshot) throws Exception {
 
-    // Create an instance of the mirrors API backed by the snapshot
-    HeapDumpVirtualMachineMirror vm = new HeapDumpVirtualMachineMirror(snapshot);
-      
-    // Create a holograph VM
-    Map<String, String> mappedFiles = Reflection.getStandardMappedFiles();
-    String jrubyJar = "/Users/robinsalkeld/Documents/UBC/Code/jruby-1.6.4/lib/jruby.jar";
-    // TODO-RS: Haxxors to avoid handling "." correctly.
-    mappedFiles.put("./jruby-1.6.4/lib/jruby.jar", jrubyJar);
-    mappedFiles.put(jrubyJar, jrubyJar);
-    String javaExtDir = "/System/Library/Java/Extensions";
-    mappedFiles.put(javaExtDir, javaExtDir);
-  
-    final VirtualMachineHolograph holographVM = new VirtualMachineHolograph(vm,
-            HeapDumpVirtualMachineMirror.defaultHolographicVMClassCacheDir(snapshot),
-            mappedFiles);
+    final VirtualMachineHolograph holographVM = HeapDumpVirtualMachineMirror.holographicVMWithIniFile(snapshot);
     
     Reflection.withThread(holographVM.getThreads().get(0), new Callable<Void>() {
         @Override

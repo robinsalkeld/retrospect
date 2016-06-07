@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
-import edu.ubc.mirrors.holograms.Stopwatch;
+import edu.ubc.util.Stopwatch;
 
 public class LeapUtils {
 

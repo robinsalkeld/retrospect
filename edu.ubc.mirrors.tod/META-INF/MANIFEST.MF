@@ -3,9 +3,13 @@ Bundle-ManifestVersion: 2
 Bundle-Name: edu.ubc.mirrors.tod
 Bundle-SymbolicName: edu.ubc.mirrors.tod;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Require-Bundle: tod.plugin
+Require-Bundle: tod.plugin,
+ edu.ubc.mirrors.holographs.tests;bundle-version="1.0.0"
 Import-Package: edu.ubc.mirrors,
  edu.ubc.mirrors.raw,
+ edu.ubc.mirrors.testdata,
+ edu.ubc.util,
+ junit.framework;version="4.11.0",
  org.eclipse.equinox.app;version="1.1.0",
  org.objectweb.asm;version="4.0.0"
 Export-Package: edu.ubc.mirrors.tod

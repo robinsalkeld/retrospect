@@ -49,11 +49,11 @@ import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpObjectMirror;
 import edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror;
-import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIClassMirror;
 import edu.ubc.mirrors.jdi.AbstractJDIObjectMirror;
 import edu.ubc.mirrors.wrapping.WrappingMirror;
+import edu.ubc.util.Stopwatch;
 
 public class ToStringer implements IApplication {
 

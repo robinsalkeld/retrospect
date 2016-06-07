@@ -24,7 +24,6 @@ package edu.ubc.mirrors.test;
 import static edu.ubc.mirrors.eclipse.mat.HeapDumpVirtualMachineMirror.unhash;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -45,24 +44,14 @@ import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.ConsoleProgressListener;
 
-import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.ClassPrepareEvent;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.VMStartEvent;
 
-import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
-import edu.ubc.mirrors.ClassMirrorPrepareEvent;
-import edu.ubc.mirrors.ClassMirrorPrepareRequest;
-import edu.ubc.mirrors.ConstructorMirror;
-import edu.ubc.mirrors.ConstructorMirrorHandlerEvent;
 import edu.ubc.mirrors.ConstructorMirrorHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
-import edu.ubc.mirrors.MethodMirrorHandlerEvent;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
-import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
@@ -70,7 +59,6 @@ import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.eclipse.mat.plugins.ExpressionQuery;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.jdi.JDIVirtualMachineMirror;
-import edu.ubc.mirrors.raw.NativeClassMirror;
 
 public class SanityTest extends TestCase {
 
@@ -97,7 +85,7 @@ public class SanityTest extends TestCase {
     }
     
     public void testJRubyStackTrace() throws Exception {
-        HeapDumpTest2.main(new String[] {"/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/jruby_irb/java_pid41658.0001.jrubyirb.hprof"});
+        HeapDumpTest2.main(new String[] {"/Users/salkeldr/Documents/snapshots/jruby_irb/java_pid41658.0001.jrubyirb.hprof"});
     }
     
 //    public void testPrintOSGiBundles() throws Exception {
@@ -224,25 +212,6 @@ public class SanityTest extends TestCase {
                 EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap,
                 new File(EvalConstants.DataRoot, "jdi/HeapAspectTest/hologram_classes"));
         assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
-    }
-    
-    public void testTracingAspectTOD() throws Exception {
-        String actualOutput = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
-                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
-                EvalConstants.TracingAspectsBin.toString(), 
-                new File(EvalConstants.DataRoot, "tod/TracingTest/hologram_classes"));
-        
-        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
-        assertEquals(expectedOutput, actualOutput);
-    }
-    
-    public void testHeapAspectTOD() throws Exception {
-        String output = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
-                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
-                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
-                new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
-        //TODO: Doesn't actually work since TOD can't record the call to Runtime.runHooks()
-//        assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
     }
     
     public void testEvaluation() throws Exception {

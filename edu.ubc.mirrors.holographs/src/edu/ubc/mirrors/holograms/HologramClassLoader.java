@@ -77,6 +77,7 @@ import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.NativeClassMirrorLoader;
 import edu.ubc.mirrors.raw.NativeVirtualMachineMirror;
+import edu.ubc.util.Stopwatch;
 
 public class HologramClassLoader extends ClassLoader {
 
