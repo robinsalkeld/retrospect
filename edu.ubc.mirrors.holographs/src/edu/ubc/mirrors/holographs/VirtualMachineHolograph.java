@@ -97,7 +97,6 @@ import edu.ubc.mirrors.holograms.Hologram;
 import edu.ubc.mirrors.holograms.HologramClassLoader;
 import edu.ubc.mirrors.holograms.HologramVirtualMachine;
 import edu.ubc.mirrors.holograms.ObjectHologram;
-import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 import edu.ubc.mirrors.raw.BytecodeClassMirror;
 import edu.ubc.mirrors.raw.NativeByteArrayMirror;
@@ -106,6 +105,7 @@ import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.raw.PrimitiveClassMirror;
 import edu.ubc.mirrors.raw.SandboxedClassLoader;
 import edu.ubc.mirrors.wrapping.WrappingVirtualMachine;
+import edu.ubc.util.Stopwatch;
 
 public class VirtualMachineHolograph extends WrappingVirtualMachine {
 

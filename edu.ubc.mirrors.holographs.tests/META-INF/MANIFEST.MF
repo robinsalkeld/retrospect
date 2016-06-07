@@ -17,9 +17,9 @@ Import-Package: com.sun.jdi,
  edu.ubc.mirrors.holographs.jdkplugins,
  edu.ubc.mirrors.jdi,
  edu.ubc.mirrors.raw,
- edu.ubc.mirrors.tod,
  edu.ubc.mirrors.wrapping,
  edu.ubc.retrospect,
+ edu.ubc.util,
  junit.framework;version="4.8.2",
  org.aspectj.bridge;version="1.7.3",
  org.aspectj.lang.annotation;version="1.6.4",
@@ -41,8 +41,8 @@ Import-Package: com.sun.jdi,
  org.eclipse.mat.util,
  org.eclipse.osgi.framework.internal.core,
  org.junit;version="4.11.0",
- org.osgi.framework;version="1.6.0",
- tod.core.database.browser
+ org.osgi.framework;version="1.6.0"
 Bundle-ClassPath: .,
  lib/jruby-complete-1.6.4.jar,
  lib/asm-debug-all-5.1.jar
+Export-Package: edu.ubc.mirrors.test

@@ -35,10 +35,10 @@ import edu.ubc.mirrors.MirrorLocationRequest;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
-import edu.ubc.mirrors.holograms.Stopwatch;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 import edu.ubc.retrospect.MirrorWorld;
+import edu.ubc.util.Stopwatch;
 
 public class RetroactiveWeaving {
 

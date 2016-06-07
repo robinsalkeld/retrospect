@@ -19,14 +19,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  ******************************************************************************/
-package edu.ubc.mirrors.test;
+package edu.ubc.mirrors.todtest;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+
+import junit.framework.TestCase;
 
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
-public class TODTest implements IApplication {
+import edu.ubc.mirrors.raw.NativeClassMirror;
+import edu.ubc.mirrors.test.EvalConstants;
+
+public class TODTest extends TestCase implements IApplication {
 
     public static void main(String[] args) throws Exception {
         try {
@@ -45,5 +52,24 @@ public class TODTest implements IApplication {
 
     public void stop() {
         
+    }
+    
+    public void testTracingAspectTOD() throws Exception {
+        String actualOutput = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
+                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
+                EvalConstants.TracingAspectsBin.toString(), 
+                new File(EvalConstants.DataRoot, "tod/TracingTest/hologram_classes"));
+        
+        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
+        assertEquals(expectedOutput, actualOutput);
+    }
+    
+    public void testHeapAspectTOD() throws Exception {
+        String output = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
+                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
+                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
+                new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
+        //TODO: Doesn't actually work since TOD can't record the call to Runtime.runHooks()
+//        assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
     }
 }
