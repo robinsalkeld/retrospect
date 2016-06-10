@@ -83,7 +83,7 @@ public class SanityTest extends TestCase {
 //        File classpath = EvalConstants.EvalTestsBin;
         File classpath = EvalConstants.TracingExampleBin;
         VirtualMachine jdiVM = JDIUtils.commandLineLaunch(mainClassName, 
-                "-cp \"" + classpath + "\"", true, null, null);
+                classpath.toString(), true, null, null);
         JDIUtils.waitForMainClassLoad(jdiVM, mainClassName);
         
         VirtualMachineMirror vmm = new JDIVirtualMachineMirror(jdiVM);
@@ -148,7 +148,7 @@ public class SanityTest extends TestCase {
     public void testLiveToStringer() throws Exception {
         final VirtualMachine jdiVM = JDIUtils.commandLineLaunch(
                 "edu.ubc.mirrors.test.JREOnly", 
-                "-cp \"/Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.holographs.tests/bin\"",
+                "/Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.holographs.tests/bin",
                 false, null, null);
         
         // Ignore the VMStartEvent
@@ -220,7 +220,7 @@ public class SanityTest extends TestCase {
     
     public void testHeapAspect() throws Exception {
         String output = JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", "",
-                EvalConstants.TracingExampleBin + ":" + EvalConstants.DJProfMainJar + "\"", 
+                EvalConstants.TracingExampleBin.toString(), 
                 EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap,
                 new File(EvalConstants.DataRoot, "jdi/HeapAspectTest/hologram_classes"));
         assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));

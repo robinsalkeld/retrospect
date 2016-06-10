@@ -31,7 +31,7 @@ public class TracingExampleTest extends TestCase {
 
     public void testTracingAspect() throws Exception {
         String combinedOutput = JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", "",
-                "-cp \"" + EvalConstants.TracingExampleBin + "\"", 
+                EvalConstants.TracingExampleBin.toString(), 
                 EvalConstants.TracingAspectsBin.toString(),
                 new File(EvalConstants.DataRoot, "jdi/TracingExampleTest/hologram_classes"));
         
