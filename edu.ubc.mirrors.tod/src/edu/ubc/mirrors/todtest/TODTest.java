@@ -60,7 +60,7 @@ public class TODTest extends TestCase implements IApplication {
                 EvalConstants.TracingAspectsBin.toString(), 
                 new File(EvalConstants.DataRoot, "tod/TracingTest/hologram_classes"));
         
-        String expectedOutput = new String(NativeClassMirror.readFully(getClass().getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
+        String expectedOutput = new String(NativeClassMirror.readFully(EvalConstants.class.getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
         assertEquals(expectedOutput, actualOutput);
     }
     

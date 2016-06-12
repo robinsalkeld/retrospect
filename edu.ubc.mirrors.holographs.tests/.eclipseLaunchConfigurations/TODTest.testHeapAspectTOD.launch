@@ -10,12 +10,12 @@
 <booleanAttribute key="clearConfig" value="true"/>
 <booleanAttribute key="clearws" value="true"/>
 <booleanAttribute key="clearwslog" value="false"/>
-<stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/SanityTest.testHeapAspectTOD"/>
+<stringAttribute key="configLocation" value="${workspace_loc}/.metadata/.plugins/org.eclipse.pde.core/TODTest.testHeapAspectTOD"/>
 <booleanAttribute key="default" value="false"/>
 <booleanAttribute key="includeOptional" value="false"/>
 <stringAttribute key="location" value="${workspace_loc}/../junit-workspace"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/edu.ubc.mirrors.holographs.tests/src/edu/ubc/mirrors/test/SanityTest.java"/>
+<listEntry value="/edu.ubc.mirrors.tod/src/edu/ubc/mirrors/todtest/TODTest.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -26,9 +26,9 @@
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/Java 7 Update 25"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.ubc.mirrors.test.SanityTest"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.ubc.mirrors.todtest.TODTest"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="edu.ubc.mirrors.holographs.tests"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="edu.ubc.mirrors.tod"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dosgi.requiredJavaVersion=1.5 -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -XX:MaxPermSize=256m -Xdock:icon=../Resources/Eclipse.icns -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xdock:icon=../Resources/Eclipse.icns -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Xms40m -Xmx1g -Xdock:icon=../Resources/Eclipse.icns -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts&#10;-XX:-UseSplitVerifier&#10;-Dorg.aspectj.weaver.loadtime.configuration=&quot;file:${resource_loc:/djprof/src/profilers/heap/META-INF/aop.xml};file:${project_loc:/Retroactive Aspect Guards}/bin/META-INF/aop-ajc.xml&quot;&#10;-Dedu.ubc.mirrors.aspects.debugWeaving=true&#10;-Dedu.ubc.mirrors.holographs.unsafe=true&#10;-Dedu.ubc.mirrors.aspects.weaveCoreClasses=true&#10;-Djava.awt.headless=true"/>
 <stringAttribute key="pde.version" value="3.3"/>
