@@ -1,16 +1,38 @@
 package edu.ubc.mirrors.test;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.osgi.framework.internal.core.BundleURLConnection;
+
 public class EvalConstants {
 
-    public static File Root = new File("/Users/robinsalkeld/Documents/UBC/Code/Retrospect");
-    public static File EvalRoot = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectEval");
-    public static File DataRoot = new File("/Users/robinsalkeld/Documents/UBC/Code/RetrospectData");
+    public static File TestsRoot;
+    static {
+        // Some hackery to get at the root directory of the tests bundle
+        URL url = EvalConstants.class.getResource(".");
+        try {
+            BundleURLConnection conn = (BundleURLConnection)url.openConnection();
+            URL fileURL = conn.getFileURL();
+            URI uri = new URI(fileURL.toString()); 
+            TestsRoot = new File(new File(uri), "../../../..").getAbsoluteFile(); 
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static File Root = new File(TestsRoot, "../..");
+    public static File EvalRoot = new File(Root, "../RetrospectEval");
+    public static File DataRoot = new File(Root, "../RetrospectData");
     
     public static File SpecJVMRoot = new File("/Users/robinsalkeld/Documents/UBC/Code/SPECjvm2008");
     public static File SpecJVMJar = new File(SpecJVMRoot, "SPECjvm2008.jar");
@@ -23,8 +45,6 @@ public class EvalConstants {
     
     public static File LeapExampleRoot = new File(EvalRoot, "Leap Example");
     public static File LeapExampleBin = new File(LeapExampleRoot, "bin");
-    
-    public static File TestsRoot = new File(Root, "edu.ubc.mirrors.holographs.tests/bin");
     
     public static File EvalTestsRoot = new File(EvalRoot, "Test");
     public static File EvalTestsBin = new File(EvalTestsRoot, "bin");
