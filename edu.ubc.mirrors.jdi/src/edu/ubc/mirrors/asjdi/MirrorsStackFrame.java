@@ -30,6 +30,7 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Location;
+import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
@@ -72,7 +73,13 @@ public class MirrorsStackFrame extends MirrorsMirror implements StackFrame {
 
     @Override
     public Location location() {
-        return new MirrorsLocation(vm, frame.method(), frame.fileName(), frame.lineNumber());
+    	Method method;
+    	if (frame.method() != null) {
+    		method = new MethodMirrorMethod(vm, frame.method());
+    	} else {
+    		method = new ConstructorMirrorMethod(vm, frame.constructor());
+    	}
+        return new MirrorsLocation(vm, method, frame.fileName(), frame.lineNumber());
     }
 
     @Override

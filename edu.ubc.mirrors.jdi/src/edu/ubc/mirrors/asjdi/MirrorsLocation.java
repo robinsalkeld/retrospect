@@ -34,7 +34,7 @@ public class MirrorsLocation implements Location {
 
     private final MirrorsVirtualMachine vm;
     public MirrorsLocation(MirrorsVirtualMachine vm,
-            MethodMirror method, String fileName,
+            Method method, String fileName,
             int lineNumber) {
         this.vm = vm;
         this.method = method;
@@ -42,7 +42,7 @@ public class MirrorsLocation implements Location {
         this.lineNumber = lineNumber;
     }
 
-    private final MethodMirror method;
+    private final Method method;
     private final String fileName;
     private int lineNumber;
     
@@ -63,7 +63,7 @@ public class MirrorsLocation implements Location {
     
     @Override
     public ReferenceType declaringType() {
-        return (ReferenceType)vm.typeForClassMirror(method.getDeclaringClass());
+        return method.declaringType();
     }
     
     @Override
@@ -78,7 +78,7 @@ public class MirrorsLocation implements Location {
     
     @Override
     public Method method() {
-        return new MethodMirrorMethod(vm, method);
+        return method;
     }
     
     @Override
@@ -102,7 +102,8 @@ public class MirrorsLocation implements Location {
     }
     
     public static Location locationForMethod(final MirrorsVirtualMachine vm, final MethodMirror method) {
-        return new MirrorsLocation(vm, method, method.getDeclaringClass().getClassName().replace('.', '/') + ".java", -1) {
+        return new MirrorsLocation(vm, new MethodMirrorMethod(vm, method), 
+        		method.getDeclaringClass().getClassName().replace('.', '/') + ".java", -1) {
             @Override
             public Method method() {
                 return new MethodMirrorMethod(vm, method);

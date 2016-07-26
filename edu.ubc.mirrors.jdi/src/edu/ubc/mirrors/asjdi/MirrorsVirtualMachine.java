@@ -445,7 +445,7 @@ public class MirrorsVirtualMachine implements VirtualMachine {
 
     public Value getValue(InstanceMirror instance, Field field) {
         FieldMirror fieldMirror = ((MirrorsField)field).wrapped;
-        org.objectweb.asm.Type fieldType = Reflection.typeForClassMirror(fieldMirror.getType());
+        org.objectweb.asm.Type fieldType = Reflection.typeForClassName(fieldMirror.getTypeName());
         try {
             switch (fieldType.getSort()) {
             case org.objectweb.asm.Type.BOOLEAN: return mirrorOf(instance.getBoolean(fieldMirror));

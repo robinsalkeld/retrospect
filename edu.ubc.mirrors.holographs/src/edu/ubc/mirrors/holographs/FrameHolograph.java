@@ -25,6 +25,7 @@ import java.util.List;
 
 import edu.ubc.mirrors.AnnotationMirror;
 import edu.ubc.mirrors.ClassMirror;
+import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -226,6 +227,24 @@ public class FrameHolograph extends WrappingFrameMirror {
                 }
             }
             throw new InternalError("Can't locate method: " + declaringClass().getClassName() + "#" + methodName);
+        }
+    }
+    
+    @Override
+    public ConstructorMirror constructor() {
+    	if (!methodName().equals("<init>")) {
+            return null;
+        }
+        
+        // TODO-RS: Not quite the right check...
+        if (vm.getWrappedVM().canGetBytecodes()) {
+            return super.constructor();
+        } else {
+            for (ConstructorMirror constructor : declaringClass().getDeclaredConstructors(false)) {
+                // TODO-RS: Need to figure out a way to disambiguate, probably using line numbers?
+                return constructor;
+            }
+            throw new InternalError("Can't locate constructor: " + declaringClass().getClassName());
         }
     }
     
