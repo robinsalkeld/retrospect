@@ -10,27 +10,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.osgi.framework.internal.core.BundleURLConnection;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 public class EvalConstants {
 
-    public static File TestsRoot;
-    static {
-        // Some hackery to get at the root directory of the tests bundle
-        URL url = EvalConstants.class.getResource(".");
-        try {
-            BundleURLConnection conn = (BundleURLConnection)url.openConnection();
-            URL fileURL = conn.getFileURL();
-            URI uri = new URI(fileURL.toString()); 
-            TestsRoot = new File(new File(uri), "../../../..").getAbsoluteFile(); 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
+	// Equinox-specific logic to get the root of a class' bundle
+    public static File getBundleRoot(Class<?> classInBundle) {
+    	Bundle bundle = FrameworkUtil.getBundle(classInBundle);
+    	try {
+			return FileLocator.getBundleFile(bundle);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+    public static File TestsRoot = getBundleRoot(EvalConstants.class);
     
-    public static File Root = new File(TestsRoot, "../..");
+    public static File Root = TestsRoot.getParentFile();
     public static File EvalRoot = new File(Root, "../RetrospectEval");
     public static File DataRoot = new File(Root, "../RetrospectData");
     

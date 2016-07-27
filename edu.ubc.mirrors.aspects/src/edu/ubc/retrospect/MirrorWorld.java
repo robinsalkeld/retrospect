@@ -82,18 +82,6 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
 
     public static AdviceKind[] SUPPORTED_ADVICE_KINDS = { AdviceKind.Before, AdviceKind.After, AdviceKind.AfterReturning, AdviceKind.Around };
     
-    public static File aspectWeaverJar = new File("/Applications/eclipse/plugins/org.aspectj.weaver_1.7.3.20130613144500-a.jar");
-    public static File aspectRuntimeJar = new File("/Users/robinsalkeld/Documents/UBC/Code/Retrospect/edu.ubc.mirrors.aspects/lib/aspectjrt-1.7.3.jar");
-    public static URL aspectRuntimeJarPath;
-    static {
-    	try {
-    	    // TODO-RS: Automatically determine this
-    	    aspectRuntimeJarPath = new URL("jar:file://" + aspectRuntimeJar + "!/");
-    	} catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
     private static Set<String> implicitPointcutFormalTypes = new HashSet<String>();
     static {
         implicitPointcutFormalTypes.add(JoinPoint.class.getName());
@@ -123,16 +111,16 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     
     private Set<ResolvedType> coreClassWeavingAspects = new HashSet<ResolvedType>();
     
-    public static ClassMirrorLoader makeClassLoaderMirror(VirtualMachineMirror vm, ThreadMirror thread, URL...aspectPaths) {
+    public static ClassMirrorLoader makeClassLoaderMirror(VirtualMachineMirror vm, ThreadMirror thread, URL aspectRuntimeJarPath, URL...aspectPaths) {
 //        showMessage(IMessage.DEBUG, "Creating class loader for aspects...", null, null);
         URL[] paths = new URL[aspectPaths.length + 1];
         System.arraycopy(aspectPaths, 0, paths, 0, aspectPaths.length);
-        paths[paths.length - 1] = MirrorWorld.aspectRuntimeJarPath;
+        paths[paths.length - 1] = aspectRuntimeJarPath;
         return Reflection.newURLClassLoader(vm, thread, null, paths);
     }
     
-    public MirrorWorld(VirtualMachineMirror vm, ThreadMirror thread, URL...aspectPaths) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
-        this(thread, makeClassLoaderMirror(vm, thread, aspectPaths));
+    public MirrorWorld(VirtualMachineMirror vm, ThreadMirror thread, URL aspectRuntimeJarPath, URL...aspectPaths) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {
+        this(thread, makeClassLoaderMirror(vm, thread, aspectRuntimeJarPath, aspectPaths));
     }
     
     public MirrorWorld(ThreadMirror thread, final ClassMirrorLoader loader) throws ClassNotFoundException, NoSuchMethodException, MirrorInvocationTargetException {

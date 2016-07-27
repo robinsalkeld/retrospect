@@ -4,9 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.aspectj.weaver.World;
 
 import edu.ubc.retrospect.MirrorWorld;
 import edu.ubc.util.Stopwatch;
@@ -23,6 +27,17 @@ public class ProcessUtils {
         return time;
     }
     
+    public static File aspectWeaverJar = EvalConstants.getBundleRoot(World.class);
+    public static File aspectRuntimeJar = new File(EvalConstants.getBundleRoot(MirrorWorld.class), "lib/aspectjrt-1.7.3.jar");
+    public static URL aspectRuntimeJarPath;
+    static {
+    	try {
+    	    aspectRuntimeJarPath = new URL("jar:file://" + aspectRuntimeJar + "!/");
+    	} catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
     public static Process launchLoadTimeWeaving(String mainClassName, String classPath, 
             String aspectPath) throws IOException {
         
@@ -30,8 +45,8 @@ public class ProcessUtils {
         
         List<String> vmArgs = new ArrayList<String>();
         vmArgs.add("-cp");
-        vmArgs.add(classPath + ":" + aspectPath + ":" + MirrorWorld.aspectRuntimeJar);
-        vmArgs.add("-javaagent:" + MirrorWorld.aspectWeaverJar);
+        vmArgs.add(classPath + ":" + aspectPath + ":" + aspectRuntimeJar);
+        vmArgs.add("-javaagent:" + aspectWeaverJar);
         
         List<String> env = Collections.<String>emptyList();
         
