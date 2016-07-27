@@ -215,18 +215,18 @@ public class SanityTest extends TestCase {
     }
     
     public void testEvaluation() throws Exception {
-//        testCaseStudyEvaluation("TracingAspectTest",
-//                "tracing.ExampleMain",
-//                EvalConstants.TracingExampleBin.toString(),
-//                EvalConstants.TracingAspectsBin.toString());
+        testCaseStudyEvaluation("TracingAspectTest",
+                "tracing.ExampleMain",
+                EvalConstants.TracingExampleBin.toString(),
+                EvalConstants.TracingAspectsBin.toString());
 //        testCaseStudyEvaluation("HeapAspectTest",
 //                "tracing.ExampleMain",
 //                EvalConstants.TracingExampleBin.toString(),
 //                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap);
-        testCaseStudyEvaluation("ContractValidationAspectTest",
-                "edu.ubc.mirrors.test.MyCloseable",
-                EvalConstants.EvalTestsBin.toString(), 
-                EvalConstants.ContractValidationAspectBin.toString());
+//        testCaseStudyEvaluation("ContractValidationAspectTest",
+//                "edu.ubc.mirrors.test.MyCloseable",
+//                EvalConstants.EvalTestsBin.toString(), 
+//                EvalConstants.ContractValidationAspectBin.toString());
 //        testCaseStudyEvaluation("LeakDetectorAspectTest",
 //                "edu.ubc.mirrors.test.LeakSample",
 //                EvalConstants.TestsRoot.toString(), 
