@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 import edu.ubc.mirrors.holographs.IllegalSideEffectError;
 
 public class EventDispatch {
@@ -90,6 +91,25 @@ public class EventDispatch {
         }
     }
     
+    private static class FakeEventSet extends HashSet<MirrorEvent> implements MirrorEventSet {
+
+        private final ThreadMirror thread;
+        
+        public FakeEventSet(ThreadMirror thread) {
+            this.thread = thread;
+        }
+        
+        @Override
+        public void resume() {
+            // No-op
+        }
+
+        @Override
+        public ThreadMirror thread() {
+            return thread;
+        }
+    }
+    
     private Comparator<MirrorEventRequest> REQUEST_ORDER_COMPARATOR = new Comparator<MirrorEventRequest>() {
         @Override
         public int compare(MirrorEventRequest left, MirrorEventRequest right) {
@@ -109,6 +129,7 @@ public class EventDispatch {
     private MirrorEventSet currentSet = null;
     private MirrorEventSet pendingEvents;
     private boolean started = false;
+    private boolean seenShutdown = false;
     
     private List<Callback<Set<MirrorEvent>>> eventSetCallbacks = 
             new ArrayList<Callback<Set<MirrorEvent>>>();
@@ -175,6 +196,10 @@ public class EventDispatch {
             return currentSet;
         }
         
+        if (seenShutdown) {
+            return null;
+        }
+        
         if (started && currentSet != null) {
             currentSet.resume();
         } else {
@@ -189,6 +214,17 @@ public class EventDispatch {
             
             currentSet.resume();
             currentSet = vm.eventQueue().remove();
+        }
+        
+        if (!seenShutdown) {
+            try {
+                ThreadMirror thread = vm.getThreads().get(0);
+                ClassMirror shutdownClass = vm.findBootstrapClassMirror("java.lang.Shutdown");
+                MethodMirror runHooks = shutdownClass.getDeclaredMethod("runHooks");
+                runHooks.invoke(thread, null);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
         
         return null;
@@ -254,6 +290,13 @@ public class EventDispatch {
         MirrorEvent event = mergeEvents(events);
         if (event == null) {
             return null;
+        }
+        if (event instanceof MethodMirrorHandlerEvent) {
+            MethodMirrorHandlerEvent mmhe = (MethodMirrorHandlerEvent)event;
+            if (mmhe.method().getDeclaringClass().getClassName().equals("java.lang.Shutdown")
+                    && mmhe.method().getName().equals("runHooks")) {
+                seenShutdown = true;
+            }
         }
         
         // TODO-RS: Generalize

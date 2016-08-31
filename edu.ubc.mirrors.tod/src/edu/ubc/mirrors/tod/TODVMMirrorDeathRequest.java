@@ -2,6 +2,7 @@ package edu.ubc.mirrors.tod;
 
 import tod.core.database.browser.IEventBrowser;
 import tod.core.database.event.ILogEvent;
+import tod.core.database.structure.IThreadInfo;
 import edu.ubc.mirrors.VMMirrorDeathRequest;
 
 public class TODVMMirrorDeathRequest extends TODMirrorEventRequest implements VMMirrorDeathRequest {
@@ -11,7 +12,10 @@ public class TODVMMirrorDeathRequest extends TODMirrorEventRequest implements VM
     
     public TODVMMirrorDeathRequest(TODVirtualMachineMirror vm) {
         super(vm);
-        event = new VMDeathEvent();
+        // TODO-RS: Hack so that we can invoke Shutdown.runHooks() a little later than it
+        // would have actually ran
+        IThreadInfo thread = vm.threadInfosByObjectId.values().iterator().next();
+        event = new VMDeathEvent(thread);
     }
 
     @Override

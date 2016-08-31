@@ -8,6 +8,12 @@ import tod.core.database.structure.IThreadInfo;
 
 public class VMDeathEvent implements ILogEvent {
 
+    private final IThreadInfo thread;
+    
+    public VMDeathEvent(IThreadInfo thread) {
+        this.thread = thread;
+    }
+    
     @Override
     public ExternalPointer getPointer() {
         return null;
@@ -20,7 +26,7 @@ public class VMDeathEvent implements ILogEvent {
 
     @Override
     public IThreadInfo getThread() {
-        return null;
+        return thread;
     }
 
     @Override
