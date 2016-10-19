@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 import edu.ubc.mirrors.holographs.IllegalSideEffectError;
 
 public class EventDispatch {
@@ -88,25 +87,6 @@ public class EventDispatch {
         @Override
         public void resume() {
             previous.resume();
-        }
-    }
-    
-    private static class FakeEventSet extends HashSet<MirrorEvent> implements MirrorEventSet {
-
-        private final ThreadMirror thread;
-        
-        public FakeEventSet(ThreadMirror thread) {
-            this.thread = thread;
-        }
-        
-        @Override
-        public void resume() {
-            // No-op
-        }
-
-        @Override
-        public ThreadMirror thread() {
-            return thread;
         }
     }
     
