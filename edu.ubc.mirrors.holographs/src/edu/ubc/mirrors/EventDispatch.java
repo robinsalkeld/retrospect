@@ -176,10 +176,6 @@ public class EventDispatch {
             return currentSet;
         }
         
-        if (seenShutdown) {
-            return null;
-        }
-        
         if (started && currentSet != null) {
             currentSet.resume();
         } else {
