@@ -23,6 +23,7 @@ package edu.ubc.mirrors.jdi;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.EventRequest;
@@ -41,12 +42,12 @@ public abstract class JDIMirrorEvent extends JDIMirror implements MirrorEvent {
     }
 
     @Override
-    public MirrorEventRequest request() {
+    public Set<MirrorEventRequest> requests() {
         EventRequest request = wrapped.request();
         if (request == null) {
-            return null;
+            return Collections.emptySet();
         }
-        return (MirrorEventRequest)request.getProperty(JDIEventRequest.MIRROR_WRAPPER);
+        return Collections.singleton((MirrorEventRequest)request.getProperty(JDIEventRequest.MIRROR_WRAPPER));
     }
     
     @Override

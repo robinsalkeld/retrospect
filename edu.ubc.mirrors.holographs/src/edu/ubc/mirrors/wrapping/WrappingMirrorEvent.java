@@ -21,7 +21,9 @@
  ******************************************************************************/
 package edu.ubc.mirrors.wrapping;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
@@ -44,12 +46,12 @@ public class WrappingMirrorEvent implements MirrorEvent {
     }
 
     @Override
-    public MirrorEventRequest request() {
-        MirrorEventRequest request = wrapped.request();
-        if (request == null) {
-            return null;
+    public Set<MirrorEventRequest> requests() {
+        Set<MirrorEventRequest> result = new HashSet<MirrorEventRequest>();
+        for (MirrorEventRequest request : wrapped.requests()) {
+            result.add((MirrorEventRequest)request.getProperty(WrappingMirrorEventRequest.WRAPPER));
         }
-        return (MirrorEventRequest)request.getProperty(WrappingMirrorEventRequest.WRAPPER);
+        return result;
     }
     
     @Override

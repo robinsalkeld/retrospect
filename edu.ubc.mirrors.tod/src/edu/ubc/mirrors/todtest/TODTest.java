@@ -69,7 +69,6 @@ public class TODTest extends TestCase implements IApplication {
                 Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
                 EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
                 new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
-        //TODO: Doesn't actually work since TOD can't record the call to Runtime.runHooks()
-//        assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
+        assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
     }
 }

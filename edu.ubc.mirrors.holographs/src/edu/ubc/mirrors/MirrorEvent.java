@@ -22,10 +22,11 @@
 package edu.ubc.mirrors;
 
 import java.util.List;
+import java.util.Set;
 
 public interface MirrorEvent {
 
-    MirrorEventRequest request();
+    Set<MirrorEventRequest> requests();
     ThreadMirror thread();
     
     List<Object> arguments();

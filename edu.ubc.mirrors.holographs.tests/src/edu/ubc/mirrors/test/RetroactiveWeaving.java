@@ -22,6 +22,7 @@ import edu.ubc.mirrors.ClassMirrorPrepareRequest;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
+import edu.ubc.mirrors.FieldMirrorGetRequest;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
@@ -163,8 +164,6 @@ public class RetroactiveWeaving {
             }
         });
         requests.add(getRequest);
-        
-        methodCallBreakpoint(vmh, "org.aspectj.runtime.internal.cflowstack.ThreadStackFactoryImpl$ThreadCounterImpl", "isNotZero");
     }
 
     private void relocateField(VirtualMachineMirror vm, String className, String fieldName) {
@@ -382,6 +381,12 @@ public class RetroactiveWeaving {
         methodRequest.setMethodFilter(declaringClass, name, Arrays.asList(paramterTypeNames));
         vm.addCallback(methodRequest, BREAKPOINT);
         methodRequest.enable();
+    }
+    
+    private void fieldGetBreakpoint(final VirtualMachineMirror vm, String declaringClass, String fieldName) {
+        FieldMirrorGetRequest request = vm.eventRequestManager().createFieldMirrorGetRequest(declaringClass, fieldName);
+        vm.addCallback(request, BREAKPOINT);
+        request.enable();
     }
     
     private void locationBreakpoint(final VirtualMachineMirror vm, String className, int lineNumber) {

@@ -41,8 +41,6 @@ import org.aspectj.weaver.loadtime.definition.Definition;
 import org.aspectj.weaver.loadtime.definition.DocumentParser;
 import org.aspectj.weaver.patterns.ExposedState;
 import org.aspectj.weaver.patterns.FormalBinding;
-import org.aspectj.weaver.patterns.NotTypePattern;
-import org.aspectj.weaver.patterns.OrTypePattern;
 import org.aspectj.weaver.patterns.PatternParser;
 import org.aspectj.weaver.patterns.PerClause;
 import org.aspectj.weaver.patterns.PerSingleton;
@@ -62,6 +60,7 @@ import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEvent;
+import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.ObjectArrayMirror;
@@ -554,11 +553,14 @@ public class MirrorWorld extends World implements Callback<MirrorEventShadow> {
     
     private final Callback<MirrorEvent> eventCallback = new Callback<MirrorEvent>() {
         public MirrorEvent handle(MirrorEvent event) {
-            Shadow.Kind shadowKind = (Shadow.Kind)event.request().getProperty(PointcutMirrorRequestExtractor.SHADOW_KIND_PROPERTY_KEY);
-            if (shadowKind != null) {
-                MirrorEventShadow shadow = MirrorEventShadow.make(MirrorWorld.this, event, shadowKind);
-                if (shadow != null) {
-                    MirrorWorld.this.handle(shadow);
+            for (MirrorEventRequest request : event.requests()) {
+                Shadow.Kind shadowKind = (Shadow.Kind)request.getProperty(PointcutMirrorRequestExtractor.SHADOW_KIND_PROPERTY_KEY);
+                if (shadowKind != null) {
+                    MirrorEventShadow shadow = MirrorEventShadow.make(MirrorWorld.this, event, shadowKind);
+                    if (shadow != null) {
+                        MirrorWorld.this.handle(shadow);
+                        break;
+                    }
                 }
             }
             return event;

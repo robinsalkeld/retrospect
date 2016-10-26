@@ -6,18 +6,12 @@ import java.util.List;
 import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorSetHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
-import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
-import edu.ubc.mirrors.MirrorInvocationTargetException;
-import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
-import edu.ubc.mirrors.holographs.VirtualMachineHolograph;
 
-public class FieldHologramSetEvent implements MirrorEvent {
+public class FieldHologramSetEvent extends HologramEvent implements MirrorEvent {
 
-    private final FieldMirrorSetHandlerRequest request;
     private final ThreadMirror thread;
     private final InstanceMirror target;
     protected final FieldMirror field;
@@ -25,16 +19,11 @@ public class FieldHologramSetEvent implements MirrorEvent {
     private MirrorInvocationHandler proceed;
     
     public FieldHologramSetEvent(FieldMirrorSetHandlerRequest request, ThreadMirror thread, InstanceMirror target, FieldMirror field, Object newValue) {
-        this.request = request;
+        super(request);
         this.thread = thread;
         this.target = target;
         this.field = field;
         this.newValue = newValue;
-    }
-
-    @Override
-    public MirrorEventRequest request() {
-        return request;
     }
 
     @Override

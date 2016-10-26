@@ -7,13 +7,11 @@ import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FieldMirrorGetHandlerEvent;
 import edu.ubc.mirrors.FieldMirrorGetHandlerRequest;
 import edu.ubc.mirrors.InstanceMirror;
-import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class FieldHolographGetHandlerEvent implements FieldMirrorGetHandlerEvent {
+public class FieldHolographGetHandlerEvent extends HolographEvent implements FieldMirrorGetHandlerEvent {
 
-    private final FieldMirrorGetHandlerRequest request;
     private final ThreadMirror thread;
     private final InstanceMirror target;
     private final FieldMirror field;
@@ -21,16 +19,11 @@ public class FieldHolographGetHandlerEvent implements FieldMirrorGetHandlerEvent
     
     public FieldHolographGetHandlerEvent(FieldMirrorGetHandlerRequest request, ThreadMirror thread,
             InstanceMirror target, FieldMirror field, MirrorInvocationHandler proceed) {
-        this.request = request;
+        super(request);
         this.thread = thread;
         this.target = target;
         this.field = field;
         this.proceed = proceed;
-    }
-
-    @Override
-    public MirrorEventRequest request() {
-        return request;
     }
 
     @Override

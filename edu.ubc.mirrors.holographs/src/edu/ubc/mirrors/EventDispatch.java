@@ -109,7 +109,6 @@ public class EventDispatch {
     private MirrorEventSet currentSet = null;
     private MirrorEventSet pendingEvents;
     private boolean started = false;
-    private boolean seenShutdown = false;
     
     private List<Callback<Set<MirrorEvent>>> eventSetCallbacks = 
             new ArrayList<Callback<Set<MirrorEvent>>>();
@@ -192,17 +191,6 @@ public class EventDispatch {
             currentSet = vm.eventQueue().remove();
         }
         
-        if (!seenShutdown) {
-            try {
-                ThreadMirror thread = vm.getThreads().get(0);
-                ClassMirror shutdownClass = vm.findBootstrapClassMirror("java.lang.Shutdown");
-                MethodMirror runHooks = shutdownClass.getDeclaredMethod("runHooks");
-                runHooks.invoke(thread, null);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-        
         return null;
     }
     
@@ -216,7 +204,7 @@ public class EventDispatch {
         while (currentSet != null) {
             MirrorEvent result = null;
             for (MirrorEvent event : currentSet) {
-                if (endRequest != null && endRequest.equals(event.request())) {
+                if (endRequest != null && event.requests().contains(endRequest)) {
                     if (DEBUG) {
                         printIndented("Hit matching event: " + event);
                     }
@@ -252,10 +240,7 @@ public class EventDispatch {
         
         List<MirrorEventRequest> requests = new ArrayList<MirrorEventRequest>();
         for (MirrorEvent event : events) {
-            MirrorEventRequest request = event.request();
-            if (request != null) {
-                requests.add(request);
-            }
+            requests.addAll(event.requests());
         }
         
         Set<Callback<MirrorEvent>> callbacks = new LinkedHashSet<Callback<MirrorEvent>>();
@@ -267,14 +252,7 @@ public class EventDispatch {
         if (event == null) {
             return null;
         }
-        if (event instanceof MethodMirrorHandlerEvent) {
-            MethodMirrorHandlerEvent mmhe = (MethodMirrorHandlerEvent)event;
-            if (mmhe.method().getDeclaringClass().getClassName().equals("java.lang.Shutdown")
-                    && mmhe.method().getName().equals("runHooks")) {
-                seenShutdown = true;
-            }
-        }
-        
+
         // TODO-RS: Generalize
         if (event instanceof ConstructorMirrorExitEvent || event instanceof MethodMirrorExitEvent) {
             Collections.sort(requests, REVERSE_REQUEST_ORDER_COMPARATOR);
@@ -314,6 +292,8 @@ public class EventDispatch {
         System.err.println(msg);
     }
     
+    // TODO-RS: This is necessary because we need a single source of state to override
+    // with callbacks, but it's definitely hackish. Is there a better way?
     private MirrorEvent mergeEvents(Set<MirrorEvent> events) {
         MirrorEvent merged = null;
         for (MirrorEvent event : events) {
@@ -324,6 +304,9 @@ public class EventDispatch {
                     throw new IllegalArgumentException("Incompatible events: " + merged + ", " + event);
                 }
                 // TODO-RS: Complete this - should be equivalent to MirrorEventShadow.equals()
+                
+                // Merge the event request sets
+                merged.requests().addAll(event.requests());
             }
         }
         return merged;

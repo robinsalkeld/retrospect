@@ -13,10 +13,9 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandlerEvent, MirrorInvocationHandler {
+public class ConstructorHolographHandlerEvent extends HolographEvent implements ConstructorMirrorHandlerEvent, MirrorInvocationHandler {
 
     private final VirtualMachineHolograph vm;
-    private final ConstructorMirrorHandlerRequest request;
     private final ThreadMirror thread;
     private final ConstructorMirror constructor;
     private boolean isConstructorChaining;
@@ -26,19 +25,14 @@ public class ConstructorHolographHandlerEvent implements ConstructorMirrorHandle
     
     public ConstructorHolographHandlerEvent(VirtualMachineHolograph vm, ConstructorMirrorHandlerRequest request, ThreadMirror thread, ConstructorMirror constructor, 
             boolean isConstructorChaining, List<Object> arguments) {
+        super(request);
         this.vm = vm;
-        this.request = request;
         this.thread = thread;
         this.constructor = constructor;
         this.isConstructorChaining = isConstructorChaining;
         this.arguments = arguments;
         this.proceed = this;
         this.exitRequest = vm.eventRequestManager().createConstructorMirrorExitRequest();
-    }
-    
-    @Override
-    public MirrorEventRequest request() {
-        return request;
     }
     
     @Override

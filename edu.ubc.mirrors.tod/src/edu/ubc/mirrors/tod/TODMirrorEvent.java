@@ -1,5 +1,8 @@
 package edu.ubc.mirrors.tod;
 
+import java.util.Collections;
+import java.util.Set;
+
 import tod.core.database.event.ILogEvent;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequest;
@@ -23,8 +26,8 @@ public abstract class TODMirrorEvent implements MirrorEvent {
     }
     
     @Override
-    public MirrorEventRequest request() {
-        return request;
+    public Set<MirrorEventRequest> requests() {
+        return Collections.singleton(request);
     }
     
     @Override

@@ -12,10 +12,9 @@ import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 
-public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent, MirrorInvocationHandler {
+public class MethodHolographHandlerEvent extends HolographEvent implements MethodMirrorHandlerEvent, MirrorInvocationHandler {
 
     private final VirtualMachineHolograph vm;
-    private final MirrorEventRequest request;
     private final ThreadMirror thread;
     private final MethodMirror method;
     private final List<Object> arguments;
@@ -24,18 +23,13 @@ public class MethodHolographHandlerEvent implements MethodMirrorHandlerEvent, Mi
     
     public MethodHolographHandlerEvent(VirtualMachineHolograph vm, MirrorEventRequest request, ThreadMirror thread, 
             MethodMirror method, List<Object> arguments) {
+        super(request);
         this.vm = vm;
-        this.request = request;
         this.thread = thread;
         this.method = method;
         this.arguments = arguments;
         this.proceed = this;
         this.exitRequest = vm.eventRequestManager().createMethodMirrorExitRequest();
-    }
-
-    @Override
-    public MirrorEventRequest request() {
-        return request;
     }
     
     @Override

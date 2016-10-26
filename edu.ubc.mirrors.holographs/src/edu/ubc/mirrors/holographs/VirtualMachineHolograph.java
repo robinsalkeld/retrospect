@@ -39,6 +39,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,6 +82,7 @@ import edu.ubc.mirrors.IntArrayMirror;
 import edu.ubc.mirrors.LongArrayMirror;
 import edu.ubc.mirrors.MethodHandle;
 import edu.ubc.mirrors.MethodMirror;
+import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventRequestManager;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
@@ -116,6 +118,8 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
     private final HologramClassLoader hologramBootstrapLoader;
     
 //    private final Thread debuggingThread;
+    
+    private boolean seenShutdown;
     
     // TODO-RS: Move all this data that is only relevant for MNMs to
     // the plugins.
@@ -205,17 +209,42 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
 
         collectZipFiles();
         
-        VMMirrorDeathRequest request = this.eventRequestManager().createVMMirrorDeathRequest();
-        request.enable();
-        dispatch().addCallback(request, VM_DEATH_CALLBACK);
+        MethodMirrorHandlerRequest shutdownRequest = this.eventRequestManager().createMethodMirrorHandlerRequest();
+        shutdownRequest.setMethodFilter("java.lang.Shutdown", "runHooks", Collections.<String>emptyList());
+        shutdownRequest.enable();
+        dispatch().addCallback(shutdownRequest, SHUTDOWN_RUN_HOOKS_CALLBACK);
+
+        VMMirrorDeathRequest vmDeathRequest = this.eventRequestManager().createVMMirrorDeathRequest();
+        vmDeathRequest.enable();
+        dispatch().addCallback(vmDeathRequest, VM_DEATH_CALLBACK);
         
         if (HologramClassLoader.debug) {
             System.out.println("Done.");
         }
     }
     
+    private final Callback<MirrorEvent> SHUTDOWN_RUN_HOOKS_CALLBACK = new Callback<MirrorEvent>() {
+        public MirrorEvent handle(MirrorEvent event) {
+            seenShutdown = true;
+            return event;
+        }
+    };
+    
     private final Callback<MirrorEvent> VM_DEATH_CALLBACK = new Callback<MirrorEvent>() {
         public MirrorEvent handle(MirrorEvent t) {
+            // Inject the shutdown method call if it wasn't observed in the
+            // underlying VM.
+            if (!seenShutdown) {
+                try {
+                    ThreadMirror thread = getThreads().get(0);
+                    ClassMirror shutdownClass = findBootstrapClassMirror("java.lang.Shutdown");
+                    MethodMirror runHooks = shutdownClass.getDeclaredMethod("runHooks");
+                    runHooks.invoke(thread, null);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            
             // Ensure the wrapped VM isn't permitted to shut down
             // until any non-daemon holographic threads have terminated.
             waitForHolographicThreads();

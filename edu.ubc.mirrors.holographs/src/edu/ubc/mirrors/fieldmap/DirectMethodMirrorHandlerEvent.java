@@ -1,10 +1,12 @@
 package edu.ubc.mirrors.fieldmap;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MethodMirrorHandlerEvent;
-import edu.ubc.mirrors.MethodMirrorHandlerRequest;
 import edu.ubc.mirrors.MirrorEventRequest;
 import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.Reflection;
@@ -12,14 +14,15 @@ import edu.ubc.mirrors.ThreadMirror;
 
 public class DirectMethodMirrorHandlerEvent implements MethodMirrorHandlerEvent {
 
-    private final MirrorEventRequest request;
+    private final Set<MirrorEventRequest> requests;
     private final ThreadMirror thread;
     private final MethodMirror method;
     private final List<Object> arguments;
     private MirrorInvocationHandler proceed;
     
     public DirectMethodMirrorHandlerEvent(MirrorEventRequest request, ThreadMirror thread, MethodMirror method, List<Object> arguments, MirrorInvocationHandler proceed) {
-        this.request = request;
+        this.requests = new HashSet<MirrorEventRequest>();
+        this.requests.add(request);
         this.thread = thread;
         this.method = method;
         this.arguments = arguments;
@@ -27,8 +30,8 @@ public class DirectMethodMirrorHandlerEvent implements MethodMirrorHandlerEvent 
     }
 
     @Override
-    public MirrorEventRequest request() {
-        return request;
+    public Set<MirrorEventRequest> requests() {
+        return requests;
     }
     
     @Override

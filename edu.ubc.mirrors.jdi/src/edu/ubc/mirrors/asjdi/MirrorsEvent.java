@@ -40,6 +40,6 @@ public class MirrorsEvent extends MirrorsMirror implements Event {
 
     @Override
     public EventRequest request() {
-        return (EventRequest)wrapped.request().getProperty(MirrorsEventRequest.WRAPPER);
+        return (EventRequest)wrapped.requests().iterator().next().getProperty(MirrorsEventRequest.WRAPPER);
     }
 }

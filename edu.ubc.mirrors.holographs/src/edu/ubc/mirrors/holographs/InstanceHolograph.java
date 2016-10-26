@@ -71,6 +71,11 @@ public class InstanceHolograph extends WrappingInstanceMirror {
     }
     
     public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
+        if (field.getDeclaringClass().getClassName().equals("edu.ubc.aspects.ShutdownHooks")) {
+            int bp = 4;
+            bp++;
+        }
+        
         if (newValues.containsKey(field)) {
             // Special case for References
             HolographicReference ref;
