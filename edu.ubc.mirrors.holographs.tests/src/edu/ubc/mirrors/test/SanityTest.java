@@ -189,7 +189,7 @@ public class SanityTest extends TestCase {
     }
     
     public void testTracingAspect() throws Exception {
-        new TracingExampleTest().testTracingAspect();
+        runCaseJDI(EvaluationCase.TRACING);
     }
     
     public void testRacerAspects() throws Exception {
@@ -216,43 +216,30 @@ public class SanityTest extends TestCase {
     }
     
     public void testEvaluation() throws Exception {
-        testCaseStudyEvaluation("TracingAspectTest",
-                "tracing.ExampleMain",
-                EvalConstants.TracingExampleBin.toString(),
-                EvalConstants.TracingAspectsBin.toString());
-//        testCaseStudyEvaluation("HeapAspectTest",
-//                "tracing.ExampleMain",
-//                EvalConstants.TracingExampleBin.toString(),
-//                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap);
-//        testCaseStudyEvaluation("ContractValidationAspectTest",
-//                "edu.ubc.mirrors.test.MyCloseable",
-//                EvalConstants.EvalTestsBin.toString(), 
-//                EvalConstants.ContractValidationAspectBin.toString());
-//        testCaseStudyEvaluation("LeakDetectorAspectTest",
-//                "edu.ubc.mirrors.test.LeakSample",
-//                EvalConstants.TestsRoot.toString(), 
-//                EvalConstants.LeakDetectorAspectBin.toString());
-//        testCaseStudyEvaluation("RacerTest",
-//                "Task",
-//                EvalConstants.RacerExampleBin.toString(), 
-//                EvalConstants.RacerBin.toString());
+        testCaseStudyEvaluation(EvaluationCase.TRACING);
+        testCaseStudyEvaluation(EvaluationCase.HEAP);
+        testCaseStudyEvaluation(EvaluationCase.CONTRACT);
+        testCaseStudyEvaluation(EvaluationCase.LEAK_DETECTION);
+        testCaseStudyEvaluation(EvaluationCase.RACER);
     }
     
-    public void testCaseStudyEvaluation(String caseName, String mainClassName, String classPath, String aspectPath) throws Exception {
-        List<String> vmArgs = Arrays.asList("-cp", classPath);
+    public void testCaseStudyEvaluation(EvaluationCase evalCase) throws Exception {
+        List<String> vmArgs = Arrays.asList("-cp", evalCase.getProgramPath());
         List<String> programArgs = Collections.emptyList();
         List<String> env = Collections.emptyList();
         
-        ProcessUtils.timeJava(mainClassName, programArgs, vmArgs, env);
-        ProcessUtils.timeLoadTimeWeaving(mainClassName, classPath, aspectPath);
+        ProcessUtils.timeJava(evalCase.getMainClass(), programArgs, vmArgs, env);
+        ProcessUtils.timeLoadTimeWeaving(evalCase.getMainClass(), evalCase.getProgramPath(), evalCase.getAspectPath());
         
 //        File leapClassDir = new File(EvalConstants.DataRoot, "leap/" + caseName);
 //        LeapUtils.record(mainClassName, classPath, leapClassDir);
         
-        File jdiHologramClassesPath = new File(EvalConstants.DataRoot, "jdi/" + caseName + "/hologram_classes");
-        JDIMirrorWeavingLauncher.launch(mainClassName, "", classPath, aspectPath, jdiHologramClassesPath);
-//        
-//        File todHologramClassesPath = new File(EvalConstants.DataRoot, "tod/" + caseName + "/hologram_classes");
-//        TODMirrorWeavingLauncher.recordAndWeave(mainClassName, programArgs, vmArgs, aspectPath, todHologramClassesPath);
+        runCaseJDI(evalCase);
+    }
+    
+    private void runCaseJDI(EvaluationCase evalCase) throws Exception {
+        File jdiHologramClassesPath = new File(EvalConstants.DataRoot, "jdi/" + evalCase.getName() + "/hologram_classes");
+        String output = JDIMirrorWeavingLauncher.launch(evalCase.getMainClass(), "", evalCase.getProgramPath(), evalCase.getAspectPath(), jdiHologramClassesPath);
+        evalCase.verifyOutput(output);
     }
 }

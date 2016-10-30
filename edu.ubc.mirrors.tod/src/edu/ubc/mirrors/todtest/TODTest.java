@@ -24,6 +24,7 @@ package edu.ubc.mirrors.todtest;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -32,6 +33,9 @@ import org.eclipse.equinox.app.IApplicationContext;
 
 import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.test.EvalConstants;
+import edu.ubc.mirrors.test.EvaluationCase;
+import edu.ubc.mirrors.test.JDIMirrorWeavingLauncher;
+import edu.ubc.mirrors.test.ProcessUtils;
 
 public class TODTest extends TestCase implements IApplication {
 
@@ -54,6 +58,19 @@ public class TODTest extends TestCase implements IApplication {
         
     }
     
+    public void testCaseStudyEvaluation(EvaluationCase evalCase) throws Exception {
+        List<String> vmArgs = Arrays.asList("-cp", evalCase.getProgramPath());
+        List<String> programArgs = Collections.emptyList();
+        List<String> env = Collections.emptyList();
+        
+        ProcessUtils.timeJava(evalCase.getMainClass(), programArgs, vmArgs, env);
+        ProcessUtils.timeLoadTimeWeaving(evalCase.getMainClass(), evalCase.getProgramPath(), evalCase.getAspectPath());
+        
+        File todHologramClassesPath = new File(EvalConstants.DataRoot, "tod/" + evalCase.getName() + "/hologram_classes");
+        String output = TODMirrorWeavingLauncher.recordAndWeave(evalCase.getMainClass(), programArgs, vmArgs, evalCase.getAspectPath(), todHologramClassesPath);
+        evalCase.verifyOutput(output);
+    }
+
     public void testTracingAspectTOD() throws Exception {
         String actualOutput = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
                 Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
