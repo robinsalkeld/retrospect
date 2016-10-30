@@ -217,7 +217,7 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         VMMirrorDeathRequest vmDeathRequest = this.eventRequestManager().createVMMirrorDeathRequest();
         vmDeathRequest.enable();
         dispatch().addCallback(vmDeathRequest, VM_DEATH_CALLBACK);
-        
+
         if (HologramClassLoader.debug) {
             System.out.println("Done.");
         }
@@ -375,13 +375,11 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
                 }
             }
     
-            if (canBeModified()) {
-                MirrorEventRequestManager erm = eventRequestManager();
-                ClassMirrorPrepareRequest request = erm.createClassMirrorPrepareRequest();
-                request.addClassFilter(ZipFile.class.getName());
-                dispatch().addCallback(request, ZIP_FILE_CREATED_CALLBACK);
-                request.enable();
-            }
+            MirrorEventRequestManager erm = eventRequestManager();
+            ClassMirrorPrepareRequest request = erm.createClassMirrorPrepareRequest();
+            request.addClassFilter(ZipFile.class.getName());
+            dispatch().addCallback(request, ZIP_FILE_CREATED_CALLBACK);
+            request.enable();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

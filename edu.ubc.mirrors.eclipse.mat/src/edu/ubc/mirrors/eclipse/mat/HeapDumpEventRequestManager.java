@@ -53,86 +53,72 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public MirrorLocationRequest createLocationRequest(MirrorLocation location) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
     
     @Override
     public List<MirrorLocationRequest> locationRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
     
     @Override
     public MethodMirrorEntryRequest createMethodMirrorEntryRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        return new HeapDumpMethodMirrorEntryRequest(vm);
     }
 
     @Override
     public List<MethodMirrorEntryRequest> methodMirrorEntryRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public MethodMirrorExitRequest createMethodMirrorExitRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        return new HeapDumpMethodMirrorExitRequest(vm);
     }
 
     @Override
     public List<MethodMirrorExitRequest> methodMirrorExitRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ConstructorMirrorEntryRequest createConstructorMirrorEntryRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<ConstructorMirrorEntryRequest> constructorMirrorEntryRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ConstructorMirrorExitRequest createConstructorMirrorExitRequest() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<ConstructorMirrorExitRequest> constructorMirrorExitRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public FieldMirrorGetRequest createFieldMirrorGetRequest(String declaringClass, String name) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<FieldMirrorGetRequest> fieldMirrorGetRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public FieldMirrorSetRequest createFieldMirrorSetRequest(String declaringClass, String fieldName) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<FieldMirrorSetRequest> fieldMirrorSetRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -142,8 +128,7 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
 
     @Override
     public List<ClassMirrorPrepareRequest> classMirrorPrepareRequests() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -158,8 +143,7 @@ public class HeapDumpEventRequestManager implements MirrorEventRequestManager {
     
     @Override
     public void deleteMirrorEventRequest(MirrorEventRequest request) {
-        // TODO Auto-generated method stub
-        
+        throw new UnsupportedOperationException();
     }
     
     @Override

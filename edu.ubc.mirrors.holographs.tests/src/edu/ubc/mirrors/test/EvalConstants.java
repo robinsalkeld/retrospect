@@ -2,32 +2,29 @@ package edu.ubc.mirrors.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.osgi.framework.internal.core.BundleURLConnection;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
 public class EvalConstants {
 
-	// Equinox-specific logic to get the root of a class' bundle
+    // Equinox-specific logic to get the root of a class' bundle
     public static File getBundleRoot(Class<?> classInBundle) {
-    	Bundle bundle = FrameworkUtil.getBundle(classInBundle);
-    	try {
-			return FileLocator.getBundleFile(bundle);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
+        Bundle bundle = FrameworkUtil.getBundle(classInBundle);
+        try {
+            return FileLocator.getBundleFile(bundle);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static File TestsRoot = getBundleRoot(EvalConstants.class);
+    public static File TestsBin = new File(TestsRoot, "bin");
     
     public static File Root = TestsRoot.getParentFile();
     public static File EvalRoot = new File(Root, "../RetrospectEval");

@@ -84,9 +84,10 @@ public class SanityTest extends TestCase {
         
     }
     
-    public void testJRubyStackTrace() throws Exception {
-        HeapDumpTest2.main(new String[] {"/Users/salkeldr/Documents/snapshots/jruby_irb/java_pid41658.0001.jrubyirb.hprof"});
-    }
+    // TODO: Disabled since I deleted the snapshot
+//    public void testJRubyStackTrace() throws Exception {
+//        HeapDumpTest2.main(new String[] {"/Users/salkeldr/Documents/snapshots/jruby_irb/java_pid41658.0001.jrubyirb.hprof"});
+//    }
     
 //    public void testPrintOSGiBundles() throws Exception {
 //        EclipseHeapDumpTest.main(new String[] {"/Users/robinsalkeld/Documents/UBC/Code/RetrospectData/snapshots/eclipse_for_osgi_dump/java_pid52701.0001.hprof"});
@@ -197,7 +198,7 @@ public class SanityTest extends TestCase {
     
     public void testLeakDetectorAspect() throws Exception {
         String output = JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", "",
-                EvalConstants.TestsRoot.toString(), 
+                EvalConstants.TestsBin.toString(), 
                 EvalConstants.LeakDetectorAspectBin.toString(),
                 new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
         assertTrue(output.contains("   =>java.lang.String.<init>(String.java:602)"));
