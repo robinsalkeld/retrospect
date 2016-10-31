@@ -31,10 +31,8 @@ import junit.framework.TestCase;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 
-import edu.ubc.mirrors.raw.NativeClassMirror;
 import edu.ubc.mirrors.test.EvalConstants;
 import edu.ubc.mirrors.test.EvaluationCase;
-import edu.ubc.mirrors.test.JDIMirrorWeavingLauncher;
 import edu.ubc.mirrors.test.ProcessUtils;
 
 public class TODTest extends TestCase implements IApplication {
@@ -72,20 +70,10 @@ public class TODTest extends TestCase implements IApplication {
     }
 
     public void testTracingAspectTOD() throws Exception {
-        String actualOutput = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
-                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
-                EvalConstants.TracingAspectsBin.toString(), 
-                new File(EvalConstants.DataRoot, "tod/TracingTest/hologram_classes"));
-        
-        String expectedOutput = new String(NativeClassMirror.readFully(EvalConstants.class.getResourceAsStream("expected-tracing-test-output.txt")), "UTF-8");
-        assertEquals(expectedOutput, actualOutput);
+        testCaseStudyEvaluation(EvaluationCase.TRACING);
     }
     
     public void testHeapAspectTOD() throws Exception {
-        String output = TODMirrorWeavingLauncher.recordAndWeave("tracing.ExampleMain", Collections.<String>emptyList(),
-                Arrays.asList("-cp", EvalConstants.TracingExampleBin.toString()), 
-                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap, 
-                new File(EvalConstants.DataRoot, "tod/HeapAspectTest/hologram_classes"));
-        assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
+        testCaseStudyEvaluation(EvaluationCase.HEAP);
     }
 }

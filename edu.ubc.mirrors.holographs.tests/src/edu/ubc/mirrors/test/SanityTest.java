@@ -181,11 +181,7 @@ public class SanityTest extends TestCase {
 //    }
     
     public void testContractValidationAspect() throws Exception {
-        String output = JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.MyCloseable", "",
-                EvalConstants.EvalTestsBin.toString(), 
-                EvalConstants.ContractValidationAspectBin.toString(),
-                new File(EvalConstants.DataRoot, "jdi/ContractValidationAspectTest/hologram_classes"));
-        assertTrue(output.contains("Unclosed closables: [edu.ubc.mirrors.test.MyCloseable"));
+        runCaseJDI(EvaluationCase.CONTRACT);
     }
     
     public void testTracingAspect() throws Exception {
@@ -193,26 +189,15 @@ public class SanityTest extends TestCase {
     }
     
     public void testRacerAspects() throws Exception {
-        new RacerTest().testRacerExample(); 
+        runCaseJDI(EvaluationCase.RACER);
     }
     
     public void testLeakDetectorAspect() throws Exception {
-        String output = JDIMirrorWeavingLauncher.launch("edu.ubc.mirrors.test.LeakSample", "",
-                EvalConstants.TestsBin.toString(), 
-                EvalConstants.LeakDetectorAspectBin.toString(),
-                new File(EvalConstants.DataRoot, "jdi/LeakDetectorAspectTest/hologram_classes"));
-        assertTrue(output.contains("   =>java.lang.String.<init>(String.java:602)"));
-        // If the holographic GC is not working correctly all 100 string instances
-        // in LeakSample.myVector will show up as leaks.
-        assertFalse(output.contains("Number of occurrences: 100"));
+        runCaseJDI(EvaluationCase.LEAK_DETECTION);
     }
     
     public void testHeapAspect() throws Exception {
-        String output = JDIMirrorWeavingLauncher.launch("tracing.ExampleMain", "",
-                EvalConstants.TracingExampleBin.toString(), 
-                EvalConstants.DJProfClasses + ":" + EvalConstants.DJProfClassesHeap,
-                new File(EvalConstants.DataRoot, "jdi/HeapAspectTest/hologram_classes"));
-        assertTrue(output.contains("Bytes Allocated | Bytes Allocated | overall | name"));
+        runCaseJDI(EvaluationCase.HEAP);
     }
     
     public void testEvaluation() throws Exception {
