@@ -55,7 +55,7 @@ import edu.ubc.mirrors.raw.NativeInstanceMirror;
 
 public class HologramClassGenerator extends ClassVisitor {
 
-    public static final String VERSION = "1.17";
+    public static final String VERSION = "1.18";
     
     public static Type objectMirrorType = Type.getType(ObjectMirror.class);
     public static Type throwableType = Type.getType(Throwable.class);

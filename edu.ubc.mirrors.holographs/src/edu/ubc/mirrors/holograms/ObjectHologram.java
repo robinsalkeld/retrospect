@@ -412,4 +412,8 @@ public class ObjectHologram implements Hologram {
             hologram.getNotifyCondition().signalAll();
         }
     }
+    
+    public static void finalizeHologram(Hologram hologram) {
+        // TODO-RS: No-op for now
+    }
 }

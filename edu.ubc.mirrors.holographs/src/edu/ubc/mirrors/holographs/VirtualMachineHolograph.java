@@ -1050,51 +1050,6 @@ public class VirtualMachineHolograph extends WrappingVirtualMachine {
         }
     }
     
-    private void markAndSweep(Collection<ObjectMirror> roots) {
-        // Simple inefficient implementation of mark-and-sweep garbage collection
-        Set<ObjectMirror> visited = new HashSet<ObjectMirror>();
-        Stack<ObjectMirror> toVisit = new Stack<ObjectMirror>();
-        toVisit.addAll(roots);
-        while (!toVisit.isEmpty()) {
-            ObjectMirror visiting = toVisit.pop();
-            visited.add(visiting);
-            
-            if (visiting instanceof InstanceMirror) {
-                InstanceMirror instanceMirror = (InstanceMirror)visiting;
-                for (FieldMirror field : Reflection.getAllFields(instanceMirror.getClassMirror())) {
-                    if (!field.getType().isPrimitive()) {
-                        ObjectMirror child;
-                        try {
-                            child = instanceMirror.get(field);
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException(e);
-                        }
-                        if (!visited.contains(child)) {
-                            toVisit.add(child);
-                        }
-                    }
-                }
-            } else if (visiting instanceof ObjectArrayMirror) {
-                ObjectArrayMirror arrayMirror = (ObjectArrayMirror)visiting;
-                int length = arrayMirror.length();
-                for (int index = 0; index < length; index++) {
-                    ObjectMirror child = arrayMirror.get(index);
-                    if (!visited.contains(child)) {
-                        toVisit.add(child);
-                    }
-                }
-            }
-        }
-        
-        for (ObjectMirror obj : wrappedMirrors.values()) {
-            if (!visited.contains(obj)) {
-                if (obj instanceof InstanceHolograph) {
-                    ((InstanceHolograph)obj).notHolographicallyReachable();
-                }
-            }
-        }
-    }
-    
     // TODO-RS: Temporary for evaluation
     public void reportErrors() {
         System.out.println("\n[ Missing bytecode ]");

@@ -114,5 +114,6 @@ public class EvalConstants {
                           TODcoreBin,
                           TODevdbngBin,
                           zzutilsBin,
-                          new File(TODcoreLib, "asm-all-3.2-svn.jar"));
+                          new File(TODcoreLib, "asm-all-3.2-svn.jar"),
+                          ProcessUtils.aspectRuntimeJar);
 }

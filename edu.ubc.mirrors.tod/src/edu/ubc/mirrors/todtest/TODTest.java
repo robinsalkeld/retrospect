@@ -76,4 +76,12 @@ public class TODTest extends TestCase implements IApplication {
     public void testHeapAspectTOD() throws Exception {
         testCaseStudyEvaluation(EvaluationCase.HEAP);
     }
+    
+    public void testContractValidationAspectTOD() throws Exception {
+        testCaseStudyEvaluation(EvaluationCase.CONTRACT);
+    }
+    
+    public void testLeakDetectionAspectTOD() throws Exception {
+        testCaseStudyEvaluation(EvaluationCase.LEAK_DETECTION_USER_CLASS);
+    }
 }

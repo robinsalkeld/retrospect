@@ -22,7 +22,7 @@ public class TODBehaviorCallFrameMirror implements FrameMirror {
 
     @Override
     public ClassMirror declaringClass() {
-        return vm.makeClassMirror(event.getCallingBehavior().getDeclaringType());
+        return vm.makeClassMirror(event.getExecutedBehavior().getDeclaringType());
     }
 
     @Override

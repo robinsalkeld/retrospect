@@ -25,6 +25,9 @@ public abstract class BoxingInstanceMirror implements InstanceMirror {
 
     public abstract Object getBoxedValue(FieldMirror field) throws IllegalAccessException;
     
+    private boolean collected = false;
+    private boolean allowCollection = true;
+    
     @Override
     public ObjectMirror get(FieldMirror field) throws IllegalAccessException {
         return (ObjectMirror)getBoxedValue(field);
@@ -110,10 +113,17 @@ public abstract class BoxingInstanceMirror implements InstanceMirror {
     
     @Override
     public void allowCollection(boolean flag) {
+        this.allowCollection = flag;
     }
     
     @Override
     public boolean isCollected() {
-        return false;
+        return collected;
+    }
+    
+    public void collectable() {
+        if (allowCollection) {
+            collected = true;
+        }
     }
 }

@@ -15,7 +15,7 @@ public class TODVMMirrorDeathRequest extends TODMirrorEventRequest implements VM
         // TODO-RS: Hack so that we can invoke Shutdown.runHooks() a little later than it
         // would have actually ran
         IThreadInfo thread = vm.threadInfosByObjectId.values().iterator().next();
-        event = new VMDeathEvent(thread);
+        event = new VMDeathEvent(thread, vm.logBrowser.getLastTimestamp());
     }
 
     @Override

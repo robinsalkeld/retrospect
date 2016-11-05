@@ -26,12 +26,16 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 import org.objectweb.asm.Type;
 
@@ -42,6 +46,7 @@ import tod.core.database.browser.IEventFilter;
 import tod.core.database.browser.ILogBrowser;
 import tod.core.database.browser.IObjectInspector;
 import tod.core.database.event.IBehaviorCallEvent;
+import tod.core.database.event.IBehaviorExitEvent;
 import tod.core.database.event.ILogEvent;
 import tod.core.database.structure.IBehaviorInfo;
 import tod.core.database.structure.IClassInfo;
@@ -55,21 +60,24 @@ import edu.ubc.mirrors.Callback;
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.ConstructorMirror;
 import edu.ubc.mirrors.EventDispatch;
+import edu.ubc.mirrors.FieldMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
 import edu.ubc.mirrors.MethodMirror;
 import edu.ubc.mirrors.MirrorEvent;
 import edu.ubc.mirrors.MirrorEventQueue;
 import edu.ubc.mirrors.MirrorEventRequest;
+import edu.ubc.mirrors.ObjectArrayMirror;
 import edu.ubc.mirrors.ObjectMirror;
 import edu.ubc.mirrors.Reflection;
+import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.VirtualMachineMirror;
 import edu.ubc.mirrors.raw.ArrayClassMirror;
 
 public class TODVirtualMachineMirror implements VirtualMachineMirror {
 
-    private final ILogBrowser logBrowser;
+    final ILogBrowser logBrowser;
     final TODMirrorEventRequestManager requestManager;
     final TODMirrorEventQueue queue = new TODMirrorEventQueue(this);
     private final EventDispatch dispatch = new EventDispatch(this);
@@ -79,6 +87,11 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     final Map<ObjectId, IThreadInfo> threadInfosByObjectId = new HashMap<ObjectId, IThreadInfo>();
     
     private final Map<Object, ObjectMirror> mirrors = new HashMap<Object, ObjectMirror>();
+    
+    // Need to link between exit events and their call events to find the target objects
+    // of constructor exit events, since they don't store their return value correctly.
+    private final Map<IBehaviorExitEvent, IBehaviorCallEvent> callEventsByExitEvents = 
+            new HashMap<IBehaviorExitEvent, IBehaviorCallEvent>();
     
     public TODVirtualMachineMirror(ILogBrowser logBrowser) {
         super();
@@ -155,12 +168,12 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         if (todObject == null) {
             return null;
         }
-        
+
         ObjectMirror result = mirrors.get(todObject);
         if (result != null) {
             return result;
         }
-               
+
         if (todObject instanceof ITypeInfo) {
             ITypeInfo typeInfo = (ITypeInfo)todObject;
             // Ignore class infos with no bytecode - they are essentially not actually loaded classes.
@@ -197,6 +210,10 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
                     result = getPrimitiveClass(name);
                 }
             } else {
+                if (type.getClassName().endsWith("MyObject")) {
+                    int bp = 4;
+                    bp++;
+                }
                 result = new TODInstanceMirror(this, inspector);
             }
         } else if (todObject instanceof IThreadInfo) {
@@ -393,6 +410,87 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
     
     @Override
     public void gc() {
-        throw new UnsupportedOperationException();
+        // TODO-RS: Only traversing from static variables for now,
+        // since TOD doesn't track frame local variables.
+        List<ClassMirror> loadedClasses = findAllClasses();
+        Set<ObjectMirror> reachable = reachable(loadedClasses);
+        for (ObjectMirror mirror : mirrors.values()) {
+            if (!reachable.contains(mirror) && mirror instanceof TODInstanceMirror) {
+                System.out.println("Collectable: " + mirror);
+                ((TODInstanceMirror)mirror).collectable();
+            }
+        }
+    }
+    
+    private static Set<ObjectMirror> reachable(Collection<? extends ObjectMirror> roots) {
+        // Simple inefficient implementation of mark-and-sweep garbage collection
+        Set<ObjectMirror> visited = new HashSet<ObjectMirror>();
+        Stack<ObjectMirror> toVisit = new Stack<ObjectMirror>();
+        toVisit.addAll(roots);
+        while (!toVisit.isEmpty()) {
+            ObjectMirror visiting = toVisit.pop();
+            visited.add(visiting);
+            
+            if (visiting instanceof ClassMirror) {
+                ClassMirror classMirror = (ClassMirror)visiting;
+                if (classMirror.getClassName().endsWith("MyObject")) {
+                    List<ObjectMirror> instances = classMirror.getInstances();
+                    instances.size();
+                }
+                StaticFieldValuesMirror staticValues = classMirror.getStaticFieldValues();
+                for (FieldMirror field : Reflection.getAllFields(classMirror)) {
+                    TODFieldMirror todField = (TODFieldMirror)field;
+                    if (field.getType() != null && !field.getType().isPrimitive() && todField.field.isStatic()) {
+                        ObjectMirror child;
+                        try {
+                            child = staticValues.get(field);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+                        if (!visited.contains(child)) {
+                            toVisit.add(child);
+                        }
+                    }
+                }
+            } else if (visiting instanceof InstanceMirror) {
+                InstanceMirror instanceMirror = (InstanceMirror)visiting;
+                for (FieldMirror field : Reflection.getAllFields(instanceMirror.getClassMirror())) {
+                    TODFieldMirror todField = (TODFieldMirror)field;
+                    if (field.getType() != null && !field.getType().isPrimitive() && !todField.field.isStatic()) {
+                        ObjectMirror child;
+                        try {
+                            child = instanceMirror.get(field);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        }
+                        if (!visited.contains(child)) {
+                            toVisit.add(child);
+                        }
+                    }
+                }
+            } else if (visiting instanceof ObjectArrayMirror) {
+                ObjectArrayMirror arrayMirror = (ObjectArrayMirror)visiting;
+                ClassMirror classMirror = arrayMirror.getClassMirror();
+                if (!classMirror.getComponentClassMirror().isPrimitive()) {
+                    int length = arrayMirror.length();
+                    for (int index = 0; index < length; index++) {
+                        ObjectMirror child = arrayMirror.get(index);
+                        if (!visited.contains(child)) {
+                            toVisit.add(child);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return visited;
+    }
+    
+    public void registerConstructorEntry(IBehaviorCallEvent entryEvent) {
+        callEventsByExitEvents.put(entryEvent.getExitEvent(), entryEvent);
+    }
+    
+    public IBehaviorCallEvent getEntryEvent(IBehaviorExitEvent exitEvent) {
+        return callEventsByExitEvents.get(exitEvent);
     }
 }

@@ -51,6 +51,15 @@ public class EvaluationCase {
                   // in LeakSample.myVector will show up as leaks.
                   not(containsString("Number of occurrences: 100"))));
     
+    public static final EvaluationCase LEAK_DETECTION_USER_CLASS = new EvaluationCase("LeakDetectorAspectTest",
+            "edu.ubc.mirrors.test.LeakSampleUserClass",
+            EvalConstants.TestsBin.toString(), 
+            EvalConstants.LeakDetectorAspectBin.toString(),
+            allOf(containsString("   =>java.lang.String.<init>(String.java:602)"),
+                  // If the holographic GC is not working correctly all 100 instances
+                  // in LeakSampleUserClass.myVector will show up as leaks.
+                  not(containsString("Number of occurrences: 100"))));
+    
     public static final EvaluationCase RACER = new EvaluationCase("RacerTest",
             "Task",
             EvalConstants.RacerExampleBin.toString(), 

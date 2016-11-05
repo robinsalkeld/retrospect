@@ -47,7 +47,7 @@ public abstract class TODMirrorEventRequest implements MirrorEventRequest, Itera
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    public synchronized void setEnabled(boolean enabled) {
         this.enabled = enabled;
         if (enabled) {
             eventBrowser = createEventBrowser();

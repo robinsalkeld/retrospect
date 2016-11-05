@@ -9,9 +9,11 @@ import tod.core.database.structure.IThreadInfo;
 public class VMDeathEvent implements ILogEvent {
 
     private final IThreadInfo thread;
+    private final long timestamp;
     
-    public VMDeathEvent(IThreadInfo thread) {
+    public VMDeathEvent(IThreadInfo thread, long timestamp) {
         this.thread = thread;
+        this.timestamp = timestamp;
     }
     
     @Override
@@ -36,7 +38,7 @@ public class VMDeathEvent implements ILogEvent {
 
     @Override
     public long getTimestamp() {
-        return 0;
+        return timestamp;
     }
 
     @Override

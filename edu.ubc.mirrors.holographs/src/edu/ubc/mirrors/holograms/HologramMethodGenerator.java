@@ -216,6 +216,15 @@ public class HologramMethodGenerator extends InstructionAdapter {
             }
         }
         
+        if (name.equals("finalize")) {
+            new MethodHandle() {
+                protected void methodCall() throws Throwable {
+                    ObjectHologram.finalizeHologram(null);
+                }
+            }.invoke(this);
+            return;
+        }
+        
         if (name.equals("equals") && desc.equals(Type.getMethodDescriptor(Type.BOOLEAN_TYPE, Type.getType(Hologram.class)))) {
             desc = Type.getMethodDescriptor(Type.BOOLEAN_TYPE, OBJECT_TYPE);
         }
