@@ -109,7 +109,7 @@ public class MethodHolograph implements MethodMirror {
                     if ((getModifiers() & Modifier.STATIC) == 0) {
                         combinedArgs.add(0, obj);
                     }
-                    return klass.getVM().eventRequestManager().handleAdvice(threadHolograph, MethodHolograph.this, hologramMethod, combinedArgs);
+                    return klass.getVM().eventRequestManager().handleAdvice(threadHolograph, hologramMethod, combinedArgs);
                 }
             });
         } catch (IllegalAccessException e) {

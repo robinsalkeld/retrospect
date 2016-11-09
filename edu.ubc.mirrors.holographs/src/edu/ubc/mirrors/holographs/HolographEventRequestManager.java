@@ -19,6 +19,7 @@ import edu.ubc.mirrors.MirrorInvocationHandler;
 import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
+import edu.ubc.mirrors.fieldmap.DirectAdviceMirrorHandlerEvent;
 import edu.ubc.mirrors.fieldmap.DirectAdviceMirrorHandlerRequest;
 import edu.ubc.mirrors.fieldmap.DirectMethodMirrorHandlerEvent;
 import edu.ubc.mirrors.holograms.FieldGetProceed;
@@ -132,11 +133,11 @@ public class HolographEventRequestManager extends WrappingMirrorEventRequestMana
         return request;
     }
     
-    public Object handleAdvice(ThreadMirror thread, MethodMirror method, MirrorInvocationHandler original, List<Object> arguments) throws MirrorInvocationTargetException {
+    public Object handleAdvice(ThreadMirror thread, MirrorInvocationHandler original, List<Object> arguments) throws MirrorInvocationTargetException {
         Set<MirrorEvent> events = new HashSet<MirrorEvent>();
         for (AdviceMirrorHandlerRequest request : adviceHandlerRequests) {
             if (request.isEnabled()) {
-                events.add(new DirectMethodMirrorHandlerEvent(request, thread, method, arguments, original));
+                events.add(new DirectAdviceMirrorHandlerEvent(request, thread, arguments, original));
             }
         }
         

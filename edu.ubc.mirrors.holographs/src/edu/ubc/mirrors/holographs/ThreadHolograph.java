@@ -22,12 +22,15 @@
 package edu.ubc.mirrors.holographs;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import edu.ubc.mirrors.ClassMirror;
 import edu.ubc.mirrors.FrameMirror;
 import edu.ubc.mirrors.InstanceMirror;
+import edu.ubc.mirrors.MirrorInvocationHandler;
+import edu.ubc.mirrors.MirrorInvocationTargetException;
 import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapFrameMirror;
@@ -75,10 +78,24 @@ public class ThreadHolograph extends InstanceHolograph implements ThreadMirror {
     
     
     
-    public <T> T withHologramExecution(Callable<T> c) throws Exception {
+    @SuppressWarnings("unchecked")
+    public <T> T withHologramExecution(final Callable<T> c) throws Exception {
         enterHologramExecution();
         try {
-            return c.call();
+            MirrorInvocationHandler proceed = new MirrorInvocationHandler() {
+                @Override
+                public Object invoke(ThreadMirror thread, List<Object> args) throws MirrorInvocationTargetException {
+                    try {
+                        return c.call();
+                    } catch (MirrorInvocationTargetException e) {
+                        throw e;
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }  
+            };
+            
+            return (T)vm.eventRequestManager().handleAdvice(this, proceed, Collections.emptyList());
         } finally {
             exitHologramExecution();
         }

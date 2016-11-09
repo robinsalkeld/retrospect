@@ -128,8 +128,12 @@ public class RetroactiveWeaving {
                 relocateField(vmh, "java.nio.charset.Charset", "cache1");
                 relocateField(vmh, "java.nio.charset.Charset", "cache2");
                 relocateField(vmh, "java.lang.Thread", "threadInitNumber");
+                relocateField(vmh, "sun.reflect.NativeConstructorAccessorImpl", "numInvocations");
                 relocateFieldInitializeWithDefaultConstructor(vmh, "sun.nio.cs.ThreadLocalCoders$Cache", "cache");
                 relocateFieldInitializeWithDefaultConstructor(vmh, "java.net.URLClassLoader", "closeables");
+                relocateFieldInitializeWithDefaultConstructor(vmh, "java.io.UnixFileSystem", "cache");
+                relocateFieldInitializeWithDefaultConstructor(vmh, "java.io.UnixFileSystem", "javaHomePrefixCache");
+                skipMethod(vmh, "sun.misc.MetaIndex", "registerDirectory", "java.io.File");
                 aroundThreadLocals(vmh);
                 hardCodeHashing(vmh);
                 classLoaderLocking(vmh);
@@ -166,6 +170,10 @@ public class RetroactiveWeaving {
         requests.add(getRequest);
     }
 
+    private void skipMethod(VirtualMachineMirror vm, String declaringClass, String name, String ... paramterTypeNames) {
+        replaceMethod(vm, declaringClass, name, Arrays.asList(paramterTypeNames), MirrorInvocationHandler.NONE);
+    }
+    
     private void relocateField(VirtualMachineMirror vm, String className, String fieldName) {
         relocateField(vm, className, fieldName, null);
     }

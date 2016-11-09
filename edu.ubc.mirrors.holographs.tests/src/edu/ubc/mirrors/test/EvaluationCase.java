@@ -55,7 +55,7 @@ public class EvaluationCase {
             "edu.ubc.mirrors.test.LeakSampleUserClass",
             EvalConstants.TestsBin.toString(), 
             EvalConstants.LeakDetectorAspectBin.toString(),
-            allOf(containsString("   =>java.lang.String.<init>(String.java:602)"),
+            allOf(containsString("  =>edu.ubc.mirrors.test.LeakSampleUserClass$MyObject.<init>(Unknown Source)"),
                   // If the holographic GC is not working correctly all 100 instances
                   // in LeakSampleUserClass.myVector will show up as leaks.
                   not(containsString("Number of occurrences: 100"))));

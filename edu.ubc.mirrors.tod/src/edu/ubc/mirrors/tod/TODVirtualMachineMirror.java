@@ -210,10 +210,6 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
                     result = getPrimitiveClass(name);
                 }
             } else {
-                if (type.getClassName().endsWith("MyObject")) {
-                    int bp = 4;
-                    bp++;
-                }
                 result = new TODInstanceMirror(this, inspector);
             }
         } else if (todObject instanceof IThreadInfo) {
@@ -416,7 +412,6 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
         Set<ObjectMirror> reachable = reachable(loadedClasses);
         for (ObjectMirror mirror : mirrors.values()) {
             if (!reachable.contains(mirror) && mirror instanceof TODInstanceMirror) {
-                System.out.println("Collectable: " + mirror);
                 ((TODInstanceMirror)mirror).collectable();
             }
         }
@@ -433,10 +428,6 @@ public class TODVirtualMachineMirror implements VirtualMachineMirror {
             
             if (visiting instanceof ClassMirror) {
                 ClassMirror classMirror = (ClassMirror)visiting;
-                if (classMirror.getClassName().endsWith("MyObject")) {
-                    List<ObjectMirror> instances = classMirror.getInstances();
-                    instances.size();
-                }
                 StaticFieldValuesMirror staticValues = classMirror.getStaticFieldValues();
                 for (FieldMirror field : Reflection.getAllFields(classMirror)) {
                     TODFieldMirror todField = (TODFieldMirror)field;

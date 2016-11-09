@@ -201,11 +201,11 @@ public class SanityTest extends TestCase {
     }
     
     public void testEvaluation() throws Exception {
-        testCaseStudyEvaluation(EvaluationCase.TRACING);
-        testCaseStudyEvaluation(EvaluationCase.HEAP);
-        testCaseStudyEvaluation(EvaluationCase.CONTRACT);
+//        testCaseStudyEvaluation(EvaluationCase.TRACING);
+//        testCaseStudyEvaluation(EvaluationCase.HEAP);
+//        testCaseStudyEvaluation(EvaluationCase.CONTRACT);
         testCaseStudyEvaluation(EvaluationCase.LEAK_DETECTION);
-        testCaseStudyEvaluation(EvaluationCase.RACER);
+//        testCaseStudyEvaluation(EvaluationCase.RACER);
     }
     
     public void testCaseStudyEvaluation(EvaluationCase evalCase) throws Exception {
@@ -216,10 +216,10 @@ public class SanityTest extends TestCase {
         ProcessUtils.timeJava(evalCase.getMainClass(), programArgs, vmArgs, env);
         ProcessUtils.timeLoadTimeWeaving(evalCase.getMainClass(), evalCase.getProgramPath(), evalCase.getAspectPath());
         
-//        File leapClassDir = new File(EvalConstants.DataRoot, "leap/" + caseName);
-//        LeapUtils.record(mainClassName, classPath, leapClassDir);
+        File leapClassDir = new File(EvalConstants.DataRoot, "leap/" + evalCase.getName());
+        LeapUtils.record(evalCase.getMainClass(), evalCase.getProgramPath(), leapClassDir);
         
-        runCaseJDI(evalCase);
+//        runCaseJDI(evalCase);
     }
     
     private void runCaseJDI(EvaluationCase evalCase) throws Exception {

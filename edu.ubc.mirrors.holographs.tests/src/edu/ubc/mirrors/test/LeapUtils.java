@@ -2,6 +2,11 @@ package edu.ubc.mirrors.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -44,9 +49,38 @@ public class LeapUtils {
         ProcessUtils.waitForSuccessWithEcho(p);
         // As instructed at http://www.cse.ust.hk/prism/leap/,
         // delete the transformed Leap classes
-        Runtime.getRuntime().exec("rm -rf tmp/*/edu", new String[0], outputDir);
+        recursiveDelete(new File(outputDir, "tmp/replay/edu/hkust").toPath());
+        recursiveDelete(new File(outputDir, "tmp/runtime/edu/hkust").toPath());
     }
-    
+
+    public static void recursiveDelete(final Path path) throws IOException {
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>(){
+            @Override 
+            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override 
+            public FileVisitResult visitFileFailed(final Path file, final IOException e) {
+                return handleException(e);
+            }
+
+            private FileVisitResult handleException(final IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            @Override 
+            public FileVisitResult postVisitDirectory(final Path dir, final IOException e) throws IOException {
+                if (e != null) {
+                    return handleException(e);
+                }
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    };
+
     public static void record(String mainClassName, String classPath, File outputDir) throws IOException {
         if (!outputDir.exists()) {
             outputDir.mkdirs();
@@ -56,7 +90,8 @@ public class LeapUtils {
         File runtimeClassPath = new File(outputDir, RUNTIME_CLASS_DIR.toString());
         Stopwatch s = new Stopwatch();
         s.start();
-        Process p = ProcessUtils.launchJava(LEAP_MAIN_CLASS, 
+        Process p = ProcessUtils.launchJava(LEAP_MAIN_CLASS,
+                                // TODO-RS: The 1 here is supposed to be the SPE value output from the transformation.
                                 Arrays.asList("1", mainClassName), 
                                 Arrays.asList("-cp", runtimeClassPath + ":" + EvalConstants.LeapRecorderJar), 
                                 Collections.<String>emptyList(),

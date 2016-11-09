@@ -71,6 +71,7 @@ import edu.ubc.mirrors.Reflection;
 import edu.ubc.mirrors.StaticFieldValuesMirror;
 import edu.ubc.mirrors.ThreadMirror;
 import edu.ubc.mirrors.fieldmap.FieldMapFieldMirror;
+import edu.ubc.mirrors.holographs.NewInstanceMirror;
 import edu.ubc.mirrors.holographs.ThreadHolograph;
 
 // TODO-RS: This should probably be split up into multiple top-level classes in their
@@ -119,7 +120,7 @@ public abstract class BytecodeClassMirror extends BoxingInstanceMirror implement
         return staticFieldValues;
     }
     
-    private class BytecodeInstanceMirror extends BoxingInstanceMirror implements StaticFieldValuesMirror {
+    private class BytecodeInstanceMirror extends BoxingInstanceMirror implements StaticFieldValuesMirror, NewInstanceMirror {
 
         @Override
         public ClassMirror getClassMirror() {
